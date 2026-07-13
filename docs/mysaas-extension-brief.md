@@ -10,6 +10,7 @@ Related planning docs:
 
 - `docs/mysaas-ai-handoff-rules.md`
 - `docs/mysaas-template-evolution.md`
+- `docs/mysaas-site-migration-playbook.md`
 - `docs/mysaas-public-read-model-migration.md`
 - `docs/mysaas-page-targets.md`
 - `docs/mysaas-discovery-module-spec.md`

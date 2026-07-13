@@ -165,6 +165,7 @@ You are working on an EasyStarter-based MySaaS template.
 Read first:
 - CUSTOMIZATIONS.md
 - docs/mysaas-ai-handoff-rules.md
+- docs/mysaas-site-migration-playbook.md
 - docs/mysaas-public-read-model-migration.md
 - docs/mysaas-template-evolution.md
 

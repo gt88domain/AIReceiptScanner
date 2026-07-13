@@ -46,6 +46,34 @@ Plan/implement public read migration only:
 - Update CUSTOMIZATIONS.md for any EasyStarter core edits.
 ```
 
+## Site Migration Prompt
+
+```text
+You are migrating one legacy site into the EasyStarter-based MySaaS template.
+
+Read first:
+- CUSTOMIZATIONS.md
+- docs/mysaas-site-migration-playbook.md
+- docs/mysaas-public-read-model-migration.md when public data moves to D1
+- docs/mysaas-discovery-listing-plan.md when the site has a directory/list page
+
+Before implementation, create docs/migrations/<site>/ with an inventory, exact
+route map, data contract, page contracts, visual baselines, and cutover plan.
+
+Preserve public URL paths, including established category/tag/detail paths.
+Build real public fixture data before visual work. Capture desktop and mobile
+screenshots before replacing public pages. Do not migrate auth, billing, admin,
+or provider secrets in the first public-read slice.
+
+Keep site code in a custom module. Use only thin route wiring and record every
+EasyStarter core change in CUSTOMIZATIONS.md. Do not promote a site-specific
+card, taxonomy, SQL query, or SEO rule into the template until two real sites
+prove the same stable contract.
+
+Before coding, report the migration packet paths, files to add, core files to
+touch, exact route behavior, D1/fixture scope, and verification commands.
+```
+
 ## Component Extraction Prompt
 
 ```text

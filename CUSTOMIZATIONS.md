@@ -76,6 +76,7 @@ runtime behavior.
 - `docs/mysaas-page-targets.md`
 - `docs/mysaas-discovery-module-spec.md`
 - `docs/mysaas-discovery-listing-plan.md`
+- `docs/mysaas-site-migration-playbook.md`
 - `docs/mysaas-public-read-model-migration.md`
 - `ARCHITECTURE.md`
 - `MODULES.md`
@@ -132,6 +133,20 @@ runtime behavior.
   clone; keeping the `.gitignore` entry is harmless for normal development.
 - Verification: `git status --ignored --short` and `git ls-files` after the
   initial baseline commit.
+
+## 2026-07-13 - Add Reusable Site Migration Playbook
+
+- Files: `docs/mysaas-site-migration-playbook.md`,
+  `docs/mysaas-extension-brief.md`, `docs/mysaas-ai-handoff-rules.md`,
+  `TEMPLATE_PROMPTS.md`, `CUSTOMIZATIONS.md`
+- Reason: define one route-, data-, visual-, and SEO-parity process for every
+  legacy site migration while keeping the public-read document focused on the
+  Neon/fixture/D1 implementation path.
+- Upstream merge risk: low
+- Rollback: remove the planning document and its references; no runtime code
+  depends on it.
+- Verification: review the migration packet checklist against the first real
+  site before implementation.
 
 ## Recommended Future Core Changes
 
