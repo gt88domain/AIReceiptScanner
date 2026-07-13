@@ -1,0 +1,53 @@
+{
+  "cli": {
+    "version": ">= 18.4.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "environment": "development",
+
+      "env": {
+        "EXPO_PUBLIC_SERVER_API_URL": "https://server.easystarter.dev",
+        "EXPO_PUBLIC_WEB_APP_URL": "https://cf.easystarter.dev",
+        "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY": "appl_GutoexiMibsvBDxBTXJvcjYvRWR",
+        "EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID": "pro",
+        "EXPO_PUBLIC_OPENPANEL_CLIENT_ID": "your-openpanel-client-id",
+        "EXPO_PUBLIC_OPENPANEL_CLIENT_SECRET": "your-openpanel-client-secret"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "channel": "preview",
+      "environment": "preview",
+
+      "env": {
+        "EXPO_PUBLIC_SERVER_API_URL": "https://server.easystarter.dev",
+        "EXPO_PUBLIC_WEB_APP_URL": "https://cf.easystarter.dev",
+        "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY": "appl_GutoexiMibsvBDxBTXJvcjYvRWR",
+        "EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID": "pro",
+        "EXPO_PUBLIC_OPENPANEL_CLIENT_ID": "your-openpanel-client-id",
+        "EXPO_PUBLIC_OPENPANEL_CLIENT_SECRET": "your-openpanel-client-secret"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "channel": "production",
+      "environment": "production",
+
+      "env": {
+        "EXPO_PUBLIC_SERVER_API_URL": "https://server.easystarter.dev",
+        "EXPO_PUBLIC_WEB_APP_URL": "https://cf.easystarter.dev",
+        "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY": "appl_GutoexiMibsvBDxBTXJvcjYvRWR",
+        "EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID": "pro",
+        "EXPO_PUBLIC_OPENPANEL_CLIENT_ID": "your-openpanel-client-id",
+        "EXPO_PUBLIC_OPENPANEL_CLIENT_SECRET": "your-openpanel-client-secret"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

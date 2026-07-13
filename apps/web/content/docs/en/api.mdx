@@ -1,0 +1,138 @@
+---
+title: API Development
+description: Build type-safe APIs with oRPC
+icon: Code
+---
+
+## Overview
+
+EasyStarter uses **oRPC** for end-to-end type-safe API development, combining the best of tRPC and OpenAPI.
+
+## Architecture
+
+```
+apps/server/src/
+├── routers/           # API routers
+│   ├── index.ts       # Main router
+│   └── user.ts        # User-related procedures
+├── handlers/          # Business logic
+└── middlewares/       # Authentication, logging, etc.
+```
+
+## Creating a Router
+
+### Define Procedures
+
+```typescript
+// apps/server/src/routers/post.ts
+import { publicProcedure, protectedProcedure, router } from "../lib/orpc";
+import { z } from "zod";
+
+export const postRouter = router({
+  // Public procedure
+  list: publicProcedure
+    .input(
+      z.object({
+        page: z.number().default(1),
+        limit: z.number().default(10),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      return ctx.db.select().from(posts).limit(input.limit);
+    }),
+
+  // Protected procedure (requires auth)
+  create: protectedProcedure
+    .input(
+      z.object({
+        title: z.string().min(1),
+        content: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      return ctx.db.insert(posts).values({
+        ...input,
+        authorId: ctx.user.id,
+      });
+    }),
+});
+```
+
+### Register Router
+
+```typescript
+// apps/server/src/routers/index.ts
+import { postRouter } from "./post";
+
+export const appRouter = router({
+  post: postRouter,
+  // ... other routers
+});
+
+export type AppRouter = typeof appRouter;
+```
+
+## Frontend Usage
+
+### Setup Client
+
+```typescript
+// apps/web/src/lib/api.ts
+import { createORPCClient } from "@orpc/client";
+import type { AppRouter } from "@server/routers";
+
+export const api = createORPCClient<AppRouter>({
+  baseURL: import.meta.env.VITE_SERVER_URL,
+});
+```
+
+### Query Data
+
+```typescript
+// Using React Query
+const { data, isLoading } = api.post.list.useQuery({
+  page: 1,
+  limit: 10,
+});
+```
+
+### Mutate Data
+
+```typescript
+const createPost = api.post.create.useMutation({
+  onSuccess: () => {
+    queryClient.invalidateQueries(["post", "list"]);
+  },
+});
+
+await createPost.mutateAsync({
+  title: "Hello World",
+  content: "My first post",
+});
+```
+
+## Middleware
+
+### Authentication Middleware
+
+```typescript
+const authMiddleware = middleware(async ({ ctx, next }) => {
+  const session = await getSession(ctx.request);
+  if (!session) {
+    throw new ORPCError("UNAUTHORIZED");
+  }
+  return next({ ctx: { ...ctx, user: session.user } });
+});
+
+export const protectedProcedure = publicProcedure.use(authMiddleware);
+```
+
+## Error Handling
+
+```typescript
+import { ORPCError } from "@orpc/server";
+
+throw new ORPCError("NOT_FOUND", { message: "Post not found" });
+throw new ORPCError("FORBIDDEN", { message: "Access denied" });
+throw new ORPCError("BAD_REQUEST", { message: "Invalid input" });
+```

@@ -1,0 +1,83 @@
+---
+title: Getting Started
+description: Set up your development environment
+icon: Zap
+---
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- **Node.js** 20+
+- **pnpm** 9+
+- **Git**
+
+## Quick Start
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/your-username/easysaas.git
+cd easysaas
+```
+
+### 2. Install Dependencies
+
+```bash
+pnpm install
+```
+
+### 3. Set Up Environment
+
+Run the one-click setup script:
+
+```bash
+pnpm run setup
+```
+
+This will configure both web and server environments automatically.
+
+### 4. Start Development
+
+```bash
+pnpm dev
+```
+
+Your apps will be available at:
+
+| App    | URL                   |
+| ------ | --------------------- |
+| Web    | http://localhost:3000 |
+| Server | http://localhost:3001 |
+
+## Available Scripts
+
+| Script             | Description                   |
+| ------------------ | ----------------------------- |
+| `pnpm dev`         | Start all apps in development |
+| `pnpm dev:web`     | Start web only                |
+| `pnpm dev:server`  | Start server only             |
+| `pnpm build`       | Build all apps                |
+| `pnpm check-types` | TypeScript type checking      |
+| `pnpm lint`        | Lint (`oxlint`)               |
+| `pnpm fmt:check`   | Format check (`oxfmt`)        |
+
+## Database Setup
+
+```bash
+# Generate migration from schema
+pnpm db:generate
+
+# Push schema to D1 (development)
+pnpm db:push
+
+# Open Drizzle Studio
+pnpm db:studio
+```
+
+## Next Steps
+
+- [Project Structure](/docs/project-structure) - Explore the codebase
+- [Authentication](/docs/authentication) - Set up user auth
+- [Database](/docs/database) - Learn database operations
+- [Deployment](/docs/deployment) - Deploy to production

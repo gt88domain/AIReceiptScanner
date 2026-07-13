@@ -1,0 +1,83 @@
+---
+title: はじめに
+description: 開発環境のセットアップ
+icon: Zap
+---
+
+## 前提条件
+
+始める前に、以下がインストールされていることを確認してください：
+
+- **Node.js** 20+
+- **pnpm** 9+
+- **Git**
+
+## クイックスタート
+
+### 1. リポジトリをクローン
+
+```bash
+git clone https://github.com/your-username/easysaas.git
+cd easysaas
+```
+
+### 2. 依存関係をインストール
+
+```bash
+pnpm install
+```
+
+### 3. 環境をセットアップ
+
+ワンクリックセットアップスクリプトを実行：
+
+```bash
+pnpm run setup
+```
+
+これにより、web と server の環境が自動的に設定されます。
+
+### 4. 開発を開始
+
+```bash
+pnpm dev
+```
+
+アプリは以下の URL で利用可能になります：
+
+| アプリ | URL                   |
+| ------ | --------------------- |
+| Web    | http://localhost:3000 |
+| Server | http://localhost:3001 |
+
+## 利用可能なスクリプト
+
+| スクリプト         | 説明                             |
+| ------------------ | -------------------------------- |
+| `pnpm dev`         | すべてのアプリを開発モードで起動 |
+| `pnpm dev:web`     | Web のみ起動                     |
+| `pnpm dev:server`  | Server のみ起動                  |
+| `pnpm build`       | すべてのアプリをビルド           |
+| `pnpm check-types` | TypeScript 型チェック            |
+| `pnpm lint`        | リント（`oxlint`）               |
+| `pnpm fmt:check`   | フォーマットチェック（`oxfmt`）  |
+
+## データベースセットアップ
+
+```bash
+# スキーマからマイグレーションを生成
+pnpm db:generate
+
+# スキーマを D1 にプッシュ（開発環境）
+pnpm db:push
+
+# Drizzle Studio を開く
+pnpm db:studio
+```
+
+## 次のステップ
+
+- [プロジェクト構造](/docs/project-structure) - コードベースを探索
+- [認証](/docs/authentication) - ユーザー認証のセットアップ
+- [データベース](/docs/database) - データベース操作を学ぶ
+- [デプロイ](/docs/deployment) - 本番環境へデプロイ

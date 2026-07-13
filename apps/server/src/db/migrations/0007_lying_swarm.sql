@@ -1,0 +1,1 @@
+CREATE INDEX `credit_transaction_expiry_idx` ON `credit_transaction` (`expires_at`,`remaining_amount`);

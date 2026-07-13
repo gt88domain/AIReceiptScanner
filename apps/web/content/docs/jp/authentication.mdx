@@ -1,0 +1,91 @@
+---
+title: 認証システム
+description: ユーザー認証と認可
+icon: ShieldCheck
+---
+
+## 概要
+
+EasyStarter は [Better Auth](https://www.better-auth.com/) を使用して認証を行い、完全なユーザー管理ソリューションを提供します。
+
+## サポートされる認証方法
+
+| 方法                  | 説明                                    |
+| --------------------- | --------------------------------------- |
+| **メール/パスワード** | メール確認付きの従来の登録方式          |
+| **GitHub OAuth**      | GitHub アカウントでワンクリックログイン |
+| **Google OAuth**      | Google アカウントでワンクリックログイン |
+
+## 設定
+
+### 環境変数
+
+```bash
+# 必須
+AUTH_SECRET=your-secret-key
+
+# OAuth（オプション）
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# メール（確認用）
+RESEND_API_KEY=your-resend-api-key
+```
+
+## フロントエンドでの使用
+
+### サインイン
+
+```tsx
+import { authClient } from "@/lib/auth-client";
+
+// メール/パスワード
+await authClient.signIn.email({
+  email: "user@example.com",
+  password: "password123",
+});
+
+// OAuth
+await authClient.signIn.social({ provider: "github" });
+await authClient.signIn.social({ provider: "google" });
+```
+
+### サインアウト
+
+```tsx
+await authClient.signOut();
+```
+
+### 現在のユーザーを取得
+
+```tsx
+const { data: session } = authClient.useSession();
+const user = session?.user;
+```
+
+## セッション管理
+
+Better Auth がセッションを自動管理します：
+
+- **Cookie ベース**のセッション保存
+- 期限切れ前の**自動更新**
+- **タブ間同期**
+
+## ルート保護
+
+認証ミドルウェアを使用してルートを保護：
+
+```tsx
+// ルートコンポーネント内
+import { createFileRoute, redirect } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/dashboard")({
+  beforeLoad: async ({ context }) => {
+    if (!context.user) {
+      throw redirect({ to: "/sign-in" });
+    }
+  },
+});
+```

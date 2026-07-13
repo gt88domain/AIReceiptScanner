@@ -1,0 +1,96 @@
+---
+title: Database
+description: Database configuration and operations with Drizzle ORM
+icon: Database
+---
+
+## Overview
+
+EasyStarter uses **Cloudflare D1** (SQLite at the edge) with **Drizzle ORM** for type-safe database operations.
+
+## Schema Definition
+
+Define your database schema in `apps/server/src/db/schema/`:
+
+```typescript
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+
+export const users = sqliteTable("users", {
+  id: text("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  name: text("name"),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+});
+```
+
+## Database Commands
+
+| Command            | Description                            |
+| ------------------ | -------------------------------------- |
+| `pnpm db:generate` | Generate migration from schema changes |
+| `pnpm db:push`     | Push schema directly to D1 (dev only)  |
+| `pnpm db:migrate`  | Run migrations (production)            |
+| `pnpm db:studio`   | Open Drizzle Studio (GUI)              |
+
+## Querying Data
+
+### Select
+
+```typescript
+// Get all users
+const allUsers = await db.select().from(users);
+
+// With conditions
+const activeUsers = await db.select().from(users).where(eq(users.status, "active"));
+
+// With pagination
+const paginatedUsers = await db.select().from(users).limit(10).offset(0);
+```
+
+### Insert
+
+```typescript
+await db.insert(users).values({
+  id: crypto.randomUUID(),
+  email: "user@example.com",
+  name: "John Doe",
+  createdAt: new Date(),
+});
+```
+
+### Update
+
+```typescript
+await db.update(users).set({ name: "Jane Doe" }).where(eq(users.id, userId));
+```
+
+### Delete
+
+```typescript
+await db.delete(users).where(eq(users.id, userId));
+```
+
+## Relations
+
+Define relations between tables:
+
+```typescript
+import { relations } from "drizzle-orm";
+
+export const usersRelations = relations(users, ({ many }) => ({
+  posts: many(posts),
+}));
+
+export const postsRelations = relations(posts, ({ one }) => ({
+  author: one(users, {
+    fields: [posts.authorId],
+    references: [users.id],
+  }),
+}));
+```
+
+## Production Setup
+
+1. Create a D1 database in Cloudflare Dashboard
+2. Update `wrangler.jsonc` with your database binding
+3. Run migrations: `pnpm db:migrate`

@@ -1,0 +1,78 @@
+# Local development environment variables for Wrangler
+# This file is automatically loaded by `wrangler dev`
+# Copy this file to .dev.vars and fill in your actual values
+
+NODE_ENV=development
+# EasyStarter Server URLs guide: https://www.easystarter.dev/zh/docs/web/deploy-server
+WEBSITE_URL=http://localhost:3000
+
+# Better Auth - https://www.easystarter.dev/zh/docs/web/integrations/authentication
+# Provider docs: https://better-auth.com/docs/installation
+BETTER_AUTH_SECRET=
+SERVER_URL=http://localhost:3001
+
+
+# Cloudflare - https://www.easystarter.dev/zh/docs/web/integrations/cloudflare
+# D1 database guide: https://www.easystarter.dev/zh/docs/web/integrations/database
+# Provider console: https://dash.cloudflare.com/profile/api-tokens
+CLOUDFLARE_ACCOUNT_ID=
+CLOUDFLARE_API_TOKEN=
+CLOUDFLARE_D1_DATABASE_ID=
+
+# Github OAuth - https://www.easystarter.dev/zh/docs/web/integrations/authentication
+# Provider console: https://github.com/settings/developers
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+
+# Google OAuth - https://www.easystarter.dev/zh/docs/web/integrations/authentication
+# Provider console: https://console.cloud.google.com/apis/credentials
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+# Apple OAuth / Sign in with Apple (native idToken flow)
+# Docs:
+# - https://docs.expo.dev/versions/latest/sdk/apple-authentication/
+# Native iOS bundle id (example: com.example.app), should match app.json ios.bundleIdentifier
+APPLE_APP_BUNDLE_IDENTIFIER=
+
+# Resend Email - https://www.easystarter.dev/zh/docs/web/integrations/email
+# Provider console: https://resend.com/api-keys
+RESEND_API_KEY=
+
+# R2 Storage - https://www.easystarter.dev/zh/docs/web/integrations/storage
+# Provider console: https://dash.cloudflare.com/
+# Public URL for accessing R2 stored files (e.g., https://pub-xxx.r2.dev or your custom domain)
+R2_PUBLIC_URL=
+
+# Alibaba Cloud Dypnsapi - https://www.easystarter.dev/zh/docs/web/integrations/authentication/aliyun-phone-auth
+# Provider docs: https://help.aliyun.com/zh/pnvs/developer-reference/api-dypnsapi-2017-05-25-sendsmsverifycode
+ALIBABA_CLOUD_ACCESS_KEY_ID=
+ALIBABA_CLOUD_ACCESS_KEY_SECRET=
+
+# Aliyun OSS Storage - https://help.aliyun.com/zh/oss/
+# Set common.storage.provider to "aliyun-oss" in packages/app-config/src/app-config.ts to use it.
+# Reuses ALIBABA_CLOUD_ACCESS_KEY_ID / ALIBABA_CLOUD_ACCESS_KEY_SECRET above.
+# Endpoint should not include the bucket name, e.g. oss-cn-hangzhou.aliyuncs.com
+ALIYUN_OSS_BUCKET=
+ALIYUN_OSS_REGION=
+ALIYUN_OSS_ENDPOINT=
+
+# Stripe - https://www.easystarter.dev/zh/docs/web/integrations/stripe
+# Provider docs: https://stripe.com/docs/keys
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+
+# Creem - https://www.easystarter.dev/zh/docs/web/integrations/creem
+# Provider docs: https://docs.creem.io
+CREEM_API_KEY=
+CREEM_WEBHOOK_SECRET=
+
+# Waffo Pancake - https://docs.waffo.ai/zh/integrate/skill
+# Provider dashboard: https://pancake.waffo.ai/merchant/dashboard/integration
+WAFFO_MERCHANT_ID=
+WAFFO_PRIVATE_KEY=
+WAFFO_ENVIRONMENT=test
+
+# RevenueCat - https://www.easystarter.dev/zh/docs/web/deploy-server
+# Provider docs: https://www.easystarter.dev/zh/docs/mobile/integrations/revenuecat
+REVENUECAT_WEBHOOK_SECRET=

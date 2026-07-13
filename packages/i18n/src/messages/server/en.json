@@ -1,0 +1,40 @@
+{
+  "email": {
+    "verification": {
+      "subject": "Verify your email for {appName}",
+      "preview": "Verify your email address for {appName}",
+      "title": "Verify your email",
+      "greeting": "Hi {name},",
+      "body": "Thanks for signing up! Please click the button below to verify your email address.",
+      "button": "Verify Email",
+      "ignore": "If you didn't create an account, you can safely ignore this email."
+    },
+    "passwordReset": {
+      "subject": "Reset your password for {appName}",
+      "title": "Password Reset",
+      "greeting": "Hello {name}",
+      "body": "Click the button below to reset your password",
+      "button": "Reset Password",
+      "ignore": "If you didn't request a password reset, you can safely ignore this email."
+    },
+    "otp": {
+      "subject": "Your {appName} verification code",
+      "preview": "Use this code to continue with {appName}",
+      "title": "Your verification code",
+      "body": "Use this one-time code to continue with {appName}.",
+      "expires": "This code expires in {minutes} minutes.",
+      "ignore": "If you didn't request this code, you can safely ignore this email."
+    }
+  },
+  "errors": {
+    "unauthorized": "You must be logged in to perform this action",
+    "forbidden": "You don't have permission to access this resource",
+    "notFound": "The requested resource was not found",
+    "invalidFileType": "Invalid file type. Please upload a valid file",
+    "fileTooLarge": "File is too large. Maximum size is {maxSizeMB}MB",
+    "fileNotFound": "File not found in storage",
+    "uploadFailed": "Failed to upload file. Please try again",
+    "invalidUrl": "Invalid URL provided",
+    "accountDeleted": "This account has been deleted"
+  }
+}

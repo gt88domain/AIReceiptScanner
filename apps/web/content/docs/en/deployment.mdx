@@ -1,0 +1,114 @@
+---
+title: Deployment
+description: Deploy to Cloudflare Workers and Pages
+icon: Rocket
+---
+
+## Overview
+
+EasyStarter is optimized for deployment on **Cloudflare**:
+
+- **Web**: Cloudflare Pages
+- **Server**: Cloudflare Workers
+
+## Prerequisites
+
+1. [Cloudflare account](https://dash.cloudflare.com/sign-up)
+2. [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/install-and-update/) configured
+3. D1 database created
+
+## Quick Deploy
+
+```bash
+# Deploy both web and server
+pnpm run deploy
+
+# Deploy individually
+pnpm deploy:web
+pnpm deploy:server
+```
+
+## First Deployment
+
+### 1. Initial Deploy
+
+```bash
+pnpm run deploy
+```
+
+This will output your production URLs:
+
+- Web: `https://your-app.pages.dev`
+- Server: `https://your-api.workers.dev`
+
+### 2. Update Configuration
+
+**Server** (`apps/server/wrangler.jsonc`):
+
+```jsonc
+{
+  "vars": {
+    "WEBSITE_URL": "https://your-app.pages.dev",
+    "SERVER_URL": "https://your-api.workers.dev",
+  },
+}
+```
+
+**Web** (`apps/web/.env.production`):
+
+```bash
+VITE_SERVER_URL=https://your-api.workers.dev
+VITE_APP_URL=https://your-app.pages.dev
+```
+
+### 3. Redeploy
+
+```bash
+pnpm run deploy
+```
+
+## Environment Variables
+
+### Server Secrets
+
+Set secrets using Wrangler:
+
+```bash
+cd apps/server
+
+# Authentication
+npx wrangler secret put AUTH_SECRET
+
+# OAuth
+npx wrangler secret put GITHUB_CLIENT_ID
+npx wrangler secret put GITHUB_CLIENT_SECRET
+npx wrangler secret put GOOGLE_CLIENT_ID
+npx wrangler secret put GOOGLE_CLIENT_SECRET
+
+# Email
+npx wrangler secret put RESEND_API_KEY
+```
+
+## Database Migration
+
+Run migrations on production D1:
+
+```bash
+cd apps/server
+pnpm db:migrate --remote
+```
+
+## Custom Domain
+
+1. Go to Cloudflare Dashboard → Pages → your project
+2. Navigate to "Custom domains"
+3. Add your domain
+4. Update DNS records as instructed
+
+## Troubleshooting
+
+| Issue            | Solution                             |
+| ---------------- | ------------------------------------ |
+| CORS errors      | Check `WEBSITE_URL` in server config |
+| Auth not working | Verify `AUTH_SECRET` is set          |
+| Database errors  | Run `db:migrate --remote`            |

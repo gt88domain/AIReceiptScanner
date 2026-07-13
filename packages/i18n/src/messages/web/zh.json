@@ -1,0 +1,694 @@
+{
+  "common": {
+    "documents": "文档",
+    "cancel": "取消",
+    "continue": "继续",
+    "search": "搜索",
+    "searchPlaceholder": "输入命令或搜索...",
+    "noResults": "未找到结果。",
+    "signIn": "登录",
+    "signOut": "退出登录",
+    "dashboard": "仪表盘"
+  },
+  "dataTable": {
+    "viewOptions": {
+      "view": "视图",
+      "toggleColumns": "切换列显示",
+      "searchColumns": "搜索列...",
+      "noColumns": "未找到列。"
+    }
+  },
+  "locale": {
+    "switchLanguage": "切换语言"
+  },
+  "landingPage": {
+    "hero": {
+      "announcement": "推出 AI 模型支持",
+      "title": "现代化客户参与解决方案",
+      "subtitle": "高度可定制的组件，用于构建符合您期望外观和感觉的现代网站和应用程序。",
+      "startBuilding": "开始构建",
+      "requestDemo": "申请演示",
+      "appScreenAlt": "应用截图"
+    },
+    "header": {
+      "menu": {
+        "features": "功能",
+        "integrations": "集成",
+        "pricing": "价格",
+        "faq": "常见问题",
+        "testimonials": "用户评价",
+        "blog": "博客",
+        "docs": "文档"
+      },
+      "actions": {
+        "openMenu": "打开菜单",
+        "closeMenu": "关闭菜单"
+      }
+    },
+    "pricing": {
+      "title": "价格方案",
+      "subtitle": "选择最适合你的方案",
+      "discount": "省 {percent}%",
+      "freeLabel": "免费",
+      "frequencies": {
+        "monthly": "月付",
+        "yearly": "年付",
+        "lifetime": "终身"
+      },
+      "cta": {
+        "subscribe": "立即订阅",
+        "getStarted": "开始使用"
+      },
+      "badge": {
+        "popular": "🔥 最受欢迎",
+        "bestValue": "最佳价值"
+      },
+      "billingNote": {
+        "flexibleCancelAnytime": "灵活订阅，可随时取消",
+        "billedAnnually": "按年计费",
+        "oneTimePurchase": "一次性购买"
+      },
+      "enterprise": {
+        "title": "企业版",
+        "price": "定制",
+        "description": "为企业客户量身打造",
+        "features": {
+          "first": "专属功能与集成支持",
+          "second": "企业级安全与合规",
+          "third": "专属客户成功与 SLA"
+        },
+        "cta": "联系销售"
+      },
+      "periods": {
+        "oneTime": "一次性",
+        "perYear": "每年",
+        "perMonth": "每月"
+      },
+      "trial": {
+        "newUserDays": "{days} 天试用（仅新用户）"
+      },
+      "plans": {
+        "free": {
+          "name": "免费版",
+          "description": "适合个人项目与试用。",
+          "features": ["基础功能", "社区支持", "单一工作区"]
+        },
+        "pro": {
+          "name": "专业版",
+          "description": "适合成长型团队的进阶需求。",
+          "features": ["包含免费版全部功能", "优先支持", "团队协作"]
+        },
+        "lifetime": {
+          "name": "终身版",
+          "description": "一次付费，长期使用。",
+          "features": ["包含专业版功能", "一次性付款", "终身更新"]
+        }
+      }
+    },
+    "footer": {
+      "description": "为你的创业项目或副业提供的一套组件集合。",
+      "copyright": "© {year} easystarter.dev. 保留所有权利。",
+      "social": {
+        "github": "GitHub",
+        "twitter": "Twitter"
+      },
+      "sections": {
+        "product": {
+          "title": "产品",
+          "links": {
+            "overview": "概览",
+            "pricing": "价格",
+            "marketplace": "市场",
+            "features": "功能"
+          }
+        },
+        "resources": {
+          "title": "资源",
+          "links": {
+            "privacy": "隐私",
+            "terms": "条款",
+            "about": "关于",
+            "blog": "博客"
+          }
+        }
+      }
+    }
+  },
+  "blog": {
+    "list": {
+      "title": "博客",
+      "description": "产品更新、实战经验与工程实践分享。",
+      "allCategories": "全部",
+      "selectCategory": "选择分类",
+      "empty": "当前分类下暂无文章。"
+    },
+    "detail": {
+      "backToBlog": "返回博客",
+      "onThisPage": "目录",
+      "readMore": "继续阅读",
+      "loading": "文章加载中..."
+    }
+  },
+  "auth": {
+    "email": "邮箱",
+    "phoneNumber": "手机号",
+    "password": "密码",
+    "verificationCode": "验证码",
+    "emailPasswordMode": "密码",
+    "emailOtpMode": "验证码",
+    "orContinueWith": "或通过以下方式继续",
+    "loginWithGithub": "使用 Github 登录",
+    "loginWithGoogle": "使用 Google 登录",
+    "enterEmail": "请输入邮箱",
+    "enterPhoneNumber": "请输入手机号",
+    "enterPassword": "请输入密码",
+    "enterVerificationCode": "请输入 6 位验证码",
+    "phoneNumberDescription": "请使用中国大陆手机号格式，例如 13800138000。",
+    "emailOtpDescription": "输入邮箱，我们将发送一次性验证码。",
+    "sendCode": "发送验证码",
+    "sendingCode": "发送中...",
+    "verifyCode": "验证并登录",
+    "verifyingCode": "验证中...",
+    "resendCode": "重新发送",
+    "resendCodeIn": "{seconds} 秒后重发",
+    "changePhoneNumber": "修改手机号",
+    "changeEmail": "修改邮箱",
+    "phoneCodeSent": "验证码已发送到 {phoneNumber}",
+    "emailCodeSent": "验证码已发送到 {email}",
+    "phoneOtpSentDescription": "我们已向 {phoneNumber} 发送验证码。",
+    "emailOtpSentDescription": "我们已向 {email} 发送验证码。",
+    "termsAgreement": "点击继续即表示您同意我们的<termsLink>服务条款</termsLink>和<privacyLink>隐私政策</privacyLink>。",
+    "termsOfService": "服务条款",
+    "privacyPolicy": "隐私政策",
+    "validation": {
+      "invalidEmail": "邮箱格式不正确",
+      "invalidPhone": "请输入有效的中国大陆手机号",
+      "invalidVerificationCode": "请输入 6 位验证码",
+      "passwordRequired": "请输入密码",
+      "nameMinLength": "姓名至少需要 2 个字符",
+      "passwordMinLength": "密码至少需要 8 个字符",
+      "passwordsNotMatch": "两次输入的密码不一致"
+    }
+  },
+  "signIn": {
+    "title": "欢迎回来",
+    "description": "使用邮箱和密码登录",
+    "phoneDescription": "使用手机号接收一次性验证码登录",
+    "emailOtpDescription": "使用邮箱接收一次性验证码",
+    "phoneOtpDescription": "请输入发送到你手机上的验证码",
+    "emailTab": "邮箱",
+    "phoneTab": "手机号",
+    "login": "登录",
+    "loggingIn": "登录中...",
+    "forgotPassword": "忘记密码？",
+    "noAccount": "还没有账号？",
+    "signUp": "注册",
+    "success": "登录成功"
+  },
+  "signUp": {
+    "title": "创建您的账号",
+    "description": "请输入邮箱以创建账号",
+    "name": "姓名",
+    "enterName": "请输入姓名",
+    "confirmPassword": "确认密码",
+    "confirmYourPassword": "请确认密码",
+    "emailDescription": "我们将通过此邮箱联系您，不会与他人分享。",
+    "passwordMinLength": "密码至少需要 8 个字符。",
+    "createAccount": "创建账号",
+    "hasAccount": "已有账号？",
+    "signIn": "登录",
+    "success": "注册成功",
+    "checkEmail": "请检查邮箱，我们已发送一封验证邮件。",
+    "checkEmailTitle": "请检查邮箱完成验证",
+    "checkEmailDescription": "我们已向 {email} 发送一封验证邮件，请点击邮件中的验证链接完成注册。",
+    "checkEmailHint": "如果没有看到邮件，请检查垃圾邮件文件夹，或稍后再试。",
+    "checkEmailAction": "知道了"
+  },
+  "forgotPassword": {
+    "title": "重置密码",
+    "description": "输入您的邮箱，我们将发送重置密码链接",
+    "sendResetLink": "发送重置链接",
+    "sendingResetLink": "发送中...",
+    "backToSignIn": "返回登录",
+    "success": "重置链接已发送到您的邮箱"
+  },
+  "resetPassword": {
+    "title": "重置密码",
+    "description": "请输入您的新密码",
+    "newPassword": "新密码",
+    "confirmPassword": "确认密码",
+    "confirmNewPassword": "请确认新密码",
+    "reset": "重置密码",
+    "resetting": "重置中...",
+    "backToSignIn": "返回登录",
+    "success": "密码重置成功",
+    "invalidToken": "重置链接无效或已过期"
+  },
+  "notFound": {
+    "title": "404",
+    "description": "您访问的页面不存在，可能已被移动或删除。",
+    "goHome": "返回首页",
+    "goBack": "返回上页"
+  },
+  "credits": {
+    "packages": {
+      "starter": {
+        "title": "入门积分包",
+        "description": "{count} 积分，适合轻量使用。"
+      },
+      "growth": {
+        "title": "成长积分包",
+        "description": "{count} 积分，适合更多工作流。"
+      }
+    }
+  },
+  "dashboard": {
+    "nav": {
+      "general": "常规",
+      "dashboard": "仪表盘",
+      "users": "用户管理",
+      "other": "其他",
+      "settings": "设置",
+      "profile": "个人资料",
+      "security": "安全",
+      "billing": "账单",
+      "credits": "积分专区",
+      "creditPurchase": "积分购买",
+      "creditTransactions": "积分流水",
+      "account": "账号设置",
+      "appearance": "外观",
+      "notifications": "通知",
+      "display": "显示",
+      "upgradeToPro": "升级到专业版",
+      "home": "首页",
+      "signOut": "退出登录",
+      "signOutDialog": {
+        "title": "退出登录",
+        "description": "确定要退出登录吗？您需要重新登录才能访问您的账号。",
+        "confirm": "退出登录"
+      }
+    },
+    "billing": {
+      "title": "账单",
+      "description": "管理订阅与支付方式。",
+      "currentPlan": "当前套餐",
+      "free": "免费",
+      "subscriptionSyncing": "订阅正在激活中，请稍候。",
+      "manageBilling": "管理账单",
+      "manageInStore": "前往应用商店管理",
+      "storeManagedMessage": "当前订阅仍由 App Store 或 Google Play 管理；如果改为网页购买，请到应用商店取消 App 端订阅以避免重复扣费。",
+      "storeManagedPlansDescription": "该订阅的变更或取消需要在应用商店中完成。",
+      "plansTitle": "可选套餐",
+      "plansDescription": "选择适合你的方案。",
+      "membershipTypes": {
+        "monthly": "月度会员",
+        "yearly": "年度会员",
+        "lifetime": "终身会员",
+        "subscription": "订阅会员"
+      },
+      "lifetimeLabel": "终身版",
+      "startCheckout": "去结算",
+      "currentPlanCta": "当前套餐",
+      "upgradeSubscription": "立即升级",
+      "alreadyLifetime": "已是终身会员",
+      "downgradeNotAllowed": "仅支持升级购买",
+      "checkoutError": "结算失败",
+      "portalError": "打开账单失败",
+      "upgradeError": "升级失败",
+      "upgradeSuccess": "订阅升级成功。",
+      "upgradeUnavailable": "暂不支持升级",
+      "noPlans": "暂无可用套餐。",
+      "checkoutDecisionErrors": {
+        "already_lifetime": "您已经是终身会员。",
+        "downgrade_or_same_tier": "当前会员仅支持升级购买。",
+        "subscription_upgrade": "可在当前页面直接升级订阅周期。",
+        "current_price": "这是您当前的套餐。",
+        "ok": "可以进行结算。",
+        "default": "此套餐暂不可购买。"
+      }
+    },
+    "credits": {
+      "title": "积分",
+      "description": "购买和查看账号积分，Web 与移动端共享。",
+      "purchaseTitle": "购买积分",
+      "purchaseDescription": "购买 Web 与移动端共享的积分包。",
+      "balanceLabel": "当前余额",
+      "balanceDescription": "购买的积分不会过期。赠送积分可能按账号规则过期。",
+      "expiringNotice": "{count} 积分将在 7 天内过期。",
+      "buy": "购买",
+      "checkoutError": "积分结算失败",
+      "orderCreditedToast": "{packageName} 积分已到账。",
+      "demoConsumeTitle": "模拟消耗",
+      "demoConsumeDescription": "在真实消耗场景接入前，先模拟扣减积分。",
+      "demoConsumeAmount": "消耗积分数量",
+      "demoConsume": "消耗积分",
+      "demoConsumeSuccess": "已消耗 {count} 积分。",
+      "demoConsumeError": "积分消耗失败",
+      "refresh": "刷新",
+      "transactionsTitle": "最近流水",
+      "transactionsPageTitle": "积分流水",
+      "transactionsDescription": "查看最近的积分余额变动。",
+      "loading": "加载中...",
+      "emptyPackages": "暂无可用积分包。",
+      "emptyTransactions": "暂无积分流水。",
+      "transactionColumns": {
+        "type": "类型",
+        "package": "积分包",
+        "source": "来源",
+        "amount": "数量",
+        "date": "时间"
+      },
+      "transactionSources": {
+        "system": "系统",
+        "app": "应用",
+        "admin": "管理员",
+        "web": "Web 端购买",
+        "native": "App 端购买"
+      },
+      "transactionFilters": {
+        "all": "全部",
+        "purchase": "购买",
+        "usage": "消耗"
+      },
+      "pagination": {
+        "rowsPerPage": "每页条数",
+        "total": "共 {total} 条",
+        "pageInfo": "第 {page} / {pageCount} 页",
+        "previous": "上一页",
+        "next": "下一页"
+      },
+      "transactions": {
+        "signupGrant": "注册赠送",
+        "purchase": "购买积分",
+        "refund": "退款",
+        "usage": "使用积分",
+        "expiration": "积分过期",
+        "adjustment": "积分调整"
+      }
+    },
+    "users": {
+      "title": "用户管理",
+      "description": "查看和管理已注册用户账号。",
+      "refresh": "刷新",
+      "table": {
+        "avatar": "头像",
+        "name": "姓名",
+        "email": "邮箱",
+        "contact": "联系方式",
+        "status": "状态",
+        "verified": "已验证",
+        "unverified": "未验证",
+        "searchPlaceholder": "搜索姓名或联系方式...",
+        "noResults": "无结果。"
+      },
+      "actions": {
+        "deleteSuccess": "用户删除成功",
+        "deleteError": "删除失败: {message}",
+        "openMenu": "打开菜单",
+        "edit": "编辑",
+        "deleting": "删除中...",
+        "delete": "删除"
+      },
+      "pagination": {
+        "rowsPerPage": "每页条数",
+        "total": "共 {total} 条",
+        "pageInfo": "第 {page} / {pageCount} 页",
+        "previous": "上一页",
+        "next": "下一页"
+      }
+    },
+    "sections": {
+      "totalRevenue": "总收入",
+      "newCustomers": "新客户",
+      "activeAccounts": "活跃账号",
+      "growthRate": "增长率",
+      "trendingUp": "本月呈上升趋势",
+      "trendingDown": "本周期下降 {percent}%",
+      "visitorsLast6Months": "过去 6 个月的访问者",
+      "acquisitionAttention": "客户获取需要关注",
+      "strongRetention": "用户留存率强劲",
+      "engagementExceed": "互动超出目标",
+      "steadyPerformance": "业绩稳步提升",
+      "meetsGrowth": "符合增长预测"
+    },
+    "settings": {
+      "profile": {
+        "title": "个人资料",
+        "description": "这是你在网站上的公开展示信息。",
+        "name": "姓名",
+        "namePlaceholder": "请输入姓名",
+        "nameDescription": "这是你的公开显示名称。可以是你的真实姓名或笔名。",
+        "nameMinLength": "姓名至少需要 2 个字符。",
+        "nameMaxLength": "姓名不多于需要 20 个字符。",
+        "email": "电子邮箱",
+        "emailDescription": "你的电子邮箱用于登录和接收通知。",
+        "phone": "手机号",
+        "phoneDescription": "已验证手机号可用于登录。",
+        "notLinked": "未绑定",
+        "avatar": "头像",
+        "avatarDescription": "这是你的个人资料照片。",
+        "changeAvatar": "更换头像",
+        "avatarUploading": "上传中...",
+        "avatarUploadSuccess": "头像更新成功",
+        "avatarUploadError": "头像上传失败",
+        "avatarInvalidType": "请上传有效的图片文件（JPEG、PNG、GIF 或 WebP）",
+        "avatarTooLarge": "图片过大，最大允许 5MB",
+        "save": "保存更改",
+        "saving": "保存中...",
+        "success": "个人资料更新成功。",
+        "error": "更新个人资料失败。"
+      }
+    },
+    "security": {
+      "title": "安全",
+      "description": "管理账户的密码设置。",
+      "socialDescription": "您的账户安全由社交登录提供商管理。",
+      "loading": "加载中...",
+      "loginMethods": {
+        "socialLogin": "社交登录",
+        "socialLoginActive": "您已通过社交账户登录",
+        "active": "已激活"
+      },
+      "security": {
+        "title": "安全状态",
+        "socialLoginSecurity": "您的账户由 {providers} 保护。这些平台使用行业标准的安全措施，包括双重身份验证。"
+      },
+      "password": {
+        "title": "密码",
+        "description": "设置或重置用于邮箱登录的密码。",
+        "hasPassword": "该账号已设置密码。",
+        "sendReset": "发送重置邮件",
+        "sendingReset": "发送中...",
+        "resetSent": "重置邮件已发送。",
+        "statusError": "无法加载密码状态。"
+      },
+      "phone": {
+        "title": "手机号登录",
+        "verified": "已验证",
+        "verifiedNumber": "已验证号码：{phoneNumber}"
+      }
+    },
+    "usersTable": {
+      "title": "用户管理",
+      "description": "使用 useDataTable 钩子和基于 URL 的状态管理的表格示例",
+      "filterPlaceholder": "筛选用户...",
+      "columns": "列",
+      "selectAll": "全选",
+      "selectRow": "选择行",
+      "name": "姓名",
+      "email": "邮箱",
+      "status": "状态",
+      "role": "角色",
+      "createdAt": "创建时间",
+      "actions": "操作",
+      "openMenu": "打开菜单",
+      "copyUserId": "复制用户ID",
+      "viewUser": "查看用户",
+      "editUser": "编辑用户",
+      "noResults": "无结果。",
+      "rowsSelected": "已选择 {selected} / {total} 行。",
+      "previous": "上一页",
+      "next": "下一页",
+      "statusOptions": {
+        "active": "活跃",
+        "inactive": "非活跃",
+        "pending": "待处理"
+      },
+      "roleOptions": {
+        "admin": "管理员",
+        "user": "用户",
+        "moderator": "版主"
+      }
+    },
+    "cards": {
+      "totalEarning": "总收入",
+      "comparisonText": "与去年相比 ($84,325)",
+      "menu": "菜单",
+      "menuActions": {
+        "share": "分享",
+        "update": "更新",
+        "refresh": "刷新"
+      }
+    },
+    "statistics": {
+      "shippedOrders": "已发货订单",
+      "damagedReturns": "损坏退货",
+      "missedDeliverySlots": "错过的配送时段",
+      "thanLastWeek": "比上周"
+    },
+    "productInsights": {
+      "title": "产品洞察",
+      "publishedOn": "发布于 2025年5月12日 - 下午6:10",
+      "productReached": "产品触达",
+      "orderPlaced": "订单下达",
+      "productAlt": "产品"
+    },
+    "salesMetrics": {
+      "title": "销售指标",
+      "companyName": "Sandy 公司",
+      "companyEmail": "sandy@company.com",
+      "salesTrend": "销售趋势",
+      "discountOffers": "折扣优惠",
+      "netProfit": "净利润",
+      "totalOrders": "总订单",
+      "revenueGoal": "收入目标",
+      "totalProfit": "总利润",
+      "planCompleted": "计划完成",
+      "salesPlan": "销售计划",
+      "percentageProfit": "总销售额的利润百分比",
+      "cohortAnalysis": "队列分析指标",
+      "cohortDescription": "分析在同一时间加入产品/服务的一组用户在特定时期内的行为。",
+      "openStatistics": "开放统计",
+      "percentageChange": "百分比变化",
+      "months": {
+        "january": "一月",
+        "february": "二月",
+        "march": "三月"
+      }
+    },
+    "chart": {
+      "totalVisitors": "总访客数",
+      "totalForLast3Months": "过去3个月的总数",
+      "last3Months": "过去3个月",
+      "last30Days": "过去30天",
+      "last7Days": "过去7天",
+      "selectValue": "选择一个值",
+      "visitors": "访客",
+      "desktop": "桌面端",
+      "mobile": "移动端"
+    }
+  },
+  "billingSuccess": {
+    "title": "支付成功",
+    "description": "感谢升级，我们会尽快更新你的权限。",
+    "syncingTitle": "正在确认订阅状态",
+    "syncingDescription": "激活完成后将自动跳转到账单页面。",
+    "goToBilling": "前往账单"
+  },
+  "billingCancel": {
+    "title": "支付已取消",
+    "description": "你可以随时重新发起结算。",
+    "backToBilling": "返回账单"
+  },
+  "seo": {
+    "home": {
+      "description": "EasyStarter 是一个现代全栈 TypeScript SaaS 模板，内置认证、支付、国际化与部署能力。"
+    },
+    "noIndex": {
+      "descriptionTemplate": "{page}页面属于站内流程页，已禁止搜索引擎收录。",
+      "pages": {
+        "auth": "认证",
+        "billing": "计费",
+        "dashboard": "仪表盘",
+        "notFound": "未找到"
+      }
+    }
+  },
+  "legal": {
+    "common": {
+      "lastUpdatedLabel": "最后更新",
+      "contactLabel": "联系方式",
+      "effectiveDate": "2026-02-20"
+    },
+    "privacy": {
+      "title": "隐私政策",
+      "description": "本隐私政策说明我们会收集哪些信息、如何使用这些信息，以及你在使用服务时拥有的选择权。",
+      "sections": {
+        "informationCollect": {
+          "title": "我们收集的信息",
+          "content": "我们可能收集账户信息、个人资料信息、使用数据，以及设备类型、浏览器和 IP 地址等技术信息。"
+        },
+        "howWeUse": {
+          "title": "信息的使用方式",
+          "content": "我们使用这些信息来提供和改进服务、进行身份验证、处理计费、发送通知以及防止滥用行为。"
+        },
+        "informationSharing": {
+          "title": "信息共享",
+          "content": "我们不会出售个人信息。仅在提供服务所必需的范围内，我们才会与受信任的处理方和合作伙伴共享数据。"
+        },
+        "dataRetention": {
+          "title": "数据保留",
+          "content": "我们会在提供服务、履行法律义务、解决争议和执行协议所需的期限内保留个人数据。"
+        },
+        "security": {
+          "title": "安全措施",
+          "content": "我们采取合理的技术与组织措施来保护数据安全，但任何系统都无法保证绝对安全。"
+        },
+        "cookies": {
+          "title": "Cookie 与类似技术",
+          "content": "我们使用 Cookie 与类似技术来维持登录状态、记住偏好、分析流量并改进产品表现。"
+        },
+        "yourRights": {
+          "title": "你的权利与选择",
+          "content": "根据你所在地区的适用法律，你可能有权请求访问、更正、删除、导出或限制处理你的个人信息。"
+        },
+        "contactUs": {
+          "title": "联系我们",
+          "content": "如果你对隐私有任何问题或请求，请通过 support@easystarter.dev 联系我们。"
+        }
+      }
+    },
+    "terms": {
+      "title": "服务条款",
+      "description": "本服务条款用于约束你对我们产品与服务的访问和使用。",
+      "sections": {
+        "accountResponsibilities": {
+          "title": "账户责任",
+          "content": "你有责任妥善保管账户安全，并对使用你的账户凭证发生的所有行为负责。"
+        },
+        "acceptableUse": {
+          "title": "可接受使用",
+          "content": "你同意不会滥用服务、干扰系统运行、违反法律法规或尝试未授权访问。"
+        },
+        "intellectualProperty": {
+          "title": "知识产权",
+          "content": "除另有说明外，服务中的内容、品牌和软件均受适用知识产权法律保护。"
+        },
+        "billingAndRefunds": {
+          "title": "计费与退款",
+          "content": "付费方案将按照你选择的周期计费。除法律另有要求外，计费周期开始后费用不予退还。"
+        },
+        "disclaimers": {
+          "title": "免责声明",
+          "content": "在法律允许的范围内，服务按“现状”与“可用”提供，不附带任何形式的明示或默示保证。"
+        },
+        "liabilityLimit": {
+          "title": "责任限制",
+          "content": "在法律允许的最大范围内，我们不对任何间接性、附带性或后果性损害承担责任。"
+        },
+        "termination": {
+          "title": "终止",
+          "content": "如果你严重违反本条款或以有害方式使用服务，我们可以暂停或终止你的访问权限。"
+        },
+        "changesToTerms": {
+          "title": "条款变更",
+          "content": "我们可能不时更新本条款。更新后继续使用服务即表示你接受修订后的条款。"
+        },
+        "contactUs": {
+          "title": "联系我们",
+          "content": "如果你对本条款有疑问，请联系 support@easystarter.dev。"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "easystarter-web",
+  "compatibility_date": "2025-09-02",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/react-start/server-entry",
+  "assets": {
+    "not_found_handling": "single-page-application",
+  },
+  "services": [
+    {
+      "binding": "API_SERVICE",
+      "service": "easystarter-server",
+    },
+  ],
+  "vars": {
+    "VITE_SERVER_URL": "https://server.easystarter.dev",
+    "VITE_APP_URL": "https://cf.easystarter.dev",
+    "VITE_GA_MEASUREMENT_ID": "G-SRZ5KLY3P9",
+    "VITE_OPENPANEL_CLIENT_ID": "affbe40d-1e4d-4f75-a01f-0887995a43b3",
+  },
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true,
+    },
+    "traces": {
+      "enabled": false,
+    },
+  },
+}

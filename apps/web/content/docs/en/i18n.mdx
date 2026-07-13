@@ -1,0 +1,126 @@
+---
+title: Internationalization
+description: Multi-language support with use-intl
+icon: Globe
+---
+
+## Overview
+
+EasyStarter supports multiple languages using **use-intl**:
+
+- English (en)
+- 中文 (zh)
+- 日本語 (jp)
+
+## Translation Files
+
+Translations are stored in `packages/i18n/src/locales/`:
+
+```
+packages/i18n/src/locales/
+├── en.json
+├── zh.json
+└── jp.json
+```
+
+### Example Translation File
+
+```json
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "loading": "Loading..."
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "email": "Email",
+    "password": "Password"
+  }
+}
+```
+
+## Usage in Components
+
+### Basic Usage
+
+```tsx
+import { useTranslations } from "use-intl";
+
+export function MyComponent() {
+  const t = useTranslations("common");
+
+  return <button>{t("save")}</button>;
+}
+```
+
+### With Parameters
+
+```tsx
+// Translation: "Hello, {name}!"
+{
+  t("greeting", { name: "John" });
+}
+
+// Translation: "You have {count, plural, one {# item} other {# items}}"
+{
+  t("itemCount", { count: 5 });
+}
+```
+
+### Nested Keys
+
+```tsx
+const t = useTranslations();
+
+// Access nested keys
+{
+  t("auth.signIn");
+}
+{
+  t("common.loading");
+}
+```
+
+## Language Switching
+
+```tsx
+import { useLocale } from "use-intl";
+import { useRouter } from "@tanstack/react-router";
+
+export function LanguageSwitcher() {
+  const locale = useLocale();
+  const router = useRouter();
+
+  const switchLocale = (newLocale: string) => {
+    router.navigate({
+      to: router.state.location.pathname,
+      search: { locale: newLocale },
+    });
+  };
+
+  return (
+    <select value={locale} onChange={(e) => switchLocale(e.target.value)}>
+      <option value="en">English</option>
+      <option value="zh">中文</option>
+      <option value="jp">日本語</option>
+    </select>
+  );
+}
+```
+
+## Adding a New Language
+
+1. Create translation file: `packages/i18n/src/locales/fr.json`
+2. Add to locale config in `packages/i18n/src/index.ts`
+3. Update language switcher component
+
+## Best Practices
+
+| Practice             | Description                                          |
+| -------------------- | ---------------------------------------------------- |
+| Use namespaces       | Group related translations (auth, common, dashboard) |
+| Keep keys consistent | Use the same key structure across all locales        |
+| Avoid hardcoding     | Never hardcode text in components                    |
+| Test all locales     | Verify translations render correctly                 |

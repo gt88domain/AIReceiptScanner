@@ -1,0 +1,435 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "done": "Done",
+    "close": "Close",
+    "modal": "Modal"
+  },
+  "locale": {
+    "switchLanguage": "Switch language"
+  },
+  "settings": {
+    "searchLanguages": "Search languages",
+    "language": "Language",
+    "theme": "Theme",
+    "account": "Account",
+    "unlockPremium": "Unlock Premium",
+    "unlockPremiumDescription": "Upgrade for analytics, branding, and priority support",
+    "security": "Security",
+    "deleteAccount": "Delete Account",
+    "preferences": "Preferences",
+    "support": "Support",
+    "about": "About",
+    "faq": "FAQ",
+    "privacyAndTerms": "Privacy & Terms",
+    "share": "Share",
+    "shareApp": "Share App",
+    "shareAppMessage": "Check out this awesome app! {{url}}",
+    "rateUs": "Rate Us",
+    "technicalSupport": "Technical Support",
+    "officialWebsite": "Official Website",
+    "followUs": "Follow Us",
+    "madeWithCare": "Made with care",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "privacyDescription": "Read the following to learn how we protect your privacy and rights.",
+    "themeAppearance": "Appearance",
+    "themeFamily": "Theme Family",
+    "themeSummary": "{{family}} · {{mode}}",
+    "themeOptions": {
+      "system": "Follow System",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "themeOptionDescriptions": {
+      "system": "Always match your device appearance.",
+      "light": "Always use the light appearance.",
+      "dark": "Always use the dark appearance."
+    },
+    "themeFamilyOptions": {
+      "alpha": "Alpha",
+      "lavender": "Lavender",
+      "mint": "Mint",
+      "sky": "Sky"
+    },
+    "themeFamilyDescriptions": {
+      "alpha": "Neutral minimal styling with stronger monochrome contrast.",
+      "lavender": "Soft lavender tones with a lighter, more atmospheric feel.",
+      "mint": "Fresh mint palette with more energy and clarity.",
+      "sky": "Clean sky blue tones with a calmer, cooler presentation."
+    }
+  },
+  "tabs": {
+    "home": "Home",
+    "profile": "Profile"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "signOutConfirmTitle": "Sign out?",
+    "signOutConfirmDescription": "You will need to sign in again to access your account.",
+    "email": "Email",
+    "phoneNumber": "Phone number",
+    "password": "Password",
+    "verificationCode": "Verification code",
+    "emailPasswordMode": "Password",
+    "emailOtpMode": "Code",
+    "name": "Name",
+    "signInTitle": "Welcome back",
+    "signInSubtitle": "Please sign in to continue",
+    "emailOtpDescription": "Enter your email and we'll send a one-time verification code.",
+    "emailOtpScreenDescription": "Enter the verification code we sent to your email.",
+    "phoneSignInDescription": "Use your phone number to receive a one-time verification code.",
+    "phoneOtpDescription": "Enter the verification code we sent to your phone.",
+    "signUpTitle": "Create account",
+    "signUpSubtitle": "Please sign up to continue",
+    "emailPlaceholder": "Enter your email",
+    "phoneNumberPlaceholder": "Enter your phone number",
+    "passwordPlaceholder": "Enter your password",
+    "verificationCodePlaceholder": "Enter the 6-digit code",
+    "createPasswordPlaceholder": "Create a password",
+    "namePlaceholder": "Enter your name",
+    "forgotPassword": "Forgot password?",
+    "forgotPasswordNotImplemented": "Forgot password is not implemented yet.",
+    "orContinueWith": "Or continue with",
+    "signInWithApple": "Sign in with Apple",
+    "signInWithGoogle": "Sign in with Google",
+    "emailTab": "Email",
+    "phoneTab": "Phone",
+    "noAccount": "Don't have an account?",
+    "alreadyHaveAccount": "Already have an account?",
+    "logIn": "Log in",
+    "signingIn": "Signing in...",
+    "signInSuccess": "Signed in successfully.",
+    "signingUp": "Signing up...",
+    "createAccount": "Create Account",
+    "checkEmail": "Please check your email, we have sent a verification email.",
+    "callbackCookieMissing": "Authentication cookie was not received.",
+    "callbackCookieInvalid": "Authentication cookie could not be parsed.",
+    "termsAgreement": "By signing up, you agree to our Terms of Service and Privacy Policy.",
+    "termsPrefix": "By signing up, you agree to our ",
+    "termsAndConditions": "Terms and Conditions",
+    "socialNotImplemented": "{{provider}} sign in is not implemented yet.",
+    "signOutConfirm": "Sign out?",
+    "signOutSuccess": "Signed out successfully",
+    "signOutError": "Failed to sign out",
+    "deleteAccountConfirm": "Delete account?",
+    "deleteAccountConfirmDescription": "Your account will be marked for deletion. You will be signed out and unable to sign in again.",
+    "deleteAccountSuccess": "Account deleted successfully",
+    "deleteAccountError": "Failed to delete account",
+    "phoneNumberDescription": "Use a mainland China phone number format, for example 13800138000.",
+    "sendCode": "Send Code",
+    "sendingCode": "Sending...",
+    "verifyCode": "Verify Code",
+    "verifyingCode": "Verifying...",
+    "resendCode": "Resend Code",
+    "resendCodeIn": "Resend in {{seconds}}s",
+    "changePhoneNumber": "Change Number",
+    "changeEmail": "Change Email",
+    "phoneCodeSent": "Verification code sent to {{phoneNumber}}",
+    "emailCodeSent": "Verification code sent to {{email}}",
+    "phoneOtpSentDescription": "We sent a verification code to {{phoneNumber}}.",
+    "emailOtpSentDescription": "We sent a verification code to {{email}}.",
+    "providers": {
+      "apple": "Apple",
+      "github": "GitHub",
+      "google": "Google"
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "invalidEmail": "Invalid email address",
+      "invalidPhone": "Enter a valid mainland China phone number",
+      "invalidVerificationCode": "Enter the 6-digit verification code",
+      "passwordRequired": "Password is required",
+      "passwordMinLength": "Must be at least {{min}} characters long"
+    }
+  },
+  "profile": {
+    "editProfile": "Edit Profile",
+    "fullName": "Full Name",
+    "email": "Email",
+    "phone": "Phone number",
+    "bio": "Bio",
+    "changeAvatar": "Tap to change your avatar",
+    "avatarUpdated": "Avatar updated successfully",
+    "avatarUploading": "Uploading avatar...",
+    "avatarUploadError": "Failed to upload avatar",
+    "avatarPermissionDenied": "Allow photo library access to update your avatar",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "profileUpdated": "Profile updated successfully",
+    "imagePickerNotImplemented": "Image picker not implemented yet",
+    "fullNamePlaceholder": "Enter your full name",
+    "emailPlaceholder": "Enter your email",
+    "notLinked": "Not linked",
+    "bioPlaceholder": "Tell us about yourself...",
+    "validation": {
+      "nameRequired": "Name is required"
+    }
+  },
+  "premium": {
+    "title": "Unlock Premium",
+    "subtitle": "Get the most out of your experience with premium features.",
+    "currentPlan": "CURRENT",
+    "banner": {
+      "subscribedTitle": "You're a Premium member",
+      "subscribedDescription": "You have access to all premium features. Thank you for your support!",
+      "membershipTitle": "{{plan}} Plan Active",
+      "membershipDescription": "All premium features are unlocked. You can upgrade your plan anytime.",
+      "unavailableTitle": "In-app purchases are unavailable",
+      "unavailableDescription": "This build is missing native purchase support, so subscriptions cannot be started or restored here yet."
+    },
+    "empty": {
+      "title": "No purchase plans are available",
+      "description": "RevenueCat is enabled, but this build did not receive any packages to purchase."
+    },
+    "actions": {
+      "restorePurchase": "Restore Purchase",
+      "upgradePlan": "Upgrade Plan",
+      "unlockLifetime": "Unlock Lifetime",
+      "startTrialAndSubscribe": "Subscribe Now",
+      "currentPlan": "Current Plan",
+      "alreadyLifetime": "Lifetime Already Active",
+      "downgradeNotAllowed": "Only Upgrades Allowed",
+      "lifetimeNote": "One-time purchase for permanent premium access.",
+      "upgradeNote": "Your membership will be upgraded after purchase.",
+      "subscriptionNote": "By subscribing, you agree to our terms. Subscription auto-renews until cancelled.",
+      "syncing": "Purchase succeeded locally. Syncing membership with server...",
+      "purchasing": "Purchasing...",
+      "termsOfService": "Terms",
+      "privacyPolicy": "Privacy"
+    },
+    "feedback": {
+      "purchaseCancelled": "Purchase was cancelled",
+      "welcome": "Welcome to Premium!",
+      "purchaseFailed": "Purchase failed. Please try again.",
+      "restoreSuccess": "Purchases restored successfully",
+      "restoreFailed": "Could not restore purchases"
+    },
+    "hud": {
+      "title": "Starting your purchase",
+      "description": "Complete the confirmation in the system purchase sheet.",
+      "processingTitle": "Processing payment",
+      "processingDescription": "Please wait while we complete your purchase.",
+      "syncingTitle": "Activating your membership",
+      "syncingDescription": "Syncing your premium status with the server."
+    }
+  },
+  "credits": {
+    "title": "Credits",
+    "settingsDescription": "View balance, buy credits, and review activity",
+    "balanceLabel": "Current balance",
+    "balanceDescription": "Purchased credits do not expire. Free credits may expire based on account rules.",
+    "expiringNotice": "{{count}} credits expire within 7 days.",
+    "signInTitle": "Sign in to use credits",
+    "signInDescription": "Credits are tied to your account and sync across devices.",
+    "packagesTitle": "Buy credits",
+    "demoConsumeTitle": "Demo usage",
+    "demoConsumeDescription": "Simulate credit spending before real usage flows are connected.",
+    "demoConsumeAmount": "Credits to use",
+    "ordersTitle": "Purchase orders",
+    "transactionsTitle": "Recent activity",
+    "transactionsPageTitle": "Credit activity",
+    "loading": "Loading...",
+    "emptyPackages": "No credit packages are available.",
+    "emptyOrders": "No credit orders yet.",
+    "emptyTransactions": "No credit activity yet.",
+    "packages": {
+      "starter": {
+        "title": "Starter Credits",
+        "description": "{{count}} credits for light usage."
+      },
+      "growth": {
+        "title": "Growth Credits",
+        "description": "{{count}} credits for larger workflows."
+      }
+    },
+    "actions": {
+      "buy": "Buy",
+      "demoConsume": "Use credits",
+      "processing": "Processing..."
+    },
+    "feedback": {
+      "unavailable": "In-app credit purchases are unavailable in this build.",
+      "demoConsumeSuccess": "{{count}} credits used.",
+      "demoConsumeError": "Credit usage failed",
+      "purchaseCancelled": "Purchase was cancelled",
+      "purchaseFailed": "Purchase failed. Please try again.",
+      "purchaseSynced": "Credits added to your account.",
+      "purchasePending": "Purchase succeeded. Credits are syncing with the server."
+    },
+    "hud": {
+      "processingTitle": "Processing payment",
+      "processingDescription": "Please wait while the store completes your purchase.",
+      "syncingTitle": "Syncing credits",
+      "syncingDescription": "Waiting for the server to confirm your purchase."
+    },
+    "orderStatuses": {
+      "pending": "Pending",
+      "completed": "Completed",
+      "failed": "Failed",
+      "expired": "Expired",
+      "refunded": "Refunded"
+    },
+    "transactionSources": {
+      "system": "System",
+      "app": "App",
+      "admin": "Admin",
+      "web": "Web purchase",
+      "native": "In-app purchase"
+    },
+    "transactionFilters": {
+      "all": "All",
+      "purchase": "Purchases",
+      "usage": "Spending"
+    },
+    "transactions": {
+      "signupGrant": "Signup grant",
+      "purchase": "Credit purchase",
+      "refund": "Refund",
+      "usage": "Usage",
+      "expiration": "Expired credits",
+      "adjustment": "Adjustment"
+    }
+  },
+  "pricing": {
+    "title": "Pricing",
+    "subtitle": "Choose the best plan for your needs",
+    "freeLabel": "Free",
+    "frequencies": {
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "lifetime": "Lifetime"
+    },
+    "cta": {
+      "subscribe": "Subscribe",
+      "getStarted": "Get started"
+    },
+    "badge": {
+      "bestValue": "BEST VALUE"
+    },
+    "billingNote": {
+      "flexibleCancelAnytime": "Flexible, cancel anytime",
+      "billedAnnually": "Billed annually",
+      "oneTimePurchase": "One-time purchase"
+    },
+    "periods": {
+      "oneTime": "One-time",
+      "perYear": "Per year",
+      "perMonth": "Per month"
+    },
+    "trial": {
+      "newUserDays": "{days}-day free trial (new users only)"
+    },
+    "plans": {
+      "free": {
+        "name": "Free",
+        "features": ["Basic access", "Community support", "Single workspace"]
+      },
+      "pro": {
+        "name": "Pro",
+        "features": ["Everything in Free", "Priority support", "Team collaboration"]
+      },
+      "lifetime": {
+        "name": "Lifetime",
+        "features": ["All Pro features", "One-time payment", "Lifetime updates"]
+      }
+    }
+  },
+  "faq": {
+    "questions": {
+      "upgradePremium": "How do I upgrade to Premium?",
+      "upgradePremiumAnswer": "Go to Profile → Unlock Premium, choose a plan that suits you. Monthly, yearly, and lifetime options are available.",
+      "restorePurchase": "How do I restore my purchase?",
+      "restorePurchaseAnswer": "Go to the Unlock Premium page and tap \"Restore Purchase\" at the bottom. Your purchase history will sync automatically.",
+      "editProfile": "How do I edit my profile?",
+      "editProfileAnswer": "Tap the avatar area at the top of your profile to enter the edit page, where you can update your avatar, name, and more.",
+      "switchLanguageTheme": "How do I switch language or theme?",
+      "switchLanguageThemeAnswer": "Go to Profile → Preferences to switch language and theme. Supports English, Chinese, Japanese, and light, dark, or system theme modes.",
+      "contactSupport": "How do I contact support?",
+      "contactSupportAnswer": "If you encounter any issues, please email {{email}} and we'll get back to you as soon as possible."
+    }
+  },
+  "forgotPassword": {
+    "title": "Forgot Password?",
+    "description": "Enter your email address to receive a password\nreset link.",
+    "sendLink": "Send Link",
+    "sending": "Sending...",
+    "backToLogIn": "Back to Log In",
+    "success": "Reset link sent to your email"
+  },
+  "security": {
+    "description": "Manage how you sign in to your account.",
+    "socialDescription": "Your account currently signs in through a connected provider.",
+    "loading": "Loading your security settings...",
+    "statusError": "Could not load your security settings.",
+    "loginMethods": {
+      "socialLogin": "social login",
+      "socialLoginActive": "Your linked provider is active",
+      "active": "Active"
+    },
+    "password": {
+      "title": "Password",
+      "description": "Send yourself a password reset link to update your password.",
+      "hasPassword": "A password is already set for this account.",
+      "sendReset": "Send reset link",
+      "sendingReset": "Sending reset link...",
+      "resetSent": "Password reset email sent."
+    },
+    "socialAccount": {
+      "title": "Connected providers",
+      "description": "This account uses {{providers}} to sign in."
+    },
+    "socialLoginSecurity": "Your account is secured by {{providers}}. Use that provider to manage account security settings.",
+    "phone": {
+      "title": "Phone sign-in",
+      "verified": "Verified",
+      "verifiedNumber": "Verified number: {{phoneNumber}}",
+      "passwordEnabledTitle": "Password is also enabled",
+      "passwordEnabledDescription": "This phone-only account already has a password set. You can continue signing in with SMS codes, and email reset remains unavailable.",
+      "otpOnlyTitle": "OTP-only sign-in",
+      "otpOnlyDescription": "This phone-only account signs in with SMS verification codes. Email reset is unavailable until a real email is linked."
+    }
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "next": "Next",
+    "getStarted": "Get Started",
+    "page1": {
+      "title": "Welcome",
+      "description": "Your all-in-one platform for building, launching, and scaling your ideas."
+    },
+    "page2": {
+      "title": "Seamless Experience",
+      "description": "Beautiful design, blazing performance, and smooth interactions across every device."
+    },
+    "page3": {
+      "title": "Ready to Go",
+      "description": "Sign up in seconds and start building something great today."
+    }
+  },
+  "resetPassword": {
+    "title": "Reset password",
+    "description": "Enter a new password for your account.",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "confirmNewPassword": "Confirm your new password",
+    "reset": "Reset password",
+    "resetting": "Resetting password...",
+    "success": "Password reset successfully.",
+    "invalidToken": "This reset link is invalid or has expired.",
+    "invalidTokenDescription": "Request a new reset email and use the latest link.",
+    "requestNewLink": "Request a new link",
+    "backToSecurity": "Back to security",
+    "backToSignIn": "Back to sign in",
+    "passwordsNotMatch": "Passwords do not match"
+  }
+}

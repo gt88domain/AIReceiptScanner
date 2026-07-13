@@ -1,0 +1,79 @@
+{
+  "expo": {
+    "name": "EasyStarterNative",
+    "slug": "easystarter-native",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "easystarter-native",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "appleTeamId": "8622M955TV",
+      "buildNumber": "1.0.0",
+      "bundleIdentifier": "native.easystarter.dev",
+      "deploymentTarget": "16.4",
+      "usesAppleSignIn": true,
+      "icon": {
+        "dark": "./assets/images/icon.png",
+        "light": "./assets/images/icon.png"
+      },
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "xnative.easystarter.dev"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ],
+      "expo-image",
+      "expo-apple-authentication",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos so you can update your profile picture."
+        }
+      ],
+      "expo-web-browser",
+      "expo-localization",
+      "expo-secure-store",
+      "expo-font",
+      "expo-status-bar"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a96a5332-a517-4a91-bfce-06c3af159735"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/a96a5332-a517-4a91-bfce-06c3af159735"
+    }
+  }
+}

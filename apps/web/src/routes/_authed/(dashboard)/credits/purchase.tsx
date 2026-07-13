@@ -1,0 +1,248 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { formatCurrency } from "@repo/shared";
+import { createFileRoute } from "@tanstack/react-router";
+import { CoinsIcon, Loader2Icon, ZapIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { AnimatedNumberText } from "@/components/ui/animated-number-text";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  useCreditBalanceQuery,
+  useCreditOrdersQuery,
+  useCreditPackagesQuery,
+} from "@/hooks/use-credits";
+import { useTranslations } from "@/i18n";
+import { orpc } from "@/utils/orpc";
+
+const PENDING_CREDIT_ORDER_STORAGE_KEY = "credits.pendingOrderId";
+
+export const Route = createFileRoute("/_authed/(dashboard)/credits/purchase")({
+  component: RouteComponent,
+});
+
+function getCreditReturnUrl() {
+  const url = new URL(window.location.href);
+  url.search = "";
+  url.hash = "";
+  return url.toString();
+}
+
+function RouteComponent() {
+  const t = useTranslations("dashboard.credits");
+  const tRoot = useTranslations();
+  const queryClient = useQueryClient();
+  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
+  const [consumeAmount, setConsumeAmount] = useState("1");
+  const creditPackagesQuery = useCreditPackagesQuery();
+  const creditBalanceQuery = useCreditBalanceQuery();
+  const creditOrdersQuery = useCreditOrdersQuery(Boolean(pendingOrderId));
+  const creditOrders = creditOrdersQuery.data?.data;
+  const consumeAmountValue = Number(consumeAmount);
+  const canConsumeCredits = Number.isInteger(consumeAmountValue) && consumeAmountValue > 0;
+
+  const createCreditCheckout = useMutation({
+    ...orpc.web.credits.createCheckoutSession.mutationOptions(),
+    onSuccess: ({ url, orderId }) => {
+      window.sessionStorage.setItem(PENDING_CREDIT_ORDER_STORAGE_KEY, orderId);
+      setPendingOrderId(orderId);
+      window.location.href = url;
+    },
+    onError: (error: Error) => {
+      toast.error(`${t("checkoutError")}: ${error.message}`);
+    },
+  });
+
+  const consumeCredits = useMutation({
+    ...orpc.credits.consume.mutationOptions(),
+    onSuccess: async (_balance, variables) => {
+      await creditBalanceQuery.refetch();
+      await queryClient.invalidateQueries({ queryKey: ["credits", "transactions"] });
+      toast.success(
+        t("demoConsumeSuccess", {
+          count: variables.amount,
+        }),
+      );
+    },
+    onError: (error: Error) => {
+      toast.error(`${t("demoConsumeError")}: ${error.message}`);
+    },
+  });
+
+  useEffect(() => {
+    setPendingOrderId(window.sessionStorage.getItem(PENDING_CREDIT_ORDER_STORAGE_KEY));
+  }, []);
+
+  useEffect(() => {
+    if (!pendingOrderId) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      void creditBalanceQuery.refetch();
+      void creditOrdersQuery.refetch();
+    }, 5000);
+
+    return () => window.clearInterval(intervalId);
+  }, [creditBalanceQuery.refetch, creditOrdersQuery.refetch, pendingOrderId]);
+
+  useEffect(() => {
+    if (!pendingOrderId || !creditOrdersQuery.data) {
+      return;
+    }
+
+    const order = creditOrders?.find((item) => item.id === pendingOrderId);
+    if (!order || order.status === "pending") {
+      return;
+    }
+
+    window.sessionStorage.removeItem(PENDING_CREDIT_ORDER_STORAGE_KEY);
+    setPendingOrderId(null);
+
+    if (order.credited) {
+      void creditBalanceQuery.refetch();
+      toast.success(
+        t("orderCreditedToast", {
+          packageName: tRoot(`credits.packages.${order.packageId}.title`),
+        }),
+      );
+    }
+  }, [creditBalanceQuery.refetch, creditOrders, pendingOrderId, t, tRoot]);
+
+  const handleCreditCheckout = (packageId: string) => {
+    createCreditCheckout.mutate({
+      packageId,
+      returnUrl: getCreditReturnUrl(),
+    });
+  };
+
+  const handleDemoConsume = () => {
+    if (!canConsumeCredits) {
+      return;
+    }
+
+    consumeCredits.mutate({
+      amount: consumeAmountValue,
+      idempotencyKey: `demo-credit-consume-${crypto.randomUUID()}`,
+      metadata: {
+        reason: "demo",
+        source: "credits_purchase_page",
+      },
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CoinsIcon className="size-5" />
+            {t("purchaseTitle")}
+          </CardTitle>
+          <CardDescription>{t("purchaseDescription")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+            <div className="rounded-lg border bg-muted/20 p-4">
+              <p className="text-sm text-muted-foreground">{t("balanceLabel")}</p>
+              {creditBalanceQuery.isLoading ? (
+                <Skeleton className="mt-3 h-10 w-24" />
+              ) : (
+                <AnimatedNumberText
+                  value={creditBalanceQuery.data?.balance ?? 0}
+                  className="mt-2 block text-4xl font-semibold"
+                />
+              )}
+              {creditBalanceQuery.data?.expiringCredits ? (
+                <p className="mt-3 text-sm text-amber-600">
+                  {t("expiringNotice", {
+                    count: creditBalanceQuery.data.expiringCredits,
+                  })}
+                </p>
+              ) : (
+                <p className="mt-3 text-sm text-muted-foreground">{t("balanceDescription")}</p>
+              )}
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              {creditPackagesQuery.isLoading ? (
+                <>
+                  <Skeleton className="h-32 rounded-lg" />
+                  <Skeleton className="h-32 rounded-lg" />
+                </>
+              ) : creditPackagesQuery.data?.length ? (
+                creditPackagesQuery.data.map((item) => (
+                  <div key={item.id} className="rounded-lg border p-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="font-medium">{tRoot(`credits.packages.${item.id}.title`)}</p>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {tRoot(`credits.packages.${item.id}.description`, {
+                            count: item.amount,
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-4 flex items-center justify-between gap-3">
+                      <p className="text-sm text-muted-foreground">
+                        {formatCurrency(item.amountCents, item.currency)}
+                      </p>
+                      <Button
+                        size="sm"
+                        disabled={createCreditCheckout.isPending}
+                        onClick={() => handleCreditCheckout(item.id)}
+                      >
+                        {createCreditCheckout.isPending ? (
+                          <Loader2Icon className="mr-2 size-4 animate-spin" />
+                        ) : null}
+                        {t("buy")}
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">{t("emptyPackages")}</p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ZapIcon className="size-5" />
+            {t("demoConsumeTitle")}
+          </CardTitle>
+          <CardDescription>{t("demoConsumeDescription")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex max-w-md gap-2">
+            <Input
+              type="number"
+              min={1}
+              step={1}
+              inputMode="numeric"
+              value={consumeAmount}
+              aria-label={t("demoConsumeAmount")}
+              onChange={(event) => setConsumeAmount(event.target.value)}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              disabled={!canConsumeCredits || consumeCredits.isPending}
+              onClick={handleDemoConsume}
+            >
+              {consumeCredits.isPending ? (
+                <Loader2Icon className="mr-2 size-4 animate-spin" />
+              ) : null}
+              {t("demoConsume")}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

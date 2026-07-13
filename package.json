@@ -1,0 +1,64 @@
+{
+  "name": "easystarter",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "type": "module",
+  "scripts": {
+    "lint": "turbo -F web -F server -F native lint",
+    "lint:fix": "turbo -F web -F server -F native lint:fix",
+    "fmt": "turbo -F web -F server -F native fmt",
+    "fmt:check": "turbo -F web -F server -F native fmt:check",
+    "ruler:apply": "pnpm dlx @intellectronica/ruler@latest apply --local-only",
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "check-types": "turbo check-types",
+    "dev:native": "turbo -F native dev",
+    "dev:web": "turbo -F web dev",
+    "dev:server": "turbo -F server dev",
+    "dev:ios-device": "turbo -F native dev:ios-device",
+    "dev:android-device": "turbo -F native dev:android-device",
+    "dev:ios-device+server": "turbo run dev:ios-device --filter=native --filter=server --parallel",
+    "dev:android-device+server": "turbo run dev:android-device --filter=native --filter=server --parallel",
+    "dev:web+server": "turbo -F web -F server dev",
+    "dev:native+server": "turbo run dev --filter=native --filter=server --parallel",
+    "db:push": "turbo -F server db:push",
+    "db:studio": "turbo -F server db:studio",
+    "db:studio:local": "turbo -F server db:studio:local",
+    "db:generate": "turbo -F server db:generate",
+    "db:migrate": "turbo -F server db:migrate",
+    "db:migrate:local": "turbo -F server db:migrate:local",
+    "deploy:web": "turbo -F web deploy",
+    "deploy:server": "turbo -F server deploy",
+    "deploy": "pnpm deploy:server && pnpm deploy:web",
+    "husky:install": "husky install",
+    "commit": "git add . && npx cz && git push",
+    "clean": "rm -rf node_modules apps/*/node_modules packages/*/node_modules .turbo apps/*/.turbo && pnpm store prune"
+  },
+  "devDependencies": {
+    "cz-conventional-changelog": "^3.3.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.2",
+    "oxfmt": "^0.35.0",
+    "oxlint": "^1.50.0",
+    "turbo": "^2.8.3"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs,cjs}": "pnpm run lint"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog",
+      "maxHeaderWidth": 0,
+      "maxLineWidth": 0
+    }
+  },
+  "packageManager": "pnpm@10.17.1",
+  "pnpm": {
+    "overrides": {
+      "esm-env": "npm:esm-env-runtime@^0.1.1"
+    }
+  }
+}

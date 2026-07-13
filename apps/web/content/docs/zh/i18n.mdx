@@ -1,0 +1,126 @@
+---
+title: 国际化
+description: 使用 use-intl 支持多语言
+icon: Globe
+---
+
+## 概述
+
+EasyStarter 使用 **use-intl** 支持多种语言：
+
+- English (en)
+- 中文 (zh)
+- 日本語 (jp)
+
+## 翻译文件
+
+翻译存储在 `packages/i18n/src/locales/`：
+
+```
+packages/i18n/src/locales/
+├── en.json
+├── zh.json
+└── jp.json
+```
+
+### 示例翻译文件
+
+```json
+{
+  "common": {
+    "save": "保存",
+    "cancel": "取消",
+    "loading": "加载中..."
+  },
+  "auth": {
+    "signIn": "登录",
+    "signOut": "登出",
+    "email": "邮箱",
+    "password": "密码"
+  }
+}
+```
+
+## 在组件中使用
+
+### 基本用法
+
+```tsx
+import { useTranslations } from "use-intl";
+
+export function MyComponent() {
+  const t = useTranslations("common");
+
+  return <button>{t("save")}</button>;
+}
+```
+
+### 带参数
+
+```tsx
+// 翻译：「你好，{name}！」
+{
+  t("greeting", { name: "张三" });
+}
+
+// 翻译：「你有 {count} 个项目」（复数形式）
+{
+  t("itemCount", { count: 5 });
+}
+```
+
+### 嵌套键
+
+```tsx
+const t = useTranslations();
+
+// 访问嵌套键
+{
+  t("auth.signIn");
+}
+{
+  t("common.loading");
+}
+```
+
+## 切换语言
+
+```tsx
+import { useLocale } from "use-intl";
+import { useRouter } from "@tanstack/react-router";
+
+export function LanguageSwitcher() {
+  const locale = useLocale();
+  const router = useRouter();
+
+  const switchLocale = (newLocale: string) => {
+    router.navigate({
+      to: router.state.location.pathname,
+      search: { locale: newLocale },
+    });
+  };
+
+  return (
+    <select value={locale} onChange={(e) => switchLocale(e.target.value)}>
+      <option value="en">English</option>
+      <option value="zh">中文</option>
+      <option value="jp">日本語</option>
+    </select>
+  );
+}
+```
+
+## 添加新语言
+
+1. 创建翻译文件：`packages/i18n/src/locales/fr.json`
+2. 在 `packages/i18n/src/index.ts` 中添加到语言配置
+3. 更新语言切换组件
+
+## 最佳实践
+
+| 实践         | 说明                                      |
+| ------------ | ----------------------------------------- |
+| 使用命名空间 | 将相关翻译分组（auth、common、dashboard） |
+| 保持键一致   | 在所有语言中使用相同的键结构              |
+| 避免硬编码   | 永远不要在组件中硬编码文本                |
+| 测试所有语言 | 验证翻译是否正确渲染                      |

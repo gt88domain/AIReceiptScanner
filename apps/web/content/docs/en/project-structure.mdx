@@ -1,0 +1,118 @@
+---
+title: Project Structure
+description: Monorepo architecture overview
+icon: FolderTree
+---
+
+## Overview
+
+EasyStarter uses a **Turborepo** monorepo structure with **pnpm workspaces**.
+
+## Directory Structure
+
+```
+easysaas/
+├── apps/
+│   ├── web/           # Frontend (React + TanStack Start)
+│   ├── server/        # Backend (Hono + Cloudflare Workers)
+│   ├── native/        # Mobile (React Native + Expo)
+├── packages/
+│   ├── i18n/          # Shared internationalization
+│   ├── api-client/    # Type-safe API client
+│   └── storage-config/ # Storage configuration
+└── docs/              # Documentation
+```
+
+## Apps
+
+### Web (`apps/web/`)
+
+Frontend application built with:
+
+- **React 19** - UI library
+- **TanStack Start** - Full-stack React framework
+- **TanStack Router** - Type-safe routing
+- **TanStack Query** - Data fetching
+- **TailwindCSS** - Styling
+- **shadcn/ui** - Component library
+
+```
+apps/web/src/
+├── components/    # Reusable UI components
+├── routes/        # Page components and routing
+├── hooks/         # Custom React hooks
+├── lib/           # Utility functions
+├── configs/       # App configuration
+└── styles/        # Global styles
+```
+
+### Server (`apps/server/`)
+
+Backend API built with:
+
+- **Hono** - Web framework
+- **Cloudflare Workers** - Serverless runtime
+- **Drizzle ORM** - Database toolkit
+- **oRPC** - Type-safe RPC
+
+```
+apps/server/src/
+├── routers/       # API routers (oRPC)
+├── handlers/      # Business logic
+├── db/            # Database schema and migrations
+├── middlewares/   # Request middlewares
+├── emails/        # Email templates
+└── lib/           # Shared utilities
+```
+
+### Native (`apps/native/`)
+
+Mobile app built with:
+
+- **React Native** - Cross-platform mobile
+- **Expo** - Development platform
+- **Expo Router** - File-based routing
+
+## Packages
+
+### i18n (`packages/i18n/`)
+
+Shared internationalization package with translations for all supported locales.
+
+### api-client (`packages/api-client/`)
+
+Type-safe API client generated from server types.
+
+### storage-config (`packages/storage-config/`)
+
+Shared storage configuration and utilities.
+
+## Key Files
+
+| File                  | Purpose                          |
+| --------------------- | -------------------------------- |
+| `turbo.json`          | Turborepo pipeline configuration |
+| `pnpm-workspace.yaml` | Workspace package definitions    |
+| `.oxlintrc.json`      | Linting rules (`oxlint`)         |
+| `.oxfmtrc.json`       | Formatting rules (`oxfmt`)       |
+| `tsconfig.json`       | TypeScript configuration         |
+
+## Development Workflow
+
+```bash
+# Install dependencies
+pnpm install
+
+# Start all apps
+pnpm dev
+
+# Start specific app
+pnpm dev:web
+pnpm dev:server
+
+# Build all
+pnpm build
+
+# Type checking
+pnpm check-types
+```

@@ -1,0 +1,114 @@
+---
+title: 部署指南
+description: 部署到 Cloudflare Workers 和 Pages
+icon: Rocket
+---
+
+## 概述
+
+EasyStarter 针对 **Cloudflare** 部署进行了优化：
+
+- **Web**: Cloudflare Pages
+- **Server**: Cloudflare Workers
+
+## 前置条件
+
+1. [Cloudflare 账户](https://dash.cloudflare.com/sign-up)
+2. 配置好的 [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/install-and-update/)
+3. 已创建的 D1 数据库
+
+## 快速部署
+
+```bash
+# 同时部署 web 和 server
+pnpm run deploy
+
+# 单独部署
+pnpm deploy:web
+pnpm deploy:server
+```
+
+## 首次部署
+
+### 1. 初始部署
+
+```bash
+pnpm run deploy
+```
+
+这将输出你的生产环境 URL：
+
+- Web: `https://your-app.pages.dev`
+- Server: `https://your-api.workers.dev`
+
+### 2. 更新配置
+
+**Server** (`apps/server/wrangler.jsonc`)：
+
+```jsonc
+{
+  "vars": {
+    "WEBSITE_URL": "https://your-app.pages.dev",
+    "SERVER_URL": "https://your-api.workers.dev",
+  },
+}
+```
+
+**Web** (`apps/web/.env.production`)：
+
+```bash
+VITE_SERVER_URL=https://your-api.workers.dev
+VITE_APP_URL=https://your-app.pages.dev
+```
+
+### 3. 重新部署
+
+```bash
+pnpm run deploy
+```
+
+## 环境变量
+
+### Server 密钥
+
+使用 Wrangler 设置密钥：
+
+```bash
+cd apps/server
+
+# 认证
+npx wrangler secret put AUTH_SECRET
+
+# OAuth
+npx wrangler secret put GITHUB_CLIENT_ID
+npx wrangler secret put GITHUB_CLIENT_SECRET
+npx wrangler secret put GOOGLE_CLIENT_ID
+npx wrangler secret put GOOGLE_CLIENT_SECRET
+
+# 邮件
+npx wrangler secret put RESEND_API_KEY
+```
+
+## 数据库迁移
+
+在生产环境 D1 上运行迁移：
+
+```bash
+cd apps/server
+pnpm db:migrate --remote
+```
+
+## 自定义域名
+
+1. 前往 Cloudflare Dashboard → Pages → 你的项目
+2. 导航到「自定义域」
+3. 添加你的域名
+4. 按照指示更新 DNS 记录
+
+## 常见问题
+
+| 问题       | 解决方案                           |
+| ---------- | ---------------------------------- |
+| CORS 错误  | 检查 server 配置中的 `WEBSITE_URL` |
+| 认证不工作 | 确认 `AUTH_SECRET` 已设置          |
+| 数据库错误 | 运行 `db:migrate --remote`         |

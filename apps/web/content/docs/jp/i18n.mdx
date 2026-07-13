@@ -1,0 +1,126 @@
+---
+title: 国際化
+description: use-intl を使用した多言語サポート
+icon: Globe
+---
+
+## 概要
+
+EasyStarter は **use-intl** を使用して複数の言語をサポート：
+
+- English (en)
+- 中文 (zh)
+- 日本語 (jp)
+
+## 翻訳ファイル
+
+翻訳は `packages/i18n/src/locales/` に保存：
+
+```
+packages/i18n/src/locales/
+├── en.json
+├── zh.json
+└── jp.json
+```
+
+### 翻訳ファイルの例
+
+```json
+{
+  "common": {
+    "save": "保存",
+    "cancel": "キャンセル",
+    "loading": "読み込み中..."
+  },
+  "auth": {
+    "signIn": "サインイン",
+    "signOut": "サインアウト",
+    "email": "メール",
+    "password": "パスワード"
+  }
+}
+```
+
+## コンポーネントでの使用
+
+### 基本的な使用法
+
+```tsx
+import { useTranslations } from "use-intl";
+
+export function MyComponent() {
+  const t = useTranslations("common");
+
+  return <button>{t("save")}</button>;
+}
+```
+
+### パラメータ付き
+
+```tsx
+// 翻訳：「こんにちは、{name}さん！」
+{
+  t("greeting", { name: "太郎" });
+}
+
+// 翻訳：「{count}個のアイテムがあります」（複数形）
+{
+  t("itemCount", { count: 5 });
+}
+```
+
+### ネストされたキー
+
+```tsx
+const t = useTranslations();
+
+// ネストされたキーにアクセス
+{
+  t("auth.signIn");
+}
+{
+  t("common.loading");
+}
+```
+
+## 言語の切り替え
+
+```tsx
+import { useLocale } from "use-intl";
+import { useRouter } from "@tanstack/react-router";
+
+export function LanguageSwitcher() {
+  const locale = useLocale();
+  const router = useRouter();
+
+  const switchLocale = (newLocale: string) => {
+    router.navigate({
+      to: router.state.location.pathname,
+      search: { locale: newLocale },
+    });
+  };
+
+  return (
+    <select value={locale} onChange={(e) => switchLocale(e.target.value)}>
+      <option value="en">English</option>
+      <option value="zh">中文</option>
+      <option value="jp">日本語</option>
+    </select>
+  );
+}
+```
+
+## 新しい言語の追加
+
+1. 翻訳ファイルを作成：`packages/i18n/src/locales/fr.json`
+2. `packages/i18n/src/index.ts` でロケール設定に追加
+3. 言語切り替えコンポーネントを更新
+
+## ベストプラクティス
+
+| プラクティス             | 説明                                                |
+| ------------------------ | --------------------------------------------------- |
+| 名前空間を使用           | 関連する翻訳をグループ化（auth、common、dashboard） |
+| キーを一貫させる         | すべてのロケールで同じキー構造を使用                |
+| ハードコードを避ける     | コンポーネント内でテキストをハードコードしない      |
+| すべてのロケールをテスト | 翻訳が正しくレンダリングされることを確認            |

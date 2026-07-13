@@ -1,0 +1,435 @@
+{
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラーが発生しました",
+    "retry": "再試行",
+    "cancel": "キャンセル",
+    "confirm": "確認",
+    "save": "保存",
+    "delete": "削除",
+    "edit": "編集",
+    "done": "完了",
+    "close": "閉じる",
+    "modal": "モーダル"
+  },
+  "locale": {
+    "switchLanguage": "言語を切り替える"
+  },
+  "settings": {
+    "searchLanguages": "言語を検索",
+    "language": "言語",
+    "theme": "テーマ",
+    "account": "アカウント",
+    "unlockPremium": "プレミアムを解除",
+    "unlockPremiumDescription": "分析、ブランディング、優先サポートにアップグレード",
+    "security": "セキュリティ",
+    "deleteAccount": "アカウントを削除",
+    "preferences": "設定",
+    "support": "サポート",
+    "about": "アプリについて",
+    "faq": "よくある質問",
+    "privacyAndTerms": "プライバシーと利用規約",
+    "share": "共有",
+    "shareApp": "アプリを共有",
+    "shareAppMessage": "この素晴らしいアプリを試してみてください！{{url}}",
+    "rateUs": "評価する",
+    "technicalSupport": "テクニカルサポート",
+    "officialWebsite": "公式サイト",
+    "followUs": "フォローする",
+    "madeWithCare": "心を込めて作りました",
+    "privacyPolicy": "プライバシーポリシー",
+    "termsOfService": "利用規約",
+    "privacyDescription": "プライバシーと権利の保護について、以下の規約をお読みください。",
+    "themeAppearance": "表示モード",
+    "themeFamily": "テーマスタイル",
+    "themeSummary": "{{family}} · {{mode}}",
+    "themeOptions": {
+      "system": "システムに合わせる",
+      "light": "ライト",
+      "dark": "ダーク"
+    },
+    "themeOptionDescriptions": {
+      "system": "端末の外観設定に常に合わせます。",
+      "light": "常にライトテーマを使用します。",
+      "dark": "常にダークテーマを使用します。"
+    },
+    "themeFamilyOptions": {
+      "alpha": "Alpha",
+      "lavender": "Lavender",
+      "mint": "Mint",
+      "sky": "Sky"
+    },
+    "themeFamilyDescriptions": {
+      "alpha": "モノトーンのコントラストが強いニュートラルでミニマルなスタイルです。",
+      "lavender": "やわらかなラベンダートーンで、軽やかな雰囲気になります。",
+      "mint": "爽やかなミント配色で、より活発で透明感のある印象です。",
+      "sky": "澄んだスカイブルーで、落ち着いたクールな印象です。"
+    }
+  },
+  "tabs": {
+    "home": "ホーム",
+    "profile": "マイページ"
+  },
+  "auth": {
+    "signIn": "ログイン",
+    "signUp": "新規登録",
+    "signOut": "ログアウト",
+    "signOutConfirmTitle": "ログアウトしますか？",
+    "signOutConfirmDescription": "アカウントにアクセスするには、再度ログインが必要です。",
+    "email": "メールアドレス",
+    "phoneNumber": "電話番号",
+    "password": "パスワード",
+    "verificationCode": "確認コード",
+    "emailPasswordMode": "パスワード",
+    "emailOtpMode": "コード",
+    "name": "名前",
+    "signInTitle": "おかえりなさい",
+    "signInSubtitle": "続行するにはサインインしてください",
+    "emailOtpDescription": "メールアドレスを入力すると、ワンタイム確認コードを送信します。",
+    "emailOtpScreenDescription": "メールに送信された確認コードを入力してください。",
+    "phoneSignInDescription": "電話番号でワンタイム確認コードを受け取ってログインします。",
+    "phoneOtpDescription": "電話に送信された確認コードを入力してください。",
+    "signUpTitle": "アカウント作成",
+    "signUpSubtitle": "続行するにはサインアップしてください",
+    "emailPlaceholder": "メールアドレスを入力",
+    "phoneNumberPlaceholder": "電話番号を入力",
+    "passwordPlaceholder": "パスワードを入力",
+    "verificationCodePlaceholder": "6桁の確認コードを入力",
+    "createPasswordPlaceholder": "パスワードを作成",
+    "namePlaceholder": "名前を入力",
+    "forgotPassword": "パスワードをお忘れですか？",
+    "forgotPasswordNotImplemented": "パスワード再設定機能は未実装です。",
+    "orContinueWith": "または以下で続行",
+    "signInWithApple": "Apple でサインイン",
+    "signInWithGoogle": "Google でサインイン",
+    "emailTab": "メール",
+    "phoneTab": "電話番号",
+    "noAccount": "アカウントをお持ちではありませんか？",
+    "alreadyHaveAccount": "すでにアカウントをお持ちですか？",
+    "logIn": "ログイン",
+    "signingIn": "サインイン中...",
+    "signInSuccess": "ログインしました。",
+    "signingUp": "登録中...",
+    "createAccount": "アカウント作成",
+    "checkEmail": "メールを確認してください。",
+    "callbackCookieMissing": "認証 Cookie を受信できませんでした。",
+    "callbackCookieInvalid": "認証 Cookie を解析できませんでした。",
+    "termsAgreement": "サインアップすることで、利用規約とプライバシーポリシーに同意したことになります。",
+    "termsPrefix": "サインアップすることで、次に同意したことになります: ",
+    "termsAndConditions": "利用規約",
+    "socialNotImplemented": "{{provider}} サインインは未実装です。",
+    "signOutConfirm": "サインアウトしますか？",
+    "signOutSuccess": "サインアウトしました",
+    "signOutError": "サインアウトに失敗しました",
+    "deleteAccountConfirm": "アカウントを削除しますか？",
+    "deleteAccountConfirmDescription": "アカウントは削除対象としてマークされます。サインアウトされ、再度ログインできなくなります。",
+    "deleteAccountSuccess": "アカウントを削除しました",
+    "deleteAccountError": "アカウントの削除に失敗しました",
+    "phoneNumberDescription": "中国本土の電話番号形式で入力してください。例: 13800138000",
+    "sendCode": "コードを送信",
+    "sendingCode": "送信中...",
+    "verifyCode": "認証してログイン",
+    "verifyingCode": "認証中...",
+    "resendCode": "コードを再送",
+    "resendCodeIn": "{{seconds}}秒後に再送",
+    "changePhoneNumber": "電話番号を変更",
+    "changeEmail": "メールを変更",
+    "phoneCodeSent": "{{phoneNumber}} に確認コードを送信しました",
+    "emailCodeSent": "{{email}} に確認コードを送信しました",
+    "phoneOtpSentDescription": "{{phoneNumber}} に確認コードを送信しました。",
+    "emailOtpSentDescription": "{{email}} に確認コードを送信しました。",
+    "providers": {
+      "apple": "Apple",
+      "github": "GitHub",
+      "google": "Google"
+    },
+    "validation": {
+      "nameRequired": "名前は必須です",
+      "invalidEmail": "メールアドレスの形式が正しくありません",
+      "invalidPhone": "有効な中国本土の電話番号を入力してください",
+      "invalidVerificationCode": "6桁の確認コードを入力してください",
+      "passwordRequired": "パスワードは必須です",
+      "passwordMinLength": "{{min}}文字以上で入力してください"
+    }
+  },
+  "profile": {
+    "editProfile": "プロフィール編集",
+    "fullName": "フルネーム",
+    "email": "メールアドレス",
+    "phone": "電話番号",
+    "bio": "自己紹介",
+    "changeAvatar": "タップしてアバターを変更",
+    "avatarUpdated": "アバターが更新されました",
+    "avatarUploading": "アバターをアップロード中...",
+    "avatarUploadError": "アバターのアップロードに失敗しました",
+    "avatarPermissionDenied": "アバターを更新するには写真へのアクセスを許可してください",
+    "saveChanges": "変更を保存",
+    "saving": "保存中...",
+    "profileUpdated": "プロフィールが更新されました",
+    "imagePickerNotImplemented": "画像選択機能は未実装です",
+    "fullNamePlaceholder": "フルネームを入力してください",
+    "emailPlaceholder": "メールアドレスを入力してください",
+    "notLinked": "未連携",
+    "bioPlaceholder": "自己紹介を入力してください...",
+    "validation": {
+      "nameRequired": "名前は必須です"
+    }
+  },
+  "premium": {
+    "title": "プレミアムを解除",
+    "subtitle": "プレミアム機能で最高の体験を手に入れましょう。",
+    "currentPlan": "現在のプラン",
+    "banner": {
+      "subscribedTitle": "プレミアム会員です",
+      "subscribedDescription": "すべてのプレミアム機能にアクセスできます。ご支援ありがとうございます。",
+      "membershipTitle": "{{plan}} プラン有効",
+      "membershipDescription": "すべてのプレミアム機能が利用可能です。いつでもプランをアップグレードできます。",
+      "unavailableTitle": "アプリ内課金を利用できません",
+      "unavailableDescription": "このビルドにはネイティブ購入機能が含まれていないため、ここでは購読開始や復元を行えません。"
+    },
+    "empty": {
+      "title": "購入可能なプランがありません",
+      "description": "RevenueCat は有効ですが、このビルドには購入可能なパッケージが届いていません。"
+    },
+    "actions": {
+      "restorePurchase": "購入を復元",
+      "upgradePlan": "プランをアップグレード",
+      "unlockLifetime": "ライフタイムを解除",
+      "startTrialAndSubscribe": "今すぐ購読",
+      "currentPlan": "現在のプラン",
+      "alreadyLifetime": "ライフタイムは有効です",
+      "downgradeNotAllowed": "アップグレードのみ可能",
+      "lifetimeNote": "一度の購入で永久にプレミアム機能を利用できます。",
+      "upgradeNote": "購入完了後に会員プランがアップグレードされます。",
+      "subscriptionNote": "購読すると利用規約に同意したものとみなされます。購読は解約するまで自動更新されます。",
+      "syncing": "ローカルでの購入は完了しました。サーバーと会員状態を同期中です...",
+      "purchasing": "購入中...",
+      "termsOfService": "利用規約",
+      "privacyPolicy": "プライバシー"
+    },
+    "feedback": {
+      "purchaseCancelled": "購入がキャンセルされました",
+      "welcome": "プレミアムへようこそ！",
+      "purchaseFailed": "購入に失敗しました。しばらくしてから再試行してください。",
+      "restoreSuccess": "購入履歴を復元しました",
+      "restoreFailed": "購入の復元に失敗しました"
+    },
+    "hud": {
+      "title": "購入を開始しています",
+      "description": "システムの購入シートで確認を完了してください。",
+      "processingTitle": "支払いを処理中",
+      "processingDescription": "購入を完了するまでお待ちください。",
+      "syncingTitle": "会員を有効化中",
+      "syncingDescription": "サーバーとプレミアムステータスを同期しています。"
+    }
+  },
+  "credits": {
+    "title": "クレジット",
+    "settingsDescription": "残高、購入、利用履歴を確認",
+    "balanceLabel": "現在の残高",
+    "balanceDescription": "購入したクレジットは期限切れになりません。無料クレジットはアカウントルールにより期限切れになる場合があります。",
+    "expiringNotice": "{{count}} クレジットが 7 日以内に期限切れになります。",
+    "signInTitle": "ログインしてクレジットを利用",
+    "signInDescription": "クレジットはアカウントに紐づき、端末間で同期されます。",
+    "packagesTitle": "クレジットを購入",
+    "demoConsumeTitle": "デモ利用",
+    "demoConsumeDescription": "実際の利用フローを接続する前に、クレジット消費をシミュレートします。",
+    "demoConsumeAmount": "利用するクレジット数",
+    "ordersTitle": "購入注文",
+    "transactionsTitle": "最近の履歴",
+    "transactionsPageTitle": "クレジット履歴",
+    "loading": "読み込み中...",
+    "emptyPackages": "利用可能なクレジットパッケージはありません。",
+    "emptyOrders": "クレジット注文はまだありません。",
+    "emptyTransactions": "クレジット履歴はまだありません。",
+    "packages": {
+      "starter": {
+        "title": "スタータークレジット",
+        "description": "軽い利用向けの {{count}} クレジット。"
+      },
+      "growth": {
+        "title": "グロースクレジット",
+        "description": "大きなワークフロー向けの {{count}} クレジット。"
+      }
+    },
+    "actions": {
+      "buy": "購入",
+      "demoConsume": "クレジットを使う",
+      "processing": "処理中..."
+    },
+    "feedback": {
+      "unavailable": "このビルドではアプリ内クレジット購入を利用できません。",
+      "demoConsumeSuccess": "{{count}} クレジットを利用しました。",
+      "demoConsumeError": "クレジット利用に失敗しました",
+      "purchaseCancelled": "購入はキャンセルされました",
+      "purchaseFailed": "購入に失敗しました。もう一度お試しください。",
+      "purchaseSynced": "クレジットがアカウントに追加されました。",
+      "purchasePending": "購入が完了しました。クレジットをサーバーと同期しています。"
+    },
+    "hud": {
+      "processingTitle": "支払いを処理中",
+      "processingDescription": "ストアで購入が完了するまでお待ちください。",
+      "syncingTitle": "クレジットを同期中",
+      "syncingDescription": "サーバーが購入を確認するのを待っています。"
+    },
+    "orderStatuses": {
+      "pending": "保留中",
+      "completed": "完了",
+      "failed": "失敗",
+      "expired": "期限切れ",
+      "refunded": "返金済み"
+    },
+    "transactionSources": {
+      "system": "システム",
+      "app": "アプリ",
+      "admin": "管理者",
+      "web": "Web購入",
+      "native": "アプリ内購入"
+    },
+    "transactionFilters": {
+      "all": "すべて",
+      "purchase": "購入",
+      "usage": "消費"
+    },
+    "transactions": {
+      "signupGrant": "登録特典",
+      "purchase": "クレジット購入",
+      "refund": "返金",
+      "usage": "利用",
+      "expiration": "期限切れクレジット",
+      "adjustment": "調整"
+    }
+  },
+  "pricing": {
+    "title": "料金プラン",
+    "subtitle": "最適なプランを選択してください",
+    "freeLabel": "無料",
+    "frequencies": {
+      "monthly": "月額",
+      "yearly": "年額",
+      "lifetime": "ライフタイム"
+    },
+    "cta": {
+      "subscribe": "購読する",
+      "getStarted": "始める"
+    },
+    "badge": {
+      "bestValue": "ベストバリュー"
+    },
+    "billingNote": {
+      "flexibleCancelAnytime": "柔軟に利用でき、いつでも解約可能",
+      "billedAnnually": "年額請求",
+      "oneTimePurchase": "一度きりの購入"
+    },
+    "periods": {
+      "oneTime": "一度きり",
+      "perYear": "年額",
+      "perMonth": "月額"
+    },
+    "trial": {
+      "newUserDays": "{days}日間の無料トライアル（新規ユーザー限定）"
+    },
+    "plans": {
+      "free": {
+        "name": "無料プラン",
+        "features": ["基本機能", "コミュニティサポート", "単一ワークスペース"]
+      },
+      "pro": {
+        "name": "プロプラン",
+        "features": ["無料プランの全機能", "優先サポート", "チームコラボレーション"]
+      },
+      "lifetime": {
+        "name": "ライフタイム",
+        "features": ["プロプランの全機能", "一括支払い", "永久アップデート"]
+      }
+    }
+  },
+  "faq": {
+    "questions": {
+      "upgradePremium": "プレミアムにアップグレードするには？",
+      "upgradePremiumAnswer": "プロフィール → プレミアムを解除 に進み、最適なプランを選択してください。月額、年額、ライフタイムから選べます。",
+      "restorePurchase": "購入を復元するには？",
+      "restorePurchaseAnswer": "プレミアムを解除ページの下部にある「購入を復元」ボタンをタップすると、購入履歴が自動的に同期されます。",
+      "editProfile": "プロフィールを編集するには？",
+      "editProfileAnswer": "プロフィール画面上部のアバターエリアをタップすると、編集ページに移動し、アバターや名前などを変更できます。",
+      "switchLanguageTheme": "言語やテーマを切り替えるには？",
+      "switchLanguageThemeAnswer": "プロフィール → 設定 から言語とテーマを切り替えられます。英語、中国語、日本語、およびライト、ダーク、システム連動の3つのテーマモードに対応しています。",
+      "contactSupport": "サポートに問い合わせるには？",
+      "contactSupportAnswer": "問題が発生した場合は、{{email}} までメールをお送りください。できるだけ早くご返信いたします。"
+    }
+  },
+  "forgotPassword": {
+    "title": "パスワードを忘れましたか？",
+    "description": "メールアドレスを入力してください\nパスワードリセットリンクをお送りします。",
+    "sendLink": "リンクを送信",
+    "sending": "送信中...",
+    "backToLogIn": "ログインに戻る",
+    "success": "リセットリンクをメールに送信しました"
+  },
+  "security": {
+    "description": "アカウントのログイン方法を管理します。",
+    "socialDescription": "このアカウントは現在、連携済みの外部プロバイダーでログインしています。",
+    "loading": "セキュリティ設定を読み込み中...",
+    "statusError": "セキュリティ設定を読み込めませんでした。",
+    "loginMethods": {
+      "socialLogin": "ソーシャルログイン",
+      "socialLoginActive": "現在の連携ログインが有効です",
+      "active": "有効"
+    },
+    "password": {
+      "title": "パスワード",
+      "description": "パスワードを更新するための再設定リンクをメールで送信します。",
+      "hasPassword": "このアカウントには既にパスワードが設定されています。",
+      "sendReset": "再設定リンクを送信",
+      "sendingReset": "再設定リンクを送信中...",
+      "resetSent": "パスワード再設定メールを送信しました。"
+    },
+    "socialAccount": {
+      "title": "連携済みプロバイダー",
+      "description": "このアカウントは {{providers}} でログインしています。"
+    },
+    "socialLoginSecurity": "{{providers}} によってアカウントが保護されています。アカウントのセキュリティ設定は該当プロバイダー側で管理してください。",
+    "phone": {
+      "title": "電話番号ログイン",
+      "verified": "認証済み",
+      "verifiedNumber": "認証済み番号: {{phoneNumber}}",
+      "passwordEnabledTitle": "パスワードも有効です",
+      "passwordEnabledDescription": "この電話番号のみのアカウントにはパスワードも設定されています。SMS コードでのログインは引き続き利用できますが、メールリセットは利用できません。",
+      "otpOnlyTitle": "OTP のみでログイン",
+      "otpOnlyDescription": "この電話番号のみのアカウントは SMS の確認コードでログインします。実際のメールアドレスを連携するまで、メールリセットは利用できません。"
+    }
+  },
+  "onboarding": {
+    "skip": "スキップ",
+    "next": "次へ",
+    "getStarted": "始めましょう",
+    "page1": {
+      "title": "ようこそ",
+      "description": "アイデアの構築・公開・スケーリングを一つのプラットフォームで。"
+    },
+    "page2": {
+      "title": "シームレスな体験",
+      "description": "美しいデザイン、高速パフォーマンス、あらゆるデバイスでのスムーズな操作。"
+    },
+    "page3": {
+      "title": "準備完了",
+      "description": "数秒で登録完了。今日から素晴らしいものを作り始めましょう。"
+    }
+  },
+  "resetPassword": {
+    "title": "パスワードを再設定",
+    "description": "アカウント用の新しいパスワードを入力してください。",
+    "newPassword": "新しいパスワード",
+    "confirmPassword": "パスワードを確認",
+    "confirmNewPassword": "新しいパスワードを再入力",
+    "reset": "パスワードを再設定",
+    "resetting": "パスワードを再設定中...",
+    "success": "パスワードを再設定しました。",
+    "invalidToken": "この再設定リンクは無効か期限切れです。",
+    "invalidTokenDescription": "新しい再設定メールをリクエストして、最新のリンクを使用してください。",
+    "requestNewLink": "新しいリンクをリクエスト",
+    "backToSecurity": "セキュリティに戻る",
+    "backToSignIn": "ログインに戻る",
+    "passwordsNotMatch": "パスワードが一致しません"
+  }
+}

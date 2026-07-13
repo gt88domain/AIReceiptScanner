@@ -1,0 +1,67 @@
+{
+  "css.lint.unknownAtRules": "ignore",
+  "editor.tabSize": 2,
+  "editor.insertSpaces": false,
+  "[javascript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.formatOnSave": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.formatOnSave": true
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.formatOnSave": true
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.formatOnSave": true
+  },
+  "[json]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.formatOnSave": true
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.formatOnSave": true
+  },
+  "[css]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.formatOnSave": true
+  },
+  "[graphql]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.formatOnSave": true
+  },
+  "i18n-ally.localesPaths": [
+    "packages/i18n/src/messages/common",
+    "packages/i18n/src/messages/native",
+    "packages/i18n/src/messages/web",
+    "packages/i18n/src/messages/server"
+  ],
+  "i18n-ally.keystyle": "nested",
+  "i18n-ally.enabledFrameworks": ["next-intl"],
+  "i18n-ally.tabStyle": "tab",
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "editor.formatOnPaste": true,
+  "emmet.showExpandedAbbreviation": "never",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.oxc": "always"
+  },
+  "oxc.enable": true,
+  "oxc.typeAware": true,
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "editor.formatOnSave": true,
+  "json.schemas": [
+    {
+      // https://github.com/microsoft/vscode/issues/102061#issuecomment-657080963
+      "fileMatch": ["*.jsonc"],
+      "schema": {
+        "allowTrailingCommas": true
+      }
+    }
+  ],
+  "i18n-ally.sourceLanguage": "zh",
+  "editor.fontFamily": "Ioskeley Mono, Menlo, Monaco, 'Courier New', monospace"
+}
