@@ -58,12 +58,30 @@ Read first:
 - docs/mysaas-discovery-listing-plan.md when the site has a directory/list page
 
 Before implementation, create docs/migrations/<site>/ with an inventory, exact
-route map, data contract, page contracts, visual baselines, and cutover plan.
+route map, data contract, page contracts, visual baselines, cutover plan, and
+machine-auditable `parity.csv`. Export legacy URL/status/final redirect,
+robots, sitemap, title, description, canonical, metadata, and list counts
+before changing the old site.
 
 Preserve public URL paths, including established category/tag/detail paths.
 Build real public fixture data before visual work. Capture desktop and mobile
 screenshots before replacing public pages. Do not migrate auth, billing, admin,
 or provider secrets in the first public-read slice.
+
+Classify every route family as static SEO, list/filter, category/tag,
+collection/rank, detail, redirect, retired, or private/defer. Do not manually
+recreate individual slugs: preserve public slug identity and query D1 by slug
+or validated facet with a bounded limit. Parameterized filter/search URLs are
+`noindex,follow` unless they have a separately defined canonical landing page;
+canonical category/tag/collection/rank pages may be indexable only when their
+content and metadata are sufficient. The sitemap includes canonical indexable
+URLs only.
+
+Make data seed imports idempotent, validate row counts/unique IDs/references,
+and split large D1 SQL imports below statement-size limits. Keep extraction,
+public read-model data, UI, SEO, and private workflows in separate commits and
+preview deployments. A slice is not done until its parity rows pass status,
+metadata, robots, canonical, content, and screenshot checks.
 
 Keep site code in a custom module. Use only thin route wiring and record every
 EasyStarter core change in CUSTOMIZATIONS.md. Do not promote a site-specific

@@ -148,6 +148,20 @@ runtime behavior.
 - Verification: review the migration packet checklist against the first real
   site before implementation.
 
+## 2026-07-15 - Strengthen Migration Parity And Release Controls
+
+- Files: `docs/mysaas-site-migration-playbook.md`, `TEMPLATE_PROMPTS.md`,
+  `DECISIONS.md`, `CUSTOMIZATIONS.md`
+- Reason: turn migration advice into an executable route-family parity gate and
+  add the missing public-data integrity, D1 import-size, URL identity, SEO,
+  redirect, preview, rollback, and observability controls learned from real
+  public-read migrations.
+- Upstream merge risk: low; documentation and process only.
+- Rollback: remove this dated process entry and restore the earlier playbook;
+  no runtime behavior or upstream EasyStarter file depends on it.
+- Verification: use the required `parity.csv` columns and release slices for
+  the next site migration before changing its production host.
+
 ## Recommended Future Core Changes
 
 These are not implemented yet. Add a dated entry above when one is implemented.

@@ -40,10 +40,27 @@ data-contract.md   # tables, fields, joins, fixture safety, D1 ownership
 page-contracts.md  # one contract per page master
 visual-baseline.md # screenshot URLs, viewport sizes, interaction states
 cutover.md         # redirects, canonical host, sitemap, analytics checks
+parity.csv          # machine-auditable legacy-to-target route evidence
 ```
 
 The route map records exact legacy paths. Never replace `/category/:slug` with
 `/discover/category/:slug` merely because the new internal structure differs.
+
+`parity.csv` is the release gate, not project paperwork. One row per route
+family is sufficient; do not hand-maintain one row for every detail slug. It
+must record at least:
+
+```txt
+legacy pattern,target pattern,route class,expected status,redirect status,
+canonical policy,robots policy,sitemap inclusion,source count,target count,
+metadata check,visual check,owner,decision
+```
+
+Route classes are: static SEO page, list/filter page, category/tag page,
+collection/rank page, detail page, redirect, retired page, and private/defer.
+The parity check expands representative slugs for each dynamic family and
+verifies every legacy URL has exactly one deliberate outcome: serve, redirect,
+return 404/410, or remain private. Do not leave a legacy path ambiguous.
 
 ## 3. Inventory Before Porting
 
@@ -60,6 +77,12 @@ For every public page, capture:
 
 Mark each old route as one of: preserve, redirect, merge, intentionally remove,
 or private/defer. "Not yet implemented" is not a valid final classification.
+
+Also export the old `robots.txt`, sitemap(s), HTTP status, final URL after
+redirects, title, description, canonical, robots, and structured-data presence
+before changing DNS or replacing the app. Store the export timestamp and source
+host in `inventory.md`; source behavior changes while migration work is in
+progress.
 
 ## 4. Freeze A Page Contract
 
@@ -102,6 +125,17 @@ Rules:
 - fixture import is idempotent before any recurring sync is added
 - direct Neon runtime reads are a temporary diagnostic tool, not the target
   architecture
+- loaders query by canonical slug, taxonomy term, or validated facet and always
+  apply a bounded `limit`; never fetch a catalog into Worker memory and filter
+  it in JavaScript
+- use the old public ID only as an import key when needed; preserve the old
+  public slug as the URL identity rather than regenerating it from a title
+- validate fixture row counts, unique public identities, parent/child
+  references, and required visible fields before seeding D1
+- large D1 imports must be idempotent and split below D1 statement-size limits;
+  the committed seed command must work without a one-off local workaround
+- imported historical HTML is untrusted input: render it as text or sanitize it
+  at a documented server boundary
 
 See `docs/mysaas-public-read-model-migration.md` for the fixture, seed, and D1
 detail.
@@ -142,6 +176,11 @@ pagination strategy, sponsorship, or editorial copy.
 Do not move to the next page master while the previous one has unknown data,
 route, or SEO gaps.
 
+Keep source extraction separate from product code. An export may read a legacy
+database or public API; the deployed application must not require that source
+once the D1 read model is seeded. Record the source snapshot time, row count,
+and any deliberate exclusions in `data-contract.md`.
+
 ## 8. SEO And Visual Parity Gates
 
 Public routes are complete only when all statements are true:
@@ -152,6 +191,16 @@ Public routes are complete only when all statements are true:
 - indexable pages enter the generated sitemap; non-indexable pages do not
 - list filters are URL-backed and reset incremental pagination correctly
 - tag pages with five or fewer published items use `noindex,follow`
+- parameterized search, sort, pagination, and facet combinations use
+  `noindex,follow` unless a specific stable combination has its own canonical
+  landing route and editorial/data quality sufficient for indexing
+- a fixed category, tag, collection, or rank URL is indexable only when it has
+  a stable canonical path, enough public results, unique metadata, and a
+  deliberate internal-link path; accessibility alone never makes a URL
+  indexable
+- redirects use `301`/`308` only for durable replacements; use `302`/`307` for
+  temporary routing and do not redirect unrelated removed pages to a generic
+  home page
 - the first result page is bounded and server-rendered
 - desktop and mobile screenshots preserve hierarchy, spacing, filters, and
   page-specific interactions rather than only copying colors
@@ -187,6 +236,30 @@ After each site migration, review what can become reusable:
 
 The goal is a growing template, not a universal renderer with every old site's
 assumptions embedded in it.
+
+## 11. Release In Independent, Reversible Slices
+
+Do not combine unrelated migration concerns in one commit or deployment. Use
+the smallest practical sequence:
+
+1. inventory, parity table, and source export evidence
+2. D1 schema, seed, and integrity check
+3. read-only server loader/API
+4. one page master and its visual/interaction parity
+5. canonical/robots/sitemap/redirect behavior
+6. private features such as auth, billing, admin, and writes
+
+Each slice gets its own commit and preview deployment. Before promotion, audit
+representative URLs from every route family for HTTP status, final URL,
+canonical, robots, title/description, and rendered content. Compare desktop
+and mobile screenshots for public page masters. Keep an explicit rollback:
+previous deployment/version, reversible redirect list, seed re-run command,
+and cache purge scope.
+
+Do not point a production host at a replacement until the preview passes the
+parity rows assigned to that slice. After cutover, monitor 404s, redirect
+volume, crawl errors, response latency, and D1 query failures; a successful
+build does not prove a successful migration.
 
 ## Handoff Checklist
 

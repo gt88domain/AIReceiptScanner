@@ -20,6 +20,15 @@ only after real reuse appears.
 Migrate public read pages before auth, billing, admin, or private workflows.
 Real fixture data should drive schemas and page contracts before visual polish.
 
+## Migration Parity Before Cutover
+
+Every legacy-site migration creates a route-family parity table before coding.
+It records the old URL pattern, target outcome, status, redirects, canonical,
+robots, sitemap inclusion, counts, and verification evidence. Query-string
+filters are noindex by default; fixed canonical category, tag, collection, and
+rank pages are evaluated independently for indexing. See
+`docs/mysaas-site-migration-playbook.md`.
+
 ## Discovery Listing Template
 
 Discovery list pages use protocol + shell + resource adapter. Shared code owns
