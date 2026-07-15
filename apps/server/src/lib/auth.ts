@@ -2,31 +2,21 @@ import { env } from "cloudflare:workers";
 import { expo } from "@better-auth/expo";
 import { resolveCommonConfig, resolveNativeCommonConfig } from "@repo/app-config";
 import { joinUrl, parseHostname, resolveCrossSubdomainCookieDomain } from "@repo/shared";
-import { buildPhoneCompatibilityEmail } from "@/lib/phone-email";
 import { type BetterAuthOptions, betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError } from "better-auth/api";
-import { emailOTP } from "better-auth/plugins/email-otp";
-import { phoneNumber } from "better-auth/plugins/phone-number";
 import { localization } from "better-auth-localization";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { createT, getLocaleFromHeaders, getLocaleFromRequest } from "@/i18n";
 import { getAppleProviderConfig } from "@/lib/apple-auth";
 import { hashPassword, verifyPassword } from "@/lib/password";
-import { getSmsProvider, isSupportedSmsPhoneNumber, verifySmsCode } from "@/sms";
 import * as schema from "../db/schema/auth";
-import {
-  sendResetPasswordEmailFromRequest,
-  sendSignInOtpEmailFromRequest,
-  sendVerificationEmailFromRequest,
-} from "../emails";
+import { sendResetPasswordEmailFromRequest, sendVerificationEmailFromRequest } from "../emails";
 import type { Locale } from "@repo/i18n";
 
 const commonConfig = resolveCommonConfig();
 const nativeConfig = resolveNativeCommonConfig();
-const emailOtpConfig = commonConfig.auth.otp.email;
-const smsOtpConfig = commonConfig.auth.otp.sms;
 
 /**
  * Map our locale to better-auth-localization locale
@@ -39,25 +29,6 @@ const betterAuthLocaleMap = {
 } as const satisfies Record<Locale, string>;
 
 const authCache = new WeakMap<D1Database, ReturnType<typeof betterAuth>>();
-
-type CreateAuthOptions = {
-  // Better Auth uses this hook to offload non-critical work such as SMS delivery.
-  // On Cloudflare Workers we pass `executionCtx.waitUntil` so OTP sends do not block the response.
-  backgroundTaskHandler?: ((promise: Promise<unknown>) => void) | undefined;
-};
-
-const PHONE_USER_NAME_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
-function buildRandomPhoneUserName(): string {
-  const bytes = new Uint8Array(6);
-  crypto.getRandomValues(bytes);
-  const suffix = Array.from(
-    bytes,
-    (byte) => PHONE_USER_NAME_ALPHABET[byte % PHONE_USER_NAME_ALPHABET.length],
-  ).join("");
-
-  return `User ${suffix}`;
-}
 
 function resolveCookiePolicy(
   serverUrl: string | undefined,
@@ -84,14 +55,9 @@ function resolveCookiePolicy(
   };
 }
 
-export function createAuth(d1: D1Database, options: CreateAuthOptions = {}) {
-  const { backgroundTaskHandler } = options;
-  // Intentionally bypass the cache when a request-scoped backgroundTaskHandler is supplied:
-  // the handler captures that request's executionCtx and must not leak into other requests.
-  if (!backgroundTaskHandler) {
-    const cached = authCache.get(d1);
-    if (cached) return cached;
-  }
+export function createAuth(d1: D1Database) {
+  const cached = authCache.get(d1);
+  if (cached) return cached;
 
   const db = drizzle(d1);
   const { cookieDomain, sameSite, secure } = resolveCookiePolicy(env.SERVER_URL, env.WEBSITE_URL);
@@ -171,7 +137,8 @@ export function createAuth(d1: D1Database, options: CreateAuthOptions = {}) {
       },
     },
     emailVerification: {
-      autoSignInAfterVerification: true,
+      // Verification proves control of the mailbox; it never creates a browser or native session.
+      autoSignInAfterVerification: false,
       sendVerificationEmail: async ({ user, url }, request) => {
         try {
           await sendVerificationEmailFromRequest(request)({
@@ -205,18 +172,10 @@ export function createAuth(d1: D1Database, options: CreateAuthOptions = {}) {
         enabled: commonConfig.auth.methods.appleEnabled ?? false,
       },
     },
-    // Route-level throttle for auth endpoints. The phone-number routes are the hottest abuse
-    // target (each send triggers a billed SMS), so they get the tightest per-IP budget.
     rateLimit: {
       enabled: true,
       window: 60,
       max: 30,
-      customRules: {
-        "/email-otp/send-verification-otp": { window: 60, max: 3 },
-        "/sign-in/email-otp": { window: 60, max: 10 },
-        "/phone-number/send-otp": { window: 60, max: 3 },
-        "/phone-number/verify": { window: 60, max: 10 },
-      },
     },
     advanced: {
       // https://better-auth.com/docs/reference/options#advanced
@@ -224,14 +183,6 @@ export function createAuth(d1: D1Database, options: CreateAuthOptions = {}) {
         ipAddressHeaders: ["cf-connecting-ip", "x-forwarded-for", "x-real-ip"],
       },
       cookiePrefix: "better-auth-v2",
-      ...(backgroundTaskHandler
-        ? {
-            // Better Auth calls this instead of awaiting backgroundable tasks inline.
-            backgroundTasks: {
-              handler: backgroundTaskHandler,
-            },
-          }
-        : {}),
       defaultCookieAttributes: {
         sameSite,
         secure,
@@ -243,45 +194,6 @@ export function createAuth(d1: D1Database, options: CreateAuthOptions = {}) {
     },
     plugins: [
       expo(),
-      emailOTP({
-        disableSignUp: false,
-        otpLength: emailOtpConfig.otpLength,
-        expiresIn: emailOtpConfig.expiresInSeconds,
-        allowedAttempts: emailOtpConfig.allowedAttempts,
-        storeOTP: "hashed",
-        sendVerificationOTP: async ({ email, otp, type }, ctx) => {
-          if (type !== "sign-in") {
-            throw new APIError("BAD_REQUEST", { message: "Unsupported email OTP type" });
-          }
-
-          await sendSignInOtpEmailFromRequest(ctx?.request)({
-            to: email,
-            otp,
-          });
-        },
-      }),
-      phoneNumber({
-        otpLength: smsOtpConfig.otpLength,
-        expiresIn: smsOtpConfig.expiresInSeconds,
-        // Aliyun generates the OTP itself. Better Auth keeps route/session orchestration only.
-        // This callback only triggers provider-side delivery.
-        sendOTP: async ({ phoneNumber }) => {
-          await getSmsProvider().sendVerificationCode(phoneNumber);
-        },
-        // When the provider exposes verifyCode, it becomes the source of truth for OTP checks.
-        verifyOTP: async ({ phoneNumber, code }) => verifySmsCode(phoneNumber, code),
-        // Phone auth is limited to mainland China E.164 numbers for the Aliyun integration.
-        // isSupportedSmsPhoneNumber already enforces the strict +86\d{11} shape.
-        phoneNumberValidator: async (phoneNumber) => isSupportedSmsPhoneNumber(phoneNumber),
-        signUpOnVerification: {
-          // Better Auth still requires an email field, so phone-only users receive a placeholder.
-          // The placeholder is an HMAC digest keyed by the server secret so the raw phone number
-          // is never readable from the email column.
-          getTempEmail: (phoneNumber) =>
-            buildPhoneCompatibilityEmail(phoneNumber, env.BETTER_AUTH_SECRET),
-          getTempName: () => buildRandomPhoneUserName(),
-        },
-      }),
       localization({
         defaultLocale: "default",
         getLocale: (request) => {
@@ -293,8 +205,6 @@ export function createAuth(d1: D1Database, options: CreateAuthOptions = {}) {
     ],
   });
 
-  if (!backgroundTaskHandler) {
-    authCache.set(d1, auth);
-  }
+  authCache.set(d1, auth);
   return auth;
 }

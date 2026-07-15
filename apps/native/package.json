@@ -34,7 +34,7 @@
     "upgrade-expo": "pnpm exec expo install --fix && pnpm dlx expo-doctor"
   },
   "dependencies": {
-    "@better-auth/expo": "^1.6.9",
+    "@better-auth/expo": "^1.6.23",
     "@expo-google-fonts/inter": "^0.4.1",
     "@expo-google-fonts/saira": "^0.4.2",
     "@expo-google-fonts/sn-pro": "^0.4.0",
@@ -53,7 +53,7 @@
     "@repo/shared": "workspace:*",
     "@tanstack/react-form": "^1.28.0",
     "@tanstack/react-query": "^5.90.20",
-    "better-auth": "^1.6.9",
+    "better-auth": "^1.6.23",
     "expo": "56.0.9",
     "expo-apple-authentication": "~56.0.4",
     "expo-application": "^56.0.3",

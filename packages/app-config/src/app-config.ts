@@ -187,9 +187,9 @@ const appConfig: AppConfig = {
         // Controls email/password auth UI entry points.
         emailPasswordEnabled: true,
         // Controls email OTP auth UI entry points.
-        emailOtpEnabled: true,
+        emailOtpEnabled: false,
         // Controls SMS auth UI entry points.
-        smsEnabled: true,
+        smsEnabled: false,
         // Controls GitHub sign-in UI entry points.
         githubEnabled: true,
         // Controls Google sign-in UI entry points.

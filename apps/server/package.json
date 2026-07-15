@@ -28,8 +28,7 @@
     "email-preview": "pnpm dlx react-email dev --dir src/emails/templates --port 4000"
   },
   "dependencies": {
-    "@better-auth/expo": "^1.6.9",
-    "@hono/node-server": "^1.19.9",
+    "@better-auth/expo": "^1.6.23",
     "@neondatabase/serverless": "^1.0.1",
     "@orpc/client": "^1.13.4",
     "@orpc/openapi": "^1.13.4",
@@ -41,15 +40,14 @@
     "@repo/i18n": "workspace:*",
     "@repo/shared": "workspace:*",
     "@waffo/pancake-ts": "0.11.0",
-    "better-auth": "^1.6.9",
+    "better-auth": "^1.6.23",
     "better-auth-localization": "^3.0.0",
     "dotenv": "^17.2.1",
     "drizzle-orm": "^0.45.2",
     "fast-xml-parser": "^5.7.3",
-    "hono": "^4.11.7",
+    "hono": "^4.12.30",
     "resend": "^6.6.0",
     "stripe": "^20.3.0",
-    "ws": "^8.18.3",
     "zod": "^4.0.2"
   },
   "devDependencies": {

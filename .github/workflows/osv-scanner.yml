@@ -1,0 +1,25 @@
+name: Dependency vulnerability scan
+
+on:
+  pull_request:
+    paths:
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  osv:
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2.3.8
+    with:
+      scan-args: |-
+        --lockfile=pnpm-lock.yaml
+      upload-sarif: true
+      # ponytail: report the existing baseline first; switch to true after remediation.
+      fail-on-vuln: false

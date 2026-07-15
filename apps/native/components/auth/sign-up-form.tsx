@@ -10,12 +10,10 @@ import * as React from "react";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import * as z from "zod";
 import { Text } from "@/components/ui/text";
-import { appConfig, getAuthConfig } from "@/configs/app-config";
+import { appConfig } from "@/configs/app-config";
 import { useToast } from "@/hooks/use-toast";
 import { authClient } from "@/lib/auth/auth.client";
 import { getErrorMessage } from "@/utils/error";
-
-const authConfig = getAuthConfig();
 
 export function SignUpForm() {
 	const router = useRouter();
@@ -48,7 +46,6 @@ export function SignUpForm() {
 					email: value.email,
 					password: value.password,
 					name: value.name,
-					callbackURL: authConfig.callbackURL,
 				},
 				{
 					onRequest: () => {},

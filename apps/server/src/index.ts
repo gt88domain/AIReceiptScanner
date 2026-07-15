@@ -38,11 +38,11 @@
 
 import { isNativePaymentsEnabled } from "@repo/app-config/payments/native";
 import { Hono } from "hono";
-import { logger } from "hono/logger";
+import { bodyLimit } from "hono/body-limit";
+import { secureHeaders } from "hono/secure-headers";
 import { runCreditMaintenance } from "./credits";
 import { createDb } from "./db";
 import { apiHandler } from "./handlers/api";
-import { handleNativeVerifyEmailBridge } from "./handlers/native-verify-email-bridge";
 import { rpcHandler } from "./handlers/rpc";
 import { handleFileServe } from "./handlers/storage";
 import { createAuth } from "./lib/auth";
@@ -63,10 +63,26 @@ const app = new Hono<{ Bindings: Cloudflare.Env }>();
  */
 app.onError(errorHandler);
 
+app.use(secureHeaders({ crossOriginResourcePolicy: false }));
+
 /**
- * Request logger - logs method, path, and response time for all requests
+ * Request logger - keeps query parameters (which can contain auth tokens) out of logs.
  */
-app.use(logger());
+app.use(async (c, next) => {
+  const start = Date.now();
+  try {
+    await next();
+  } finally {
+    console.info(
+      JSON.stringify({
+        method: c.req.method,
+        path: c.req.path,
+        status: c.res.status,
+        durationMs: Date.now() - start,
+      }),
+    );
+  }
+});
 
 /**
  * i18n middleware - detects locale and provides translation function
@@ -89,22 +105,17 @@ app.use("/api/auth/*", authCorsMiddleware);
  */
 app.use("/api/*", apiCorsMiddleware);
 app.use("/rpc/*", apiCorsMiddleware);
+app.use(
+  "/api/webhooks/*",
+  bodyLimit({
+    maxSize: 1024 * 1024,
+    onError: (c) => c.json({ error: "Payload too large" }, 413),
+  }),
+);
 
 // ============================================================================
 // Route Handlers
 // ============================================================================
-
-/**
- * Native Email Verification Bridge
- *
- * GET /api/auth/verify-email/native
- *
- * Verifies the email with Better Auth first, then redirects to native callback
- * with serialized Set-Cookie so Expo client can persist the session.
- */
-app.get("/api/auth/verify-email/native", async (c) => {
-  return handleNativeVerifyEmailBridge(c);
-});
 
 /**
  * Better Auth Handler
@@ -127,10 +138,7 @@ app.on(["POST", "GET"], "/api/auth/*", async (c) => {
     method: c.req.raw.method,
     body: c.req.raw.body,
   });
-  const response = await createAuth(c.env.DB, {
-    // Use the Worker execution context so SMS dispatch can continue after the auth response is sent.
-    backgroundTaskHandler: c.executionCtx.waitUntil.bind(c.executionCtx),
-  }).handler(request);
+  const response = await createAuth(c.env.DB).handler(request);
   return c.newResponse(response.body, response);
 });
 
@@ -224,24 +232,19 @@ app.post("/api/webhooks/revenuecat", async (c) => {
 });
 
 /**
- * RPC and API Handler
+ * RPC and API handlers
  *
- * Unified handler for both oRPC and REST API requests.
  * Uses createContext() to build request context including:
  * - session: Current user session (if authenticated)
  * - db: Drizzle database instance
  * - auth: Better Auth instance
  *
  * Request processing order:
- * 1. Build context with session and db info
- * 2. Try oRPC handler first (/rpc/*)
- * 3. Fall back to REST API handler (/api/*)
- * 4. Pass to next middleware if no match
+ * Context creation is restricted to RPC/API routes so file delivery, health
+ * checks, and auth callbacks do not pay for a session lookup and service setup.
  */
-app.use("/*", async (c, next) => {
+app.use("/rpc/*", async (c, next) => {
   const context = await createContext({ context: c });
-
-  // Try oRPC handler
   const rpcResult = await rpcHandler.handle(c.req.raw, {
     prefix: "/rpc",
     context,
@@ -250,7 +253,21 @@ app.use("/*", async (c, next) => {
     return c.newResponse(rpcResult.response.body, rpcResult.response);
   }
 
-  // Try REST API handler
+  await next();
+});
+
+/**
+ * Storage File Serve Endpoint
+ *
+ * GET /api/storage/*
+ *
+ * Serves files before the general OpenAPI handler so public downloads do not
+ * need authentication context.
+ */
+app.get("/api/storage/*", handleFileServe);
+
+app.use("/api/*", async (c, next) => {
+  const context = await createContext({ context: c });
   const apiResult = await apiHandler.handle(c.req.raw, {
     prefix: "/api",
     context,
@@ -280,6 +297,15 @@ app.get("/", (c) =>
 );
 
 /**
+ * Email verification always ends on HTTPS and never receives a session or native deep link.
+ */
+app.get("/email-verified", (c) =>
+  c.html(
+    `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Email verified</title></head><body><main><h1>Email verified</h1><p>You can return to the app and sign in.</p></main></body></html>`,
+  ),
+);
+
+/**
  * Session Endpoint
  *
  * GET /session
@@ -302,18 +328,6 @@ app.get("/session", (c) => {
     user,
   });
 });
-
-/**
- * Storage File Serve Endpoint
- *
- * GET /api/storage/*
- *
- * Serves files from storage with proper content-type headers.
- * Supports caching headers for performance.
- *
- * Note: File uploads are handled via oRPC at /rpc/storage.upload
- */
-app.get("/api/storage/*", handleFileServe);
 
 export default {
   fetch(request, env, ctx) {

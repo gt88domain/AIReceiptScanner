@@ -1,3 +1,4 @@
+import { env } from "cloudflare:workers";
 import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 import type { Context } from "@/lib/context";
@@ -7,9 +8,20 @@ import { protectedProcedure } from "@/lib/orpc";
 const webCreditProviderEnum = z.enum(["stripe", "creem"]);
 
 /** Input schema for starting a web credit package checkout session. */
+const trustedWebsiteUrl = z.url().refine(
+  (value) => {
+    try {
+      return new URL(value).origin === new URL(env.WEBSITE_URL).origin;
+    } catch {
+      return false;
+    }
+  },
+  { message: "Redirect URL must use the configured website origin" },
+);
+
 const createCreditCheckoutInputSchema = z.object({
   packageId: z.string(),
-  returnUrl: z.url(),
+  returnUrl: trustedWebsiteUrl,
   provider: webCreditProviderEnum.optional(),
 });
 

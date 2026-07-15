@@ -10,7 +10,6 @@ export const errorHandler: ErrorHandler = (err, c) => {
   return c.json(
     {
       error: "Internal Server Error",
-      message: err.message,
     },
     500,
   );

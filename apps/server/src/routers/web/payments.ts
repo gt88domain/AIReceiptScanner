@@ -1,3 +1,4 @@
+import { env } from "cloudflare:workers";
 import { ORPCError } from "@orpc/server";
 import { getCheckoutDecisionReasonFromError } from "@repo/app-config/payments/web-policy";
 import { z } from "zod";
@@ -9,11 +10,22 @@ import { providerEnum } from "@/payments/public/schemas";
  * Schema for validating checkout session creation requests
  * Contains all parameters needed to initiate a payment flow
  */
+const trustedWebsiteUrl = z.url().refine(
+  (value) => {
+    try {
+      return new URL(value).origin === new URL(env.WEBSITE_URL).origin;
+    } catch {
+      return false;
+    }
+  },
+  { message: "Redirect URL must use the configured website origin" },
+);
+
 const createCheckoutInputSchema = z.object({
   planId: z.string(), // Plan being purchased
   priceId: z.string(), // Specific price option selected
-  successUrl: z.url(), // Where to redirect after successful payment
-  cancelUrl: z.url(), // Where to redirect if payment is canceled
+  successUrl: trustedWebsiteUrl, // Where to redirect after successful payment
+  cancelUrl: trustedWebsiteUrl, // Where to redirect if payment is canceled
   provider: providerEnum.optional(), // Force specific payment provider (optional)
 });
 
@@ -22,7 +34,7 @@ const createCheckoutInputSchema = z.object({
  * Used to allow customers to manage their existing subscriptions
  */
 const createPortalInputSchema = z.object({
-  returnUrl: z.url(), // Where to redirect after portal session
+  returnUrl: trustedWebsiteUrl, // Where to redirect after portal session
   provider: providerEnum.optional(), // Specific payment provider (optional)
 });
 

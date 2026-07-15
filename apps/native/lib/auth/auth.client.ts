@@ -23,6 +23,7 @@ export const authClient = createAuthClient({
       storagePrefix: authConfig.storagePrefix,
       storage: SecureStore,
     }),
+    // Server plugins are disabled; keep these only for legacy guarded-screen type inference.
     emailOTPClient(),
     phoneNumberClient(),
   ],

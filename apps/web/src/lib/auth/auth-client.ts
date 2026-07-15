@@ -4,6 +4,7 @@ import { emailOTPClient, phoneNumberClient } from "better-auth/client/plugins";
 
 export const authClient = createAuthClient({
   baseURL: import.meta.env.VITE_SERVER_URL,
+  // Server plugins are disabled; keep these only for legacy guarded-screen type inference.
   plugins: [emailOTPClient(), phoneNumberClient()],
   fetchOptions: {
     credentials: "include",
