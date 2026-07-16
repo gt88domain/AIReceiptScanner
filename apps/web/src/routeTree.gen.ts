@@ -26,6 +26,7 @@ import { Route as AutheddashboardDashboardRouteRouteImport } from './routes/_aut
 import { Route as authAuthUnauthedRouteRouteImport } from './routes/(auth)/auth/_unauthed/route'
 import { Route as PublicmarketingBlogIndexRouteImport } from './routes/_public/(marketing)/blog/index'
 import { Route as PublicmarketinglandingPageIndexRouteImport } from './routes/_public/(marketing)/(landing-page)/index'
+import { Route as PublicmarketingTemplatesListingRouteImport } from './routes/_public/(marketing)/templates/listing'
 import { Route as PublicmarketingBlogSlugRouteImport } from './routes/_public/(marketing)/blog/$slug'
 import { Route as AutheddashboardSettingsSecurityRouteImport } from './routes/_authed/(dashboard)/settings/security'
 import { Route as AutheddashboardSettingsProfileRouteImport } from './routes/_authed/(dashboard)/settings/profile'
@@ -124,6 +125,12 @@ const PublicmarketinglandingPageIndexRoute =
     path: '/',
     getParentRoute: () => PublicRouteRoute,
   } as any)
+const PublicmarketingTemplatesListingRoute =
+  PublicmarketingTemplatesListingRouteImport.update({
+    id: '/(marketing)/templates/listing',
+    path: '/templates/listing',
+    getParentRoute: () => PublicRouteRoute,
+  } as any)
 const PublicmarketingBlogSlugRoute = PublicmarketingBlogSlugRouteImport.update({
   id: '/(marketing)/blog/$slug',
   path: '/blog/$slug',
@@ -212,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/settings/profile': typeof AutheddashboardSettingsProfileRoute
   '/settings/security': typeof AutheddashboardSettingsSecurityRoute
   '/blog/$slug': typeof PublicmarketingBlogSlugRoute
+  '/templates/listing': typeof PublicmarketingTemplatesListingRoute
   '/blog/': typeof PublicmarketingBlogIndexRoute
   '/blog/category/$slug': typeof PublicmarketingBlogCategorySlugRoute
 }
@@ -238,6 +246,7 @@ export interface FileRoutesByTo {
   '/settings/profile': typeof AutheddashboardSettingsProfileRoute
   '/settings/security': typeof AutheddashboardSettingsSecurityRoute
   '/blog/$slug': typeof PublicmarketingBlogSlugRoute
+  '/templates/listing': typeof PublicmarketingTemplatesListingRoute
   '/': typeof PublicmarketinglandingPageIndexRoute
   '/blog': typeof PublicmarketingBlogIndexRoute
   '/blog/category/$slug': typeof PublicmarketingBlogCategorySlugRoute
@@ -269,6 +278,7 @@ export interface FileRoutesById {
   '/_authed/(dashboard)/settings/profile': typeof AutheddashboardSettingsProfileRoute
   '/_authed/(dashboard)/settings/security': typeof AutheddashboardSettingsSecurityRoute
   '/_public/(marketing)/blog/$slug': typeof PublicmarketingBlogSlugRoute
+  '/_public/(marketing)/templates/listing': typeof PublicmarketingTemplatesListingRoute
   '/_public/(marketing)/(landing-page)/': typeof PublicmarketinglandingPageIndexRoute
   '/_public/(marketing)/blog/': typeof PublicmarketingBlogIndexRoute
   '/_public/(marketing)/blog/category/$slug': typeof PublicmarketingBlogCategorySlugRoute
@@ -299,6 +309,7 @@ export interface FileRouteTypes {
     | '/settings/profile'
     | '/settings/security'
     | '/blog/$slug'
+    | '/templates/listing'
     | '/blog/'
     | '/blog/category/$slug'
   fileRoutesByTo: FileRoutesByTo
@@ -325,6 +336,7 @@ export interface FileRouteTypes {
     | '/settings/profile'
     | '/settings/security'
     | '/blog/$slug'
+    | '/templates/listing'
     | '/'
     | '/blog'
     | '/blog/category/$slug'
@@ -355,6 +367,7 @@ export interface FileRouteTypes {
     | '/_authed/(dashboard)/settings/profile'
     | '/_authed/(dashboard)/settings/security'
     | '/_public/(marketing)/blog/$slug'
+    | '/_public/(marketing)/templates/listing'
     | '/_public/(marketing)/(landing-page)/'
     | '/_public/(marketing)/blog/'
     | '/_public/(marketing)/blog/category/$slug'
@@ -491,6 +504,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicmarketinglandingPageIndexRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_public/(marketing)/templates/listing': {
+      id: '/_public/(marketing)/templates/listing'
+      path: '/templates/listing'
+      fullPath: '/templates/listing'
+      preLoaderRoute: typeof PublicmarketingTemplatesListingRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
     '/_public/(marketing)/blog/$slug': {
       id: '/_public/(marketing)/blog/$slug'
       path: '/blog/$slug'
@@ -575,6 +595,7 @@ interface PublicRouteRouteChildren {
   PubliclegalPrivacyRoute: typeof PubliclegalPrivacyRoute
   PubliclegalTermsRoute: typeof PubliclegalTermsRoute
   PublicmarketingBlogSlugRoute: typeof PublicmarketingBlogSlugRoute
+  PublicmarketingTemplatesListingRoute: typeof PublicmarketingTemplatesListingRoute
   PublicmarketinglandingPageIndexRoute: typeof PublicmarketinglandingPageIndexRoute
   PublicmarketingBlogIndexRoute: typeof PublicmarketingBlogIndexRoute
   PublicmarketingBlogCategorySlugRoute: typeof PublicmarketingBlogCategorySlugRoute
@@ -584,6 +605,7 @@ const PublicRouteRouteChildren: PublicRouteRouteChildren = {
   PubliclegalPrivacyRoute: PubliclegalPrivacyRoute,
   PubliclegalTermsRoute: PubliclegalTermsRoute,
   PublicmarketingBlogSlugRoute: PublicmarketingBlogSlugRoute,
+  PublicmarketingTemplatesListingRoute: PublicmarketingTemplatesListingRoute,
   PublicmarketinglandingPageIndexRoute: PublicmarketinglandingPageIndexRoute,
   PublicmarketingBlogIndexRoute: PublicmarketingBlogIndexRoute,
   PublicmarketingBlogCategorySlugRoute: PublicmarketingBlogCategorySlugRoute,

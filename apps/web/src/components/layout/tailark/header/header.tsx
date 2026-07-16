@@ -39,7 +39,7 @@ export const Header = () => {
       { name: t("menu.integrations"), to: "/", hash: "integrations" },
       { name: t("menu.pricing"), to: "/", hash: "pricing" },
       { name: t("menu.faq"), to: "/", hash: "faq" },
-      { name: t("menu.testimonials"), to: "/", hash: "testimonials" },
+      { name: t("menu.listing"), to: "/templates/listing" },
       { name: t("menu.blog"), to: "/blog" },
       { name: t("menu.docs"), href: "/docs" },
     ],

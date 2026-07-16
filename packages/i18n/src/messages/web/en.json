@@ -36,7 +36,7 @@
         "integrations": "Integrations",
         "pricing": "Pricing",
         "faq": "FAQ",
-        "testimonials": "Testimonials",
+        "listing": "Listing template",
         "blog": "Blog",
         "docs": "Docs"
       },
@@ -132,6 +132,34 @@
           }
         }
       }
+    }
+  },
+  "listingTemplate": {
+    "eyebrow": "Reusable public pattern",
+    "title": "Listing page template",
+    "description": "A production-ready starting point for directories, marketplaces, resource libraries, and searchable catalogs.",
+    "resultCount": "{count} patterns",
+    "searchLabel": "Search templates",
+    "searchPlaceholder": "Search by use case or capability",
+    "filterLabel": "Filters",
+    "categoryLabel": "Use case",
+    "allCategories": "All patterns",
+    "layoutLabel": "Layout",
+    "allLayouts": "All layouts",
+    "sortLabel": "Sort patterns",
+    "sortRecommended": "Recommended",
+    "sortNewest": "Newest",
+    "sortName": "Name",
+    "emptyTitle": "No patterns match",
+    "emptyDescription": "Try a different search or clear one of the filters.",
+    "clearFilters": "Clear filters",
+    "items": {
+      "directory": { "title": "Vendor directory", "description": "Public cards with category, location, and capability filters.", "category": "Directory", "layout": "Grid" },
+      "marketplace": { "title": "Template marketplace", "description": "Searchable catalog with pricing cues and collection filters.", "category": "Marketplace", "layout": "Grid" },
+      "resources": { "title": "Resource library", "description": "Guides, tools, and downloads with topic and format facets.", "category": "Content", "layout": "Grid" },
+      "changelog": { "title": "Changelog feed", "description": "Chronological product updates with version and type filters.", "category": "Content", "layout": "Rows" },
+      "jobs": { "title": "Jobs board", "description": "Role listings with location, work mode, and team filters.", "category": "Directory", "layout": "Rows" },
+      "projects": { "title": "Project gallery", "description": "Work showcase with tags, collections, and load-more pagination.", "category": "Marketplace", "layout": "Grid" }
     }
   },
   "blog": {
