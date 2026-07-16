@@ -12,7 +12,7 @@
   ],
   "vars": {
     "NODE_ENV": "production",
-    "WEBSITE_URL": "https://cf.easystarter.dev",
+    "WEBSITE_URL": "https://easystarter-web.gt88hel.workers.dev",
     "SERVER_URL": "https://server.easystarter.dev",
     // Add non-sensitive public IDs here:
     // GitHub OAuth client ID

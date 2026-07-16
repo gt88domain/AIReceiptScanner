@@ -107,7 +107,7 @@
     },
     "footer": {
       "description": "为你的创业项目或副业提供的一套组件集合。",
-      "copyright": "© {year} easystarter.dev. 保留所有权利。",
+      "copyright": "© {year} EasyStarter. 保留所有权利。",
       "social": {
         "github": "GitHub",
         "twitter": "Twitter"

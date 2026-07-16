@@ -11,7 +11,7 @@
 
       "env": {
         "EXPO_PUBLIC_SERVER_API_URL": "https://server.easystarter.dev",
-        "EXPO_PUBLIC_WEB_APP_URL": "https://cf.easystarter.dev",
+        "EXPO_PUBLIC_WEB_APP_URL": "https://easystarter-web.gt88hel.workers.dev",
         "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY": "appl_GutoexiMibsvBDxBTXJvcjYvRWR",
         "EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID": "pro",
         "EXPO_PUBLIC_OPENPANEL_CLIENT_ID": "your-openpanel-client-id",
@@ -25,7 +25,7 @@
 
       "env": {
         "EXPO_PUBLIC_SERVER_API_URL": "https://server.easystarter.dev",
-        "EXPO_PUBLIC_WEB_APP_URL": "https://cf.easystarter.dev",
+        "EXPO_PUBLIC_WEB_APP_URL": "https://easystarter-web.gt88hel.workers.dev",
         "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY": "appl_GutoexiMibsvBDxBTXJvcjYvRWR",
         "EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID": "pro",
         "EXPO_PUBLIC_OPENPANEL_CLIENT_ID": "your-openpanel-client-id",
@@ -39,7 +39,7 @@
 
       "env": {
         "EXPO_PUBLIC_SERVER_API_URL": "https://server.easystarter.dev",
-        "EXPO_PUBLIC_WEB_APP_URL": "https://cf.easystarter.dev",
+        "EXPO_PUBLIC_WEB_APP_URL": "https://easystarter-web.gt88hel.workers.dev",
         "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY": "appl_GutoexiMibsvBDxBTXJvcjYvRWR",
         "EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID": "pro",
         "EXPO_PUBLIC_OPENPANEL_CLIENT_ID": "your-openpanel-client-id",

@@ -107,7 +107,7 @@
     },
     "footer": {
       "description": "スタートアップやサイドプロジェクト向けのコンポーネントコレクションです。",
-      "copyright": "© {year} easystarter.dev. All rights reserved.",
+      "copyright": "© {year} EasyStarter. All rights reserved.",
       "social": {
         "github": "GitHub",
         "twitter": "Twitter"
