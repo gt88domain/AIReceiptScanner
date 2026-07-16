@@ -14,7 +14,7 @@
     },
   ],
   "vars": {
-    "VITE_SERVER_URL": "https://server.easystarter.dev",
+    "VITE_SERVER_URL": "https://easystarter-server.gt88hel.workers.dev",
     "VITE_APP_URL": "https://easystarter-web.gt88hel.workers.dev",
     "VITE_GA_MEASUREMENT_ID": "G-SRZ5KLY3P9",
     "VITE_OPENPANEL_CLIENT_ID": "affbe40d-1e4d-4f75-a01f-0887995a43b3",

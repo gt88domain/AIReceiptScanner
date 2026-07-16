@@ -70,9 +70,15 @@ type ThemeContextProps = {
 const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [userTheme, setUserTheme] = useState<UserTheme>(getStoredUserTheme);
-  const [preset, setPresetState] = useState<ThemePresetKey>(getStoredPreset);
+  // Keep the hydration render deterministic. Persisted preferences are applied after React hydrates.
+  const [userTheme, setUserTheme] = useState<UserTheme>(THEME_CONFIG.defaults.userTheme);
+  const [preset, setPresetState] = useState<ThemePresetKey>(webConfig.defaultThemePresetKey);
   const appTheme = userTheme === "system" ? getSystemTheme() : userTheme;
+
+  useEffect(() => {
+    setUserTheme(getStoredUserTheme());
+    setPresetState(getStoredPreset());
+  }, []);
 
   // Apply theme on mount and changes
   useEffect(() => {
