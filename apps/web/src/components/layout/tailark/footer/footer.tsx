@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import type React from "react";
-import { FaGithub, FaTwitter } from "react-icons/fa";
 import { BrandLogo } from "@/components/logos/brand-logo";
 import { webConfig } from "@/configs/web-config";
 import { useTranslations } from "@/i18n";
@@ -48,10 +47,10 @@ export const Footer = ({
     {
       title: footerT("sections.product.title"),
       links: [
-        { name: footerT("sections.product.links.overview"), href: "#" },
-        { name: footerT("sections.product.links.pricing"), href: "#pricing" },
-        { name: footerT("sections.product.links.marketplace"), href: "#" },
-        { name: footerT("sections.product.links.features"), href: "#features" },
+        { name: footerT("sections.product.links.overview"), href: "/" },
+        { name: footerT("sections.product.links.pricing"), href: "/#pricing" },
+        { name: footerT("sections.product.links.listingTemplate"), href: "/templates/listing" },
+        { name: footerT("sections.product.links.features"), href: "/#features" },
       ],
     },
     {
@@ -59,24 +58,14 @@ export const Footer = ({
       links: [
         { name: footerT("sections.resources.links.privacy"), href: "/privacy" },
         { name: footerT("sections.resources.links.terms"), href: "/terms" },
-        { name: footerT("sections.resources.links.about"), href: "/docs" },
-        { name: footerT("sections.resources.links.blog"), href: "/docs" },
+        { name: footerT("sections.resources.links.docs"), href: "/docs" },
+        { name: footerT("sections.resources.links.blog"), href: "/blog" },
       ],
     },
   ];
   const resolvedDescription = description ?? footerT("description");
-  const resolvedSocialLinks = socialLinks ?? [
-    {
-      icon: <FaGithub className="size-5" />,
-      href: "https://github.com/sunshineLixun/easysaas",
-      label: footerT("social.github"),
-    },
-    {
-      icon: <FaTwitter className="size-5" />,
-      href: "https://x.com/ios_1261142602",
-      label: footerT("social.twitter"),
-    },
-  ];
+  // ponytail: social accounts belong to the template adopter, so no upstream profile is rendered by default.
+  const resolvedSocialLinks = socialLinks ?? [];
   const resolvedCopyright = copyright ?? footerT("copyright", { year: currentYear });
   const resolvedLegalLinks = legalLinks ?? [
     { name: authT("termsOfService"), href: "/terms" },
@@ -96,15 +85,17 @@ export const Footer = ({
               </a>
             </div>
             <p className="text-sm text-muted-foreground">{resolvedDescription}</p>
-            <ul className="flex items-center justify-center space-x-4 text-muted-foreground sm:justify-start">
-              {resolvedSocialLinks.map((social, idx) => (
-                <li key={idx} className="font-medium hover:text-primary transition-colors">
-                  <a href={social.href} aria-label={social.label}>
-                    {social.icon}
-                  </a>
-                </li>
-              ))}
-            </ul>
+            {resolvedSocialLinks.length > 0 ? (
+              <ul className="flex items-center justify-center space-x-4 text-muted-foreground sm:justify-start">
+                {resolvedSocialLinks.map((social) => (
+                  <li key={social.href} className="font-medium hover:text-primary transition-colors">
+                    <a href={social.href} aria-label={social.label}>
+                      {social.icon}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </div>
 
           {/* Right Side - Navigation Sections in Left-Right Layout */}
@@ -120,7 +111,7 @@ export const Footer = ({
                 <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-muted-foreground">
                   {section.links.map((link, linkIdx) => (
                     <li key={linkIdx} className="font-medium hover:text-primary transition-colors">
-                      {link.href === "/docs" ? (
+                      {link.href.startsWith("/#") ? (
                         <a href={link.href}>{link.name}</a>
                       ) : link.href.startsWith("/") ? (
                         <Link to={link.href}>{link.name}</Link>

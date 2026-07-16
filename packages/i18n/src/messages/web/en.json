@@ -118,7 +118,7 @@
           "links": {
             "overview": "Overview",
             "pricing": "Pricing",
-            "marketplace": "Marketplace",
+            "listingTemplate": "Listing template",
             "features": "Features"
           }
         },
@@ -127,7 +127,7 @@
           "links": {
             "privacy": "Privacy",
             "terms": "Terms",
-            "about": "About",
+            "docs": "Docs",
             "blog": "Blog"
           }
         }

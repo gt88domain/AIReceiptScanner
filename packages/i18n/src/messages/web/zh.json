@@ -118,7 +118,7 @@
           "links": {
             "overview": "概览",
             "pricing": "价格",
-            "marketplace": "市场",
+            "listingTemplate": "列表页模板",
             "features": "功能"
           }
         },
@@ -127,7 +127,7 @@
           "links": {
             "privacy": "隐私",
             "terms": "条款",
-            "about": "关于",
+            "docs": "文档",
             "blog": "博客"
           }
         }

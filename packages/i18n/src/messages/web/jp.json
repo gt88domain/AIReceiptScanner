@@ -118,7 +118,7 @@
           "links": {
             "overview": "概要",
             "pricing": "料金",
-            "marketplace": "マーケットプレイス",
+            "listingTemplate": "一覧ページテンプレート",
             "features": "機能"
           }
         },
@@ -127,7 +127,7 @@
           "links": {
             "privacy": "プライバシー",
             "terms": "利用規約",
-            "about": "会社情報",
+            "docs": "ドキュメント",
             "blog": "ブログ"
           }
         }
