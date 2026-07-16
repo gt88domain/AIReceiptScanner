@@ -3,6 +3,7 @@ import type React from "react";
 import { BrandLogo } from "@/components/logos/brand-logo";
 import { webConfig } from "@/configs/web-config";
 import { useTranslations } from "@/i18n";
+import { NewsletterForm } from "./newsletter-form";
 
 interface Footer7Props {
   logo?: {
@@ -85,6 +86,7 @@ export const Footer = ({
               </a>
             </div>
             <p className="text-sm text-muted-foreground">{resolvedDescription}</p>
+            <NewsletterForm />
             {resolvedSocialLinks.length > 0 ? (
               <ul className="flex items-center justify-center space-x-4 text-muted-foreground sm:justify-start">
                 {resolvedSocialLinks.map((social) => (

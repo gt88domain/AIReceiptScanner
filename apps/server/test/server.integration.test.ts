@@ -44,4 +44,37 @@ describe("server Worker", () => {
 
     expect(response.status).toBe(404);
   });
+
+  it("adds a valid footer newsletter subscription to Resend Contacts", async () => {
+    const response = await exports.default.fetch("https://server.test/api/newsletter/subscribe", {
+      body: JSON.stringify({ email: "reader@example.com" }),
+      headers: { "Content-Type": "application/json", "CF-Connecting-IP": "198.51.100.10" },
+      method: "POST",
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ subscribed: true });
+  });
+
+  it("rejects an invalid newsletter email before contacting Resend", async () => {
+    const response = await exports.default.fetch("https://server.test/api/newsletter/subscribe", {
+      body: JSON.stringify({ email: "not-an-email" }),
+      headers: { "Content-Type": "application/json", "CF-Connecting-IP": "198.51.100.11" },
+      method: "POST",
+    });
+
+    expect(response.status).toBe(400);
+  });
+
+  it("throttles repeated newsletter submissions from one IP", async () => {
+    const request = () =>
+      exports.default.fetch("https://server.test/api/newsletter/subscribe", {
+        body: JSON.stringify({ email: "throttled@example.com" }),
+        headers: { "Content-Type": "application/json", "CF-Connecting-IP": "198.51.100.12" },
+        method: "POST",
+      });
+
+    expect((await request()).status).toBe(200);
+    expect((await request()).status).toBe(429);
+  });
 });

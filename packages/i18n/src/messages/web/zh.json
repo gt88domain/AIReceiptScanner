@@ -108,6 +108,18 @@
     "footer": {
       "description": "为你的创业项目或副业提供的一套组件集合。",
       "copyright": "© {year} EasyStarter. 保留所有权利。",
+      "newsletter": {
+        "title": "获取产品更新",
+        "description": "只在有值得分享的新内容时发送简短更新。",
+        "emailLabel": "邮箱地址",
+        "placeholder": "you@example.com",
+        "submit": "订阅",
+        "submitting": "正在订阅…",
+        "privacy": "不发送垃圾邮件，随时可以退订。",
+        "success": "订阅成功。",
+        "error": "订阅失败，请稍后重试。",
+        "rateLimited": "请等待一分钟后再试。"
+      },
       "social": {
         "github": "GitHub",
         "twitter": "Twitter"

@@ -6,8 +6,8 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "easysaas-db",
-      "database_id": "5d06ae22-22dc-42a4-b6fc-4a53720c9f69",
+      "database_name": "mysaas-aiarticles-stage0",
+      "database_id": "7a416317-b295-405d-b20e-c8905295cf39",
     },
   ],
   "vars": {

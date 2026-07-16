@@ -18,6 +18,7 @@ import { Route as BillingCancelRouteImport } from './routes/billing/cancel'
 import { Route as ApiSearchRouteImport } from './routes/api/search'
 import { Route as AutheddashboardRouteRouteImport } from './routes/_authed/(dashboard)/route'
 import { Route as authAuthRouteRouteImport } from './routes/(auth)/auth/route'
+import { Route as ApiNewsletterSubscribeRouteImport } from './routes/api/newsletter/subscribe'
 import { Route as PubliclegalTermsRouteImport } from './routes/_public/(legal)/terms'
 import { Route as PubliclegalPrivacyRouteImport } from './routes/_public/(legal)/privacy'
 import { Route as AutheddashboardUsersRouteImport } from './routes/_authed/(dashboard)/users'
@@ -81,6 +82,11 @@ const AutheddashboardRouteRoute = AutheddashboardRouteRouteImport.update({
 const authAuthRouteRoute = authAuthRouteRouteImport.update({
   id: '/(auth)/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiNewsletterSubscribeRoute = ApiNewsletterSubscribeRouteImport.update({
+  id: '/api/newsletter/subscribe',
+  path: '/api/newsletter/subscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PubliclegalTermsRoute = PubliclegalTermsRouteImport.update({
@@ -209,6 +215,7 @@ export interface FileRoutesByFullPath {
   '/users': typeof AutheddashboardUsersRoute
   '/privacy': typeof PubliclegalPrivacyRoute
   '/terms': typeof PubliclegalTermsRoute
+  '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
   '/auth/forgot-password': typeof authAuthUnauthedForgotPasswordRoute
   '/auth/phone-verify': typeof authAuthUnauthedPhoneVerifyRoute
   '/auth/sign-in': typeof authAuthUnauthedSignInRoute
@@ -236,6 +243,7 @@ export interface FileRoutesByTo {
   '/users': typeof AutheddashboardUsersRoute
   '/privacy': typeof PubliclegalPrivacyRoute
   '/terms': typeof PubliclegalTermsRoute
+  '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
   '/auth/forgot-password': typeof authAuthUnauthedForgotPasswordRoute
   '/auth/phone-verify': typeof authAuthUnauthedPhoneVerifyRoute
   '/auth/sign-in': typeof authAuthUnauthedSignInRoute
@@ -268,6 +276,7 @@ export interface FileRoutesById {
   '/_authed/(dashboard)/users': typeof AutheddashboardUsersRoute
   '/_public/(legal)/privacy': typeof PubliclegalPrivacyRoute
   '/_public/(legal)/terms': typeof PubliclegalTermsRoute
+  '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
   '/(auth)/auth/_unauthed/forgot-password': typeof authAuthUnauthedForgotPasswordRoute
   '/(auth)/auth/_unauthed/phone-verify': typeof authAuthUnauthedPhoneVerifyRoute
   '/(auth)/auth/_unauthed/sign-in': typeof authAuthUnauthedSignInRoute
@@ -299,6 +308,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/privacy'
     | '/terms'
+    | '/api/newsletter/subscribe'
     | '/auth/forgot-password'
     | '/auth/phone-verify'
     | '/auth/sign-in'
@@ -326,6 +336,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/privacy'
     | '/terms'
+    | '/api/newsletter/subscribe'
     | '/auth/forgot-password'
     | '/auth/phone-verify'
     | '/auth/sign-in'
@@ -357,6 +368,7 @@ export interface FileRouteTypes {
     | '/_authed/(dashboard)/users'
     | '/_public/(legal)/privacy'
     | '/_public/(legal)/terms'
+    | '/api/newsletter/subscribe'
     | '/(auth)/auth/_unauthed/forgot-password'
     | '/(auth)/auth/_unauthed/phone-verify'
     | '/(auth)/auth/_unauthed/sign-in'
@@ -381,6 +393,7 @@ export interface RootRouteChildren {
   AutheddashboardRouteRoute: typeof AutheddashboardRouteRouteWithChildren
   ApiSearchRoute: typeof ApiSearchRoute
   DocsSplatRoute: typeof DocsSplatRoute
+  ApiNewsletterSubscribeRoute: typeof ApiNewsletterSubscribeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -446,6 +459,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof authAuthRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/newsletter/subscribe': {
+      id: '/api/newsletter/subscribe'
+      path: '/api/newsletter/subscribe'
+      fullPath: '/api/newsletter/subscribe'
+      preLoaderRoute: typeof ApiNewsletterSubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_public/(legal)/terms': {
@@ -694,6 +714,7 @@ const rootRouteChildren: RootRouteChildren = {
   AutheddashboardRouteRoute: AutheddashboardRouteRouteWithChildren,
   ApiSearchRoute: ApiSearchRoute,
   DocsSplatRoute: DocsSplatRoute,
+  ApiNewsletterSubscribeRoute: ApiNewsletterSubscribeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

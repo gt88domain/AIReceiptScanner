@@ -108,6 +108,18 @@
     "footer": {
       "description": "A collection of components for your startup business or side project.",
       "copyright": "© {year} EasyStarter. All rights reserved.",
+      "newsletter": {
+        "title": "Get product updates",
+        "description": "A short, useful note when we ship something worth sharing.",
+        "emailLabel": "Email address",
+        "placeholder": "you@example.com",
+        "submit": "Subscribe",
+        "submitting": "Adding…",
+        "privacy": "No spam. Unsubscribe any time.",
+        "success": "You're subscribed.",
+        "error": "We couldn't subscribe you. Please try again.",
+        "rateLimited": "Please wait a minute before trying again."
+      },
       "social": {
         "github": "GitHub",
         "twitter": "Twitter"

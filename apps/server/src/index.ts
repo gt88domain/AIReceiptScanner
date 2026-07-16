@@ -43,6 +43,7 @@ import { secureHeaders } from "hono/secure-headers";
 import { runCreditMaintenance } from "./credits";
 import { createDb } from "./db";
 import { apiHandler } from "./handlers/api";
+import { subscribeNewsletter } from "./handlers/newsletter";
 import { rpcHandler } from "./handlers/rpc";
 import { handleFileServe } from "./handlers/storage";
 import { createAuth } from "./lib/auth";
@@ -105,6 +106,14 @@ app.use("/api/auth/*", authCorsMiddleware);
  */
 app.use("/api/*", apiCorsMiddleware);
 app.use("/rpc/*", apiCorsMiddleware);
+app.post(
+  "/api/newsletter/subscribe",
+  bodyLimit({
+    maxSize: 1024,
+    onError: (c) => c.json({ error: "Payload too large" }, 413),
+  }),
+  subscribeNewsletter,
+);
 app.use(
   "/api/webhooks/*",
   bodyLimit({

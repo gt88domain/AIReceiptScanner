@@ -108,6 +108,18 @@
     "footer": {
       "description": "スタートアップやサイドプロジェクト向けのコンポーネントコレクションです。",
       "copyright": "© {year} EasyStarter. All rights reserved.",
+      "newsletter": {
+        "title": "プロダクト更新を受け取る",
+        "description": "共有する価値がある更新だけを簡潔にお届けします。",
+        "emailLabel": "メールアドレス",
+        "placeholder": "you@example.com",
+        "submit": "登録",
+        "submitting": "登録中…",
+        "privacy": "スパムは送りません。いつでも配信停止できます。",
+        "success": "登録しました。",
+        "error": "登録できませんでした。もう一度お試しください。",
+        "rateLimited": "1分ほど待ってからもう一度お試しください。"
+      },
       "social": {
         "github": "GitHub",
         "twitter": "Twitter"

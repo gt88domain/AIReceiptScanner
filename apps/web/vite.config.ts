@@ -84,6 +84,14 @@ function resolveBuildEnvValue(
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, appDirectory, "");
   const wranglerVars = loadWranglerVars();
+  const clientBuildEnv = Object.fromEntries(
+    Object.keys(wranglerVars)
+      .filter((key) => key.startsWith("VITE_"))
+      .map((key) => [
+        `import.meta.env.${key}`,
+        JSON.stringify(resolveBuildEnvValue(key, [process.env, env, wranglerVars]) ?? ""),
+      ]),
+  );
   const sitemapHost = resolveBuildEnvValue("VITE_APP_URL", [
     process.env,
     env,
@@ -93,6 +101,7 @@ export default defineConfig(({ mode }) => {
   // development: .env, .env.local, .env.development, .env.development.local
   // production: .env, .env.local, .env.production, .env.production.local
   return {
+    define: clientBuildEnv,
     server: {
       port: 3000,
     },

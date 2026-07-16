@@ -1,5 +1,5 @@
 import { trimTrailingSlash } from "@repo/shared";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { ClientOnly, Link, useRouterState } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
 import React from "react";
 import { LandingPageComposer } from "@/components/features/landing-page-composer";
@@ -205,7 +205,9 @@ export const Header = () => {
                   )}
                   <ThemeSwitch onActionComplete={closeMobileMenu} />
                   <LocaleSwitcher onActionComplete={closeMobileMenu} />
-                  <UserMenu onActionComplete={closeMobileMenu} />
+                  <ClientOnly fallback={<div aria-hidden="true" className="h-9 w-24" />}>
+                    <UserMenu onActionComplete={closeMobileMenu} />
+                  </ClientOnly>
                 </div>
               </div>
             </div>
