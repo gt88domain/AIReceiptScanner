@@ -13,6 +13,7 @@ import {
   getUserStoragePrefixes,
   isAllowedFileSize,
   isAllowedFileType,
+  isStorageEnabled,
   parseStoragePublicUrl,
   resolveStorageProviderKey,
 } from "@/storage";
@@ -58,6 +59,12 @@ export const storageRouter = {
       if (!userId) {
         throw new ORPCError("UNAUTHORIZED", {
           message: t("errors.unauthorized"),
+        });
+      }
+
+      if (!isStorageEnabled()) {
+        throw new ORPCError("FORBIDDEN", {
+          message: "File uploads are disabled",
         });
       }
 

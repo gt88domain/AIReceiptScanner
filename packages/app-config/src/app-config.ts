@@ -233,8 +233,8 @@ const appConfig: AppConfig = {
     },
     // File upload and public asset storage settings.
     storage: {
-      // Controls storage-backed UI entry points.
-      enabled: true,
+      // Disabled by default: the template does not expose an upload feature.
+      enabled: false,
       // Provider used for file storage.
       provider: "r2",
       // Public API path used to serve stored files.

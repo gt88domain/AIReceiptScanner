@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
+    "check-types": "tsc -b",
     "serve": "vite preview",
     "dev": "vite dev --port=3000 --host",
     "start": "pnpm run dev",

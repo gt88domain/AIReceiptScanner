@@ -5,12 +5,14 @@ import { getRequest } from "@tanstack/react-start/server";
 import { env } from "cloudflare:workers";
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL;
+const serverHostname = new URL(SERVER_URL).hostname;
+const useLocalServer = serverHostname === "localhost" || serverHostname === "127.0.0.1";
 
 function createServerClient(cookie: string) {
   return createApiClient<AppRouterClient>({
     baseUrl: SERVER_URL,
     getHeaders: () => ({ cookie }),
-    serviceBinding: env.API_SERVICE, // Use Cloudflare Service Binding if available
+    serviceBinding: useLocalServer ? undefined : env.API_SERVICE,
   });
 }
 

@@ -25,6 +25,12 @@
     "check-types": {
       "dependsOn": ["^check-types"]
     },
+    "web#check-types": {
+      "dependsOn": ["server#check-types"]
+    },
+    "test:integration": {
+      "cache": false
+    },
     "dev": {
       "cache": false,
       "persistent": true

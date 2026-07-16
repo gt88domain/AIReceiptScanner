@@ -18,7 +18,9 @@ export const queryClient = createQueryClient({
 
 // Get service binding if available (server-side only)
 function getServiceBinding() {
-  if (typeof window !== "undefined") return undefined;
+  const serverHostname = new URL(import.meta.env.VITE_SERVER_URL).hostname;
+  const useLocalServer = serverHostname === "localhost" || serverHostname === "127.0.0.1";
+  if (typeof window !== "undefined" || useLocalServer) return undefined;
   return typeof API_SERVICE === "undefined" ? undefined : API_SERVICE;
 }
 

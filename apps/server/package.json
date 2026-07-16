@@ -25,7 +25,9 @@
     "secrets:bulk:production": "wrangler secret bulk .env.production",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
     "generate-types": "wrangler types",
-    "email-preview": "pnpm dlx react-email dev --dir src/emails/templates --port 4000"
+    "email-preview": "pnpm dlx react-email dev --dir src/emails/templates --port 4000",
+    "test:config": "tsx --test src/storage/__tests__/access.test.ts",
+    "test:integration": "tsc --project test/tsconfig.json --noEmit && vitest run --config vitest.config.ts"
   },
   "dependencies": {
     "@better-auth/expo": "^1.6.23",
@@ -51,6 +53,7 @@
     "zod": "^4.0.2"
   },
   "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.18.5",
     "@libsql/client": "^0.17.0",
     "@react-email/preview-server": "5.2.5",
     "@types/node": "^22.13.11",
@@ -59,6 +62,7 @@
     "tsdown": "^0.15.1",
     "tsx": "^4.19.2",
     "typescript": "^5.8.2",
-    "wrangler": "^4.82.2"
+    "vitest": "^4.1.10",
+    "wrangler": "^4.111.0"
   }
 }

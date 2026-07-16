@@ -1,6 +1,7 @@
 import handler from "@tanstack/react-start/server-entry";
 import { extractLocaleFromPath } from "./i18n/config";
 import { applyLocaleMiddleware, handleLocaleMiddleware } from "./i18n/server";
+import { applySecurityHeaders } from "./server/security-headers";
 
 const noIndexPathRegex = /^\/(?:auth|billing|credits|dashboard|settings|users)(?:\/|$)/;
 
@@ -22,13 +23,12 @@ function shouldApplyNoIndex(pathname: string): boolean {
   return noIndexPathRegex.test(stripLocalePrefix(pathname));
 }
 
-function applyNoIndexHeader(response: Response, pathname: string): Response {
-  if (!shouldApplyNoIndex(pathname)) {
-    return response;
+function applyResponseHeaders(response: Response, pathname: string): Response {
+  const nextResponse = applySecurityHeaders(response);
+  if (shouldApplyNoIndex(pathname)) {
+    nextResponse.headers.set("X-Robots-Tag", "noindex, nofollow");
   }
 
-  const nextResponse = new Response(response.body, response);
-  nextResponse.headers.set("X-Robots-Tag", "noindex, nofollow");
   return nextResponse;
 }
 
@@ -39,13 +39,13 @@ export default {
 
     // Handle redirects (e.g., /en/about -> /about)
     if (localeResult.redirect) {
-      return applyNoIndexHeader(localeResult.redirect, pathname);
+      return applyResponseHeaders(localeResult.redirect, pathname);
     }
 
     const response = await handler.fetch(req);
 
     // Apply cookie if needed
     const localeResponse = applyLocaleMiddleware(response, localeResult);
-    return applyNoIndexHeader(localeResponse, pathname);
+    return applyResponseHeaders(localeResponse, pathname);
   },
 };

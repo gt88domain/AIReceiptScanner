@@ -40,6 +40,7 @@ export type {
 } from "./types";
 // Utilities
 export { generateStorageKey } from "./utils";
+export { isStorageEnabled } from "./access";
 
 const r2ProviderCache = new WeakMap<R2Bucket, StorageProvider>();
 const aliyunOssProviderCache = new Map<string, StorageProvider>();
