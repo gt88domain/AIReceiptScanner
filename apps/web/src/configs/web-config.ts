@@ -82,7 +82,7 @@ export function getAuthUrls(): AuthUrls {
   const localizedBaseUrl = getLocalizedBaseUrl();
 
   return {
-    callbackURL: `${localizedBaseUrl}${webRoutes.authSignIn}`,
+    callbackURL: `${localizedBaseUrl}/dashboard`,
     errorCallbackURL: `${localizedBaseUrl}${webRoutes.authSignIn}`,
     resetPasswordCallbackURL: `${localizedBaseUrl}${webRoutes.authResetPassword}`,
   };

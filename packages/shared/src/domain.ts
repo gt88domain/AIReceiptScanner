@@ -45,6 +45,13 @@ export function resolveCrossSubdomainCookieDomain(
 	if (!serverHost || !websiteHost) return undefined;
 	if (serverHost === websiteHost) return undefined;
 
+	// workers.dev is a public suffix; share only within one Cloudflare account subdomain.
+	if (serverHost.endsWith(".workers.dev") && websiteHost.endsWith(".workers.dev")) {
+		const serverAccountDomain = serverHost.split(".").slice(-3).join(".");
+		const websiteAccountDomain = websiteHost.split(".").slice(-3).join(".");
+		return serverAccountDomain === websiteAccountDomain ? serverAccountDomain : undefined;
+	}
+
 	const serverDomain = getRegistrableLikeDomain(serverHost);
 	const websiteDomain = getRegistrableLikeDomain(websiteHost);
 

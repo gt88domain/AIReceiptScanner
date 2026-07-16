@@ -6,8 +6,9 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "mysaas-aiarticles-stage0",
-      "database_id": "7a416317-b295-405d-b20e-c8905295cf39",
+      "database_name": "easystarter-template-preview",
+      "database_id": "d342a49e-68e3-46d1-a0f4-2f405bdf4c60",
+      "migrations_dir": "src/db/migrations",
     },
   ],
   "vars": {
