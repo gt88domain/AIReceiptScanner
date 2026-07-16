@@ -328,6 +328,19 @@
         "confirm": "ログアウト"
       }
     },
+    "home": {
+      "title": "おかえりなさい、{name}",
+      "description": "アカウントの基盤は準備できました。次に SaaS に必要なプロダクトフローを追加できます。",
+      "profileTitle": "プロフィール",
+      "profileDescription": "顧客とチームに表示する名前を設定します。",
+      "profileAction": "プロフィールを編集",
+      "billingTitle": "請求",
+      "billingDescription": "販売の準備ができたらプランを設定します。",
+      "billingAction": "請求を表示",
+      "creditsTitle": "クレジット",
+      "creditsDescription": "従量課金プロダクトでは、この任意の台帳を利用できます。",
+      "creditsAction": "クレジットを管理"
+    },
     "billing": {
       "title": "請求",
       "description": "サブスクリプションと支払い方法を管理します。",
@@ -527,95 +540,6 @@
         "verified": "認証済み",
         "verifiedNumber": "認証済み番号: {phoneNumber}"
       }
-    },
-    "usersTable": {
-      "title": "ユーザー管理",
-      "description": "useDataTableフックとURLベースの状態管理を使用したテーブルの例",
-      "filterPlaceholder": "ユーザーを絞り込み...",
-      "columns": "列",
-      "selectAll": "すべて選択",
-      "selectRow": "行を選択",
-      "name": "名前",
-      "email": "メール",
-      "status": "ステータス",
-      "role": "役割",
-      "createdAt": "作成日",
-      "actions": "アクション",
-      "openMenu": "メニューを開く",
-      "copyUserId": "ユーザーIDをコピー",
-      "viewUser": "ユーザーを表示",
-      "editUser": "ユーザーを編集",
-      "noResults": "結果がありません。",
-      "rowsSelected": "{selected} / {total} 行が選択されています。",
-      "previous": "前へ",
-      "next": "次へ",
-      "statusOptions": {
-        "active": "アクティブ",
-        "inactive": "非アクティブ",
-        "pending": "保留中"
-      },
-      "roleOptions": {
-        "admin": "管理者",
-        "user": "ユーザー",
-        "moderator": "モデレーター"
-      }
-    },
-    "cards": {
-      "totalEarning": "総収入",
-      "comparisonText": "昨年と比較 ($84,325)",
-      "menu": "メニュー",
-      "menuActions": {
-        "share": "共有",
-        "update": "更新",
-        "refresh": "更新"
-      }
-    },
-    "statistics": {
-      "shippedOrders": "発送済み注文",
-      "damagedReturns": "破損返品",
-      "missedDeliverySlots": "配送時間の逃し",
-      "thanLastWeek": "先週より"
-    },
-    "productInsights": {
-      "title": "製品インサイト",
-      "publishedOn": "2025年5月12日 午後6:10 に公開",
-      "productReached": "製品リーチ",
-      "orderPlaced": "注文配置",
-      "productAlt": "製品"
-    },
-    "salesMetrics": {
-      "title": "売上指標",
-      "companyName": "Sandy の会社",
-      "companyEmail": "sandy@company.com",
-      "salesTrend": "売上トレンド",
-      "discountOffers": "割引オファー",
-      "netProfit": "純利益",
-      "totalOrders": "総注文数",
-      "revenueGoal": "収益目標",
-      "totalProfit": "総利益",
-      "planCompleted": "計画完了",
-      "salesPlan": "売上計画",
-      "percentageProfit": "総売上からの利益率",
-      "cohortAnalysis": "コホート分析指標",
-      "cohortDescription": "同じ時期に製品/サービスに参加したユーザーグループの一定期間における行動を分析します。",
-      "openStatistics": "オープン統計",
-      "percentageChange": "パーセンテージ変化",
-      "months": {
-        "january": "1月",
-        "february": "2月",
-        "march": "3月"
-      }
-    },
-    "chart": {
-      "totalVisitors": "総訪問者数",
-      "totalForLast3Months": "過去3ヶ月の合計",
-      "last3Months": "過去3ヶ月",
-      "last30Days": "過去30日",
-      "last7Days": "過去7日",
-      "selectValue": "値を選択",
-      "visitors": "訪問者",
-      "desktop": "デスクトップ",
-      "mobile": "モバイル"
     }
   },
   "billingSuccess": {

@@ -328,6 +328,19 @@
         "confirm": "Sign out"
       }
     },
+    "home": {
+      "title": "Welcome back, {name}",
+      "description": "Your account foundation is ready. Add the product workflows your SaaS needs next.",
+      "profileTitle": "Profile",
+      "profileDescription": "Set the name your customers and teammates see.",
+      "profileAction": "Edit profile",
+      "billingTitle": "Billing",
+      "billingDescription": "Configure plans when you are ready to sell.",
+      "billingAction": "View billing",
+      "creditsTitle": "Credits",
+      "creditsDescription": "Use this optional ledger for usage-based products.",
+      "creditsAction": "Manage credits"
+    },
     "billing": {
       "title": "Billing",
       "description": "Manage your subscription and payment methods.",
@@ -527,95 +540,6 @@
         "verified": "Verified",
         "verifiedNumber": "Verified number: {phoneNumber}"
       }
-    },
-    "usersTable": {
-      "title": "Users Management",
-      "description": "Example table using the useDataTable hook with URL-based state management",
-      "filterPlaceholder": "Filter users...",
-      "columns": "Columns",
-      "selectAll": "Select all",
-      "selectRow": "Select row",
-      "name": "Name",
-      "email": "Email",
-      "status": "Status",
-      "role": "Role",
-      "createdAt": "Created At",
-      "actions": "Actions",
-      "openMenu": "Open menu",
-      "copyUserId": "Copy user ID",
-      "viewUser": "View user",
-      "editUser": "Edit user",
-      "noResults": "No results.",
-      "rowsSelected": "{selected} of {total} row(s) selected.",
-      "previous": "Previous",
-      "next": "Next",
-      "statusOptions": {
-        "active": "Active",
-        "inactive": "Inactive",
-        "pending": "Pending"
-      },
-      "roleOptions": {
-        "admin": "Admin",
-        "user": "User",
-        "moderator": "Moderator"
-      }
-    },
-    "cards": {
-      "totalEarning": "Total Earning",
-      "comparisonText": "Compare to last year ($84,325)",
-      "menu": "Menu",
-      "menuActions": {
-        "share": "Share",
-        "update": "Update",
-        "refresh": "Refresh"
-      }
-    },
-    "statistics": {
-      "shippedOrders": "Shipped Orders",
-      "damagedReturns": "Damaged Returns",
-      "missedDeliverySlots": "Missed Delivery Slots",
-      "thanLastWeek": "than last week"
-    },
-    "productInsights": {
-      "title": "Product insight",
-      "publishedOn": "Published on 12 MAY 2025 - 6:10 PM",
-      "productReached": "Product reached",
-      "orderPlaced": "Order placed",
-      "productAlt": "Product"
-    },
-    "salesMetrics": {
-      "title": "Sales metrics",
-      "companyName": "Sandy's Company",
-      "companyEmail": "sandy@company.com",
-      "salesTrend": "Sales trend",
-      "discountOffers": "Discount offers",
-      "netProfit": "Net profit",
-      "totalOrders": "Total orders",
-      "revenueGoal": "Revenue goal",
-      "totalProfit": "Total Profit",
-      "planCompleted": "Plan completed",
-      "salesPlan": "Sales plan",
-      "percentageProfit": "Percentage profit from total sales",
-      "cohortAnalysis": "Cohort analysis indicators",
-      "cohortDescription": "Analyzes the behaviour of a group of users who joined a product/service at the same time. over a certain period.",
-      "openStatistics": "Open Statistics",
-      "percentageChange": "Percentage Change",
-      "months": {
-        "january": "January",
-        "february": "February",
-        "march": "March"
-      }
-    },
-    "chart": {
-      "totalVisitors": "Total Visitors",
-      "totalForLast3Months": "Total for the last 3 months",
-      "last3Months": "Last 3 months",
-      "last30Days": "Last 30 days",
-      "last7Days": "Last 7 days",
-      "selectValue": "Select a value",
-      "visitors": "Visitors",
-      "desktop": "Desktop",
-      "mobile": "Mobile"
     }
   },
   "billingSuccess": {

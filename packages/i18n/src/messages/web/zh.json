@@ -328,6 +328,19 @@
         "confirm": "退出登录"
       }
     },
+    "home": {
+      "title": "欢迎回来，{name}",
+      "description": "账号基础已就绪。接下来可按 SaaS 产品需求添加业务工作流。",
+      "profileTitle": "个人资料",
+      "profileDescription": "设置客户和团队成员看到的名称。",
+      "profileAction": "编辑资料",
+      "billingTitle": "账单",
+      "billingDescription": "准备销售时再配置套餐。",
+      "billingAction": "查看账单",
+      "creditsTitle": "积分",
+      "creditsDescription": "按量计费产品可选用此账本。",
+      "creditsAction": "管理积分"
+    },
     "billing": {
       "title": "账单",
       "description": "管理订阅与支付方式。",
@@ -527,95 +540,6 @@
         "verified": "已验证",
         "verifiedNumber": "已验证号码：{phoneNumber}"
       }
-    },
-    "usersTable": {
-      "title": "用户管理",
-      "description": "使用 useDataTable 钩子和基于 URL 的状态管理的表格示例",
-      "filterPlaceholder": "筛选用户...",
-      "columns": "列",
-      "selectAll": "全选",
-      "selectRow": "选择行",
-      "name": "姓名",
-      "email": "邮箱",
-      "status": "状态",
-      "role": "角色",
-      "createdAt": "创建时间",
-      "actions": "操作",
-      "openMenu": "打开菜单",
-      "copyUserId": "复制用户ID",
-      "viewUser": "查看用户",
-      "editUser": "编辑用户",
-      "noResults": "无结果。",
-      "rowsSelected": "已选择 {selected} / {total} 行。",
-      "previous": "上一页",
-      "next": "下一页",
-      "statusOptions": {
-        "active": "活跃",
-        "inactive": "非活跃",
-        "pending": "待处理"
-      },
-      "roleOptions": {
-        "admin": "管理员",
-        "user": "用户",
-        "moderator": "版主"
-      }
-    },
-    "cards": {
-      "totalEarning": "总收入",
-      "comparisonText": "与去年相比 ($84,325)",
-      "menu": "菜单",
-      "menuActions": {
-        "share": "分享",
-        "update": "更新",
-        "refresh": "刷新"
-      }
-    },
-    "statistics": {
-      "shippedOrders": "已发货订单",
-      "damagedReturns": "损坏退货",
-      "missedDeliverySlots": "错过的配送时段",
-      "thanLastWeek": "比上周"
-    },
-    "productInsights": {
-      "title": "产品洞察",
-      "publishedOn": "发布于 2025年5月12日 - 下午6:10",
-      "productReached": "产品触达",
-      "orderPlaced": "订单下达",
-      "productAlt": "产品"
-    },
-    "salesMetrics": {
-      "title": "销售指标",
-      "companyName": "Sandy 公司",
-      "companyEmail": "sandy@company.com",
-      "salesTrend": "销售趋势",
-      "discountOffers": "折扣优惠",
-      "netProfit": "净利润",
-      "totalOrders": "总订单",
-      "revenueGoal": "收入目标",
-      "totalProfit": "总利润",
-      "planCompleted": "计划完成",
-      "salesPlan": "销售计划",
-      "percentageProfit": "总销售额的利润百分比",
-      "cohortAnalysis": "队列分析指标",
-      "cohortDescription": "分析在同一时间加入产品/服务的一组用户在特定时期内的行为。",
-      "openStatistics": "开放统计",
-      "percentageChange": "百分比变化",
-      "months": {
-        "january": "一月",
-        "february": "二月",
-        "march": "三月"
-      }
-    },
-    "chart": {
-      "totalVisitors": "总访客数",
-      "totalForLast3Months": "过去3个月的总数",
-      "last3Months": "过去3个月",
-      "last30Days": "过去30天",
-      "last7Days": "过去7天",
-      "selectValue": "选择一个值",
-      "visitors": "访客",
-      "desktop": "桌面端",
-      "mobile": "移动端"
     }
   },
   "billingSuccess": {
