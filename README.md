@@ -1,4 +1,4 @@
-# EasyStarter
+# TanStack Template
 
 A modern full-stack TypeScript template for building SaaS applications with zero configuration required.
 
@@ -68,7 +68,7 @@ A modern full-stack TypeScript template for building SaaS applications with zero
 ```bash
 # 1. Clone and install dependencies
 git clone <your-repo-url>
-cd easystarter
+cd tanstack-template
 pnpm install
 
 # 2. Set up environment files (copy from examples and configure)

@@ -23,7 +23,7 @@ type ForgotPasswordEmailProps = {
 export const PreviewProps: ForgotPasswordEmailProps = {
   name: "Jamie",
   resetUrl: "https://example.com/reset",
-  appName: "EasyStarter",
+  appName: "TanStack Template",
   locale: defaultLocale,
 };
 

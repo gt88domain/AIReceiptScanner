@@ -107,7 +107,7 @@
     },
     "footer": {
       "description": "为你的创业项目或副业提供的一套组件集合。",
-      "copyright": "© {year} EasyStarter. 保留所有权利。",
+      "copyright": "© {year} TanStack Template. 保留所有权利。",
       "newsletter": {
         "title": "获取产品更新",
         "description": "只在有值得分享的新内容时发送简短更新。",
@@ -632,7 +632,7 @@
   },
   "seo": {
     "home": {
-      "description": "EasyStarter 是一个现代全栈 TypeScript SaaS 模板，内置认证、支付、国际化与部署能力。"
+      "description": "TanStack Template 是一个现代全栈 TypeScript SaaS 模板，内置认证、支付、国际化与部署能力。"
     },
     "noIndex": {
       "descriptionTemplate": "{page}页面属于站内流程页，已禁止搜索引擎收录。",
@@ -684,7 +684,7 @@
         },
         "contactUs": {
           "title": "联系我们",
-          "content": "如果你对隐私有任何问题或请求，请通过 support@easystarter.dev 联系我们。"
+          "content": "如果你对隐私有任何问题或请求，请通过 support@demo.aiarticles.com 联系我们。"
         }
       }
     },
@@ -726,7 +726,7 @@
         },
         "contactUs": {
           "title": "联系我们",
-          "content": "如果你对本条款有疑问，请联系 support@easystarter.dev。"
+          "content": "如果你对本条款有疑问，请联系 support@demo.aiarticles.com。"
         }
       }
     }

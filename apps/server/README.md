@@ -24,13 +24,13 @@ cp .env.production.example .env.production
 #    Keep ONLY secret values if the same key already exists in wrangler.jsonc vars
 #    (for this repo: GITHUB_CLIENT_ID / GOOGLE_CLIENT_ID are in wrangler.jsonc vars)
 
-# 3. Upload secrets to the default worker (easystarter-server)
+# 3. Upload secrets to the default worker (tanstack-template-server)
 pnpm run secrets:bulk:production
 
 # 4A. Deploy default worker (same worker name)
 pnpm run deploy:dev
 
-# 4B. Deploy env worker (new worker name: easystarter-server-production)
+# 4B. Deploy env worker (new worker name: tanstack-template-server-production)
 #     Use this only if you intentionally manage a separate production worker
 #     and already configured secrets/bindings for that env worker
 pnpm run deploy
@@ -41,18 +41,18 @@ pnpm run deploy
 This repository currently supports two deployment modes:
 
 1. **Single worker mode (recommended for now)**
-   - Worker name: `easystarter-server`
+   - Worker name: `tanstack-template-server`
    - Secret upload: `pnpm run secrets:bulk:production`
    - Deploy command: `pnpm run deploy:dev`
 
 2. **Environment worker mode**
-   - Worker name: `easystarter-server-production` (triggered by `--env production`)
+   - Worker name: `tanstack-template-server-production` (triggered by `--env production`)
    - Deploy command: `pnpm run deploy`
    - You must separately configure secrets and bindings for this worker.
 
 ### Common Errors
 
-1. `There doesn't seem to be a Worker called "easystarter-server-production"`
+1. `There doesn't seem to be a Worker called "tanstack-template-server-production"`
    - Cause: using `--env production` creates/targets a different worker name.
    - Fix: use `pnpm run deploy:dev` if you want the original worker.
 
@@ -152,7 +152,7 @@ and `pnpm run db:studio:local` now initialize that sqlite automatically.
 | `pnpm run dev`                     | Start local dev server (port 3001)                 |
 | `pnpm run dev:init-d1`             | Initialize local D1 sqlite without starting server |
 | `pnpm run deploy`                  | Deploy to env worker (`--env production`)          |
-| `pnpm run deploy:dev`              | Deploy to default worker (`easystarter-server`)    |
+| `pnpm run deploy:dev`              | Deploy to default worker (`tanstack-template-server`)    |
 | `pnpm run secrets:bulk:production` | Bulk upload production envs from `.env.production` |
 | `pnpm run db:generate`             | Generate DB migration                              |
 | `pnpm run db:migrate:local`        | Initialize local D1 if needed, then run migrations |

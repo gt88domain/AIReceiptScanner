@@ -7,4 +7,4 @@ Workspace applications.
 - `native`: Expo mobile app.
 
 Prefer adding product-specific web/server code under `src/custom/<module>/`
-before touching EasyStarter internals.
+before touching TanStack Template internals.

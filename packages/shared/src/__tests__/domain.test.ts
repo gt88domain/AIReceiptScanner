@@ -5,8 +5,8 @@ describe("resolveCrossSubdomainCookieDomain", () => {
 	it("uses the Cloudflare account subdomain instead of the workers.dev public suffix", () => {
 		expect(
 			resolveCrossSubdomainCookieDomain(
-				"https://easystarter-server.gt88hel.workers.dev",
-				"https://easystarter-web.gt88hel.workers.dev",
+                "https://tanstack-template-server.gt88hel.workers.dev",
+                "https://tanstack-template-web.gt88hel.workers.dev",
 			),
 		).toBe("gt88hel.workers.dev");
 	});

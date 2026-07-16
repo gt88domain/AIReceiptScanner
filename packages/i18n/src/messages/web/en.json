@@ -107,7 +107,7 @@
     },
     "footer": {
       "description": "A collection of components for your startup business or side project.",
-      "copyright": "© {year} EasyStarter. All rights reserved.",
+      "copyright": "© {year} TanStack Template. All rights reserved.",
       "newsletter": {
         "title": "Get product updates",
         "description": "A short, useful note when we ship something worth sharing.",
@@ -632,7 +632,7 @@
   },
   "seo": {
     "home": {
-      "description": "EasyStarter is a modern full-stack TypeScript SaaS template with auth, billing, i18n, and deployment workflows built in."
+      "description": "TanStack Template is a modern full-stack TypeScript SaaS template with auth, billing, i18n, and deployment workflows built in."
     },
     "noIndex": {
       "descriptionTemplate": "{page} pages are private workflows and are excluded from search indexing.",
@@ -684,7 +684,7 @@
         },
         "contactUs": {
           "title": "Contact Us",
-          "content": "If you have privacy questions or requests, contact us at support@easystarter.dev."
+          "content": "If you have privacy questions or requests, contact us at support@demo.aiarticles.com."
         }
       }
     },
@@ -726,7 +726,7 @@
         },
         "contactUs": {
           "title": "Contact Us",
-          "content": "For questions about these terms, please contact support@easystarter.dev."
+          "content": "For questions about these terms, please contact support@demo.aiarticles.com."
         }
       }
     }

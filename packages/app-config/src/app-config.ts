@@ -83,7 +83,7 @@ const nativeCreditPackages = [
       // iOS product configured in RevenueCat/App Store Connect.
       ios: {
         provider: "revenuecat",
-        providerProductId: "easystarter_credits_starter_ios",
+        providerProductId: "tanstack_template_credits_starter_ios",
         currency: "usd",
         amountCents: 499,
         status: "active",
@@ -91,7 +91,7 @@ const nativeCreditPackages = [
       // Android product configured in RevenueCat/Google Play.
       android: {
         provider: "revenuecat",
-        providerProductId: "easystarter_credits_starter_android",
+        providerProductId: "tanstack_template_credits_starter_android",
         currency: "usd",
         amountCents: 499,
         status: "active",
@@ -108,7 +108,7 @@ const nativeCreditPackages = [
       // iOS product configured in RevenueCat/App Store Connect.
       ios: {
         provider: "revenuecat",
-        providerProductId: "easystarter_credits_growth_ios",
+        providerProductId: "tanstack_template_credits_growth_ios",
         currency: "usd",
         amountCents: 1999,
         status: "active",
@@ -116,7 +116,7 @@ const nativeCreditPackages = [
       // Android product configured in RevenueCat/Google Play.
       android: {
         provider: "revenuecat",
-        providerProductId: "easystarter_credits_growth_android",
+        providerProductId: "tanstack_template_credits_growth_android",
         currency: "usd",
         amountCents: 1999,
         status: "active",
@@ -168,15 +168,15 @@ const appConfig: AppConfig = {
     // Public app metadata used in UI, links, and platform setup.
     app: {
       // Product display name.
-      name: "EasyStarter",
+      name: "TanStack Template",
       // Deep-link scheme used by the native app.
-      nativeScheme: "easystarter-native",
+      nativeScheme: "com.aiarticles.template",
       // Public support contact.
-      supportEmail: "support@easystarter.com",
+      supportEmail: "support@demo.aiarticles.com",
       // Official marketing or product website.
-      websiteUrl: "https://www.easystarter.com",
+      websiteUrl: "https://demo.aiarticles.com",
       // Public social profile URL.
-      socialUrl: "https://x.com/ios_1261142602",
+      socialUrl: "https://x.com",
       // App Store listing URL used by sharing and rating flows.
       appStoreUrl: "https://apps.apple.com/app/id",
     },
@@ -191,11 +191,11 @@ const appConfig: AppConfig = {
         // Controls SMS auth UI entry points.
         smsEnabled: false,
         // Controls GitHub sign-in UI entry points.
-        githubEnabled: true,
+        githubEnabled: false,
         // Controls Google sign-in UI entry points.
-        googleEnabled: true,
+        googleEnabled: false,
         // Controls Apple sign-in UI entry points.
-        appleEnabled: true,
+        appleEnabled: false,
       },
       // One-time code settings shared by auth flows.
       otp: {
@@ -228,7 +228,7 @@ const appConfig: AppConfig = {
       // Sender address parts combined into localPart@domain.
       from: {
         localPart: "noreply",
-        domain: "easystarter.dev",
+        domain: "demo.aiarticles.com",
       },
     },
     // File upload and public asset storage settings.
@@ -388,9 +388,9 @@ const appConfig: AppConfig = {
     // Native app metadata overrides.
     app: {
       // Native app display name.
-      name: "easystarter-native",
+      name: "TanStack Template",
       // Deep-link scheme used by the native app.
-      nativeScheme: "easystarter-native",
+      nativeScheme: "com.aiarticles.template",
     },
     // Native deep-link and legal document routes.
     routes: {
@@ -420,7 +420,7 @@ const appConfig: AppConfig = {
                 // Monthly iOS subscription product.
                 id: "monthly",
                 provider: "revenuecat",
-                providerPriceId: "easystarternative_10_1m",
+                providerPriceId: "tanstack_template_native_10_1m",
                 currency: "usd",
                 amountCents: 1000,
                 priceType: "subscription",
@@ -431,7 +431,7 @@ const appConfig: AppConfig = {
                 // Yearly iOS subscription product.
                 id: "yearly",
                 provider: "revenuecat",
-                providerPriceId: "easystarternative_100_1y",
+                providerPriceId: "tanstack_template_native_100_1y",
                 currency: "usd",
                 amountCents: 10000,
                 priceType: "subscription",
@@ -448,7 +448,7 @@ const appConfig: AppConfig = {
                 // Lifetime iOS product.
                 id: "lifetime",
                 provider: "revenuecat",
-                providerPriceId: "easystarternative_299_lifetime",
+                providerPriceId: "tanstack_template_native_299_lifetime",
                 currency: "usd",
                 amountCents: 200000,
                 priceType: "lifetime",

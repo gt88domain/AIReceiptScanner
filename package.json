@@ -1,5 +1,5 @@
 {
-  "name": "easystarter",
+  "name": "tanstack-template",
   "private": true,
   "workspaces": [
     "apps/*",

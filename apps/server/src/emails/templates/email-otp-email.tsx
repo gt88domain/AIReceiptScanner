@@ -20,7 +20,7 @@ type EmailOtpEmailProps = {
 };
 
 export const PreviewProps: EmailOtpEmailProps = {
-  appName: "EasyStarter",
+  appName: "TanStack Template",
   expiresInMinutes: 5,
   locale: defaultLocale,
   otp: "123456",

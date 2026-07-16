@@ -1,7 +1,7 @@
 # Discovery Custom Module
 
 This directory owns MySaaS Discovery UI that is intentionally separate from
-EasyStarter core.
+TanStack Template core.
 
 `listing/` contains the shared listing frame, the standard public filter rail,
 controlled search/sort controls, load-more command, grid, states, and small

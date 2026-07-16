@@ -107,7 +107,7 @@
     },
     "footer": {
       "description": "スタートアップやサイドプロジェクト向けのコンポーネントコレクションです。",
-      "copyright": "© {year} EasyStarter. All rights reserved.",
+      "copyright": "© {year} TanStack Template. All rights reserved.",
       "newsletter": {
         "title": "プロダクト更新を受け取る",
         "description": "共有する価値がある更新だけを簡潔にお届けします。",
@@ -632,7 +632,7 @@
   },
   "seo": {
     "home": {
-      "description": "EasyStarter は、認証・課金・多言語対応を備えたモダンな TypeScript SaaS テンプレートです。"
+      "description": "TanStack Template は、認証・課金・多言語対応を備えたモダンな TypeScript SaaS テンプレートです。"
     },
     "noIndex": {
       "descriptionTemplate": "{page}ページは内部フローのため、検索エンジンのインデックス対象外です。",
@@ -684,7 +684,7 @@
         },
         "contactUs": {
           "title": "お問い合わせ",
-          "content": "プライバシーに関するご質問やご要望は support@easystarter.dev までご連絡ください。"
+          "content": "プライバシーに関するご質問やご要望は support@demo.aiarticles.com までご連絡ください。"
         }
       }
     },
@@ -726,7 +726,7 @@
         },
         "contactUs": {
           "title": "お問い合わせ",
-          "content": "本規約に関するご質問は support@easystarter.dev までご連絡ください。"
+          "content": "本規約に関するご質問は support@demo.aiarticles.com までご連絡ください。"
         }
       }
     }

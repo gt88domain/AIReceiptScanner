@@ -23,7 +23,7 @@ type SignUpVerifyEmailProps = {
 export const PreviewProps: SignUpVerifyEmailProps = {
   name: "Jamie",
   verificationUrl: "https://example.com/verify",
-  appName: "EasyStarter",
+  appName: "TanStack Template",
   locale: defaultLocale,
 };
 

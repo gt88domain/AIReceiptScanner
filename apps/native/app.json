@@ -1,16 +1,16 @@
 {
   "expo": {
-    "name": "EasyStarterNative",
-    "slug": "easystarter-native",
+    "name": "TanStack Template",
+    "slug": "tanstack-template",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "easystarter-native",
+    "scheme": "com.aiarticles.template",
     "userInterfaceStyle": "automatic",
     "ios": {
       "appleTeamId": "8622M955TV",
       "buildNumber": "1.0.0",
-      "bundleIdentifier": "native.easystarter.dev",
+      "bundleIdentifier": "com.aiarticles.template",
       "deploymentTarget": "16.4",
       "usesAppleSignIn": true,
       "icon": {
@@ -29,7 +29,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "xnative.easystarter.dev"
+      "package": "com.aiarticles.template"
     },
     "plugins": [
       "expo-router",

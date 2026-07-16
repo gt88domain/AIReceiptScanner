@@ -1,5 +1,5 @@
 /**
- * EasyStarter API Server
+ * TanStack Template API Server
  *
  * A Hono-based API server running on Cloudflare Workers with D1 database.
  *
@@ -294,12 +294,12 @@ app.use("/api/*", async (c, next) => {
  * GET /
  *
  * Returns server status for monitoring and load balancer health checks.
- * Response: { status: "ok", service: "easystarter API", version: "1.0.0", timestamp: ISO8601 }
+ * Response: { status: "ok", service: "tanstack-template API", version: "1.0.0", timestamp: ISO8601 }
  */
 app.get("/", (c) =>
   c.json({
     status: "ok",
-    service: "easystarter API",
+    service: "tanstack-template API",
     version: "1.0.0",
     timestamp: new Date().toISOString(),
   }),

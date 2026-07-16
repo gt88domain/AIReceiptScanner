@@ -10,9 +10,9 @@
       "environment": "development",
 
       "env": {
-        "EXPO_PUBLIC_SERVER_API_URL": "https://server.easystarter.dev",
-        "EXPO_PUBLIC_WEB_APP_URL": "https://easystarter-web.gt88hel.workers.dev",
-        "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY": "appl_GutoexiMibsvBDxBTXJvcjYvRWR",
+        "EXPO_PUBLIC_SERVER_API_URL": "https://api.demo.aiarticles.com",
+        "EXPO_PUBLIC_WEB_APP_URL": "https://demo.aiarticles.com",
+        "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY": "your-revenuecat-public-sdk-key",
         "EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID": "pro",
         "EXPO_PUBLIC_OPENPANEL_CLIENT_ID": "your-openpanel-client-id",
         "EXPO_PUBLIC_OPENPANEL_CLIENT_SECRET": "your-openpanel-client-secret"
@@ -24,9 +24,9 @@
       "environment": "preview",
 
       "env": {
-        "EXPO_PUBLIC_SERVER_API_URL": "https://server.easystarter.dev",
-        "EXPO_PUBLIC_WEB_APP_URL": "https://easystarter-web.gt88hel.workers.dev",
-        "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY": "appl_GutoexiMibsvBDxBTXJvcjYvRWR",
+        "EXPO_PUBLIC_SERVER_API_URL": "https://api.demo.aiarticles.com",
+        "EXPO_PUBLIC_WEB_APP_URL": "https://demo.aiarticles.com",
+        "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY": "your-revenuecat-public-sdk-key",
         "EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID": "pro",
         "EXPO_PUBLIC_OPENPANEL_CLIENT_ID": "your-openpanel-client-id",
         "EXPO_PUBLIC_OPENPANEL_CLIENT_SECRET": "your-openpanel-client-secret"
@@ -38,9 +38,9 @@
       "environment": "production",
 
       "env": {
-        "EXPO_PUBLIC_SERVER_API_URL": "https://server.easystarter.dev",
-        "EXPO_PUBLIC_WEB_APP_URL": "https://easystarter-web.gt88hel.workers.dev",
-        "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY": "appl_GutoexiMibsvBDxBTXJvcjYvRWR",
+        "EXPO_PUBLIC_SERVER_API_URL": "https://api.demo.aiarticles.com",
+        "EXPO_PUBLIC_WEB_APP_URL": "https://demo.aiarticles.com",
+        "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY": "your-revenuecat-public-sdk-key",
         "EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID": "pro",
         "EXPO_PUBLIC_OPENPANEL_CLIENT_ID": "your-openpanel-client-id",
         "EXPO_PUBLIC_OPENPANEL_CLIENT_SECRET": "your-openpanel-client-secret"

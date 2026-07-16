@@ -17,7 +17,7 @@ describe("server Worker", () => {
     expect(response.headers.get("X-Frame-Options")).toBeTruthy();
     await expect(response.json()).resolves.toMatchObject({
       status: "ok",
-      service: "easystarter API",
+      service: "tanstack-template API",
     });
   });
 

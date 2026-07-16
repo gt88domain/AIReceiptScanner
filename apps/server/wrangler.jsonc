@@ -1,8 +1,14 @@
 {
-  "name": "easystarter-server",
+  "name": "tanstack-template-server",
   "main": "src/index.ts",
   "compatibility_date": "2026-07-14",
   "compatibility_flags": ["nodejs_compat"],
+  "routes": [
+    {
+      "pattern": "api.demo.aiarticles.com",
+      "custom_domain": true,
+    },
+  ],
   "d1_databases": [
     {
       "binding": "DB",
@@ -13,13 +19,9 @@
   ],
   "vars": {
     "NODE_ENV": "production",
-    "WEBSITE_URL": "https://easystarter-web.gt88hel.workers.dev",
-    "SERVER_URL": "https://easystarter-server.gt88hel.workers.dev",
-    // Add non-sensitive public IDs here:
-    // GitHub OAuth client ID
-    "GITHUB_CLIENT_ID": "Ov23liJZZtODJ0YsClHs",
-    // Google OAuth client ID
-    "GOOGLE_CLIENT_ID": "895860292632-mt94ccat279506bmk2n59s8c4evt87me.apps.googleusercontent.com",
+    "WEBSITE_URL": "https://demo.aiarticles.com",
+    "SERVER_URL": "https://api.demo.aiarticles.com",
+    // Add OAuth client IDs only after enabling the matching provider in app-config.
   },
   "r2_buckets": [
     {
