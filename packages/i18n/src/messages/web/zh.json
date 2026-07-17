@@ -307,6 +307,7 @@
       "general": "常规",
       "dashboard": "仪表盘",
       "users": "用户管理",
+      "admin": "管理员",
       "other": "其他",
       "settings": "设置",
       "profile": "个人资料",
@@ -440,8 +441,8 @@
       }
     },
     "users": {
-      "title": "用户管理",
-      "description": "查看和管理已注册用户账号。",
+      "title": "注册用户",
+      "description": "管理员只读查看已注册账号。",
       "refresh": "刷新",
       "table": {
         "avatar": "头像",

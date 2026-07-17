@@ -60,6 +60,7 @@ export function createAuth(d1: D1Database) {
   if (cached) return cached;
 
   const db = drizzle(d1);
+  const runtimeNodeEnv: string | undefined = process.env.NODE_ENV;
   const { cookieDomain, sameSite, secure } = resolveCookiePolicy(env.SERVER_URL, env.WEBSITE_URL);
   const auth = betterAuth<BetterAuthOptions>({
     baseURL: env.SERVER_URL || "",
@@ -107,7 +108,7 @@ export function createAuth(d1: D1Database) {
       nativeConfig.app.name + "://",
 
       // Development mode - Expo's exp:// scheme with local IP ranges
-      ...(process.env.NODE_ENV === "development"
+      ...(runtimeNodeEnv === "development"
         ? [
             "exp://", // Trust all Expo URLs (prefix matching)
             "exp://**", // Trust all Expo URLs (wildcard matching)

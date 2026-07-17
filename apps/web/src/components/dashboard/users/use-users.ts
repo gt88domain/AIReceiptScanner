@@ -6,7 +6,7 @@ import { client } from "@/utils/orpc";
 
 // Query keys for cache management
 export const usersKeys = {
-  all: ["users"] as const,
+  all: ["admin", "users"] as const,
   lists: () => [...usersKeys.all, "lists"] as const,
   list: (params: { pageIndex: number; pageSize: number; search: string; sorting: SortingState }) =>
     [...usersKeys.lists(), params] as const,
@@ -32,7 +32,7 @@ export function useUsers({ pageIndex, pageSize, search, sorting }: UseUsersParam
       sorting,
     }),
     queryFn: async () => {
-      const result = await client.users.list({
+      const result = await client.admin.listUsers({
         page: pageIndex + 1,
         perPage: pageSize,
         name: search || undefined,

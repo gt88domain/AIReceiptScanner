@@ -53,6 +53,8 @@ export async function createContext({ context }: CreateContextOptions) {
   });
 
   return {
+    // Server-only Worker bindings. Never return this object from an RPC procedure.
+    env: context.env,
     session,
     db,
     auth,

@@ -30,6 +30,7 @@ const getTranslationKey = (title: string) => {
     General: "dashboard.nav.general",
     Dashboard: "dashboard.nav.dashboard",
     Users: "dashboard.nav.users",
+    Admin: "dashboard.nav.admin",
     Other: "dashboard.nav.other",
     Settings: "dashboard.nav.settings",
     Profile: "dashboard.nav.profile",

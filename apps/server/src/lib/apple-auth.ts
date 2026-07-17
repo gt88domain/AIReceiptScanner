@@ -90,6 +90,7 @@ function getAppleEmailVerified(
 }
 
 export async function verifyAppleIdentityToken(token: string, nonce?: string) {
+  const runtimeNodeEnv: string = env.NODE_ENV;
   const { alg, kid } = decodeProtectedHeader(token);
 
   if (!alg) {
@@ -105,7 +106,7 @@ export async function verifyAppleIdentityToken(token: string, nonce?: string) {
     };
 
     const verificationResult =
-      env.NODE_ENV === "development"
+      runtimeNodeEnv === "development"
         ? await jwtVerify(
             token,
             await getLocalAppleSigningKey(kid ?? "", alg),

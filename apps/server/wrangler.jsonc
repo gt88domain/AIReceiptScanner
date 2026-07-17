@@ -22,6 +22,12 @@
     "WEBSITE_URL": "https://demo.aiarticles.com",
     "SERVER_URL": "https://api.demo.aiarticles.com",
     // Add OAuth client IDs only after enabling the matching provider in app-config.
+    "GITHUB_CLIENT_ID": "",
+    "GOOGLE_CLIENT_ID": "",
+    "APPLE_APP_BUNDLE_IDENTIFIER": "",
+  },
+  "secrets": {
+    "required": ["ADMIN_EMAILS", "BETTER_AUTH_SECRET"],
   },
   "r2_buckets": [
     {

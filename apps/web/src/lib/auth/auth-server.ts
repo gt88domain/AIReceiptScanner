@@ -23,4 +23,12 @@ export const getCurrentUser = createServerFn({ method: "GET" }).handler(async ()
   return client.getCurrentUser();
 });
 
+/** Server-side route guard; the allowlist itself remains in the API Worker's secret. */
+export const getAdminAccess = createServerFn({ method: "GET" }).handler(async () => {
+  const request = getRequest();
+  const cookie = request?.headers.get("cookie") ?? "";
+  const client = createServerClient(cookie);
+  return client.admin.getAccess();
+});
+
 export type CurrentUser = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;

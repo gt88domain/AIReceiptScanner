@@ -307,6 +307,7 @@
       "general": "一般",
       "dashboard": "ダッシュボード",
       "users": "ユーザー",
+      "admin": "管理者",
       "other": "その他",
       "settings": "設定",
       "profile": "プロフィール",
@@ -440,8 +441,8 @@
       }
     },
     "users": {
-      "title": "ユーザー管理",
-      "description": "登録済みユーザーアカウントを確認・管理します。",
+      "title": "登録ユーザー",
+      "description": "管理者専用の登録アカウント閲覧画面です。",
       "refresh": "更新",
       "table": {
         "avatar": "アバター",

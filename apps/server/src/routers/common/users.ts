@@ -1,7 +1,7 @@
 import { env } from "cloudflare:workers";
 import { ORPCError } from "@orpc/server";
-import { and, asc, count, desc, eq, isNotNull, isNull, like, or } from "drizzle-orm";
-import { getVisibleUserName, isPhoneUser } from "@repo/shared";
+import { and, eq, isNotNull, isNull } from "drizzle-orm";
+import { getVisibleUserName } from "@repo/shared";
 import { z } from "zod";
 import { account, session, user } from "@/db/schema/auth";
 import type { Context } from "@/lib/context";
@@ -13,22 +13,6 @@ import {
   getUserStoragePrefix,
   parseStoragePublicUrl,
 } from "@/storage";
-
-// Input schemas
-const listUsersInputSchema = z.object({
-  page: z.number().min(1).default(1),
-  perPage: z.number().min(1).max(100).default(10),
-  name: z.string().optional(),
-  sort: z
-    .array(
-      z.object({
-        id: z.enum(["name", "email", "createdAt"]),
-        desc: z.boolean(),
-      }),
-    )
-    .optional()
-    .default([{ id: "createdAt", desc: true }]),
-});
 
 // Output schemas
 const userSchema = z.object({
@@ -43,84 +27,8 @@ const userSchema = z.object({
   updatedAt: z.date(),
 });
 
-const listUsersOutputSchema = z.object({
-  data: z.array(userSchema),
-  pageCount: z.number(),
-  total: z.number(),
-});
-
-type UserListItem = z.infer<typeof userSchema>;
-
-// Demo-safe identity pool used for deterministic masking.
-const MASK_FIRST_NAMES = [
-  "Alex",
-  "Jordan",
-  "Taylor",
-  "Casey",
-  "Riley",
-  "Morgan",
-  "Avery",
-  "Quinn",
-] as const;
-
-const MASK_LAST_NAMES = [
-  "Smith",
-  "Johnson",
-  "Brown",
-  "Davis",
-  "Miller",
-  "Wilson",
-  "Moore",
-  "Clark",
-] as const;
-
-const MASK_EMAIL_DOMAIN = "example.test";
-
-// FNV-1a hash for stable pseudo-identities from the same real input.
-function hashString(value: string): number {
-  let hash = 2166136261;
-  for (let i = 0; i < value.length; i++) {
-    hash ^= value.charCodeAt(i);
-    hash = Math.imul(hash, 16777619);
-  }
-  return hash >>> 0;
-}
-
-function toBase36(value: number, minLength: number): string {
-  return value.toString(36).padStart(minLength, "0");
-}
-
-// Keep output schema unchanged while replacing PII with deterministic fake values.
-// This allows pagination/sorting/search to stay driven by real DB queries.
-function maskUser(userItem: UserListItem): UserListItem {
-  const primarySeed = hashString(`${env.BETTER_AUTH_SECRET}:${userItem.id}`);
-  const secondarySeed = hashString(`${userItem.email}:${userItem.createdAt.toISOString()}`);
-  const firstName = MASK_FIRST_NAMES[primarySeed % MASK_FIRST_NAMES.length];
-  const lastName = MASK_LAST_NAMES[secondarySeed % MASK_LAST_NAMES.length];
-  const token = toBase36(primarySeed, 8);
-  const suffix = toBase36(secondarySeed, 6).slice(-4).toUpperCase();
-  const fakePhoneNumber = `+8613${(secondarySeed % 1_000_000_000).toString().padStart(9, "0")}`;
-  const fakePhoneEmailDigest = `${primarySeed.toString(16).padStart(8, "0")}${secondarySeed
-    .toString(16)
-    .padStart(8, "0")}`;
-
-  return {
-    ...userItem,
-    id: `usr_${token}${toBase36(secondarySeed, 4)}`,
-    name: `${firstName} ${lastName} ${suffix}`,
-    email: isPhoneUser(userItem)
-      ? `phone-${fakePhoneEmailDigest}@phone-auth.invalid`
-      : `user-${token}@${MASK_EMAIL_DOMAIN}`,
-    phoneNumber: userItem.phoneNumber ? fakePhoneNumber : null,
-    image: null,
-  };
-}
-
-function normalizeUserForOutput(userItem: UserListItem): UserListItem {
-  return {
-    ...userItem,
-    name: getVisibleUserName(userItem),
-  };
+function normalizeUserForOutput(userItem: z.infer<typeof userSchema>) {
+  return { ...userItem, name: getVisibleUserName(userItem) };
 }
 
 export const usersRouter = {
@@ -166,80 +74,6 @@ export const usersRouter = {
       return {
         hasPassword,
         socialProviders: socialProviders.length > 0 ? socialProviders : undefined,
-      };
-    }),
-
-  list: protectedProcedure
-    .input(listUsersInputSchema)
-    .output(listUsersOutputSchema)
-    .handler(async ({ context, input }) => {
-      const db = context.db;
-      const { page, perPage, name, sort } = input;
-
-      // Build where conditions
-      const conditions = [];
-
-      // Name filter (search by name, email, or phone number)
-      if (name) {
-        conditions.push(
-          or(
-            like(user.name, `%${name}%`),
-            like(user.email, `%${name}%`),
-            like(user.phoneNumber, `%${name}%`),
-          ),
-        );
-      }
-
-      const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-
-      // Build order by conditions
-      const columnMap = {
-        name: user.name,
-        email: user.email,
-        createdAt: user.createdAt,
-      } as const;
-
-      const orderByColumns =
-        sort.length > 0
-          ? sort.map((s) => {
-              const column = columnMap[s.id];
-              return s.desc ? desc(column) : asc(column);
-            })
-          : [desc(user.createdAt)];
-
-      // Parallel queries for better performance
-      const [users, countResult] = await Promise.all([
-        db
-          .select({
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            emailVerified: user.emailVerified,
-            phoneNumber: user.phoneNumber,
-            phoneNumberVerified: user.phoneNumberVerified,
-            image: user.image,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt,
-          })
-          .from(user)
-          .where(whereClause)
-          .orderBy(...orderByColumns)
-          .limit(perPage)
-          .offset((page - 1) * perPage),
-        db.select({ count: count() }).from(user).where(whereClause),
-      ]);
-
-      const total = countResult.at(0)?.count ?? 0;
-      const shouldMaskUserData = env.NODE_ENV === "production";
-
-      return {
-        // Production: protect user privacy in template/demo deployments.
-        // Non-production: keep real values for debugging and local development.
-        // Template adopters should replace this with role-based access control
-        // once they have a trusted admin model and compliance policy.
-        data: (shouldMaskUserData ? users.map(maskUser) : users).map(normalizeUserForOutput),
-        pageCount: Math.ceil(total / perPage),
-        total,
       };
     }),
 

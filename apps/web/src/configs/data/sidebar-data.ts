@@ -6,7 +6,6 @@ import {
   Shield,
   ShieldCheck,
   UserCog,
-  Users,
 } from "lucide-react";
 import type { SidebarData } from "@/components/dashboard/types";
 import { webConfig } from "@/configs/web-config";
@@ -27,11 +26,6 @@ export const sidebarData: SidebarData = {
           title: "dashboard.nav.dashboard",
           url: "/dashboard",
           icon: LayoutDashboard,
-        },
-        {
-          title: "dashboard.nav.users",
-          url: "/users",
-          icon: Users,
         },
       ],
     },

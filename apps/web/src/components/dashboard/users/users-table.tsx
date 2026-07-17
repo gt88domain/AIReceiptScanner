@@ -252,7 +252,7 @@ export function UsersTable({
   const canGoNext = pageCount > 0 && pageIndex < pageCount - 1;
 
   return (
-    <div className="flex h-[calc(100svh-7rem)] min-h-0 flex-col overflow-hidden lg:h-[calc(100svh-8rem)]">
+    <div className="flex min-h-[36rem] flex-col overflow-hidden">
       <div className="mb-4 flex shrink-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2 font-semibold leading-none">

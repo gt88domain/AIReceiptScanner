@@ -21,7 +21,7 @@ import { Route as authAuthRouteRouteImport } from './routes/(auth)/auth/route'
 import { Route as ApiNewsletterSubscribeRouteImport } from './routes/api/newsletter/subscribe'
 import { Route as PubliclegalTermsRouteImport } from './routes/_public/(legal)/terms'
 import { Route as PubliclegalPrivacyRouteImport } from './routes/_public/(legal)/privacy'
-import { Route as AutheddashboardUsersRouteImport } from './routes/_authed/(dashboard)/users'
+import { Route as AutheddashboardAdminRouteImport } from './routes/_authed/(dashboard)/admin'
 import { Route as authAuthResetPasswordRouteImport } from './routes/(auth)/auth/reset-password'
 import { Route as AutheddashboardDashboardRouteRouteImport } from './routes/_authed/(dashboard)/dashboard/route'
 import { Route as authAuthUnauthedRouteRouteImport } from './routes/(auth)/auth/_unauthed/route'
@@ -99,9 +99,9 @@ const PubliclegalPrivacyRoute = PubliclegalPrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => PublicRouteRoute,
 } as any)
-const AutheddashboardUsersRoute = AutheddashboardUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
+const AutheddashboardAdminRoute = AutheddashboardAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => AutheddashboardRouteRoute,
 } as any)
 const authAuthResetPasswordRoute = authAuthResetPasswordRouteImport.update({
@@ -212,7 +212,7 @@ export interface FileRoutesByFullPath {
   '/docs/$': typeof DocsSplatRoute
   '/dashboard': typeof AutheddashboardDashboardRouteRoute
   '/auth/reset-password': typeof authAuthResetPasswordRoute
-  '/users': typeof AutheddashboardUsersRoute
+  '/admin': typeof AutheddashboardAdminRoute
   '/privacy': typeof PubliclegalPrivacyRoute
   '/terms': typeof PubliclegalTermsRoute
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
@@ -240,7 +240,7 @@ export interface FileRoutesByTo {
   '/docs/$': typeof DocsSplatRoute
   '/dashboard': typeof AutheddashboardDashboardRouteRoute
   '/auth/reset-password': typeof authAuthResetPasswordRoute
-  '/users': typeof AutheddashboardUsersRoute
+  '/admin': typeof AutheddashboardAdminRoute
   '/privacy': typeof PubliclegalPrivacyRoute
   '/terms': typeof PubliclegalTermsRoute
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
@@ -273,7 +273,7 @@ export interface FileRoutesById {
   '/(auth)/auth/_unauthed': typeof authAuthUnauthedRouteRouteWithChildren
   '/_authed/(dashboard)/dashboard': typeof AutheddashboardDashboardRouteRoute
   '/(auth)/auth/reset-password': typeof authAuthResetPasswordRoute
-  '/_authed/(dashboard)/users': typeof AutheddashboardUsersRoute
+  '/_authed/(dashboard)/admin': typeof AutheddashboardAdminRoute
   '/_public/(legal)/privacy': typeof PubliclegalPrivacyRoute
   '/_public/(legal)/terms': typeof PubliclegalTermsRoute
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
@@ -305,7 +305,7 @@ export interface FileRouteTypes {
     | '/docs/$'
     | '/dashboard'
     | '/auth/reset-password'
-    | '/users'
+    | '/admin'
     | '/privacy'
     | '/terms'
     | '/api/newsletter/subscribe'
@@ -333,7 +333,7 @@ export interface FileRouteTypes {
     | '/docs/$'
     | '/dashboard'
     | '/auth/reset-password'
-    | '/users'
+    | '/admin'
     | '/privacy'
     | '/terms'
     | '/api/newsletter/subscribe'
@@ -365,7 +365,7 @@ export interface FileRouteTypes {
     | '/(auth)/auth/_unauthed'
     | '/_authed/(dashboard)/dashboard'
     | '/(auth)/auth/reset-password'
-    | '/_authed/(dashboard)/users'
+    | '/_authed/(dashboard)/admin'
     | '/_public/(legal)/privacy'
     | '/_public/(legal)/terms'
     | '/api/newsletter/subscribe'
@@ -482,11 +482,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PubliclegalPrivacyRouteImport
       parentRoute: typeof PublicRouteRoute
     }
-    '/_authed/(dashboard)/users': {
-      id: '/_authed/(dashboard)/users'
-      path: '/users'
-      fullPath: '/users'
-      preLoaderRoute: typeof AutheddashboardUsersRouteImport
+    '/_authed/(dashboard)/admin': {
+      id: '/_authed/(dashboard)/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AutheddashboardAdminRouteImport
       parentRoute: typeof AutheddashboardRouteRoute
     }
     '/(auth)/auth/reset-password': {
@@ -684,7 +684,7 @@ const authAuthRouteRouteWithChildren = authAuthRouteRoute._addFileChildren(
 
 interface AutheddashboardRouteRouteChildren {
   AutheddashboardDashboardRouteRoute: typeof AutheddashboardDashboardRouteRoute
-  AutheddashboardUsersRoute: typeof AutheddashboardUsersRoute
+  AutheddashboardAdminRoute: typeof AutheddashboardAdminRoute
   AutheddashboardCreditsPurchaseRoute: typeof AutheddashboardCreditsPurchaseRoute
   AutheddashboardCreditsTransactionsRoute: typeof AutheddashboardCreditsTransactionsRoute
   AutheddashboardSettingsBillingRoute: typeof AutheddashboardSettingsBillingRoute
@@ -694,7 +694,7 @@ interface AutheddashboardRouteRouteChildren {
 
 const AutheddashboardRouteRouteChildren: AutheddashboardRouteRouteChildren = {
   AutheddashboardDashboardRouteRoute: AutheddashboardDashboardRouteRoute,
-  AutheddashboardUsersRoute: AutheddashboardUsersRoute,
+  AutheddashboardAdminRoute: AutheddashboardAdminRoute,
   AutheddashboardCreditsPurchaseRoute: AutheddashboardCreditsPurchaseRoute,
   AutheddashboardCreditsTransactionsRoute:
     AutheddashboardCreditsTransactionsRoute,
