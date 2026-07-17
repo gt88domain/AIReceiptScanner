@@ -1,22 +1,12 @@
 import { useForm } from "@tanstack/react-form";
-import { Link } from "@tanstack/react-router";
-import { Loader2Icon, MailCheckIcon } from "lucide-react";
-import { useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { Loader2Icon } from "lucide-react";
 import { FaGithub, FaGoogle } from "react-icons/fa";
 import { toast } from "sonner";
 import z from "zod";
 import { PasswordInput } from "@/components/shared/password-input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   Field,
   FieldDescription,
@@ -38,8 +28,8 @@ const hasSocialSignUpMethods =
 
 export function SignupForm({ className, ...props }: React.ComponentProps<"div">) {
   const t = useTranslations();
+  const navigate = useNavigate();
   const { signIn: socialSignIn, loading: socialLoading } = useSocialSignIn();
-  const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
 
   const form = useForm({
     defaultValues: {
@@ -61,7 +51,11 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"div">)
           onRequest: () => {},
           onResponse: () => {},
           onSuccess: () => {
-            setVerificationEmail(value.email);
+            toast.success(t("signUp.checkEmailTitle"), {
+              description: t("signUp.checkEmailDescription", { email: value.email }),
+              duration: 8_000,
+            });
+            void navigate({ to: "/auth/sign-in" });
           },
           onError: (error) => {
             toast.error(error.error.message || error.error.statusText);
@@ -86,36 +80,6 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"div">)
 
   return (
     <div className={cn("flex w-full max-w-md flex-col gap-4", className)} {...props}>
-      <Dialog
-        open={verificationEmail !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setVerificationEmail(null);
-          }
-        }}
-      >
-        <DialogContent className="border-primary/20 sm:max-w-md">
-          <DialogHeader className="items-center text-center sm:text-center">
-            <div className="bg-primary/10 text-primary mb-1 flex size-14 items-center justify-center rounded-full">
-              <MailCheckIcon className="size-7" />
-            </div>
-            <DialogTitle className="text-xl">{t("signUp.checkEmailTitle")}</DialogTitle>
-            <DialogDescription className="text-balance">
-              {t("signUp.checkEmailDescription", { email: verificationEmail ?? "" })}
-            </DialogDescription>
-          </DialogHeader>
-          <p className="bg-muted text-muted-foreground rounded-md px-4 py-3 text-center text-sm">
-            {t("signUp.checkEmailHint")}
-          </p>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button type="button" className="w-full">
-                {t("signUp.checkEmailAction")}
-              </Button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
       <Card className="overflow-hidden p-0">
         <CardContent>
           <form
