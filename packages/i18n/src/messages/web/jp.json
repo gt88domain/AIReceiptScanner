@@ -38,6 +38,7 @@
         "faq": "よくある質問",
         "listing": "一覧ページテンプレート",
         "blog": "ブログ",
+        "contact": "お問い合わせ",
         "docs": "ドキュメント"
       },
       "actions": {
@@ -140,7 +141,8 @@
             "privacy": "プライバシー",
             "terms": "利用規約",
             "docs": "ドキュメント",
-            "blog": "ブログ"
+            "blog": "ブログ",
+            "contact": "お問い合わせ"
           }
         }
       }
@@ -172,7 +174,12 @@
       "includedSearch": "検索に対応した絞り込みコントロール",
       "includedFilters": "カテゴリとレイアウトのファセットフィルター",
       "includedResponsive": "レスポンシブなグリッドとリストレイアウト",
-      "includedEmptyState": "空状態・ローディング状態の基礎コンポーネント"
+      "includedEmptyState": "空状態・ローディング状態の基礎コンポーネント",
+      "previewTitle": "レイアウトプレビュー",
+      "useCaseTitle": "おすすめの用途",
+      "copyLink": "リンクをコピー",
+      "copiedLink": "コピーしました",
+      "startUsing": "始める"
     },
     "items": {
       "directory": {
@@ -211,6 +218,27 @@
         "category": "マーケットプレイス",
         "layout": "グリッド"
       }
+    }
+  },
+  "contact": {
+    "eyebrow": "お問い合わせ",
+    "title": "どのようにお手伝いできますか？",
+    "description": "構築中のもの、必要なこと、困っていることをお知らせください。メールで返信します。",
+    "formTitle": "メッセージを送信",
+    "formDescription": "通常は 1 営業日以内に返信します。",
+    "name": "お名前",
+    "email": "メールアドレス",
+    "message": "メッセージ",
+    "messagePlaceholder": "相談したい内容を入力してください",
+    "submit": "メッセージを送信",
+    "submitting": "送信中…",
+    "success": "ありがとうございます。メッセージを送信しました。",
+    "error": "メッセージを送信できませんでした。再試行するか、直接メールでお問い合わせください。",
+    "rateLimited": "次のメッセージを送信する前に 1 分お待ちください。",
+    "validation": {
+      "name": "2 文字以上入力してください。",
+      "email": "有効なメールアドレスを入力してください。",
+      "message": "10 文字以上入力してください。"
     }
   },
   "blog": {

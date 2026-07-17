@@ -38,6 +38,7 @@
         "faq": "FAQ",
         "listing": "Listing template",
         "blog": "Blog",
+        "contact": "Contact",
         "docs": "Docs"
       },
       "actions": {
@@ -140,7 +141,8 @@
             "privacy": "Privacy",
             "terms": "Terms",
             "docs": "Docs",
-            "blog": "Blog"
+            "blog": "Blog",
+            "contact": "Contact"
           }
         }
       }
@@ -172,7 +174,12 @@
       "includedSearch": "Search-ready filtering controls",
       "includedFilters": "Faceted category and layout filters",
       "includedResponsive": "Responsive grid and row layouts",
-      "includedEmptyState": "Empty and loading state building blocks"
+      "includedEmptyState": "Empty and loading state building blocks",
+      "previewTitle": "Layout preview",
+      "useCaseTitle": "Best for",
+      "copyLink": "Copy link",
+      "copiedLink": "Copied",
+      "startUsing": "Start using"
     },
     "items": {
       "directory": {
@@ -211,6 +218,27 @@
         "category": "Marketplace",
         "layout": "Grid"
       }
+    }
+  },
+  "contact": {
+    "eyebrow": "Contact",
+    "title": "How can we help?",
+    "description": "Tell us what you are building, what you need, or where you are stuck. We will reply by email.",
+    "formTitle": "Send a message",
+    "formDescription": "We usually reply within one business day.",
+    "name": "Name",
+    "email": "Email",
+    "message": "Message",
+    "messagePlaceholder": "What would you like to discuss?",
+    "submit": "Send message",
+    "submitting": "Sending…",
+    "success": "Thanks — your message has been sent.",
+    "error": "We could not send your message. Please try again or email us directly.",
+    "rateLimited": "Please wait a minute before sending another message.",
+    "validation": {
+      "name": "Enter at least 2 characters.",
+      "email": "Enter a valid email address.",
+      "message": "Enter at least 10 characters."
     }
   },
   "blog": {

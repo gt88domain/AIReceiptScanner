@@ -43,6 +43,7 @@ import { secureHeaders } from "hono/secure-headers";
 import { runCreditMaintenance } from "./credits";
 import { createDb } from "./db";
 import { apiHandler } from "./handlers/api";
+import { sendContactMessage } from "./handlers/contact";
 import { subscribeNewsletter } from "./handlers/newsletter";
 import { rpcHandler } from "./handlers/rpc";
 import { handleFileServe } from "./handlers/storage";
@@ -114,6 +115,14 @@ app.post(
     onError: (c) => c.json({ error: "Payload too large" }, 413),
   }),
   subscribeNewsletter,
+);
+app.post(
+  "/api/contact",
+  bodyLimit({
+    maxSize: 16 * 1024,
+    onError: (c) => c.json({ error: "Payload too large" }, 413),
+  }),
+  sendContactMessage,
 );
 app.use(
   "/api/webhooks/*",

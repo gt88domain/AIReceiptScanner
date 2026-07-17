@@ -16,9 +16,11 @@ import { Route as DocsSplatRouteImport } from './routes/docs/$'
 import { Route as BillingSuccessRouteImport } from './routes/billing/success'
 import { Route as BillingCancelRouteImport } from './routes/billing/cancel'
 import { Route as ApiSearchRouteImport } from './routes/api/search'
+import { Route as ApiContactRouteImport } from './routes/api/contact'
 import { Route as AutheddashboardRouteRouteImport } from './routes/_authed/(dashboard)/route'
 import { Route as authAuthRouteRouteImport } from './routes/(auth)/auth/route'
 import { Route as ApiNewsletterSubscribeRouteImport } from './routes/api/newsletter/subscribe'
+import { Route as PublicmarketingContactRouteImport } from './routes/_public/(marketing)/contact'
 import { Route as PubliclegalTermsRouteImport } from './routes/_public/(legal)/terms'
 import { Route as PubliclegalPrivacyRouteImport } from './routes/_public/(legal)/privacy'
 import { Route as AutheddashboardAdminRouteImport } from './routes/_authed/(dashboard)/admin'
@@ -77,6 +79,11 @@ const ApiSearchRoute = ApiSearchRouteImport.update({
   path: '/api/search',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiContactRoute = ApiContactRouteImport.update({
+  id: '/api/contact',
+  path: '/api/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AutheddashboardRouteRoute = AutheddashboardRouteRouteImport.update({
   id: '/_authed/(dashboard)',
   path: '',
@@ -91,6 +98,11 @@ const ApiNewsletterSubscribeRoute = ApiNewsletterSubscribeRouteImport.update({
   id: '/api/newsletter/subscribe',
   path: '/api/newsletter/subscribe',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PublicmarketingContactRoute = PublicmarketingContactRouteImport.update({
+  id: '/(marketing)/contact',
+  path: '/contact',
+  getParentRoute: () => PublicRouteRoute,
 } as any)
 const PubliclegalTermsRoute = PubliclegalTermsRouteImport.update({
   id: '/(legal)/terms',
@@ -227,6 +239,7 @@ export interface FileRoutesByFullPath {
   '/billing': typeof BillingRouteRouteWithChildren
   '/$': typeof SplatRoute
   '/auth': typeof authAuthUnauthedRouteRouteWithChildren
+  '/api/contact': typeof ApiContactRoute
   '/api/search': typeof ApiSearchRoute
   '/billing/cancel': typeof BillingCancelRoute
   '/billing/success': typeof BillingSuccessRoute
@@ -236,6 +249,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AutheddashboardAdminRoute
   '/privacy': typeof PubliclegalPrivacyRoute
   '/terms': typeof PubliclegalTermsRoute
+  '/contact': typeof PublicmarketingContactRoute
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
   '/auth/forgot-password': typeof authAuthUnauthedForgotPasswordRoute
   '/auth/phone-verify': typeof authAuthUnauthedPhoneVerifyRoute
@@ -258,6 +272,7 @@ export interface FileRoutesByTo {
   '/billing': typeof BillingRouteRouteWithChildren
   '/$': typeof SplatRoute
   '/auth': typeof authAuthUnauthedRouteRouteWithChildren
+  '/api/contact': typeof ApiContactRoute
   '/api/search': typeof ApiSearchRoute
   '/billing/cancel': typeof BillingCancelRoute
   '/billing/success': typeof BillingSuccessRoute
@@ -267,6 +282,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AutheddashboardAdminRoute
   '/privacy': typeof PubliclegalPrivacyRoute
   '/terms': typeof PubliclegalTermsRoute
+  '/contact': typeof PublicmarketingContactRoute
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
   '/auth/forgot-password': typeof authAuthUnauthedForgotPasswordRoute
   '/auth/phone-verify': typeof authAuthUnauthedPhoneVerifyRoute
@@ -293,6 +309,7 @@ export interface FileRoutesById {
   '/$': typeof SplatRoute
   '/(auth)/auth': typeof authAuthRouteRouteWithChildren
   '/_authed/(dashboard)': typeof AutheddashboardRouteRouteWithChildren
+  '/api/contact': typeof ApiContactRoute
   '/api/search': typeof ApiSearchRoute
   '/billing/cancel': typeof BillingCancelRoute
   '/billing/success': typeof BillingSuccessRoute
@@ -303,6 +320,7 @@ export interface FileRoutesById {
   '/_authed/(dashboard)/admin': typeof AutheddashboardAdminRoute
   '/_public/(legal)/privacy': typeof PubliclegalPrivacyRoute
   '/_public/(legal)/terms': typeof PubliclegalTermsRoute
+  '/_public/(marketing)/contact': typeof PublicmarketingContactRoute
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
   '/(auth)/auth/_unauthed/forgot-password': typeof authAuthUnauthedForgotPasswordRoute
   '/(auth)/auth/_unauthed/phone-verify': typeof authAuthUnauthedPhoneVerifyRoute
@@ -329,6 +347,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/$'
     | '/auth'
+    | '/api/contact'
     | '/api/search'
     | '/billing/cancel'
     | '/billing/success'
@@ -338,6 +357,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/privacy'
     | '/terms'
+    | '/contact'
     | '/api/newsletter/subscribe'
     | '/auth/forgot-password'
     | '/auth/phone-verify'
@@ -360,6 +380,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/$'
     | '/auth'
+    | '/api/contact'
     | '/api/search'
     | '/billing/cancel'
     | '/billing/success'
@@ -369,6 +390,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/privacy'
     | '/terms'
+    | '/contact'
     | '/api/newsletter/subscribe'
     | '/auth/forgot-password'
     | '/auth/phone-verify'
@@ -394,6 +416,7 @@ export interface FileRouteTypes {
     | '/$'
     | '/(auth)/auth'
     | '/_authed/(dashboard)'
+    | '/api/contact'
     | '/api/search'
     | '/billing/cancel'
     | '/billing/success'
@@ -404,6 +427,7 @@ export interface FileRouteTypes {
     | '/_authed/(dashboard)/admin'
     | '/_public/(legal)/privacy'
     | '/_public/(legal)/terms'
+    | '/_public/(marketing)/contact'
     | '/api/newsletter/subscribe'
     | '/(auth)/auth/_unauthed/forgot-password'
     | '/(auth)/auth/_unauthed/phone-verify'
@@ -430,6 +454,7 @@ export interface RootRouteChildren {
   SplatRoute: typeof SplatRoute
   authAuthRouteRoute: typeof authAuthRouteRouteWithChildren
   AutheddashboardRouteRoute: typeof AutheddashboardRouteRouteWithChildren
+  ApiContactRoute: typeof ApiContactRoute
   ApiSearchRoute: typeof ApiSearchRoute
   DocsSplatRoute: typeof DocsSplatRoute
   ApiNewsletterSubscribeRoute: typeof ApiNewsletterSubscribeRoute
@@ -486,6 +511,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/contact': {
+      id: '/api/contact'
+      path: '/api/contact'
+      fullPath: '/api/contact'
+      preLoaderRoute: typeof ApiContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authed/(dashboard)': {
       id: '/_authed/(dashboard)'
       path: ''
@@ -506,6 +538,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/newsletter/subscribe'
       preLoaderRoute: typeof ApiNewsletterSubscribeRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_public/(marketing)/contact': {
+      id: '/_public/(marketing)/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof PublicmarketingContactRouteImport
+      parentRoute: typeof PublicRouteRoute
     }
     '/_public/(legal)/terms': {
       id: '/_public/(legal)/terms'
@@ -674,6 +713,7 @@ declare module '@tanstack/react-router' {
 interface PublicRouteRouteChildren {
   PubliclegalPrivacyRoute: typeof PubliclegalPrivacyRoute
   PubliclegalTermsRoute: typeof PubliclegalTermsRoute
+  PublicmarketingContactRoute: typeof PublicmarketingContactRoute
   PublicmarketingBlogSlugRoute: typeof PublicmarketingBlogSlugRoute
   PublicmarketingTemplatesSlugRoute: typeof PublicmarketingTemplatesSlugRoute
   PublicmarketingTemplatesLandingComposerRoute: typeof PublicmarketingTemplatesLandingComposerRoute
@@ -686,6 +726,7 @@ interface PublicRouteRouteChildren {
 const PublicRouteRouteChildren: PublicRouteRouteChildren = {
   PubliclegalPrivacyRoute: PubliclegalPrivacyRoute,
   PubliclegalTermsRoute: PubliclegalTermsRoute,
+  PublicmarketingContactRoute: PublicmarketingContactRoute,
   PublicmarketingBlogSlugRoute: PublicmarketingBlogSlugRoute,
   PublicmarketingTemplatesSlugRoute: PublicmarketingTemplatesSlugRoute,
   PublicmarketingTemplatesLandingComposerRoute:
@@ -779,6 +820,7 @@ const rootRouteChildren: RootRouteChildren = {
   SplatRoute: SplatRoute,
   authAuthRouteRoute: authAuthRouteRouteWithChildren,
   AutheddashboardRouteRoute: AutheddashboardRouteRouteWithChildren,
+  ApiContactRoute: ApiContactRoute,
   ApiSearchRoute: ApiSearchRoute,
   DocsSplatRoute: DocsSplatRoute,
   ApiNewsletterSubscribeRoute: ApiNewsletterSubscribeRoute,

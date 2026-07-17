@@ -61,6 +61,7 @@ export const Footer = ({
         { name: footerT("sections.resources.links.terms"), href: "/terms" },
         { name: footerT("sections.resources.links.docs"), href: "/docs" },
         { name: footerT("sections.resources.links.blog"), href: "/blog" },
+        { name: footerT("sections.resources.links.contact"), href: "/contact" },
       ],
     },
   ];
@@ -87,7 +88,10 @@ export const Footer = ({
             {resolvedSocialLinks.length > 0 ? (
               <ul className="flex items-center justify-center space-x-4 text-muted-foreground sm:justify-start">
                 {resolvedSocialLinks.map((social) => (
-                  <li key={social.href} className="font-medium hover:text-primary transition-colors">
+                  <li
+                    key={social.href}
+                    className="font-medium hover:text-primary transition-colors"
+                  >
                     <a href={social.href} aria-label={social.label}>
                       {social.icon}
                     </a>

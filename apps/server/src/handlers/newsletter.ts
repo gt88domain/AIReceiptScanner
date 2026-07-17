@@ -1,34 +1,13 @@
 import type { Context } from "hono";
 import { Resend } from "resend";
 import { z } from "zod";
-import { getClientIp } from "@repo/shared";
+import { isRequestRateLimited } from "./request-rate-limit";
 
 const subscribeInputSchema = z.object({
   email: z.string().trim().toLowerCase().email().max(320),
 });
 
 const retryAfterMs = 60_000;
-const recentAttempts = new Map<string, number>();
-
-function isRateLimited(request: Request): boolean {
-  const clientIp = getClientIp(request.headers);
-  if (!clientIp) return false;
-
-  const now = Date.now();
-  const previousAttempt = recentAttempts.get(clientIp);
-  if (previousAttempt && now - previousAttempt < retryAfterMs) return true;
-
-  recentAttempts.set(clientIp, now);
-
-  // ponytail: this is per Worker isolate, so use a Cloudflare WAF rate-limit rule for global abuse control.
-  if (recentAttempts.size > 5_000) {
-    for (const [ip, attemptedAt] of recentAttempts) {
-      if (now - attemptedAt >= retryAfterMs) recentAttempts.delete(ip);
-    }
-  }
-
-  return false;
-}
 
 /** Adds an email to Resend's global Contacts list without exposing its API key to the browser. */
 export async function subscribeNewsletter(c: Context<{ Bindings: Cloudflare.Env }>) {
@@ -44,7 +23,7 @@ export async function subscribeNewsletter(c: Context<{ Bindings: Cloudflare.Env 
     return c.json({ error: "Enter a valid email address" }, 400);
   }
 
-  if (isRateLimited(c.req.raw)) {
+  if (isRequestRateLimited(c.req.raw, "newsletter", retryAfterMs)) {
     return c.json({ error: "Please wait a minute before trying again" }, 429, {
       "Retry-After": String(retryAfterMs / 1_000),
     });

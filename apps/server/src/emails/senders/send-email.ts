@@ -11,7 +11,7 @@ export async function sendEmail({
 }: {
   to: string;
   subject: string;
-  template: ReactElement;
+  template?: ReactElement;
   from?: string;
   text?: string;
 }) {

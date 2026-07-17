@@ -133,6 +133,31 @@ describe("server Worker", () => {
     expect(response.status).toBe(400);
   });
 
+  it("delivers a valid contact message to the support inbox", async () => {
+    const response = await exports.default.fetch("https://server.test/api/contact", {
+      body: JSON.stringify({
+        name: "Template Buyer",
+        email: "buyer@example.com",
+        message: "I have a question about adapting this template.",
+      }),
+      headers: { "Content-Type": "application/json", "CF-Connecting-IP": "198.51.100.21" },
+      method: "POST",
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ sent: true });
+  });
+
+  it("rejects invalid contact input before sending email", async () => {
+    const response = await exports.default.fetch("https://server.test/api/contact", {
+      body: JSON.stringify({ name: "A", email: "not-an-email", message: "short" }),
+      headers: { "Content-Type": "application/json", "CF-Connecting-IP": "198.51.100.22" },
+      method: "POST",
+    });
+
+    expect(response.status).toBe(400);
+  });
+
   it("throttles repeated newsletter submissions from one IP", async () => {
     const request = () =>
       exports.default.fetch("https://server.test/api/newsletter/subscribe", {

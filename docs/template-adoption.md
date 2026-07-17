@@ -29,6 +29,9 @@ The newsletter proxy deliberately uses the Web Worker's `API_SERVICE` binding an
 the preview API hostname. Buyers should still update the binding's `service` name in
 `apps/web/wrangler.jsonc`.
 
+The public `/contact` form uses the same `API_SERVICE` binding and sends messages to the configured
+`supportEmail`. It requires the transactional-email sender and `RESEND_API_KEY` listed above.
+
 ## Account deletion policy
 
 The template's recommended default is to block account deletion while a paid subscription is

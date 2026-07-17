@@ -38,6 +38,7 @@
         "faq": "常见问题",
         "listing": "列表页模板",
         "blog": "博客",
+        "contact": "联系我们",
         "docs": "文档"
       },
       "actions": {
@@ -140,7 +141,8 @@
             "privacy": "隐私",
             "terms": "条款",
             "docs": "文档",
-            "blog": "博客"
+            "blog": "博客",
+            "contact": "联系我们"
           }
         }
       }
@@ -172,7 +174,12 @@
       "includedSearch": "可直接接入搜索的筛选控件",
       "includedFilters": "分类和布局的分面筛选",
       "includedResponsive": "响应式网格与列表布局",
-      "includedEmptyState": "空状态和加载状态基础组件"
+      "includedEmptyState": "空状态和加载状态基础组件",
+      "previewTitle": "布局预览",
+      "useCaseTitle": "适用场景",
+      "copyLink": "复制链接",
+      "copiedLink": "已复制",
+      "startUsing": "开始使用"
     },
     "items": {
       "directory": {
@@ -211,6 +218,27 @@
         "category": "市场",
         "layout": "网格"
       }
+    }
+  },
+  "contact": {
+    "eyebrow": "联系我们",
+    "title": "有什么可以帮你？",
+    "description": "告诉我们你正在构建什么、需要什么，或遇到了什么问题。我们会通过邮件回复。",
+    "formTitle": "发送消息",
+    "formDescription": "我们通常会在一个工作日内回复。",
+    "name": "姓名",
+    "email": "邮箱",
+    "message": "消息",
+    "messagePlaceholder": "你想讨论什么？",
+    "submit": "发送消息",
+    "submitting": "发送中…",
+    "success": "谢谢，你的消息已发送。",
+    "error": "消息发送失败，请重试或直接通过邮件联系我们。",
+    "rateLimited": "请等待一分钟后再发送消息。",
+    "validation": {
+      "name": "请输入至少 2 个字符。",
+      "email": "请输入有效的邮箱地址。",
+      "message": "请输入至少 10 个字符。"
     }
   },
   "blog": {
