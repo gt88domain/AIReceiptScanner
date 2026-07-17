@@ -228,7 +228,7 @@ const appConfig: AppConfig = {
       // Sender address parts combined into localPart@domain.
       from: {
         localPart: "noreply",
-        domain: "demo.aiarticles.com",
+        domain: "mail.aibranding.com",
       },
     },
     // File upload and public asset storage settings.
