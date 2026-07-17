@@ -39,15 +39,6 @@ const listTransactionsInputSchema = paginatedCreditsInputSchema.extend({
   sourceType: z.enum(CREDIT_SOURCE_TYPES).optional(),
 });
 
-/** Input schema for idempotent credit consumption. */
-const consumeInputSchema = z.object({
-  amount: z.number().int().positive(),
-  idempotencyKey: z.string().min(8).max(120),
-  metadata: z
-    .record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()]))
-    .optional(),
-});
-
 /** Common credit API routes shared by web and native clients. */
 export const creditsRouter = {
   listPackages: publicProcedure
@@ -74,24 +65,5 @@ export const creditsRouter = {
     .handler(({ context, input }) => {
       const user = resolveCreditUser(context);
       return context.credits.listOrders({ user, ...input });
-    }),
-
-  consume: protectedProcedure
-    .input(consumeInputSchema)
-    .output(creditBalanceSchema)
-    .handler(async ({ context, input }) => {
-      const user = resolveCreditUser(context);
-      try {
-        return await context.credits.consumeCredits({
-          user,
-          amount: input.amount,
-          idempotencyKey: input.idempotencyKey,
-          metadata: input.metadata ?? null,
-        });
-      } catch (error) {
-        throw new ORPCError("BAD_REQUEST", {
-          message: error instanceof Error ? error.message : "Credit consumption failed",
-        });
-      }
     }),
 };

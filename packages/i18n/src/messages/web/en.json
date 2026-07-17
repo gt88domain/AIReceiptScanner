@@ -165,13 +165,52 @@
     "emptyTitle": "No patterns match",
     "emptyDescription": "Try a different search or clear one of the filters.",
     "clearFilters": "Clear filters",
+    "viewDetails": "View details",
+    "backToListing": "Back to templates",
+    "detail": {
+      "includedTitle": "Included pattern capabilities",
+      "includedSearch": "Search-ready filtering controls",
+      "includedFilters": "Faceted category and layout filters",
+      "includedResponsive": "Responsive grid and row layouts",
+      "includedEmptyState": "Empty and loading state building blocks"
+    },
     "items": {
-      "directory": { "title": "Vendor directory", "description": "Public cards with category, location, and capability filters.", "category": "Directory", "layout": "Grid" },
-      "marketplace": { "title": "Template marketplace", "description": "Searchable catalog with pricing cues and collection filters.", "category": "Marketplace", "layout": "Grid" },
-      "resources": { "title": "Resource library", "description": "Guides, tools, and downloads with topic and format facets.", "category": "Content", "layout": "Grid" },
-      "changelog": { "title": "Changelog feed", "description": "Chronological product updates with version and type filters.", "category": "Content", "layout": "Rows" },
-      "jobs": { "title": "Jobs board", "description": "Role listings with location, work mode, and team filters.", "category": "Directory", "layout": "Rows" },
-      "projects": { "title": "Project gallery", "description": "Work showcase with tags, collections, and load-more pagination.", "category": "Marketplace", "layout": "Grid" }
+      "directory": {
+        "title": "Vendor directory",
+        "description": "Public cards with category, location, and capability filters.",
+        "category": "Directory",
+        "layout": "Grid"
+      },
+      "marketplace": {
+        "title": "Template marketplace",
+        "description": "Searchable catalog with pricing cues and collection filters.",
+        "category": "Marketplace",
+        "layout": "Grid"
+      },
+      "resources": {
+        "title": "Resource library",
+        "description": "Guides, tools, and downloads with topic and format facets.",
+        "category": "Content",
+        "layout": "Grid"
+      },
+      "changelog": {
+        "title": "Changelog feed",
+        "description": "Chronological product updates with version and type filters.",
+        "category": "Content",
+        "layout": "Rows"
+      },
+      "jobs": {
+        "title": "Jobs board",
+        "description": "Role listings with location, work mode, and team filters.",
+        "category": "Directory",
+        "layout": "Rows"
+      },
+      "projects": {
+        "title": "Project gallery",
+        "description": "Work showcase with tags, collections, and load-more pagination.",
+        "category": "Marketplace",
+        "layout": "Grid"
+      }
     }
   },
   "blog": {

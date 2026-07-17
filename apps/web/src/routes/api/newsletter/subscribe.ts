@@ -6,7 +6,7 @@ export const Route = createFileRoute("/api/newsletter/subscribe")({
     handlers: {
       POST: ({ request }) =>
         env.API_SERVICE.fetch(
-          new Request("https://api.demo.aiarticles.com/api/newsletter/subscribe", request),
+          new Request(new URL("/api/newsletter/subscribe", request.url), request),
         ),
     },
   },

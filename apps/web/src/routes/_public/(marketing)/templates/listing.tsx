@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   LayoutGridIcon,
   Rows3Icon,
@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ListingEmptyState } from "@/custom/discovery/listing/listing-empty-state";
 import { ListingFacetRail } from "@/custom/discovery/listing/listing-facet-rail";
@@ -18,30 +19,25 @@ import { ListingSearchInput } from "@/custom/discovery/listing/listing-search-in
 import { ListingSortSelect } from "@/custom/discovery/listing/listing-sort-select";
 import { ListingToolbar } from "@/custom/discovery/listing/listing-toolbar";
 import { webConfig } from "@/configs/web-config";
+import {
+  templatePatterns,
+  type TemplateCategory,
+  type TemplateLayout,
+  type TemplateSlug,
+} from "@/configs/template-catalog";
 import { getCurrentLocale, getMessages, useTranslations } from "@/i18n";
 import { buildSeoHead } from "@/utils/seo";
 
-type PatternId = "directory" | "marketplace" | "resources" | "changelog" | "jobs" | "projects";
-type PatternCategory = "directory" | "marketplace" | "content";
-type PatternLayout = "grid" | "rows";
 type SortValue = "recommended" | "newest" | "name";
 
-type ListingPattern = {
-  category: PatternCategory;
-  id: PatternId;
-  icon: LucideIcon;
-  layout: PatternLayout;
-  order: number;
+const patternIcons: Record<TemplateSlug, LucideIcon> = {
+  directory: StoreIcon,
+  marketplace: ShapesIcon,
+  resources: TagsIcon,
+  changelog: Rows3Icon,
+  jobs: Rows3Icon,
+  projects: LayoutGridIcon,
 };
-
-const patterns: readonly ListingPattern[] = [
-  { id: "directory", category: "directory", layout: "grid", order: 0, icon: StoreIcon },
-  { id: "marketplace", category: "marketplace", layout: "grid", order: 1, icon: ShapesIcon },
-  { id: "resources", category: "content", layout: "grid", order: 2, icon: TagsIcon },
-  { id: "changelog", category: "content", layout: "rows", order: 3, icon: Rows3Icon },
-  { id: "jobs", category: "directory", layout: "rows", order: 4, icon: Rows3Icon },
-  { id: "projects", category: "marketplace", layout: "grid", order: 5, icon: LayoutGridIcon },
-];
 
 export const Route = createFileRoute("/_public/(marketing)/templates/listing")({
   head: () => {
@@ -61,8 +57,8 @@ export const Route = createFileRoute("/_public/(marketing)/templates/listing")({
 
 function ListingTemplatePage() {
   const t = useTranslations("listingTemplate");
-  const [category, setCategory] = useState<PatternCategory>();
-  const [layout, setLayout] = useState<PatternLayout>();
+  const [category, setCategory] = useState<TemplateCategory>();
+  const [layout, setLayout] = useState<TemplateLayout>();
   const [query, setQuery] = useState("");
   const [submittedQuery, setSubmittedQuery] = useState("");
   const [sort, setSort] = useState<SortValue>("recommended");
@@ -70,7 +66,7 @@ function ListingTemplatePage() {
   const filteredPatterns = useMemo(() => {
     const normalizedQuery = submittedQuery.toLocaleLowerCase();
 
-    return patterns
+    return templatePatterns
       .filter((pattern) => {
         const title = t(`items.${pattern.id}.title`);
         const description = t(`items.${pattern.id}.description`);
@@ -109,7 +105,7 @@ function ListingTemplatePage() {
       category={{
         allLabel: t("allCategories"),
         label: t("categoryLabel"),
-        onValueChange: (value) => setCategory(value as PatternCategory | undefined),
+        onValueChange: (value) => setCategory(value as TemplateCategory | undefined),
         options: [
           { value: "directory", label: t("items.directory.category"), icon: <StoreIcon /> },
           { value: "marketplace", label: t("items.marketplace.category"), icon: <ShapesIcon /> },
@@ -130,7 +126,7 @@ function ListingTemplatePage() {
             { value: "rows", label: t("items.changelog.layout") },
           ],
           value: layout ?? "",
-          onValueChange: (value) => setLayout((value || undefined) as PatternLayout | undefined),
+          onValueChange: (value) => setLayout((value || undefined) as TemplateLayout | undefined),
         },
       ]}
     />
@@ -187,18 +183,15 @@ function ListingTemplatePage() {
           renderItem={(pattern) => <PatternCard pattern={pattern} />}
         />
       ) : (
-        <ListingEmptyState
-          description={t("emptyDescription")}
-          title={t("emptyTitle")}
-        />
+        <ListingEmptyState description={t("emptyDescription")} title={t("emptyTitle")} />
       )}
     </ListingFrame>
   );
 }
 
-function PatternCard({ pattern }: { pattern: ListingPattern }) {
+function PatternCard({ pattern }: { pattern: (typeof templatePatterns)[number] }) {
   const t = useTranslations("listingTemplate");
-  const Icon = pattern.icon;
+  const Icon = patternIcons[pattern.id];
 
   return (
     <Card className="h-full rounded-lg transition-shadow hover:shadow-md">
@@ -207,9 +200,14 @@ function PatternCard({ pattern }: { pattern: ListingPattern }) {
         <CardTitle>{t(`items.${pattern.id}.title`)}</CardTitle>
         <CardDescription>{t(`items.${pattern.id}.description`)}</CardDescription>
       </CardHeader>
-      <CardContent className="mt-auto flex gap-2">
+      <CardContent className="mt-auto flex flex-wrap items-center gap-2">
         <Badge variant="secondary">{t(`items.${pattern.id}.category`)}</Badge>
         <Badge variant="outline">{t(`items.${pattern.id}.layout`)}</Badge>
+        <Button asChild className="ml-auto" size="sm" variant="outline">
+          <Link params={{ slug: pattern.id }} to="/templates/$slug">
+            {t("viewDetails")}
+          </Link>
+        </Button>
       </CardContent>
     </Card>
   );

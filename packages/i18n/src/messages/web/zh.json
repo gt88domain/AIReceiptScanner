@@ -165,13 +165,52 @@
     "emptyTitle": "没有匹配的模式",
     "emptyDescription": "尝试其他搜索词，或清除部分筛选条件。",
     "clearFilters": "清除筛选",
+    "viewDetails": "查看详情",
+    "backToListing": "返回模板列表",
+    "detail": {
+      "includedTitle": "包含的模式能力",
+      "includedSearch": "可直接接入搜索的筛选控件",
+      "includedFilters": "分类和布局的分面筛选",
+      "includedResponsive": "响应式网格与列表布局",
+      "includedEmptyState": "空状态和加载状态基础组件"
+    },
     "items": {
-      "directory": { "title": "供应商目录", "description": "带分类、位置和能力筛选的公开卡片。", "category": "目录", "layout": "网格" },
-      "marketplace": { "title": "模板市场", "description": "带价格提示和集合筛选的可搜索目录。", "category": "市场", "layout": "网格" },
-      "resources": { "title": "资源库", "description": "可按主题和格式筛选的指南、工具与下载内容。", "category": "内容", "layout": "网格" },
-      "changelog": { "title": "更新日志", "description": "带版本和类型筛选的按时间排序产品更新。", "category": "内容", "layout": "列表" },
-      "jobs": { "title": "职位看板", "description": "带地点、工作方式和团队筛选的职位列表。", "category": "目录", "layout": "列表" },
-      "projects": { "title": "项目画廊", "description": "带标签、集合和加载更多分页的作品展示。", "category": "市场", "layout": "网格" }
+      "directory": {
+        "title": "供应商目录",
+        "description": "带分类、位置和能力筛选的公开卡片。",
+        "category": "目录",
+        "layout": "网格"
+      },
+      "marketplace": {
+        "title": "模板市场",
+        "description": "带价格提示和集合筛选的可搜索目录。",
+        "category": "市场",
+        "layout": "网格"
+      },
+      "resources": {
+        "title": "资源库",
+        "description": "可按主题和格式筛选的指南、工具与下载内容。",
+        "category": "内容",
+        "layout": "网格"
+      },
+      "changelog": {
+        "title": "更新日志",
+        "description": "带版本和类型筛选的按时间排序产品更新。",
+        "category": "内容",
+        "layout": "列表"
+      },
+      "jobs": {
+        "title": "职位看板",
+        "description": "带地点、工作方式和团队筛选的职位列表。",
+        "category": "目录",
+        "layout": "列表"
+      },
+      "projects": {
+        "title": "项目画廊",
+        "description": "带标签、集合和加载更多分页的作品展示。",
+        "category": "市场",
+        "layout": "网格"
+      }
     }
   },
   "blog": {

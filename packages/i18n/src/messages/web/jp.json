@@ -165,13 +165,52 @@
     "emptyTitle": "一致するパターンがありません",
     "emptyDescription": "検索語を変えるか、フィルターを解除してください。",
     "clearFilters": "フィルターを解除",
+    "viewDetails": "詳細を見る",
+    "backToListing": "テンプレート一覧に戻る",
+    "detail": {
+      "includedTitle": "含まれるパターン機能",
+      "includedSearch": "検索に対応した絞り込みコントロール",
+      "includedFilters": "カテゴリとレイアウトのファセットフィルター",
+      "includedResponsive": "レスポンシブなグリッドとリストレイアウト",
+      "includedEmptyState": "空状態・ローディング状態の基礎コンポーネント"
+    },
     "items": {
-      "directory": { "title": "ベンダーディレクトリ", "description": "カテゴリ、場所、機能で絞り込める公開カード。", "category": "ディレクトリ", "layout": "グリッド" },
-      "marketplace": { "title": "テンプレートマーケットプレイス", "description": "価格の手がかりとコレクション絞り込みを備えた検索可能なカタログ。", "category": "マーケットプレイス", "layout": "グリッド" },
-      "resources": { "title": "リソースライブラリ", "description": "トピックと形式で絞り込めるガイド、ツール、ダウンロード。", "category": "コンテンツ", "layout": "グリッド" },
-      "changelog": { "title": "変更履歴フィード", "description": "バージョンと種別で絞り込める時系列の製品更新。", "category": "コンテンツ", "layout": "リスト" },
-      "jobs": { "title": "求人ボード", "description": "勤務地、勤務形態、チームで絞り込める求人一覧。", "category": "ディレクトリ", "layout": "リスト" },
-      "projects": { "title": "プロジェクトギャラリー", "description": "タグ、コレクション、さらに読み込むページネーション付きの作品紹介。", "category": "マーケットプレイス", "layout": "グリッド" }
+      "directory": {
+        "title": "ベンダーディレクトリ",
+        "description": "カテゴリ、場所、機能で絞り込める公開カード。",
+        "category": "ディレクトリ",
+        "layout": "グリッド"
+      },
+      "marketplace": {
+        "title": "テンプレートマーケットプレイス",
+        "description": "価格の手がかりとコレクション絞り込みを備えた検索可能なカタログ。",
+        "category": "マーケットプレイス",
+        "layout": "グリッド"
+      },
+      "resources": {
+        "title": "リソースライブラリ",
+        "description": "トピックと形式で絞り込めるガイド、ツール、ダウンロード。",
+        "category": "コンテンツ",
+        "layout": "グリッド"
+      },
+      "changelog": {
+        "title": "変更履歴フィード",
+        "description": "バージョンと種別で絞り込める時系列の製品更新。",
+        "category": "コンテンツ",
+        "layout": "リスト"
+      },
+      "jobs": {
+        "title": "求人ボード",
+        "description": "勤務地、勤務形態、チームで絞り込める求人一覧。",
+        "category": "ディレクトリ",
+        "layout": "リスト"
+      },
+      "projects": {
+        "title": "プロジェクトギャラリー",
+        "description": "タグ、コレクション、さらに読み込むページネーション付きの作品紹介。",
+        "category": "マーケットプレイス",
+        "layout": "グリッド"
+      }
     }
   },
   "blog": {

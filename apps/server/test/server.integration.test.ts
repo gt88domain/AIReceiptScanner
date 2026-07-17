@@ -1,4 +1,4 @@
-import { exports } from "cloudflare:workers";
+import { env, exports } from "cloudflare:workers";
 import { createApiClient } from "@repo/api-client";
 import type { AppRouterClient } from "@/routers";
 import { describe, expect, it } from "vitest";
@@ -7,6 +7,38 @@ const client = createApiClient<AppRouterClient>({
   baseUrl: "https://server.test",
   fetch: (input, init) => exports.default.fetch(input, init),
 });
+
+function getSessionClient(cookie: string) {
+  return createApiClient<AppRouterClient>({
+    baseUrl: "https://server.test",
+    fetch: (input, init) => exports.default.fetch(input, init),
+    getHeaders: () => ({ cookie }),
+  });
+}
+
+async function signUp(email: string) {
+  const signUpResponse = await exports.default.fetch("https://server.test/api/auth/sign-up/email", {
+    body: JSON.stringify({ email, name: "Integration Test", password: "test-password-123" }),
+    headers: { "Content-Type": "application/json" },
+    method: "POST",
+  });
+  expect(signUpResponse.status).toBe(200);
+  await env.DB.prepare("UPDATE user SET email_verified = 1 WHERE email = ?").bind(email).run();
+
+  const response = await exports.default.fetch("https://server.test/api/auth/sign-in/email", {
+    body: JSON.stringify({ email, password: "test-password-123" }),
+    headers: { "Content-Type": "application/json" },
+    method: "POST",
+  });
+  expect(response.status).toBe(200);
+  const setCookies = response.headers.getSetCookie();
+  const cookie = (setCookies.length > 0 ? setCookies : [response.headers.get("set-cookie") ?? ""])
+    .filter(Boolean)
+    .map((value) => value.split(";", 1)[0])
+    .join("; ");
+  expect(cookie).not.toBe("");
+  return getSessionClient(cookie);
+}
 
 describe("server Worker", () => {
   it("serves the health endpoint with baseline security headers", async () => {
@@ -31,9 +63,44 @@ describe("server Worker", () => {
   });
 
   it("rejects unauthenticated access to protected procedures", async () => {
-    await expect(client.privateData()).rejects.toMatchObject({
+    await expect(client.credits.getBalance()).rejects.toMatchObject({
       code: "UNAUTHORIZED",
       status: 401,
+    });
+  });
+
+  it("requires an active subscription to be cancelled before account deletion", async () => {
+    const email = "subscribed-delete@example.test";
+    const signedInClient = await signUp(email);
+    const user = await env.DB.prepare("SELECT id FROM user WHERE email = ?")
+      .bind(email)
+      .first<{ id: string }>();
+    expect(user).not.toBeNull();
+    const now = Date.now();
+    await env.DB.prepare(
+      `INSERT INTO billing_subscription (
+          id, user_id, provider, provider_subscription_id, provider_customer_id,
+          plan_id, price_id, status, cancel_at_period_end, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    )
+      .bind(
+        "subscribed-delete-subscription",
+        user?.id,
+        "stripe",
+        "subscribed-delete-provider-subscription",
+        "subscribed-delete-provider-customer",
+        "pro",
+        "monthly",
+        "active",
+        0,
+        now,
+        now,
+      )
+      .run();
+
+    await expect(signedInClient.users.deleteAccount()).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      status: 400,
     });
   });
 

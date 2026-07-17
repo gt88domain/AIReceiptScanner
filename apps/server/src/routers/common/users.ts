@@ -101,6 +101,13 @@ export const usersRouter = {
         });
       }
 
+      const billingStatus = await context.payments.getBillingStatus({ userId });
+      if (billingStatus.hasActiveSubscription) {
+        throw new ORPCError("BAD_REQUEST", {
+          message: context.t("errors.activeSubscriptionDeletion"),
+        });
+      }
+
       await db
         .update(user)
         .set(buildDeletedAccountUserUpdate(currentUser, deletedAt))

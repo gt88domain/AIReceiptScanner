@@ -1,7 +1,6 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { RootProvider } from "fumadocs-ui/provider/tanstack";
 import type { ReactNode } from "react";
-import { LandingPageComposerProvider } from "@/components/providers/landing-page-composer-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,14 +17,12 @@ export function Providers({ children }: { children: ReactNode }) {
     <IntlProvider locale={locale} messages={messages}>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          <LandingPageComposerProvider>
-            <TooltipProvider>
-              <RootProvider i18n={getFumadocsI18nProvider(locale)} theme={{ enabled: false }}>
-                <PageViewTracker />
-                {children}
-              </RootProvider>
-            </TooltipProvider>
-          </LandingPageComposerProvider>
+          <TooltipProvider>
+            <RootProvider i18n={getFumadocsI18nProvider(locale)} theme={{ enabled: false }}>
+              <PageViewTracker />
+              {children}
+            </RootProvider>
+          </TooltipProvider>
           <Toaster richColors position="top-right" />
         </ThemeProvider>
       </QueryClientProvider>

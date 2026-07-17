@@ -9,7 +9,6 @@ import viteReact from "@vitejs/plugin-react";
 import mdx from "fumadocs-mdx/vite";
 import { parse } from "jsonc-parser";
 import { defineConfig, loadEnv } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
 import * as MdxConfig from "./source.config";
 
 const publicPages = [
@@ -102,6 +101,9 @@ export default defineConfig(({ mode }) => {
   // production: .env, .env.local, .env.production, .env.production.local
   return {
     define: clientBuildEnv,
+    resolve: {
+      tsconfigPaths: true,
+    },
     server: {
       port: 3000,
     },
@@ -111,7 +113,6 @@ export default defineConfig(({ mode }) => {
     plugins: [
       cloudflare({ viteEnvironment: { name: "ssr" } }),
       devtools(),
-      tsconfigPaths(),
       tailwindcss(),
       tanstackStart({
         srcDirectory: "src",

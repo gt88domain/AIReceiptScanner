@@ -5,6 +5,7 @@ import type { ThemePresetKey } from "./theme-presets";
 export interface WebConfig {
   AppName: string;
   AppUrl: string;
+  supportEmail: string;
   creditsEnabled: boolean;
   storageEnabled: boolean;
   auth: {

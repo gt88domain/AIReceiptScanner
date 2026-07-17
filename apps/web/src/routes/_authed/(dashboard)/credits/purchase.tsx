@@ -1,13 +1,12 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { formatCurrency } from "@repo/shared";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CoinsIcon, Loader2Icon, ReceiptTextIcon, ZapIcon } from "lucide-react";
+import { CoinsIcon, Loader2Icon, ReceiptTextIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AnimatedNumberText } from "@/components/ui/animated-number-text";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   useCreditBalanceQuery,
@@ -33,15 +32,11 @@ function getCreditReturnUrl() {
 function RouteComponent() {
   const t = useTranslations("dashboard.credits");
   const tRoot = useTranslations();
-  const queryClient = useQueryClient();
   const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
-  const [consumeAmount, setConsumeAmount] = useState("1");
   const creditPackagesQuery = useCreditPackagesQuery();
   const creditBalanceQuery = useCreditBalanceQuery();
   const creditOrdersQuery = useCreditOrdersQuery(Boolean(pendingOrderId));
   const creditOrders = creditOrdersQuery.data?.data;
-  const consumeAmountValue = Number(consumeAmount);
-  const canConsumeCredits = Number.isInteger(consumeAmountValue) && consumeAmountValue > 0;
 
   const createCreditCheckout = useMutation({
     ...orpc.web.credits.createCheckoutSession.mutationOptions(),
@@ -52,22 +47,6 @@ function RouteComponent() {
     },
     onError: (error: Error) => {
       toast.error(`${t("checkoutError")}: ${error.message}`);
-    },
-  });
-
-  const consumeCredits = useMutation({
-    ...orpc.credits.consume.mutationOptions(),
-    onSuccess: async (_balance, variables) => {
-      await creditBalanceQuery.refetch();
-      await queryClient.invalidateQueries({ queryKey: ["credits", "transactions"] });
-      toast.success(
-        t("demoConsumeSuccess", {
-          count: variables.amount,
-        }),
-      );
-    },
-    onError: (error: Error) => {
-      toast.error(`${t("demoConsumeError")}: ${error.message}`);
     },
   });
 
@@ -115,21 +94,6 @@ function RouteComponent() {
     createCreditCheckout.mutate({
       packageId,
       returnUrl: getCreditReturnUrl(),
-    });
-  };
-
-  const handleDemoConsume = () => {
-    if (!canConsumeCredits) {
-      return;
-    }
-
-    consumeCredits.mutate({
-      amount: consumeAmountValue,
-      idempotencyKey: `demo-credit-consume-${crypto.randomUUID()}`,
-      metadata: {
-        reason: "demo",
-        source: "credits_purchase_page",
-      },
     });
   };
 
@@ -214,40 +178,6 @@ function RouteComponent() {
                 <p className="text-sm text-muted-foreground">{t("emptyPackages")}</p>
               )}
             </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ZapIcon className="size-5" />
-            {t("demoConsumeTitle")}
-          </CardTitle>
-          <CardDescription>{t("demoConsumeDescription")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex max-w-md gap-2">
-            <Input
-              type="number"
-              min={1}
-              step={1}
-              inputMode="numeric"
-              value={consumeAmount}
-              aria-label={t("demoConsumeAmount")}
-              onChange={(event) => setConsumeAmount(event.target.value)}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              disabled={!canConsumeCredits || consumeCredits.isPending}
-              onClick={handleDemoConsume}
-            >
-              {consumeCredits.isPending ? (
-                <Loader2Icon className="mr-2 size-4 animate-spin" />
-              ) : null}
-              {t("demoConsume")}
-            </Button>
           </div>
         </CardContent>
       </Card>

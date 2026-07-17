@@ -116,6 +116,7 @@ pnpm dev
 - `docs/native-revenuecat-payments.md` — Native in-app purchases with RevenueCat
 - `docs/native-local-builds.md` — Building the native app locally
 - `docs/native-email-verification-with-ngrok.md` — Native email verification setup with ngrok
+- `docs/template-adoption.md` — Buyer-owned identifiers and deployment checklist
 
 ## 🛠️ Available Scripts
 

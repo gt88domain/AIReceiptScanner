@@ -54,6 +54,7 @@ function getLocalizedBaseUrl(): string {
 export const webConfig: WebConfig = {
   AppName: commonConfig.app.name,
   AppUrl: resolveAppUrl(),
+  supportEmail: commonConfig.app.supportEmail,
   creditsEnabled: commonConfig.credits.enabled ?? false,
   storageEnabled: commonConfig.storage.enabled ?? false,
   auth: {

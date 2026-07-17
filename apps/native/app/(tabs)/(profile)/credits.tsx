@@ -1,9 +1,9 @@
 import { Button, Skeleton, Spinner, useThemeColor } from "heroui-native";
 import { formatCurrency } from "@repo/shared";
-import { Coins, Zap } from "lucide-react-native";
+import { Coins } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, TextInput, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 import { AnimatedNumberText } from "@/components/ui/animated-number-text";
 import { FullScreenHud } from "@/components/ui/full-screen-hud";
@@ -41,15 +41,7 @@ export default function CreditsScreen() {
   const { isAuthenticated, isPending } = useAuth();
   const { toastSuccess, toastError } = useToast();
   const [purchasePhase, setPurchasePhase] = useState<PurchasePhase>(null);
-  const [consumeAmount, setConsumeAmount] = useState("1");
-  const [mutedColor, backgroundColor, accentColor, fieldPlaceholderColor] = useThemeColor([
-    "muted",
-    "background",
-    "accent",
-    "field-placeholder",
-  ]);
-  const consumeAmountValue = Number(consumeAmount);
-  const canConsumeCredits = Number.isInteger(consumeAmountValue) && consumeAmountValue > 0;
+  const [mutedColor, backgroundColor] = useThemeColor(["muted", "background"]);
 
   useTabBarVisibility(true);
 
@@ -110,46 +102,6 @@ export default function CreditsScreen() {
     },
     [credits, handleSignIn, isAuthenticated, t, toastError, toastSuccess],
   );
-
-  const handleDemoConsume = useCallback(async () => {
-    if (!isAuthenticated) {
-      handleSignIn();
-      return;
-    }
-
-    if (!canConsumeCredits) {
-      return;
-    }
-
-    try {
-      await credits.consume({
-        amount: consumeAmountValue,
-        idempotencyKey: `demo-credit-consume-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-        metadata: {
-          reason: "demo",
-          source: "credits_purchase_page",
-        },
-      });
-      toastSuccess(
-        t("credits.feedback.demoConsumeSuccess", {
-          count: consumeAmountValue,
-        }),
-      );
-    } catch (cause) {
-      const message =
-        cause instanceof Error ? cause.message : t("credits.feedback.demoConsumeError");
-      toastError(`${t("credits.feedback.demoConsumeError")}: ${message}`);
-    }
-  }, [
-    canConsumeCredits,
-    consumeAmountValue,
-    credits,
-    handleSignIn,
-    isAuthenticated,
-    t,
-    toastError,
-    toastSuccess,
-  ]);
 
   return (
     <>
@@ -251,57 +203,6 @@ export default function CreditsScreen() {
                   <Text className="text-sm leading-5 text-muted">{t("credits.emptyPackages")}</Text>
                 </View>
               )}
-            </View>
-          </Animated.View>
-
-          <Animated.View entering={FadeInUp.delay(140).duration(320)} className="mt-8">
-            <View className="rounded-2xl border border-border bg-surface p-4">
-              <View className="flex-row items-start gap-3">
-                <View className="size-10 items-center justify-center rounded-2xl bg-accent/10">
-                  <Zap size={20} color={mutedColor} />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-lg font-bold">{t("credits.demoConsumeTitle")}</Text>
-                  <Text className="mt-1 text-sm leading-5 text-muted">
-                    {t("credits.demoConsumeDescription")}
-                  </Text>
-                </View>
-              </View>
-              <View className="mt-4 flex-row gap-2">
-                <View className="h-11 flex-1 justify-center rounded-xl border border-field-border bg-field px-3">
-                  <TextInput
-                    className="flex-1 text-base leading-tight text-field-foreground"
-                    inputMode="numeric"
-                    keyboardType="number-pad"
-                    placeholder={t("credits.demoConsumeAmount")}
-                    placeholderTextColor={fieldPlaceholderColor}
-                    cursorColor={accentColor}
-                    selectionColor={accentColor}
-                    value={consumeAmount}
-                    onChangeText={setConsumeAmount}
-                  />
-                </View>
-                <Button
-                  className="h-11 min-w-28 items-center justify-center px-4"
-                  feedbackVariant="scale-ripple"
-                  isDisabled={!canConsumeCredits || credits.isConsuming}
-                  onPress={handleDemoConsume}
-                  variant="outline"
-                >
-                  {credits.isConsuming ? (
-                    <>
-                      <Spinner size="sm" />
-                      <Button.Label className="font-bold">
-                        {t("credits.actions.processing")}
-                      </Button.Label>
-                    </>
-                  ) : (
-                    <Button.Label className="font-bold">
-                      {t("credits.actions.demoConsume")}
-                    </Button.Label>
-                  )}
-                </Button>
-              </View>
             </View>
           </Animated.View>
         </Animated.View>
