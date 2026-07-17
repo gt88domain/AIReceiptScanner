@@ -1,7 +1,6 @@
 import {
   Coins,
   LayoutDashboard,
-  ReceiptText,
   Settings,
   Shield,
   ShieldCheck,
@@ -29,25 +28,6 @@ export const sidebarData: SidebarData = {
         },
       ],
     },
-    ...(creditsEnabled
-      ? [
-          {
-            title: "dashboard.nav.credits",
-            items: [
-              {
-                title: "dashboard.nav.creditPurchase",
-                url: "/credits/purchase",
-                icon: Coins,
-              },
-              {
-                title: "dashboard.nav.creditTransactions",
-                url: "/credits/transactions",
-                icon: ReceiptText,
-              },
-            ],
-          },
-        ]
-      : []),
     {
       title: "dashboard.nav.other",
       items: [
@@ -62,14 +42,23 @@ export const sidebarData: SidebarData = {
               icon: UserCog,
             },
             {
-              title: "dashboard.nav.security",
-              url: "/settings/security",
-              icon: Shield,
-            },
-            {
               title: "dashboard.nav.billing",
               url: "/settings/billing",
               icon: ShieldCheck,
+            },
+            ...(creditsEnabled
+              ? [
+                  {
+                    title: "dashboard.nav.credits",
+                    url: "/credits/purchase",
+                    icon: Coins,
+                  },
+                ]
+              : []),
+            {
+              title: "dashboard.nav.security",
+              url: "/settings/security",
+              icon: Shield,
             },
           ],
         },

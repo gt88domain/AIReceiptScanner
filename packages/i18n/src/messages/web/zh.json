@@ -340,7 +340,12 @@
       "billingAction": "查看账单",
       "creditsTitle": "积分",
       "creditsDescription": "按量计费产品可选用此账本。",
-      "creditsAction": "管理积分"
+      "creditsAction": "管理积分",
+      "creditsBalance": "可用 {count} 积分",
+      "securityTitle": "安全",
+      "securityVerified": "邮箱已验证",
+      "securityUnverified": "需要验证邮箱",
+      "securityAction": "查看安全设置"
     },
     "billing": {
       "title": "账单",
@@ -398,6 +403,7 @@
       "demoConsume": "消耗积分",
       "demoConsumeSuccess": "已消耗 {count} 积分。",
       "demoConsumeError": "积分消耗失败",
+      "viewTransactions": "查看流水",
       "refresh": "刷新",
       "transactionsTitle": "最近流水",
       "transactionsPageTitle": "积分流水",
@@ -486,6 +492,22 @@
       "meetsGrowth": "符合增长预测"
     },
     "settings": {
+      "home": {
+        "title": "账户中心",
+        "description": "在一个地方管理个人资料、账单、积分和账户安全。",
+        "profileTitle": "个人资料",
+        "profileDescription": "更新客户和团队成员可见的账户信息。",
+        "profileAction": "编辑资料",
+        "billingTitle": "账单",
+        "billingDescription": "查看订阅、套餐和支付选项。",
+        "billingAction": "管理账单",
+        "creditsTitle": "积分",
+        "creditsDescription": "查看余额、购买积分和使用流水。",
+        "creditsAction": "管理积分",
+        "securityTitle": "安全",
+        "securityDescription": "查看登录方式并保护账户安全。",
+        "securityAction": "查看安全设置"
+      },
       "profile": {
         "title": "个人资料",
         "description": "这是你在网站上的公开展示信息。",
@@ -548,12 +570,16 @@
     "description": "感谢升级，我们会尽快更新你的权限。",
     "syncingTitle": "正在确认订阅状态",
     "syncingDescription": "激活完成后将自动跳转到账单页面。",
-    "goToBilling": "前往账单"
+    "goToBilling": "前往账单",
+    "refreshStatus": "刷新状态",
+    "manualRefreshDescription": "暂时无法确认权限更新。请打开账单查看当前状态，必要时再刷新。"
   },
   "billingCancel": {
     "title": "支付已取消",
     "description": "你可以随时重新发起结算。",
-    "backToBilling": "返回账单"
+    "backToBilling": "返回账单",
+    "choosePlan": "选择套餐",
+    "backToDashboard": "返回仪表盘"
   },
   "seo": {
     "home": {

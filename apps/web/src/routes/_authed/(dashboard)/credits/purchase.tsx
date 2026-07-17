@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatCurrency } from "@repo/shared";
-import { createFileRoute } from "@tanstack/react-router";
-import { CoinsIcon, Loader2Icon, ZapIcon } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { CoinsIcon, Loader2Icon, ReceiptTextIcon, ZapIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AnimatedNumberText } from "@/components/ui/animated-number-text";
@@ -136,12 +136,20 @@ function RouteComponent() {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CoinsIcon className="size-5" />
-            {t("purchaseTitle")}
-          </CardTitle>
-          <CardDescription>{t("purchaseDescription")}</CardDescription>
+        <CardHeader className="flex flex-row items-start justify-between gap-4">
+          <div className="space-y-1.5">
+            <CardTitle className="flex items-center gap-2">
+              <CoinsIcon className="size-5" />
+              {t("purchaseTitle")}
+            </CardTitle>
+            <CardDescription>{t("purchaseDescription")}</CardDescription>
+          </div>
+          <Button asChild variant="outline" size="sm" className="shrink-0">
+            <Link to="/credits/transactions">
+              <ReceiptTextIcon className="mr-2 size-4" />
+              {t("viewTransactions")}
+            </Link>
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">

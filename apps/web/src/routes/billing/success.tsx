@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { CheckCircleIcon, Loader2Icon } from "lucide-react";
-import { useEffect } from "react";
+import { CheckCircleIcon, Loader2Icon, RefreshCwIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslations } from "@/i18n";
@@ -22,6 +23,7 @@ function RouteComponent() {
   const t = useTranslations("billingSuccess");
   const navigate = useNavigate();
   const search = Route.useSearch();
+  const [isPolling, setIsPolling] = useState(true);
 
   const statusQuery = useQuery(
     orpc.payments.getBillingStatus.queryOptions({
@@ -42,18 +44,26 @@ function RouteComponent() {
   }, [isCheckoutSynced, navigate]);
 
   useEffect(() => {
-    if (statusQuery.isError || isCheckoutSynced) {
+    if (statusQuery.isError || isCheckoutSynced || !isPolling) {
       return;
     }
 
     const interval = setInterval(() => {
-      statusQuery.refetch();
+      void statusQuery.refetch();
     }, 3000);
+    const timeout = setTimeout(() => setIsPolling(false), 60_000);
 
-    return () => clearInterval(interval);
-  }, [isCheckoutSynced, statusQuery.isError, statusQuery.refetch]);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [isCheckoutSynced, isPolling, statusQuery.isError, statusQuery.refetch]);
 
-  const isSyncing = !statusQuery.isError && !isCheckoutSynced;
+  const isSyncing = !statusQuery.isError && !isCheckoutSynced && isPolling;
+  const handleRefresh = () => {
+    setIsPolling(true);
+    void statusQuery.refetch();
+  };
 
   return (
     <div className="mx-auto flex min-h-[60vh] max-w-xl items-center px-4">
@@ -75,9 +85,26 @@ function RouteComponent() {
               <p className="text-xs text-muted-foreground">{t("syncingDescription")}</p>
             </div>
           ) : null}
-          <Button asChild>
-            <Link to="/settings/billing">{t("goToBilling")}</Link>
-          </Button>
+          {statusQuery.isError || (!isPolling && !isCheckoutSynced) ? (
+            <Alert>
+              <AlertDescription>{t("manualRefreshDescription")}</AlertDescription>
+            </Alert>
+          ) : null}
+          <div className="flex flex-wrap gap-3">
+            <Button asChild>
+              <Link to="/settings/billing">{t("goToBilling")}</Link>
+            </Button>
+            {!isCheckoutSynced ? (
+              <Button variant="outline" onClick={handleRefresh} disabled={statusQuery.isFetching}>
+                {statusQuery.isFetching ? (
+                  <Loader2Icon className="mr-2 size-4 animate-spin" />
+                ) : (
+                  <RefreshCwIcon className="mr-2 size-4" />
+                )}
+                {t("refreshStatus")}
+              </Button>
+            ) : null}
+          </div>
         </CardContent>
       </Card>
     </div>

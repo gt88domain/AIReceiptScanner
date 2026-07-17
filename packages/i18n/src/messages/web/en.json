@@ -340,7 +340,12 @@
       "billingAction": "View billing",
       "creditsTitle": "Credits",
       "creditsDescription": "Use this optional ledger for usage-based products.",
-      "creditsAction": "Manage credits"
+      "creditsAction": "Manage credits",
+      "creditsBalance": "{count} credits available",
+      "securityTitle": "Security",
+      "securityVerified": "Email verified",
+      "securityUnverified": "Email verification needed",
+      "securityAction": "Review security"
     },
     "billing": {
       "title": "Billing",
@@ -398,6 +403,7 @@
       "demoConsume": "Use credits",
       "demoConsumeSuccess": "{count} credits used.",
       "demoConsumeError": "Credit usage failed",
+      "viewTransactions": "View history",
       "refresh": "Refresh",
       "transactionsTitle": "Recent transactions",
       "transactionsPageTitle": "Credit transactions",
@@ -486,6 +492,22 @@
       "meetsGrowth": "Meets growth projections"
     },
     "settings": {
+      "home": {
+        "title": "Account center",
+        "description": "Manage your profile, billing, credits, and account security in one place.",
+        "profileTitle": "Profile",
+        "profileDescription": "Update the account details customers and teammates see.",
+        "profileAction": "Edit profile",
+        "billingTitle": "Billing",
+        "billingDescription": "Review your subscription, plans, and payment options.",
+        "billingAction": "Manage billing",
+        "creditsTitle": "Credits",
+        "creditsDescription": "Review your balance, buy credits, and see usage history.",
+        "creditsAction": "Manage credits",
+        "securityTitle": "Security",
+        "securityDescription": "Review how you sign in and keep the account secure.",
+        "securityAction": "Review security"
+      },
       "profile": {
         "title": "Profile",
         "description": "This is how others will see you on the site.",
@@ -548,12 +570,16 @@
     "description": "Thanks for upgrading. Your access will be updated shortly.",
     "syncingTitle": "Confirming your subscription status",
     "syncingDescription": "You'll be redirected to billing once activation is complete.",
-    "goToBilling": "Go to billing"
+    "goToBilling": "Go to billing",
+    "refreshStatus": "Refresh status",
+    "manualRefreshDescription": "We could not confirm the updated access yet. Open billing to review the current status, then refresh if needed."
   },
   "billingCancel": {
     "title": "Payment canceled",
     "description": "No worries. You can resume checkout anytime.",
-    "backToBilling": "Back to billing"
+    "backToBilling": "Back to billing",
+    "choosePlan": "Choose a plan",
+    "backToDashboard": "Back to dashboard"
   },
   "seo": {
     "home": {

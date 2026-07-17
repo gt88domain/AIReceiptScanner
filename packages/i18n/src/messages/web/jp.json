@@ -340,7 +340,12 @@
       "billingAction": "請求を表示",
       "creditsTitle": "クレジット",
       "creditsDescription": "従量課金プロダクトでは、この任意の台帳を利用できます。",
-      "creditsAction": "クレジットを管理"
+      "creditsAction": "クレジットを管理",
+      "creditsBalance": "{count} クレジットを利用可能",
+      "securityTitle": "セキュリティ",
+      "securityVerified": "メール認証済み",
+      "securityUnverified": "メール認証が必要です",
+      "securityAction": "セキュリティを確認"
     },
     "billing": {
       "title": "請求",
@@ -398,6 +403,7 @@
       "demoConsume": "クレジットを使う",
       "demoConsumeSuccess": "{count} クレジットを利用しました。",
       "demoConsumeError": "クレジット利用に失敗しました",
+      "viewTransactions": "履歴を見る",
       "refresh": "更新",
       "transactionsTitle": "最近の履歴",
       "transactionsPageTitle": "クレジット履歴",
@@ -486,6 +492,22 @@
       "meetsGrowth": "成長予測に一致"
     },
     "settings": {
+      "home": {
+        "title": "アカウントセンター",
+        "description": "プロフィール、請求、クレジット、アカウントのセキュリティを一か所で管理します。",
+        "profileTitle": "プロフィール",
+        "profileDescription": "顧客とチームに表示されるアカウント情報を更新します。",
+        "profileAction": "プロフィールを編集",
+        "billingTitle": "請求",
+        "billingDescription": "サブスクリプション、プラン、支払いオプションを確認します。",
+        "billingAction": "請求を管理",
+        "creditsTitle": "クレジット",
+        "creditsDescription": "残高、クレジット購入、利用履歴を確認します。",
+        "creditsAction": "クレジットを管理",
+        "securityTitle": "セキュリティ",
+        "securityDescription": "サインイン方法を確認し、アカウントを安全に保ちます。",
+        "securityAction": "セキュリティを確認"
+      },
       "profile": {
         "title": "プロフィール",
         "description": "これは、サイト上でのあなたの見え方です。",
@@ -548,12 +570,16 @@
     "description": "ご利用ありがとうございます。まもなく権限が更新されます。",
     "syncingTitle": "サブスクリプション状況を確認中",
     "syncingDescription": "有効化が完了すると請求ページへ自動的に移動します。",
-    "goToBilling": "請求へ戻る"
+    "goToBilling": "請求へ戻る",
+    "refreshStatus": "ステータスを更新",
+    "manualRefreshDescription": "更新後のアクセスをまだ確認できません。請求画面で現在の状態を確認し、必要に応じて更新してください。"
   },
   "billingCancel": {
     "title": "決済がキャンセルされました",
     "description": "いつでも再度チェックアウトできます。",
-    "backToBilling": "請求へ戻る"
+    "backToBilling": "請求へ戻る",
+    "choosePlan": "プランを選択",
+    "backToDashboard": "ダッシュボードへ戻る"
   },
   "seo": {
     "home": {

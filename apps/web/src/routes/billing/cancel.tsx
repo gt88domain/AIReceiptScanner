@@ -22,9 +22,14 @@ function RouteComponent() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">{t("description")}</p>
-          <Button asChild variant="outline">
-            <Link to="/settings/billing">{t("backToBilling")}</Link>
-          </Button>
+          <div className="flex flex-wrap gap-3">
+            <Button asChild>
+              <Link to="/settings/billing">{t("choosePlan")}</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/dashboard">{t("backToDashboard")}</Link>
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
