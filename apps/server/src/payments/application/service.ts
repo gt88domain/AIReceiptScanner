@@ -30,6 +30,7 @@ import { handleStripeEvent } from "../providers/stripe/webhook/handle-event";
 import { handleWaffoEvent } from "../providers/waffo/webhook/handle-event";
 import type { BillingUser } from "../public/types";
 import type { BillingStatus } from "../public/schemas";
+import { recordWebhookAttempt, recordWebhookFailure } from "./webhook-observability";
 
 /**
  * Parameters for creating a checkout session.
@@ -590,6 +591,7 @@ async function handleWebhookEvent(db: Database, input: HandleWebhookInput) {
   //   1. Provider-side retry when the webhook route responds non-2xx (thrown errors bubble up).
   //   2. Idempotent handlers — each provider's upserts compare `providerEventAt` before writing.
   //   3. The processing_status flag — only `processed` rows short-circuit as duplicates.
+  const now = new Date();
   const inserted = await db
     .insert(billingEvent)
     .values({
@@ -605,6 +607,8 @@ async function handleWebhookEvent(db: Database, input: HandleWebhookInput) {
         createdAt: parsed.createdAt.toISOString(),
       }),
       processingStatus: "pending",
+      firstReceivedAt: now,
+      attemptCount: 0,
     })
     .onConflictDoNothing({
       target: [billingEvent.provider, billingEvent.providerEventId],
@@ -645,19 +649,30 @@ async function handleWebhookEvent(db: Database, input: HandleWebhookInput) {
     eventRowId = existing.id;
   }
 
-  switch (input.provider) {
-    case "stripe":
-      await handleStripeEvent(db, parsed.payload);
-      break;
-    case "creem":
-      await handleCreemEvent(db, parsed.payload);
-      break;
-    case "waffo":
-      await handleWaffoEvent(db, parsed.payload);
-      break;
-    case "revenuecat":
-      await handleRevenueCatEvent(db, parsed.payload);
-      break;
+  await recordWebhookAttempt(db, eventRowId, now);
+
+  try {
+    switch (input.provider) {
+      case "stripe":
+        await handleStripeEvent(db, parsed.payload);
+        break;
+      case "creem":
+        await handleCreemEvent(db, parsed.payload);
+        break;
+      case "waffo":
+        await handleWaffoEvent(db, parsed.payload);
+        break;
+      case "revenuecat":
+        await handleRevenueCatEvent(db, parsed.payload);
+        break;
+    }
+  } catch (error) {
+    try {
+      await recordWebhookFailure(db, eventRowId, error);
+    } catch (recordError) {
+      console.error("Failed to record webhook processing failure", recordError);
+    }
+    throw error;
   }
 
   await db

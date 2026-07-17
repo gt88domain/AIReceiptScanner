@@ -66,6 +66,10 @@ const overviewSchema = z.object({
       eventType: z.string(),
       processingStatus: z.enum(["pending", "processed"]),
       processedAt: z.date(),
+      firstReceivedAt: z.date().nullable(),
+      lastAttemptAt: z.date().nullable(),
+      attemptCount: z.number(),
+      lastError: z.string().nullable(),
     }),
   ),
 });
@@ -169,6 +173,10 @@ export const adminRouter = {
             eventType: billingEvent.eventType,
             processingStatus: billingEvent.processingStatus,
             processedAt: billingEvent.processedAt,
+            firstReceivedAt: billingEvent.firstReceivedAt,
+            lastAttemptAt: billingEvent.lastAttemptAt,
+            attemptCount: billingEvent.attemptCount,
+            lastError: billingEvent.lastError,
           })
           .from(billingEvent)
           .orderBy(desc(billingEvent.processedAt))

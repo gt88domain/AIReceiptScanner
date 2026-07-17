@@ -4,7 +4,7 @@ import {
 import {
 	SUBSCRIPTION_STATUSES,
 } from "@repo/app-config/payments/web";
-import { integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 /**
  * Billing customers table - maps internal users to payment provider customers
@@ -128,10 +128,22 @@ export const billingEvent = sqliteTable(
 		})
 			.notNull()
 			.default("pending"),
+		// Operational timestamps intentionally describe our handling, unlike processedAt,
+		// which stores the payment provider's event time for backwards compatibility.
+		firstReceivedAt: integer("first_received_at", { mode: "timestamp" }),
+		lastAttemptAt: integer("last_attempt_at", { mode: "timestamp" }),
+		attemptCount: integer("attempt_count").notNull().default(0),
+		lastError: text("last_error"),
+		alertedAt: integer("alerted_at", { mode: "timestamp" }),
 	},
 	(table) => [
 		// Ensure each provider event is only processed once (idempotency)
 		uniqueIndex("billing_event_provider_event_id_idx").on(table.provider, table.providerEventId),
+		index("billing_event_pending_alert_idx").on(
+			table.processingStatus,
+			table.alertedAt,
+			table.firstReceivedAt,
+		),
 	],
 );
 

@@ -93,8 +93,8 @@ export function AdminDashboard() {
       </section>
 
       <AdminTable
-        columns={["Provider", "Event", "Status", "Processed at"]}
-        description="Most recently received payment-provider events"
+        columns={["Provider", "Event", "Status", "Attempts", "Last attempted", "Last error"]}
+        description="Provider event time is retained separately from this service's handling timeline."
         empty="No webhook events."
         title="Webhook status"
       >
@@ -103,7 +103,11 @@ export function AdminDashboard() {
             <TableCell>{webhook.provider}</TableCell>
             <TableCell>{webhook.eventType}</TableCell>
             <TableCell>{webhook.processingStatus}</TableCell>
-            <TableCell>{formatDate(webhook.processedAt)}</TableCell>
+            <TableCell>{webhook.attemptCount}</TableCell>
+            <TableCell>{formatDate(webhook.lastAttemptAt)}</TableCell>
+            <TableCell className="max-w-sm whitespace-normal break-words">
+              {webhook.lastError ?? "—"}
+            </TableCell>
           </TableRow>
         ))}
       </AdminTable>
