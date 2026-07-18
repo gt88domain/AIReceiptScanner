@@ -50,7 +50,7 @@ export const Footer = ({
       links: [
         { name: footerT("sections.product.links.overview"), href: "/" },
         { name: footerT("sections.product.links.pricing"), href: "/#pricing" },
-        { name: footerT("sections.product.links.listingTemplate"), href: "/templates/listing" },
+        { name: footerT("sections.product.links.listingTemplate"), href: "/listing" },
         { name: footerT("sections.product.links.features"), href: "/#features" },
       ],
     },

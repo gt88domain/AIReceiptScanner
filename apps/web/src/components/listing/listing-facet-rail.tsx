@@ -29,8 +29,8 @@ type ListingFacetRailProps = Omit<ComponentProps<"aside">, "children"> & {
 };
 
 /**
- * Standard Discovery filter shell. It deliberately has no knowledge of cards,
- * route schemas, or data sources; each resource adapter supplies those.
+ * Standard filter rail. It deliberately has no knowledge of cards, route schemas,
+ * or data sources; each route supplies those.
  */
 export function ListingFacetRail({
   category,

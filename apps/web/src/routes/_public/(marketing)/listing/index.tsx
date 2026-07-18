@@ -11,13 +11,13 @@ import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ListingEmptyState } from "@/custom/discovery/listing/listing-empty-state";
-import { ListingFacetRail } from "@/custom/discovery/listing/listing-facet-rail";
-import { ListingFrame } from "@/custom/discovery/listing/listing-frame";
-import { ListingGrid } from "@/custom/discovery/listing/listing-grid";
-import { ListingSearchInput } from "@/custom/discovery/listing/listing-search-input";
-import { ListingSortSelect } from "@/custom/discovery/listing/listing-sort-select";
-import { ListingToolbar } from "@/custom/discovery/listing/listing-toolbar";
+import { ListingEmptyState } from "@/components/listing/listing-empty-state";
+import { ListingFacetRail } from "@/components/listing/listing-facet-rail";
+import { ListingGrid } from "@/components/listing/listing-grid";
+import { ListingSearchInput } from "@/components/listing/listing-search-input";
+import { ListingShell } from "@/components/listing/listing-shell";
+import { ListingSortSelect } from "@/components/listing/listing-sort-select";
+import { ListingToolbar } from "@/components/listing/listing-toolbar";
 import { webConfig } from "@/configs/web-config";
 import {
   templatePatterns,
@@ -39,7 +39,7 @@ const patternIcons: Record<TemplateSlug, LucideIcon> = {
   projects: LayoutGridIcon,
 };
 
-export const Route = createFileRoute("/_public/(marketing)/templates/listing")({
+export const Route = createFileRoute("/_public/(marketing)/listing/")({
   head: () => {
     const locale = getCurrentLocale();
     const messages = getMessages(locale);
@@ -48,7 +48,7 @@ export const Route = createFileRoute("/_public/(marketing)/templates/listing")({
       locale,
       title: `${messages.listingTemplate.title} | ${webConfig.AppName}`,
       description: messages.listingTemplate.description,
-      canonicalPath: "/templates/listing",
+      canonicalPath: "/listing",
       siteName: webConfig.AppName,
     });
   },
@@ -133,7 +133,7 @@ function ListingTemplatePage() {
   );
 
   return (
-    <ListingFrame
+    <ListingShell
       className="pt-28 pb-16"
       filterLabel={t("filterLabel")}
       filters={filters}
@@ -185,7 +185,7 @@ function ListingTemplatePage() {
       ) : (
         <ListingEmptyState description={t("emptyDescription")} title={t("emptyTitle")} />
       )}
-    </ListingFrame>
+    </ListingShell>
   );
 }
 
@@ -204,7 +204,7 @@ function PatternCard({ pattern }: { pattern: (typeof templatePatterns)[number] }
         <Badge variant="secondary">{t(`items.${pattern.id}.category`)}</Badge>
         <Badge variant="outline">{t(`items.${pattern.id}.layout`)}</Badge>
         <Button asChild className="ml-auto" size="sm" variant="outline">
-          <Link params={{ slug: pattern.id }} to="/templates/$slug">
+          <Link params={{ slug: pattern.id }} to="/listing/$slug">
             {t("viewDetails")}
           </Link>
         </Button>

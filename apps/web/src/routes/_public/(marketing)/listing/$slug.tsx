@@ -1,15 +1,16 @@
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
-import { ArrowLeftIcon, CheckIcon, CopyIcon, LayoutGridIcon, Rows3Icon } from "lucide-react";
+import { ArrowLeftIcon, CheckIcon, CopyIcon } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TemplateFixturePreview } from "@/components/template-catalog/template-fixture-preview";
 import { getTemplatePattern } from "@/configs/template-catalog";
 import { webConfig } from "@/configs/web-config";
 import { getCurrentLocale, getMessages, useTranslations } from "@/i18n";
 import { buildSeoHead } from "@/utils/seo";
 
-export const Route = createFileRoute("/_public/(marketing)/templates/$slug")({
+export const Route = createFileRoute("/_public/(marketing)/listing/$slug")({
   loader: ({ params }) => {
     const pattern = getTemplatePattern(params.slug);
     if (!pattern) throw notFound();
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/_public/(marketing)/templates/$slug")({
       locale,
       title: `${title} | ${webConfig.AppName}`,
       description,
-      canonicalPath: pattern ? `/templates/${pattern.id}` : "/templates/listing",
+      canonicalPath: pattern ? `/listing/${pattern.id}` : "/listing",
       siteName: webConfig.AppName,
     });
   },
@@ -41,7 +42,6 @@ function TemplateDetailPage() {
   const pattern = Route.useLoaderData();
   const t = useTranslations("listingTemplate");
   const [copied, setCopied] = useState(false);
-  const isGrid = pattern.layout === "grid";
 
   async function copyLink() {
     await navigator.clipboard.writeText(window.location.href);
@@ -52,7 +52,7 @@ function TemplateDetailPage() {
   return (
     <main className="mx-auto w-full max-w-4xl px-4 pt-28 pb-16 sm:px-6 lg:px-8">
       <Button asChild size="sm" variant="ghost">
-        <Link to="/templates/listing">
+        <Link to="/listing">
           <ArrowLeftIcon className="mr-2 size-4" />
           {t("backToListing")}
         </Link>
@@ -81,34 +81,7 @@ function TemplateDetailPage() {
         </header>
         <section className="space-y-3">
           <h2 className="text-xl font-semibold">{t("detail.previewTitle")}</h2>
-          <div className="rounded-xl border bg-muted/30 p-4 shadow-sm sm:p-6">
-            <div className="flex items-center justify-between border-b pb-4">
-              <div className="h-3 w-28 rounded-full bg-foreground/15" />
-              {isGrid ? (
-                <LayoutGridIcon className="size-4 text-muted-foreground" />
-              ) : (
-                <Rows3Icon className="size-4 text-muted-foreground" />
-              )}
-            </div>
-            <div className={isGrid ? "grid gap-3 pt-4 sm:grid-cols-3" : "space-y-3 pt-4"}>
-              {Array.from({ length: isGrid ? 6 : 4 }, (_, index) => (
-                <div
-                  className={
-                    isGrid
-                      ? "min-h-28 rounded-lg border bg-background p-3"
-                      : "flex items-center gap-3 rounded-lg border bg-background p-3"
-                  }
-                  key={index}
-                >
-                  <div className="size-8 rounded-md bg-primary/15" />
-                  <div className="mt-3 min-w-0 flex-1 space-y-2">
-                    <div className="h-2 w-3/4 rounded-full bg-foreground/15" />
-                    <div className="h-2 w-1/2 rounded-full bg-foreground/10" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <TemplateFixturePreview pattern={pattern} />
         </section>
         <section className="grid gap-6 md:grid-cols-[0.8fr_1.2fr]">
           <div className="space-y-2">
