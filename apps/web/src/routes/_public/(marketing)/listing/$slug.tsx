@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TemplateFixturePreview } from "@/components/template-catalog/template-fixture-preview";
 import { getTemplatePattern } from "@/configs/template-catalog";
 import { webConfig } from "@/configs/web-config";
 import { getCurrentLocale, getMessages, useTranslations } from "@/i18n";
@@ -79,10 +78,6 @@ function TemplateDetailPage() {
             </Button>
           </div>
         </header>
-        <section className="space-y-3">
-          <h2 className="text-xl font-semibold">{t("detail.previewTitle")}</h2>
-          <TemplateFixturePreview pattern={pattern} />
-        </section>
         <section className="grid gap-6 md:grid-cols-[0.8fr_1.2fr]">
           <div className="space-y-2">
             <h2 className="text-xl font-semibold">{t("detail.useCaseTitle")}</h2>

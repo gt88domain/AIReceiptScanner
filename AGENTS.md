@@ -118,7 +118,7 @@ For a completed change that affects a user-facing page or visual web UI:
 
 1. Run focused page verification appropriate to the change.
 2. Create a Git checkpoint commit and push the current branch to `origin`.
-3. Run `pnpm deploy:web` to update `https://demo.aiarticles.com`.
+3. Run `pnpm deploy:web` to update the production web domain configured for the project.
 4. Verify the affected production URL and report the commit and URL.
 
 Do not run page verification or deploy for non-page changes (for example,
