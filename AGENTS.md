@@ -112,6 +112,19 @@ that newly orphaned code.
 Commit messages should follow Conventional Commits. Use `pnpm commit` when the
 user asks to create a commit.
 
+## Demo Page Deployment
+
+For a completed change that affects a user-facing page or visual web UI:
+
+1. Run focused page verification appropriate to the change.
+2. Create a Git checkpoint commit and push the current branch to `origin`.
+3. Run `pnpm deploy:web` to update `https://demo.aiarticles.com`.
+4. Verify the affected production URL and report the commit and URL.
+
+Do not run page verification or deploy for non-page changes (for example,
+server-only code, refactors, configuration, documentation, or tests) unless the
+user explicitly requests it.
+
 ## Configuration And Secrets
 
 Use env examples such as `apps/web/.env.development.example` and
