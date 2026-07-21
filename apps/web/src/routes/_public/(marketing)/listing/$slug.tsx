@@ -32,6 +32,8 @@ export const Route = createFileRoute("/_public/(marketing)/listing/$slug")({
       description,
       canonicalPath: pattern ? `/listing/${pattern.id}` : "/listing",
       siteName: webConfig.AppName,
+      robots: "noindex,nofollow",
+      alternates: false,
     });
   },
   component: TemplateDetailPage,

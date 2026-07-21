@@ -16,6 +16,8 @@ export const Route = createFileRoute("/_public/(marketing)/templates/landing-com
       description: messages.listingTemplate.description,
       canonicalPath: "/templates/landing-composer",
       siteName: webConfig.AppName,
+      robots: "noindex,nofollow",
+      alternates: false,
     });
   },
   component: LandingComposerPage,

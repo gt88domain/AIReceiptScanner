@@ -17,15 +17,10 @@ const defaultThemePresetKey =
 
 const defaultLandingPageComponents = [
   "hero-section-23",
-  "tailark-logo-cloud",
   "features-section-21",
-  "tailark-integrations",
   "tailark-content",
-  "tailark-stats",
-  "tailark-pricing",
   "tailark-faqs",
   "tailark-call-to-action",
-  "tailark-testimonials",
 ] as const satisfies readonly LandingPageComponentKey[];
 
 function resolveAppUrl(): string {

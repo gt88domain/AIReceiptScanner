@@ -50,6 +50,8 @@ export const Route = createFileRoute("/_public/(marketing)/listing/")({
       description: messages.listingTemplate.description,
       canonicalPath: "/listing",
       siteName: webConfig.AppName,
+      robots: "noindex,nofollow",
+      alternates: false,
     });
   },
   component: ListingTemplatePage,

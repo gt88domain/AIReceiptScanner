@@ -52,6 +52,8 @@ export const Route = createFileRoute("/_public/(marketing)/blog/category/$slug")
       canonicalPath: `/blog/category/${loaderData?.selectedCategory.slug ?? ""}`,
       type: "article",
       siteName: webConfig.AppName,
+      robots: "noindex,nofollow",
+      alternates: false,
     });
   },
   component: RouteComponent,
