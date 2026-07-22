@@ -3,6 +3,7 @@ import {
   completeCreditOrderPurchase,
   markCreditOrderRefunded,
   markCreditOrderStatus,
+  recordCreditPaymentDispute,
   revokeCreditPurchaseBySource,
 } from "@/credits";
 import type { Database } from "@/db";
@@ -284,6 +285,17 @@ async function updatePurchaseStatusFromDispute(
     typeof paymentIntentRef === "string" ? paymentIntentRef : paymentIntentRef?.id;
   if (!paymentIntentId) return;
 
+  await recordCreditPaymentDispute(db, {
+    provider: "stripe",
+    providerDisputeId: dispute.id,
+    providerPaymentId: paymentIntentId,
+    status: mapDisputeStatusToCreditDisputeStatus(dispute.status),
+    amountCents: dispute.amount,
+    currency: dispute.currency,
+    providerEventAt,
+    providerEventId,
+  });
+
   const status = mapDisputeStatusToPurchaseStatus(dispute.status);
   if (!status) return;
 
@@ -294,6 +306,21 @@ async function updatePurchaseStatusFromDispute(
     providerEventAt,
     providerEventId,
   );
+}
+
+function mapDisputeStatusToCreditDisputeStatus(
+  status: Stripe.Dispute.Status,
+): "open" | "won" | "lost" {
+  switch (status) {
+    case "won":
+    case "warning_closed":
+    case "prevented":
+      return "won";
+    case "lost":
+      return "lost";
+    default:
+      return "open";
+  }
 }
 
 /**

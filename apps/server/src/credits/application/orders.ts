@@ -5,7 +5,7 @@ import type { Database } from "@/db";
 import { creditOrder } from "@/db/schema/credits";
 import { findBillingCustomer } from "@/payments/infrastructure/repositories/billing-store";
 import type { CheckoutSessionResult } from "@/payments/public/types";
-import { assertCreditsEnabled } from "./internal";
+import { assertCreditAccountNotOnBillingHold, assertCreditsEnabled } from "./internal";
 import { grantCredits } from "./grant";
 import type {
   CompleteCreditOrderPurchaseInput,
@@ -48,6 +48,7 @@ export async function createCreditCheckoutSession(
   input: CreateCreditCheckoutSessionInput,
 ): Promise<CheckoutSessionResult & { creditOrderId: string }> {
   assertCreditsEnabled();
+  await assertCreditAccountNotOnBillingHold(db, input.user.userId);
   const now = new Date();
   const creditPackage = findCreditPackageById(creditsConfig, input.packageId);
   if (!creditPackage || creditPackage.status !== "active" || !creditPackage.web) {

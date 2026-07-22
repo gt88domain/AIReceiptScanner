@@ -2,6 +2,7 @@ import { and, eq, isNull, lt, or, sql } from "drizzle-orm";
 import {
   completeCreditOrderPurchase,
   markCreditOrderRefunded,
+  recordCreditPaymentDispute,
   revokeCreditPurchaseBySource,
 } from "@/credits";
 import type { Database } from "@/db";
@@ -25,6 +26,7 @@ import { mapCreemSubscriptionState } from "../shared";
 import type { CreemSubscriptionState } from "../shared";
 import type {
   CreemCheckoutCompletedObject,
+  CreemDisputeObject,
   CreemMetadata,
   CreemRefundObject,
   CreemSubscription,
@@ -554,14 +556,26 @@ async function handleCreemRefundCreated(
 }
 
 /**
- * Logs Creem disputes so chargebacks stay visible until a dedicated state transition exists.
+ * Holds the matched account as soon as Creem opens a dispute.
  */
-function handleCreemDisputeCreated(event: CreemWebhookEnvelope) {
-  console.error("Creem dispute created", {
+async function handleCreemDisputeCreated(
+  db: Database,
+  event: CreemWebhookEnvelope,
+  object: CreemDisputeObject,
+) {
+  const providerCustomerId = getCreemCustomerId(object.customer);
+  const user = await resolveCreemUser(db, { providerCustomerId });
+  if (!user) {
+    throw new Error(`Creem dispute missing a known billing user for dispute ${object.id}`);
+  }
+
+  await recordCreditPaymentDispute(db, {
+    provider: "creem",
+    providerDisputeId: object.id,
+    userId: user.userId,
+    status: "open",
+    providerEventAt: new Date(event.created_at),
     providerEventId: event.id,
-    providerDisputeId: "id" in event.object ? event.object.id : null,
-    providerCustomerId:
-      "customer" in event.object ? getCreemCustomerId(event.object.customer) : null,
   });
 }
 
@@ -595,7 +609,7 @@ export async function handleCreemEvent(db: Database, payload: unknown) {
       await handleCreemRefundCreated(db, event, event.object as CreemRefundObject);
       return;
     case "dispute.created":
-      handleCreemDisputeCreated(event);
+      await handleCreemDisputeCreated(db, event, event.object as CreemDisputeObject);
       return;
   }
 }

@@ -7,6 +7,7 @@ import {
 import { revokeCreditPurchase, revokeCreditPurchaseBySource } from "./consume";
 import { grantCreditPackagePurchase, grantCredits, recordNativeCreditOrderPurchase } from "./grant";
 import { expireCredits, runCreditMaintenance } from "./maintenance";
+import { recordCreditPaymentDispute } from "./payment-risk";
 import {
   completeCreditOrderPurchase,
   createCreditCheckoutSession,
@@ -41,6 +42,7 @@ export {
   markCreditOrderRefunded,
   markCreditOrderStatus,
   recordNativeCreditOrderPurchase,
+  recordCreditPaymentDispute,
   revokeCreditPurchase,
   revokeCreditPurchaseBySource,
   runCreditMaintenance,

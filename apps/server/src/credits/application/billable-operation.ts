@@ -3,6 +3,7 @@ import type { Database } from "@/db";
 import { billableOperation, creditTransaction } from "@/db/schema/credits";
 import {
   assertCreditsEnabled,
+  assertCreditAccountNotOnBillingHold,
   assertPositiveAmount,
   createAccountGrantUpdate,
   findTransactionBySource,
@@ -82,6 +83,7 @@ export async function beginBillableOperation(
 ) {
   assertCreditsEnabled();
   assertOperationFields(input);
+  await assertCreditAccountNotOnBillingHold(db, input.user.userId);
   let operation = await findOperation(db, input);
 
   if (!operation) {

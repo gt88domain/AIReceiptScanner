@@ -27,113 +27,64 @@ export async function revokeCreditPurchase(db: Database, input: RevokeCreditPurc
 
   const refundSource = {
     sourceProvider: input.originalSourceProvider,
-    sourceType: "refund",
+    sourceType: input.recoverySourceType ?? "refund",
     sourceId: input.refundSourceId,
   } satisfies CreditSource;
 
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const existingRefund = await findTransactionBySource(db, refundSource);
-    const purchase = await findTransactionBySource(db, {
-      sourceProvider: input.originalSourceProvider,
-      sourceType: "purchase",
-      sourceId: input.originalSourceId,
-    });
-    if (!purchase || purchase.userId !== input.user.userId) {
-      return existingRefund ?? null;
-    }
+  const existingRefund = await findTransactionBySource(db, refundSource);
+  if (existingRefund) return existingRefund;
 
-    if (existingRefund) {
-      const remainingRefundAmount = Math.min(
-        purchase.remainingAmount,
-        Math.abs(existingRefund.amount),
-      );
-      if (remainingRefundAmount > 0) {
-        await runCreditBatch(db, [
-          db
-            .update(creditTransaction)
-            .set({
-              remainingAmount: sql`${creditTransaction.remainingAmount} - ${remainingRefundAmount}`,
-              updatedAt: new Date(),
-            })
-            .where(
-              and(
-                eq(creditTransaction.id, purchase.id),
-                gte(creditTransaction.remainingAmount, remainingRefundAmount),
-              ),
-            ),
-          createBatchChangeGuard(db, refundSource),
-          createAccountDebitUpdate(db, {
-            userId: input.user.userId,
-            amount: remainingRefundAmount,
-            field: "totalRevoked",
-            now: new Date(),
-            requireAvailableBalance: true,
-          }),
-          createBatchChangeGuard(db, refundSource),
-        ]);
-      }
-      return existingRefund;
-    }
+  const purchase = await findTransactionBySource(db, {
+    sourceProvider: input.originalSourceProvider,
+    sourceType: "purchase",
+    sourceId: input.originalSourceId,
+  });
+  if (!purchase || purchase.userId !== input.user.userId) return null;
 
-    if (purchase.remainingAmount <= 0) {
-      return null;
-    }
-
-    const now = new Date();
-    const amountToRevoke = purchase.remainingAmount;
-    try {
-      await runCreditBatch(db, [
-        db.insert(creditTransaction).values({
-          id: crypto.randomUUID(),
-          userId: input.user.userId,
-          amount: -amountToRevoke,
-          remainingAmount: 0,
-          sourceProvider: input.originalSourceProvider,
-          sourceType: "refund",
-          sourceId: input.refundSourceId,
-          packageId: purchase.packageId,
-          expiresAt: null,
-          metadata: input.metadata ?? null,
-          createdAt: now,
+  const amountToRevoke = Math.min(input.amount ?? purchase.amount, purchase.amount);
+  assertPositiveAmount(amountToRevoke);
+  const now = new Date();
+  try {
+    await runCreditBatch(db, [
+      db.insert(creditTransaction).values({
+        id: crypto.randomUUID(),
+        userId: input.user.userId,
+        amount: -amountToRevoke,
+        remainingAmount: 0,
+        sourceProvider: input.originalSourceProvider,
+        sourceType: refundSource.sourceType,
+        sourceId: input.refundSourceId,
+        packageId: purchase.packageId,
+        expiresAt: null,
+        metadata: {
+          ...input.metadata,
+          originalSourceId: input.originalSourceId,
+        },
+        createdAt: now,
+        updatedAt: now,
+      }),
+      db
+        .update(creditTransaction)
+        .set({
+          remainingAmount: sql`CASE WHEN ${creditTransaction.remainingAmount} > ${amountToRevoke}
+            THEN ${creditTransaction.remainingAmount} - ${amountToRevoke} ELSE 0 END`,
           updatedAt: now,
-        }),
-        db
-          .update(creditTransaction)
-          .set({
-            remainingAmount: sql`${creditTransaction.remainingAmount} - ${amountToRevoke}`,
-            updatedAt: now,
-          })
-          .where(
-            and(
-              eq(creditTransaction.id, purchase.id),
-              gte(creditTransaction.remainingAmount, amountToRevoke),
-            ),
-          ),
-        createBatchChangeGuard(db, refundSource),
-        createAccountDebitUpdate(db, {
-          userId: input.user.userId,
-          amount: amountToRevoke,
-          field: "totalRevoked",
-          now,
-          requireAvailableBalance: true,
-        }),
-        createBatchChangeGuard(db, refundSource),
-      ]);
-    } catch (error) {
-      const existing = await findTransactionBySource(db, refundSource);
-      if (existing) {
-        return existing;
-      }
-      if (attempt === 0) {
-        continue;
-      }
-      throw error;
-    }
-
-    return findTransactionBySource(db, refundSource);
+        })
+        .where(eq(creditTransaction.id, purchase.id)),
+      createAccountDebitUpdate(db, {
+        userId: input.user.userId,
+        amount: amountToRevoke,
+        field: "totalRevoked",
+        now,
+      }),
+    ]);
+  } catch (error) {
+    const existing = await findTransactionBySource(db, refundSource);
+    if (existing) return existing;
+    throw error;
   }
 
-  return null;
+  return findTransactionBySource(db, refundSource);
 }
 
 export async function revokeCreditPurchaseBySource(
@@ -155,6 +106,8 @@ export async function revokeCreditPurchaseBySource(
     originalSourceProvider: input.originalSourceProvider,
     originalSourceId: input.originalSourceId,
     refundSourceId: input.refundSourceId,
+    recoverySourceType: input.recoverySourceType,
+    amount: input.amount,
     metadata: input.metadata ?? null,
   });
 }

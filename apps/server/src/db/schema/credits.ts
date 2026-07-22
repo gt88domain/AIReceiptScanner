@@ -10,6 +10,7 @@ export const CREDIT_SOURCE_TYPES = [
   "signup_grant",
   "purchase",
   "refund",
+  "chargeback",
   "usage",
   "expiration",
 ] as const;
@@ -35,6 +36,9 @@ export const BILLABLE_OPERATION_STATUSES = [
   "refunded",
 ] as const;
 
+/** Payment dispute states that can block a credit account. */
+export const CREDIT_PAYMENT_DISPUTE_STATUSES = ["open", "won", "lost"] as const;
+
 /** Stores the current account-level balance and aggregate counters for quick reads. */
 export const creditAccount = sqliteTable("credit_account", {
   userId: text("user_id")
@@ -45,6 +49,8 @@ export const creditAccount = sqliteTable("credit_account", {
   totalConsumed: integer("total_consumed").notNull().default(0),
   totalExpired: integer("total_expired").notNull().default(0),
   totalRevoked: integer("total_revoked").notNull().default(0),
+  /** True while a provider dispute is open or has been lost. */
+  billingHold: integer("billing_hold", { mode: "boolean" }).notNull().default(false),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
@@ -85,6 +91,34 @@ export const creditTransaction = sqliteTable(
     index("credit_transaction_user_created_idx").on(table.userId, table.createdAt),
     index("credit_transaction_user_expiry_idx").on(table.userId, table.expiresAt),
     index("credit_transaction_expiry_idx").on(table.expiresAt, table.remainingAmount),
+  ],
+);
+
+/** Provider disputes for credit purchases, used to hold accounts and settle chargebacks once. */
+export const creditPaymentDispute = sqliteTable(
+  "credit_payment_dispute",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    provider: text("provider").$type<ServerPaymentProviderKey>().notNull(),
+    providerDisputeId: text("provider_dispute_id").notNull(),
+    providerPaymentId: text("provider_payment_id"),
+    status: text("status", { enum: CREDIT_PAYMENT_DISPUTE_STATUSES }).notNull(),
+    amountCents: integer("amount_cents"),
+    currency: text("currency"),
+    providerEventAt: integer("provider_event_at", { mode: "timestamp" }),
+    providerEventId: text("provider_event_id"),
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("credit_payment_dispute_provider_id_idx").on(
+      table.provider,
+      table.providerDisputeId,
+    ),
+    index("credit_payment_dispute_user_status_idx").on(table.userId, table.status),
   ],
 );
 
@@ -189,6 +223,10 @@ export const billableOperation = sqliteTable(
 export type CreditAccount = typeof creditAccount.$inferSelect;
 /** Insertable credit account row type. */
 export type NewCreditAccount = typeof creditAccount.$inferInsert;
+/** Selected provider payment dispute row type. */
+export type CreditPaymentDispute = typeof creditPaymentDispute.$inferSelect;
+/** Insertable provider payment dispute row type. */
+export type NewCreditPaymentDispute = typeof creditPaymentDispute.$inferInsert;
 /** Selected credit transaction row type. */
 export type CreditTransaction = typeof creditTransaction.$inferSelect;
 /** Insertable credit transaction row type. */
@@ -217,3 +255,5 @@ export type CreditOrderStatus = (typeof CREDIT_ORDER_STATUSES)[number];
 export type CreditSignupGrantClaimStatus = (typeof CREDIT_SIGNUP_GRANT_CLAIM_STATUSES)[number];
 /** Billable operation lifecycle status. */
 export type BillableOperationStatus = (typeof BILLABLE_OPERATION_STATUSES)[number];
+/** Provider payment dispute lifecycle status. */
+export type CreditPaymentDisputeStatus = (typeof CREDIT_PAYMENT_DISPUTE_STATUSES)[number];

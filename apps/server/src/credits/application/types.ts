@@ -49,6 +49,8 @@ export type RevokeCreditPurchaseInput = {
   originalSourceProvider: ServerPaymentProviderKey;
   originalSourceId: string;
   refundSourceId: string;
+  recoverySourceType?: "refund" | "chargeback";
+  amount?: number;
   metadata?: CreditMetadata | null;
 };
 
@@ -56,6 +58,8 @@ export type RevokeCreditPurchaseBySourceInput = {
   originalSourceProvider: ServerPaymentProviderKey;
   originalSourceId: string;
   refundSourceId: string;
+  recoverySourceType?: "refund" | "chargeback";
+  amount?: number;
   metadata?: CreditMetadata | null;
 };
 

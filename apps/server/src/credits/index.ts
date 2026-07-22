@@ -15,6 +15,7 @@ export {
   markCreditOrderRefunded,
   markCreditOrderStatus,
   recordNativeCreditOrderPurchase,
+  recordCreditPaymentDispute,
   revokeCreditPurchase,
   revokeCreditPurchaseBySource,
   runCreditMaintenance,

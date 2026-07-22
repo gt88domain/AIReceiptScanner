@@ -41,6 +41,7 @@ export function createEmptyAccountInsert(db: Database, userId: string, now: Date
       totalConsumed: 0,
       totalExpired: 0,
       totalRevoked: 0,
+      billingHold: false,
       createdAt: now,
       updatedAt: now,
     })
@@ -49,6 +50,18 @@ export function createEmptyAccountInsert(db: Database, userId: string, now: Date
 
 export async function ensureCreditAccount(db: Database, userId: string) {
   await createEmptyAccountInsert(db, userId, new Date());
+}
+
+export async function assertCreditAccountNotOnBillingHold(db: Database, userId: string) {
+  await ensureCreditAccount(db, userId);
+  const [account] = await db
+    .select({ billingHold: creditAccount.billingHold })
+    .from(creditAccount)
+    .where(eq(creditAccount.userId, userId))
+    .limit(1);
+  if (account?.billingHold) {
+    throw new Error("Credit account is on billing hold");
+  }
 }
 
 export async function findTransactionBySource(db: Database, source: CreditSource) {
@@ -77,6 +90,7 @@ export function createAccountGrantUpdate(db: Database, userId: string, amount: n
       totalConsumed: 0,
       totalExpired: 0,
       totalRevoked: 0,
+      billingHold: false,
       createdAt: now,
       updatedAt: now,
     })
