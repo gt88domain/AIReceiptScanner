@@ -71,6 +71,13 @@
       "when": 1784274623339,
       "tag": "0009_milky_bullseye",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1784670000000,
+      "tag": "0010_billable_operation_security",
+      "breakpoints": true
     }
   ]
 }

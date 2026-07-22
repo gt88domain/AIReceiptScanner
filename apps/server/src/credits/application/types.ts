@@ -62,8 +62,31 @@ export type RevokeCreditPurchaseBySourceInput = {
 export type ConsumeCreditsInput = {
   user: CreditUser;
   amount: number;
-  idempotencyKey: string;
+  /** Generated from billable_operation.id; never supplied by a client. */
+  sourceId: string;
   metadata?: CreditMetadata | null;
+};
+
+export type BeginBillableOperationInput = {
+  user: CreditUser;
+  feature: string;
+  operationId: string;
+  requestHash: string;
+  calculatedCost: number;
+};
+
+export type CompleteBillableOperationInput = Pick<
+  BeginBillableOperationInput,
+  "user" | "feature" | "operationId"
+> & {
+  resultReference: string;
+};
+
+export type FailBillableOperationInput = Pick<
+  BeginBillableOperationInput,
+  "user" | "feature" | "operationId"
+> & {
+  failureReason: string;
 };
 
 export type ListTransactionsInput = {

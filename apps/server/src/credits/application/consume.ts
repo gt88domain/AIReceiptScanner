@@ -171,13 +171,16 @@ export async function consumeCredits(
   const usageSource = {
     sourceProvider: "app",
     sourceType: "usage",
-    sourceId: input.idempotencyKey,
+    sourceId: input.sourceId,
   } satisfies CreditSource;
 
   for (let attempt = 0; attempt < 2; attempt++) {
     const existing = await findTransactionBySource(db, usageSource);
     if (existing) {
-      return getBalance(db, input.user, serviceContext);
+      if (existing.userId !== input.user.userId || existing.amount !== -input.amount) {
+        throw new Error("Credit usage source does not match this operation");
+      }
+      return { balance: await getBalance(db, input.user, serviceContext), consumed: false };
     }
 
     const now = new Date();
@@ -211,7 +214,7 @@ export async function consumeCredits(
         remainingAmount: 0,
         sourceProvider: "app",
         sourceType: "usage",
-        sourceId: input.idempotencyKey,
+        sourceId: input.sourceId,
         packageId: null,
         expiresAt: null,
         metadata: input.metadata ?? null,
@@ -256,11 +259,14 @@ export async function consumeCredits(
 
     try {
       await runCreditBatch(db, batch);
-      return getBalance(db, input.user, serviceContext);
+      return { balance: await getBalance(db, input.user, serviceContext), consumed: true };
     } catch (error) {
       const existing = await findTransactionBySource(db, usageSource);
       if (existing) {
-        return getBalance(db, input.user, serviceContext);
+        if (existing.userId !== input.user.userId || existing.amount !== -input.amount) {
+          throw new Error("Credit usage source does not match this operation");
+        }
+        return { balance: await getBalance(db, input.user, serviceContext), consumed: false };
       }
       if (attempt === 0) {
         continue;

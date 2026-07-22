@@ -26,6 +26,15 @@ export const CREDIT_ORDER_STATUSES = [
 /** Signup grant claim states used for eligibility and abuse checks. */
 export const CREDIT_SIGNUP_GRANT_CLAIM_STATUSES = ["granted", "blocked"] as const;
 
+/** Lifecycle states for server-authorized, credit-billed product operations. */
+export const BILLABLE_OPERATION_STATUSES = [
+  "pending",
+  "running",
+  "succeeded",
+  "failed",
+  "refunded",
+] as const;
+
 /** Stores the current account-level balance and aggregate counters for quick reads. */
 export const creditAccount = sqliteTable("credit_account", {
   userId: text("user_id")
@@ -140,6 +149,42 @@ export const creditSignupGrantClaim = sqliteTable(
   ],
 );
 
+/**
+ * Server-owned operation authorization. A browser never chooses its credit cost
+ * or ledger source; product endpoints create one of these before doing paid work.
+ */
+export const billableOperation = sqliteTable(
+  "billable_operation",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    feature: text("feature").notNull(),
+    operationId: text("operation_id").notNull(),
+    requestHash: text("request_hash").notNull(),
+    calculatedCost: integer("calculated_cost").notNull(),
+    status: text("status", { enum: BILLABLE_OPERATION_STATUSES }).notNull(),
+    creditTransactionId: text("credit_transaction_id").references(() => creditTransaction.id),
+    resultReference: text("result_reference"),
+    failureReason: text("failure_reason"),
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("billable_operation_user_feature_operation_idx").on(
+      table.userId,
+      table.feature,
+      table.operationId,
+    ),
+    index("billable_operation_user_status_updated_idx").on(
+      table.userId,
+      table.status,
+      table.updatedAt,
+    ),
+  ],
+);
+
 /** Selected credit account row type. */
 export type CreditAccount = typeof creditAccount.$inferSelect;
 /** Insertable credit account row type. */
@@ -156,6 +201,10 @@ export type NewCreditOrder = typeof creditOrder.$inferInsert;
 export type CreditSignupGrantClaim = typeof creditSignupGrantClaim.$inferSelect;
 /** Insertable signup grant claim row type. */
 export type NewCreditSignupGrantClaim = typeof creditSignupGrantClaim.$inferInsert;
+/** Selected server-authorized billable operation row type. */
+export type BillableOperation = typeof billableOperation.$inferSelect;
+/** Insertable server-authorized billable operation row type. */
+export type NewBillableOperation = typeof billableOperation.$inferInsert;
 /** Internal non-payment provider source type. */
 export type CreditInternalSourceProvider = (typeof CREDIT_INTERNAL_SOURCE_PROVIDERS)[number];
 /** Ledger source provider type, including configured payment providers. */
@@ -166,3 +215,5 @@ export type CreditSourceType = (typeof CREDIT_SOURCE_TYPES)[number];
 export type CreditOrderStatus = (typeof CREDIT_ORDER_STATUSES)[number];
 /** Signup grant claim lifecycle status. */
 export type CreditSignupGrantClaimStatus = (typeof CREDIT_SIGNUP_GRANT_CLAIM_STATUSES)[number];
+/** Billable operation lifecycle status. */
+export type BillableOperationStatus = (typeof BILLABLE_OPERATION_STATUSES)[number];

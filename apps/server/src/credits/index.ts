@@ -1,9 +1,11 @@
 export {
   completeCreditOrderPurchase,
-  consumeCredits,
+  beginBillableOperation,
+  completeBillableOperation,
   createCreditCheckoutSession,
   createCreditsService,
   expireCredits,
+  failBillableOperation,
   getBalance,
   grantCreditPackagePurchase,
   grantCredits,
