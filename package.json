@@ -30,6 +30,7 @@
     "db:studio": "turbo -F server db:studio",
     "db:studio:local": "turbo -F server db:studio:local",
     "db:generate": "turbo -F server db:generate",
+    "db:check": "turbo -F server db:check",
     "db:migrate": "turbo -F server db:migrate",
     "db:migrate:local": "turbo -F server db:migrate:local",
     "db:migrate:production": "turbo -F server db:migrate:production",

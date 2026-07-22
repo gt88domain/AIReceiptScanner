@@ -26,5 +26,6 @@ jobs:
       - run: pnpm test:unit
       - run: pnpm test:template
       - run: pnpm test:integration
+      - run: pnpm db:check
       - run: pnpm --filter server build
       - run: pnpm --filter web build

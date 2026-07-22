@@ -62,6 +62,9 @@
       "cache": false,
       "persistent": true
     },
+    "db:check": {
+      "cache": false
+    },
     "deploy": {
       "dependsOn": ["build"],
       "cache": false,
