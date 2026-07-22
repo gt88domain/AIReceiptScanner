@@ -5,8 +5,8 @@ import { createDb } from "@/db";
 import { billingEvent } from "@/db/schema/payments";
 import {
   alertPendingWebhookEvents,
-  recordWebhookAttempt,
-  recordWebhookFailure,
+  claimWebhookEvent,
+  releaseWebhookEventClaim,
 } from "@/payments/application/webhook-observability";
 
 function insertPendingEvent(id: string, firstReceivedAt: Date) {
@@ -24,14 +24,15 @@ function insertPendingEvent(id: string, firstReceivedAt: Date) {
 }
 
 describe("webhook observability", () => {
-  it("records attempts and a redacted failure summary", async () => {
+  it("atomically claims an event once and releases failures for retry", async () => {
     const db = createDb(env.DB);
     const id = crypto.randomUUID();
     const now = new Date("2026-07-17T00:00:00.000Z");
     await insertPendingEvent(id, now);
 
-    await recordWebhookAttempt(db, id, now);
-    await recordWebhookFailure(
+    await expect(claimWebhookEvent(db, id, now)).resolves.toBe(true);
+    await expect(claimWebhookEvent(db, id, now)).resolves.toBe(false);
+    await releaseWebhookEventClaim(
       db,
       id,
       new Error("stripe rejected re_secret@example.com at https://example.test?token=abc"),
@@ -39,6 +40,7 @@ describe("webhook observability", () => {
 
     const [event] = await db.select().from(billingEvent).where(eq(billingEvent.id, id));
     expect(event).toMatchObject({
+      processingStatus: "pending",
       attemptCount: 1,
       lastAttemptAt: now,
       lastError: "stripe rejected [email] at [url]",
@@ -50,8 +52,10 @@ describe("webhook observability", () => {
     const id = crypto.randomUUID();
     const now = new Date("2026-07-17T01:00:00.000Z");
     await insertPendingEvent(id, new Date(now.getTime() - 16 * 60 * 1000));
-    await recordWebhookAttempt(db, id, now);
-    await recordWebhookAttempt(db, id, now);
+    await claimWebhookEvent(db, id, now);
+    await releaseWebhookEventClaim(db, id, new Error("first retry"), now);
+    await claimWebhookEvent(db, id, now);
+    await releaseWebhookEventClaim(db, id, new Error("second retry"), now);
 
     const sent: string[] = [];
     const send = async (alert: { id: string }) => {

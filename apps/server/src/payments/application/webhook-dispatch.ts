@@ -6,7 +6,7 @@ import { handleCreemEvent } from "../providers/creem/webhook/handle-event";
 import { handleRevenueCatEvent } from "../providers/revenuecat/webhook/handle-event";
 import { handleStripeEvent } from "../providers/stripe/webhook/handle-event";
 import { handleWaffoEvent } from "../providers/waffo/webhook/handle-event";
-import { recordWebhookAttempt, recordWebhookFailure } from "./webhook-observability";
+import { claimWebhookEvent, releaseWebhookEventClaim } from "./webhook-observability";
 import type { HandleWebhookInput } from "./types";
 
 export async function handleWebhookEvent(db: Database, input: HandleWebhookInput) {
@@ -37,12 +37,10 @@ export async function handleWebhookEvent(db: Database, input: HandleWebhookInput
     .onConflictDoNothing({ target: [billingEvent.provider, billingEvent.providerEventId] })
     .returning({ id: billingEvent.id });
 
-  let eventRowId: string;
-  if (inserted.length > 0) {
-    eventRowId = inserted[0]!.id;
-  } else {
+  const eventRowId = inserted[0]?.id;
+  if (!eventRowId) {
     const [existing] = await db
-      .select({ id: billingEvent.id, processingStatus: billingEvent.processingStatus })
+      .select({ id: billingEvent.id })
       .from(billingEvent)
       .where(
         and(
@@ -51,34 +49,44 @@ export async function handleWebhookEvent(db: Database, input: HandleWebhookInput
         ),
       )
       .limit(1);
-    if (!existing) {
+    if (!existing)
       throw new Error(
-        `Billing event lookup failed after insert conflict for ${input.provider}:${parsed.providerEventId}`,
+        `Billing event lookup failed after insert conflict for ${parsed.providerEventId}`,
       );
-    }
-    if (existing.processingStatus === "processed") return { received: true, duplicate: true };
-    eventRowId = existing.id;
+    if (!(await claimWebhookEvent(db, existing.id, now)))
+      return { received: true, duplicate: true };
+    return dispatchClaimedWebhookEvent(db, input, parsed.payload, existing.id, now);
   }
 
-  await recordWebhookAttempt(db, eventRowId, now);
+  if (!(await claimWebhookEvent(db, eventRowId, now))) return { received: true, duplicate: true };
+  return dispatchClaimedWebhookEvent(db, input, parsed.payload, eventRowId, now);
+}
+
+async function dispatchClaimedWebhookEvent(
+  db: Database,
+  input: HandleWebhookInput,
+  payload: unknown,
+  eventRowId: string,
+  now: Date,
+) {
   try {
     switch (input.provider) {
       case "stripe":
-        await handleStripeEvent(db, parsed.payload);
+        await handleStripeEvent(db, payload);
         break;
       case "creem":
-        await handleCreemEvent(db, parsed.payload);
+        await handleCreemEvent(db, payload);
         break;
       case "waffo":
-        await handleWaffoEvent(db, parsed.payload);
+        await handleWaffoEvent(db, payload);
         break;
       case "revenuecat":
-        await handleRevenueCatEvent(db, parsed.payload);
+        await handleRevenueCatEvent(db, payload);
         break;
     }
   } catch (error) {
     try {
-      await recordWebhookFailure(db, eventRowId, error);
+      await releaseWebhookEventClaim(db, eventRowId, error, now);
     } catch (recordError) {
       console.error("Failed to record webhook processing failure", recordError);
     }
@@ -87,7 +95,7 @@ export async function handleWebhookEvent(db: Database, input: HandleWebhookInput
 
   await db
     .update(billingEvent)
-    .set({ processingStatus: "processed" })
+    .set({ processingStatus: "processed", leaseUntil: null, nextRetryAt: null })
     .where(eq(billingEvent.id, eventRowId));
   return { received: true, duplicate: false };
 }

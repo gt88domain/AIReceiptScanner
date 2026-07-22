@@ -1,4 +1,4 @@
-import { and, asc, eq, gte, isNull, lte, sql } from "drizzle-orm";
+import { and, asc, eq, gte, isNull, lte, or, sql } from "drizzle-orm";
 import type { Database } from "@/db";
 import { billingEvent } from "@/db/schema/payments";
 import { getEmailProvider } from "@/emails";
@@ -7,6 +7,7 @@ import { parseAdminEmails } from "@/lib/admin";
 const PENDING_WEBHOOK_ALERT_AFTER_MS = 15 * 60 * 1000;
 const PENDING_WEBHOOK_ALERT_MIN_ATTEMPTS = 2;
 const MAX_ERROR_LENGTH = 500;
+const WEBHOOK_PROCESSING_LEASE_MS = 5 * 60 * 1000;
 
 type PendingWebhookAlert = {
   id: string;
@@ -30,22 +31,50 @@ function sanitizeError(error: unknown) {
     .slice(0, MAX_ERROR_LENGTH);
 }
 
-export async function recordWebhookAttempt(db: Database, eventId: string, now = new Date()) {
-  await db
+/** Atomically claims a pending or expired webhook lease for one handler invocation. */
+export async function claimWebhookEvent(db: Database, eventId: string, now = new Date()) {
+  const [claimed] = await db
     .update(billingEvent)
     .set({
+      processingStatus: "processing",
+      leaseUntil: new Date(now.getTime() + WEBHOOK_PROCESSING_LEASE_MS),
+      nextRetryAt: null,
       attemptCount: sql`${billingEvent.attemptCount} + 1`,
       lastAttemptAt: now,
       lastError: null,
     })
-    .where(eq(billingEvent.id, eventId));
+    .where(
+      and(
+        eq(billingEvent.id, eventId),
+        or(
+          eq(billingEvent.processingStatus, "pending"),
+          and(
+            eq(billingEvent.processingStatus, "processing"),
+            or(isNull(billingEvent.leaseUntil), lte(billingEvent.leaseUntil, now)),
+          ),
+        ),
+      ),
+    )
+    .returning({ id: billingEvent.id });
+  return Boolean(claimed);
 }
 
-export async function recordWebhookFailure(db: Database, eventId: string, error: unknown) {
+/** Releases a failed claim so the provider can retry it after the configured retry time. */
+export async function releaseWebhookEventClaim(
+  db: Database,
+  eventId: string,
+  error: unknown,
+  now = new Date(),
+) {
   await db
     .update(billingEvent)
-    .set({ lastError: sanitizeError(error) })
-    .where(eq(billingEvent.id, eventId));
+    .set({
+      processingStatus: "pending",
+      leaseUntil: null,
+      nextRetryAt: now,
+      lastError: sanitizeError(error),
+    })
+    .where(and(eq(billingEvent.id, eventId), eq(billingEvent.processingStatus, "processing")));
 }
 
 async function sendPendingWebhookAlert(recipients: readonly string[], alert: PendingWebhookAlert) {
