@@ -77,8 +77,8 @@ pnpm install
 #    apps/native/.env.development.local.example → apps/native/.env.development.local
 # Configure your database, auth providers, payments, etc.
 
-# 3. Initialize database
-pnpm db:push
+# 3. Initialize local D1 and apply versioned migrations
+pnpm db:migrate
 
 # 4. Start development servers
 pnpm dev
@@ -214,11 +214,11 @@ The project uses Cloudflare D1 (SQLite) with Drizzle ORM:
 # Generate migration after schema changes
 pnpm db:generate
 
-# Push schema to development database
-pnpm db:push
-
-# Run migrations in production
+# Run migrations locally (default)
 pnpm db:migrate
+
+# Run reviewed migrations against production (explicit CI credentials only)
+pnpm db:migrate:production
 ```
 
 ### Authentication Setup
