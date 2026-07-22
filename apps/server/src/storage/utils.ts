@@ -19,7 +19,7 @@ const MIME_EXTENSION_MAP = {
 /**
  * Generate a storage key for a file
  *
- * @param purpose - The purpose of the upload (avatar, attachment)
+ * @param purpose - The purpose of the upload
  * @param userId - The user ID to namespace the file
  * @param filename - Original filename
  * @returns A unique storage key
@@ -40,7 +40,6 @@ export function generateStorageKey(
     throw new Error("Valid filename is required for storage key generation");
   }
 
-  const timestamp = Date.now();
   const mimeType = contentType?.split(";")[0].trim();
   const ext = filename.includes(".")
     ? filename.split(".").pop() || ""
@@ -54,15 +53,5 @@ export function generateStorageKey(
     .replace(/[^\da-z\-_]/g, "")
     .slice(0, 10);
 
-  switch (purpose) {
-    case "avatar": {
-      return `${storageConfig.keyPrefixes.avatar}/${userId}/${timestamp}.${sanitizedExt}`;
-    }
-    case "attachment": {
-      return `${storageConfig.keyPrefixes.attachment}/${userId}/${timestamp}.${sanitizedExt}`;
-    }
-    default: {
-      return `${storageConfig.fallbackPrefix}/${userId}/${timestamp}.${sanitizedExt}`;
-    }
-  }
+  return `${storageConfig.keyPrefixes[purpose]}/${userId}/${crypto.randomUUID()}.${sanitizedExt}`;
 }

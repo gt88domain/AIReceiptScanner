@@ -242,26 +242,16 @@ const appConfig: AppConfig = {
       // Storage key prefixes by upload purpose.
       keyPrefixes: {
         avatar: "avatars",
-        attachment: "attachments",
       },
       // Prefix used when a purpose-specific prefix is unavailable.
       fallbackPrefix: "files",
       // Allowed upload MIME types by purpose.
       allowedTypes: {
         avatar: ["image/jpeg", "image/png", "image/gif", "image/webp"],
-        attachment: [
-          "image/jpeg",
-          "image/png",
-          "image/gif",
-          "image/webp",
-          "application/pdf",
-          "text/plain",
-        ],
       },
       // Maximum upload size in bytes by purpose.
       maxFileSizes: {
         avatar: 5 * 1024 * 1024,
-        attachment: 25 * 1024 * 1024,
       },
     },
     // Canonical product-level membership semantics shared by web, native, and server.

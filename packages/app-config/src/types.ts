@@ -235,7 +235,7 @@ export type AppCreditsConfig = {
 };
 
 /** Supported upload purposes used by the storage module. */
-export type StorageUploadPurpose = "avatar" | "attachment";
+export type StorageUploadPurpose = "avatar";
 
 /** Common app configuration shared by all platforms. */
 export type AppCommonConfig = {

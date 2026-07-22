@@ -1,26 +1,26 @@
 {
-  "name": "tanstack-template-server",
+  "name": "your-worker-name",
   "main": "src/index.ts",
   "compatibility_date": "2026-07-14",
   "compatibility_flags": ["nodejs_compat"],
   "routes": [
     {
-      "pattern": "api.demo.aiarticles.com",
+      "pattern": "api.your-domain.example",
       "custom_domain": true,
     },
   ],
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "easystarter-template-preview",
-      "database_id": "d342a49e-68e3-46d1-a0f4-2f405bdf4c60",
+      "database_name": "YOUR_D1_DATABASE_NAME",
+      "database_id": "00000000-0000-0000-0000-000000000000",
       "migrations_dir": "src/db/migrations",
     },
   ],
   "vars": {
     "NODE_ENV": "production",
-    "WEBSITE_URL": "https://demo.aiarticles.com",
-    "SERVER_URL": "https://api.demo.aiarticles.com",
+    "WEBSITE_URL": "https://your-domain.example",
+    "SERVER_URL": "https://api.your-domain.example",
     // Add OAuth client IDs only after enabling the matching provider in app-config.
     "GITHUB_CLIENT_ID": "",
     "GOOGLE_CLIENT_ID": "",
@@ -32,7 +32,7 @@
   "r2_buckets": [
     {
       "binding": "STORAGE",
-      "bucket_name": "easysaas-bucket",
+      "bucket_name": "YOUR_R2_BUCKET_NAME",
     },
   ],
   "triggers": {

@@ -18,7 +18,7 @@ import {
   resolveStorageProviderKey,
 } from "@/storage";
 
-const uploadPurposeSchema = z.enum(["avatar", "attachment"]);
+const uploadPurposeSchema = z.literal("avatar");
 const storageProviderSchema = z.enum(SUPPORTED_STORAGE_PROVIDERS);
 
 const uploadInputSchema = z.object({

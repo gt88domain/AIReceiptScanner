@@ -32,6 +32,10 @@ export async function handleFileServe(
     return c.json({ error: "File key is required" }, 400);
   }
 
+  if (!parsedStoragePath.key.startsWith(`${storageKeyPrefixes.avatar}/`)) {
+    return c.json({ error: "Public storage only serves avatars" }, 404);
+  }
+
   // Use storage provider for file serving
   const storageProvider = getStorageProvider({
     storage: c.env.STORAGE,
@@ -51,10 +55,7 @@ export async function handleFileServe(
     headers.set("Content-Type", file.httpMetadata.contentType);
   }
 
-  // Set cache headers (1 day for avatars, 1 hour for others)
-  const isAvatar = parsedStoragePath.key.startsWith(`${storageKeyPrefixes.avatar}/`);
-  const maxAge = isAvatar ? 86400 : 3600;
-  headers.set("Cache-Control", `public, max-age=${maxAge}`);
+  headers.set("Cache-Control", "public, max-age=86400");
 
   // Set ETag for cache validation
   headers.set("ETag", file.etag);

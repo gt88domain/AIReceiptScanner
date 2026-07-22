@@ -1,16 +1,16 @@
 {
   "expo": {
-    "name": "TanStack Template",
-    "slug": "tanstack-template",
+    "name": "Your App Name",
+    "slug": "your-app-slug",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "com.aiarticles.template",
+    "scheme": "your-app-scheme",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "appleTeamId": "8622M955TV",
+      "appleTeamId": "YOUR_APPLE_TEAM_ID",
       "buildNumber": "1.0.0",
-      "bundleIdentifier": "com.aiarticles.template",
+      "bundleIdentifier": "com.example.yourapp",
       "deploymentTarget": "16.4",
       "usesAppleSignIn": true,
       "icon": {
@@ -29,7 +29,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.aiarticles.template"
+      "package": "com.example.yourapp"
     },
     "plugins": [
       "expo-router",
@@ -63,14 +63,14 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "a96a5332-a517-4a91-bfce-06c3af159735"
+        "projectId": "YOUR_EAS_PROJECT_ID"
       }
     },
     "runtimeVersion": {
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/a96a5332-a517-4a91-bfce-06c3af159735"
+      "url": "https://u.expo.dev/YOUR_EAS_PROJECT_ID"
     }
   }
 }
