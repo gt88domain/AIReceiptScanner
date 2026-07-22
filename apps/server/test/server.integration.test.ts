@@ -69,6 +69,15 @@ describe("server Worker", () => {
     });
   });
 
+  it("does not expose the admin user directory to an ordinary user", async () => {
+    const signedInClient = await signUp("ordinary-user@example.test");
+
+    await expect(signedInClient.admin.listUsers({})).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      status: 403,
+    });
+  });
+
   it("requires an active subscription to be cancelled before account deletion", async () => {
     const email = "subscribed-delete@example.test";
     const signedInClient = await signUp(email);

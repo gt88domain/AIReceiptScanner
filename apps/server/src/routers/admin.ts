@@ -1,5 +1,5 @@
 import { ACTIVE_SUBSCRIPTION_STATUSES } from "@repo/app-config/payments/web";
-import { asc, count, desc, eq, inArray, like, or } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, isNull, like, or } from "drizzle-orm";
 import { z } from "zod";
 import { user } from "@/db/schema/auth";
 import { billingEvent, billingPurchase, billingSubscription } from "@/db/schema/payments";
@@ -84,13 +84,16 @@ export const adminRouter = {
     .input(listUsersInputSchema)
     .output(z.object({ data: z.array(adminUserSchema), pageCount: z.number(), total: z.number() }))
     .handler(async ({ context, input }) => {
-      const whereClause = input.name
-        ? or(
-            like(user.name, `%${input.name}%`),
-            like(user.email, `%${input.name}%`),
-            like(user.phoneNumber, `%${input.name}%`),
-          )
-        : undefined;
+      const whereClause = and(
+        isNull(user.deletedAt),
+        input.name
+          ? or(
+              like(user.name, `%${input.name}%`),
+              like(user.email, `%${input.name}%`),
+              like(user.phoneNumber, `%${input.name}%`),
+            )
+          : undefined,
+      );
       const columnMap = { name: user.name, email: user.email, createdAt: user.createdAt } as const;
       const orderBy = input.sort.map((sort) =>
         sort.desc ? desc(columnMap[sort.id]) : asc(columnMap[sort.id]),
