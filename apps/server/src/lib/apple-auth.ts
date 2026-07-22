@@ -1,11 +1,5 @@
 import { env } from "cloudflare:workers";
-import {
-  createRemoteJWKSet,
-  decodeJwt,
-  decodeProtectedHeader,
-  importJWK,
-  jwtVerify,
-} from "jose";
+import { createRemoteJWKSet, decodeJwt, decodeProtectedHeader, importJWK, jwtVerify } from "jose";
 
 type AppleIdTokenPayload = {
   email?: string;
@@ -51,17 +45,13 @@ const APPLE_IDENTITY_TOKEN_JWKS = [
   },
 ] as const;
 
-const appleRemoteJwks = createRemoteJWKSet(
-  new URL("https://appleid.apple.com/auth/keys"),
-);
+const appleRemoteJwks = createRemoteJWKSet(new URL("https://appleid.apple.com/auth/keys"));
 
 async function getLocalAppleSigningKey(kid: string, alg: string) {
   const jwk = APPLE_IDENTITY_TOKEN_JWKS.find((key) => key.kid === kid);
 
   if (!jwk) {
-    throw new Error(
-      `Apple JWK not found for kid: ${kid}. Update APPLE_IDENTITY_TOKEN_JWKS.`,
-    );
+    throw new Error(`Apple JWK not found for kid: ${kid}. Update APPLE_IDENTITY_TOKEN_JWKS.`);
   }
 
   return importJWK(jwk, alg);
@@ -81,12 +71,8 @@ function buildAppleUserName(
   return profile.name || "";
 }
 
-function getAppleEmailVerified(
-  emailVerified: AppleIdTokenPayload["email_verified"],
-) {
-  return typeof emailVerified === "boolean"
-    ? emailVerified
-    : emailVerified === "true";
+function getAppleEmailVerified(emailVerified: AppleIdTokenPayload["email_verified"]) {
+  return typeof emailVerified === "boolean" ? emailVerified : emailVerified === "true";
 }
 
 export async function verifyAppleIdentityToken(token: string, nonce?: string) {
@@ -107,11 +93,7 @@ export async function verifyAppleIdentityToken(token: string, nonce?: string) {
 
     const verificationResult =
       runtimeNodeEnv === "development"
-        ? await jwtVerify(
-            token,
-            await getLocalAppleSigningKey(kid ?? "", alg),
-            verificationOptions,
-          )
+        ? await jwtVerify(token, await getLocalAppleSigningKey(kid ?? "", alg), verificationOptions)
         : await jwtVerify(token, appleRemoteJwks, verificationOptions);
 
     if (nonce && verificationResult.payload.nonce !== nonce) {

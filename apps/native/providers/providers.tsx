@@ -18,19 +18,19 @@ import { ThemeProvider } from "@/providers/theme-provider";
  * Builds the global provider tree used by the native root layout.
  */
 export function Providers({ children }: { children: React.ReactNode }) {
-	return (
-		<GestureHandlerRootView style={{ flex: 1 }}>
-			<ThemeProvider>
-				<QueryClientProvider client={queryClient}>
-					<KeyboardProvider>
-						<AuthProvider>
-							<HeroUINativeProvider config={config}>
-								<DialogProvider>{children}</DialogProvider>
-							</HeroUINativeProvider>
-						</AuthProvider>
-					</KeyboardProvider>
-				</QueryClientProvider>
-			</ThemeProvider>
-		</GestureHandlerRootView>
-	);
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <KeyboardProvider>
+            <AuthProvider>
+              <HeroUINativeProvider config={config}>
+                <DialogProvider>{children}</DialogProvider>
+              </HeroUINativeProvider>
+            </AuthProvider>
+          </KeyboardProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
+  );
 }

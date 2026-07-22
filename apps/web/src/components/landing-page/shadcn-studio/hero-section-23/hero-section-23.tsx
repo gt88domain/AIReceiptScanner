@@ -14,7 +14,13 @@ function HeroSection23() {
           >
             Product overview
           </MotionPreset>
-          <MotionPreset fade slide={{ offset: 32 }} blur transition={{ duration: 0.5 }} delay={0.15}>
+          <MotionPreset
+            fade
+            slide={{ offset: 32 }}
+            blur
+            transition={{ duration: 0.5 }}
+            delay={0.15}
+          >
             <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
               Tell the story behind your product.
             </h1>

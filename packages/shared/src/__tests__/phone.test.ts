@@ -50,9 +50,7 @@ describe("isPhoneCompatibilityEmail", () => {
 describe("visible user identity helpers", () => {
   it("hides compatibility emails but returns real ones", () => {
     expect(getVisibleUserEmail({ email: "real@example.com" })).toBe("real@example.com");
-    expect(
-      getVisibleUserEmail({ email: "phone-abcdef0123456789@phone-auth.invalid" }),
-    ).toBeNull();
+    expect(getVisibleUserEmail({ email: "phone-abcdef0123456789@phone-auth.invalid" })).toBeNull();
     expect(getVisibleUserEmail({ email: null })).toBeNull();
   });
 

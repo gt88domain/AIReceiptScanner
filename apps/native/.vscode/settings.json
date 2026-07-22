@@ -27,7 +27,7 @@
     "backdropColorClassName",
     "backgroundColorClassName",
     "ListFooterComponentClassName",
-    "ListHeaderComponentClassName",
+    "ListHeaderComponentClassName"
   ],
-  "tailwindCSS.classFunctions": ["useResolveClassNames"],
+  "tailwindCSS.classFunctions": ["useResolveClassNames"]
 }

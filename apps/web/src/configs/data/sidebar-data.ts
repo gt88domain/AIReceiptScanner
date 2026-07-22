@@ -1,11 +1,4 @@
-import {
-  Coins,
-  LayoutDashboard,
-  Settings,
-  Shield,
-  ShieldCheck,
-  UserCog,
-} from "lucide-react";
+import { Coins, LayoutDashboard, Settings, Shield, ShieldCheck, UserCog } from "lucide-react";
 import type { SidebarData } from "@/components/dashboard/types";
 import { webConfig } from "@/configs/web-config";
 

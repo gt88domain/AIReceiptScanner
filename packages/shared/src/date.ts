@@ -6,22 +6,22 @@
  * @returns Formatted date string or original value if parsing fails
  */
 export function formatDate(
-	locale: string,
-	value: string,
-	localeToDateFormat: Record<string, string>,
+  locale: string,
+  value: string,
+  localeToDateFormat: Record<string, string>,
 ): string {
-	const intlLocale =
-		localeToDateFormat[locale as keyof typeof localeToDateFormat] ?? localeToDateFormat.en;
-	const parsed = new Date(value);
-	if (Number.isNaN(parsed.getTime())) {
-		return value;
-	}
+  const intlLocale =
+    localeToDateFormat[locale as keyof typeof localeToDateFormat] ?? localeToDateFormat.en;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
 
-	return new Intl.DateTimeFormat(intlLocale, {
-		year: "numeric",
-		month: "long",
-		day: "numeric",
-	}).format(parsed);
+  return new Intl.DateTimeFormat(intlLocale, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(parsed);
 }
 
 /**
@@ -32,21 +32,21 @@ export function formatDate(
  * @returns Formatted date string or empty string if date is invalid/undefined
  */
 export function formatDateWithOptions(
-	date: Date | string | number | undefined,
-	options: Intl.DateTimeFormatOptions = {},
-	locale = "en-US",
+  date: Date | string | number | undefined,
+  options: Intl.DateTimeFormatOptions = {},
+  locale = "en-US",
 ): string {
-	if (!date) return "";
+  if (!date) return "";
 
-	try {
-		return new Intl.DateTimeFormat(locale, {
-			month: options.month ?? "long",
-			day: options.day ?? "numeric",
-			year: options.year ?? "numeric",
-			...options,
-		}).format(new Date(date));
-	} catch (err) {
-		console.log(err);
-		return "";
-	}
+  try {
+    return new Intl.DateTimeFormat(locale, {
+      month: options.month ?? "long",
+      day: options.day ?? "numeric",
+      year: options.year ?? "numeric",
+      ...options,
+    }).format(new Date(date));
+  } catch (err) {
+    console.log(err);
+    return "";
+  }
 }

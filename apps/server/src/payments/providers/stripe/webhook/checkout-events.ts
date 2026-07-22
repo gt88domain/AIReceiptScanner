@@ -1,9 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import type Stripe from "stripe";
-import {
-  completeCreditOrderPurchase,
-  markCreditOrderStatus,
-} from "@/credits";
+import { completeCreditOrderPurchase, markCreditOrderStatus } from "@/credits";
 import type { Database } from "@/db";
 import { billingCheckoutSession } from "@/db/schema/payments";
 import type { DbLike } from "../../../infrastructure/repositories/billing-store";

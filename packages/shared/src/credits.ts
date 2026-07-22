@@ -6,13 +6,7 @@ export type CreditTransactionLabelKey =
   | "expiration"
   | "adjustment";
 
-export type CreditTransactionSourceKey =
-  | "system"
-  | "app"
-  | "admin"
-  | "web"
-  | "native"
-  | "provider";
+export type CreditTransactionSourceKey = "system" | "app" | "admin" | "web" | "native" | "provider";
 
 export function resolveCreditTransactionLabel(sourceType: string): CreditTransactionLabelKey {
   switch (sourceType) {

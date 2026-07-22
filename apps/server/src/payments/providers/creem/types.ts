@@ -29,7 +29,6 @@ export type CreemProduct = {
 
 export type CreemProductReference = CreemProduct | string;
 
-
 /**
  * Minimal subscription payload shape used by the Creem integration.
  */

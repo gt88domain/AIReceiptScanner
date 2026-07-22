@@ -7,11 +7,11 @@ import commonZh from "./common/zh.json";
 export type CommonMessages = typeof commonEn;
 
 export const commonMessages: LocaleRecord<CommonMessages> = {
-	en: commonEn,
-	zh: commonZh,
-	jp: commonJp,
+  en: commonEn,
+  zh: commonZh,
+  jp: commonJp,
 };
 
 export function getCommonMessages(locale: Locale): CommonMessages {
-	return commonMessages[locale];
+  return commonMessages[locale];
 }

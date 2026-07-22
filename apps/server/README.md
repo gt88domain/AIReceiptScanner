@@ -146,20 +146,20 @@ and `pnpm run db:studio:local` now initialize that sqlite automatically.
 
 ## 📝 Available Scripts
 
-| Script                             | Description                                        |
-| ---------------------------------- | -------------------------------------------------- |
-| `pnpm run setup`                   | One-click environment setup                        |
-| `pnpm run dev`                     | Start local dev server (port 3001)                 |
-| `pnpm run dev:init-d1`             | Initialize local D1 sqlite without starting server |
-| `pnpm run deploy`                  | Deploy to env worker (`--env production`)          |
-| `pnpm run deploy:dev`              | Deploy to default worker (`tanstack-template-server`)    |
-| `pnpm run secrets:bulk:production` | Bulk upload production envs from `.env.production` |
-| `pnpm run db:generate`             | Generate DB migration                              |
-| `pnpm run db:migrate:local`        | Initialize local D1 if needed, then run migrations |
-| `pnpm run db:studio:local`         | Initialize local D1 if needed, then open studio    |
-| `pnpm run db:push`                 | Push schema to D1                                  |
-| `pnpm run db:studio`               | Open Drizzle Studio                                |
-| `pnpm run generate-types`          | Generate Cloudflare types                          |
+| Script                             | Description                                           |
+| ---------------------------------- | ----------------------------------------------------- |
+| `pnpm run setup`                   | One-click environment setup                           |
+| `pnpm run dev`                     | Start local dev server (port 3001)                    |
+| `pnpm run dev:init-d1`             | Initialize local D1 sqlite without starting server    |
+| `pnpm run deploy`                  | Deploy to env worker (`--env production`)             |
+| `pnpm run deploy:dev`              | Deploy to default worker (`tanstack-template-server`) |
+| `pnpm run secrets:bulk:production` | Bulk upload production envs from `.env.production`    |
+| `pnpm run db:generate`             | Generate DB migration                                 |
+| `pnpm run db:migrate:local`        | Initialize local D1 if needed, then run migrations    |
+| `pnpm run db:studio:local`         | Initialize local D1 if needed, then open studio       |
+| `pnpm run db:push`                 | Push schema to D1                                     |
+| `pnpm run db:studio`               | Open Drizzle Studio                                   |
+| `pnpm run generate-types`          | Generate Cloudflare types                             |
 
 ## 📚 Related Docs
 

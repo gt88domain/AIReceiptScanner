@@ -11,10 +11,7 @@ import { authClient } from "@/lib/auth/auth.client";
 import { orpc } from "@/lib/orpc";
 import { useAuth } from "@/providers/auth-provider";
 import { useTabBarVisibility } from "@/providers/tab-bar-provider";
-import {
-  getVisibleUserEmail,
-  isPhoneUser,
-} from "@repo/shared";
+import { getVisibleUserEmail, isPhoneUser } from "@repo/shared";
 
 function formatProviderName(provider: "github" | "google", t: (key: string) => string) {
   return t(`auth.providers.${provider}`);

@@ -7,11 +7,11 @@ import webZh from "./web/zh.json";
 export type WebMessages = typeof webEn;
 
 export const webMessages: LocaleRecord<WebMessages> = {
-	en: webEn,
-	zh: webZh,
-	jp: webJp,
+  en: webEn,
+  zh: webZh,
+  jp: webJp,
 };
 
 export function getWebMessages(locale: Locale): WebMessages {
-	return webMessages[locale];
+  return webMessages[locale];
 }

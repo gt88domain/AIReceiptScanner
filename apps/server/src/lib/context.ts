@@ -48,7 +48,8 @@ export async function createContext({ context }: CreateContextOptions) {
     signupGrant: {
       hashSecret: context.env.BETTER_AUTH_SECRET,
       ipAddress: getClientIp(headers) ?? sessionRequest?.ipAddress ?? null,
-      userAgent: normalizeHeaderValue(headers.get("user-agent")) ?? sessionRequest?.userAgent ?? null,
+      userAgent:
+        normalizeHeaderValue(headers.get("user-agent")) ?? sessionRequest?.userAgent ?? null,
     },
   });
 

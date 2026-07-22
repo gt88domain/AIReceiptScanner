@@ -278,7 +278,9 @@ async function handleOrderCompleted(db: Database, event: WaffoEvent) {
     const creditPackageId = metadata.creditPackageId;
     const creditOrderId = metadata.creditOrderId;
     if (!creditPackageId || !creditOrderId) {
-      throw new Error(`Waffo credit checkout missing immutable order for order ${event.data.orderId}`);
+      throw new Error(
+        `Waffo credit checkout missing immutable order for order ${event.data.orderId}`,
+      );
     }
 
     await completeCreditOrderPurchase(db, {

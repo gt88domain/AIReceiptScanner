@@ -8,7 +8,11 @@ export class Resend {
   readonly contacts = {
     create: async ({ email }: { email: string }) => {
       Resend.contactEmails.push(email);
-      return { data: { id: `contact-${Resend.contactEmails.length}`, object: "contact" as const }, error: null, headers: null };
+      return {
+        data: { id: `contact-${Resend.contactEmails.length}`, object: "contact" as const },
+        error: null,
+        headers: null,
+      };
     },
     get: async ({ email }: { email: string }) => {
       const exists = Resend.contactEmails.includes(email);
@@ -25,10 +29,17 @@ export class Resend {
             error: null,
             headers: null,
           }
-        : { data: null, error: { name: "not_found", statusCode: 404, message: "not found" }, headers: null };
+        : {
+            data: null,
+            error: { name: "not_found", statusCode: 404, message: "not found" },
+            headers: null,
+          };
     },
     update: async ({ email }: { email: string }) => ({
-      data: { id: `contact-${Resend.contactEmails.indexOf(email) + 1}`, object: "contact" as const },
+      data: {
+        id: `contact-${Resend.contactEmails.indexOf(email) + 1}`,
+        object: "contact" as const,
+      },
       error: null,
       headers: null,
     }),

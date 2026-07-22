@@ -19,14 +19,14 @@ function RouteComponent() {
   const creditBalanceQuery = useCreditBalanceQuery();
   const billingTier = billingQuery.data?.currentEntitlement.tier ?? "free";
   const billingSummary =
-    billingTier === "free"
-      ? tBilling("free")
-      : tBilling(`membershipTypes.${billingTier}`);
+    billingTier === "free" ? tBilling("free") : tBilling(`membershipTypes.${billingTier}`);
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title", { name: user.name ?? "" })}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {t("title", { name: user.name ?? "" })}
+        </h1>
         <p className="mt-2 text-muted-foreground">{t("description")}</p>
       </div>
 
