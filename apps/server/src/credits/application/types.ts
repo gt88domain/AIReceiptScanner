@@ -120,6 +120,8 @@ export type CompleteCreditOrderPurchaseInput = {
   sourceId: string;
   providerSessionId?: string | null;
   providerPaymentId?: string | null;
+  providerAmountCents?: number | null;
+  providerCurrency?: string | null;
   metadata?: CreditMetadata | null;
 };
 

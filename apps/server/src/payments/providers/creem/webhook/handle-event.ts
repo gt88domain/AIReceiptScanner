@@ -1,7 +1,6 @@
 import { and, eq, isNull, lt, or, sql } from "drizzle-orm";
 import {
   completeCreditOrderPurchase,
-  grantCreditPackagePurchase,
   markCreditOrderRefunded,
   revokeCreditPurchaseBySource,
 } from "@/credits";
@@ -308,31 +307,16 @@ async function handleCreemCheckoutCompleted(
     const creditPackageId = metadata.creditPackageId;
     const creditOrderId = metadata.creditOrderId;
     const sourceId = object.order?.transaction ?? object.order?.id ?? object.id;
-    if (!creditPackageId) {
-      throw new Error(`Creem credit checkout missing package id for session ${object.id}`);
+    if (!creditPackageId || !creditOrderId) {
+      throw new Error(`Creem credit checkout missing immutable order for session ${object.id}`);
     }
 
-    if (creditOrderId) {
-      await completeCreditOrderPurchase(db, {
-        orderId: creditOrderId,
-        sourceProvider: "creem",
-        sourceId,
-        providerSessionId: object.id,
-        providerPaymentId: sourceId,
-        metadata: {
-          checkoutSessionId: object.id,
-          orderId: object.order?.id ?? null,
-          transactionId: object.order?.transaction ?? null,
-        },
-      });
-      return;
-    }
-
-    await grantCreditPackagePurchase(db, {
-      user,
-      packageId: creditPackageId,
+    await completeCreditOrderPurchase(db, {
+      orderId: creditOrderId,
       sourceProvider: "creem",
       sourceId,
+      providerSessionId: object.id,
+      providerPaymentId: sourceId,
       metadata: {
         checkoutSessionId: object.id,
         orderId: object.order?.id ?? null,

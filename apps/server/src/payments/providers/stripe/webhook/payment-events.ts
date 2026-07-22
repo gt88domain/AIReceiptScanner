@@ -1,7 +1,6 @@
 import type Stripe from "stripe";
 import {
   completeCreditOrderPurchase,
-  grantCreditPackagePurchase,
   markCreditOrderRefunded,
   markCreditOrderStatus,
   revokeCreditPurchaseBySource,
@@ -178,6 +177,8 @@ async function upsertPurchaseFromPaymentIntent(
         sourceProvider: "stripe",
         sourceId: paymentIntentId,
         providerPaymentId: paymentIntentId,
+        providerAmountCents: input.paymentIntent.amount_received,
+        providerCurrency: input.paymentIntent.currency,
         metadata: {
           paymentIntentId,
         },
@@ -194,18 +195,9 @@ async function upsertPurchaseFromPaymentIntent(
 
   if (!existing) {
     if (metadata.kind === "credit_purchase") {
-      // Standalone payment intent events may arrive without checkout completion ordering.
-      if (input.status === "succeeded" && metadata.userId && metadata.creditPackageId) {
-        await grantCreditPackagePurchase(db, {
-          user: { userId: metadata.userId },
-          packageId: metadata.creditPackageId,
-          sourceProvider: "stripe",
-          sourceId: paymentIntentId,
-          metadata: {
-            paymentIntentId,
-          },
-        });
-      }
+      console.error("Stripe credit payment skipped because it has no immutable credit order", {
+        paymentIntentId,
+      });
       return;
     }
 

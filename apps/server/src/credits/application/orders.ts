@@ -6,7 +6,7 @@ import { creditOrder } from "@/db/schema/credits";
 import { findBillingCustomer } from "@/payments/infrastructure/repositories/billing-store";
 import type { CheckoutSessionResult } from "@/payments/public/types";
 import { assertCreditsEnabled } from "./internal";
-import { grantCreditPackagePurchase } from "./grant";
+import { grantCredits } from "./grant";
 import type {
   CompleteCreditOrderPurchaseInput,
   CreateCreditCheckoutSessionInput,
@@ -141,15 +141,43 @@ export async function completeCreditOrderPurchase(
   if (!order) {
     throw new Error("Credit order not found");
   }
+  if (order.provider !== input.sourceProvider) {
+    throw new Error("Credit order provider does not match the payment event");
+  }
+  if (order.providerSessionId && input.providerSessionId !== order.providerSessionId) {
+    throw new Error("Credit order session does not match the payment event");
+  }
+  if (order.providerPaymentId && input.providerPaymentId !== order.providerPaymentId) {
+    throw new Error("Credit order payment does not match the payment event");
+  }
+  if (
+    input.providerAmountCents !== null &&
+    input.providerAmountCents !== undefined &&
+    input.providerAmountCents !== order.amountCents
+  ) {
+    throw new Error("Credit order amount does not match the payment event");
+  }
+  if (
+    input.providerCurrency !== null &&
+    input.providerCurrency !== undefined &&
+    input.providerCurrency.toLowerCase() !== order.currency.toLowerCase()
+  ) {
+    throw new Error("Credit order currency does not match the payment event");
+  }
   if ((order.status === "completed" && order.ledgerTransactionId) || order.status === "refunded") {
     return order;
   }
+  if (order.status !== "pending") {
+    throw new Error("Credit order cannot be completed from its current state");
+  }
 
-  const transaction = await grantCreditPackagePurchase(db, {
+  const transaction = await grantCredits(db, {
     user: { userId: order.userId },
-    packageId: order.packageId,
+    amount: order.creditAmount,
     sourceProvider: input.sourceProvider,
+    sourceType: "purchase",
     sourceId: input.sourceId,
+    packageId: order.packageId,
     metadata: { ...input.metadata, creditOrderId: order.id },
   });
 

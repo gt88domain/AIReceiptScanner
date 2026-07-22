@@ -2,7 +2,6 @@ import { and, eq } from "drizzle-orm";
 import type Stripe from "stripe";
 import {
   completeCreditOrderPurchase,
-  grantCreditPackagePurchase,
   markCreditOrderStatus,
 } from "@/credits";
 import type { Database } from "@/db";
@@ -70,7 +69,7 @@ export async function handleStripeCheckoutCompleted(
       session.mode === "payment" &&
       (session.payment_status === "paid" || session.payment_status === "no_payment_required");
 
-    if (!creditPackageId || !isPaymentCompleted) {
+    if (!creditPackageId || !creditOrderId || !isPaymentCompleted) {
       return;
     }
 
@@ -95,27 +94,15 @@ export async function handleStripeCheckoutCompleted(
         ),
       );
 
-    // Credit package checkouts write only to the credit ledger, not membership records.
-    if (creditOrderId) {
-      await completeCreditOrderPurchase(db, {
-        orderId: creditOrderId,
-        sourceProvider: "stripe",
-        sourceId: providerPaymentIntentId ?? `checkout_session:${session.id}`,
-        providerSessionId: session.id,
-        providerPaymentId: providerPaymentIntentId ?? null,
-        metadata: {
-          checkoutSessionId: session.id,
-          paymentIntentId: providerPaymentIntentId ?? null,
-        },
-      });
-      return;
-    }
-
-    await grantCreditPackagePurchase(db, {
-      user: resolvedUser,
-      packageId: creditPackageId,
+    // Credit package checkouts write only to the immutable order and ledger, never live config.
+    await completeCreditOrderPurchase(db, {
+      orderId: creditOrderId,
       sourceProvider: "stripe",
       sourceId: providerPaymentIntentId ?? `checkout_session:${session.id}`,
+      providerSessionId: session.id,
+      providerPaymentId: providerPaymentIntentId ?? null,
+      providerAmountCents: session.amount_total,
+      providerCurrency: session.currency,
       metadata: {
         checkoutSessionId: session.id,
         paymentIntentId: providerPaymentIntentId ?? null,
@@ -220,6 +207,8 @@ export async function handleStripeCheckoutAsyncPaymentSucceeded(
       sourceId: providerPaymentIntentId ?? `checkout_session:${session.id}`,
       providerSessionId: session.id,
       providerPaymentId: providerPaymentIntentId ?? null,
+      providerAmountCents: session.amount_total,
+      providerCurrency: session.currency,
       metadata: {
         checkoutSessionId: session.id,
         paymentIntentId: providerPaymentIntentId ?? null,

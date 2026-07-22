@@ -2,7 +2,6 @@ import { and, eq } from "drizzle-orm";
 import { WebhookEventType, type WebhookEvent, type WebhookEventData } from "@waffo/pancake-ts";
 import {
   completeCreditOrderPurchase,
-  grantCreditPackagePurchase,
   markCreditOrderRefunded,
   revokeCreditPurchaseBySource,
 } from "@/credits";
@@ -278,30 +277,15 @@ async function handleOrderCompleted(db: Database, event: WaffoEvent) {
   if (metadata.kind === "credit_purchase") {
     const creditPackageId = metadata.creditPackageId;
     const creditOrderId = metadata.creditOrderId;
-    if (!creditPackageId) {
-      throw new Error(`Waffo credit checkout missing package id for order ${event.data.orderId}`);
+    if (!creditPackageId || !creditOrderId) {
+      throw new Error(`Waffo credit checkout missing immutable order for order ${event.data.orderId}`);
     }
 
-    if (creditOrderId) {
-      await completeCreditOrderPurchase(db, {
-        orderId: creditOrderId,
-        sourceProvider: "waffo",
-        sourceId: providerPaymentId,
-        providerPaymentId,
-        metadata: {
-          orderId: event.data.orderId,
-          providerEventId: event.id,
-          paymentId: event.data.paymentId ?? null,
-        },
-      });
-      return;
-    }
-
-    await grantCreditPackagePurchase(db, {
-      user,
-      packageId: creditPackageId,
+    await completeCreditOrderPurchase(db, {
+      orderId: creditOrderId,
       sourceProvider: "waffo",
       sourceId: providerPaymentId,
+      providerPaymentId,
       metadata: {
         orderId: event.data.orderId,
         providerEventId: event.id,
