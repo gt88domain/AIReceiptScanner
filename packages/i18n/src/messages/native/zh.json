@@ -232,9 +232,6 @@
     "signInTitle": "登录后使用积分",
     "signInDescription": "积分绑定到你的账号，并会在多端同步。",
     "packagesTitle": "购买积分",
-    "demoConsumeTitle": "模拟消耗",
-    "demoConsumeDescription": "在真实消耗场景接入前，先模拟扣减积分。",
-    "demoConsumeAmount": "消耗积分数量",
     "ordersTitle": "购买订单",
     "transactionsTitle": "最近流水",
     "transactionsPageTitle": "积分流水",
@@ -254,13 +251,10 @@
     },
     "actions": {
       "buy": "购买",
-      "demoConsume": "消耗积分",
       "processing": "处理中..."
     },
     "feedback": {
       "unavailable": "当前构建暂不可进行应用内积分购买。",
-      "demoConsumeSuccess": "已消耗 {{count}} 积分。",
-      "demoConsumeError": "积分消耗失败",
       "purchaseCancelled": "购买已取消",
       "purchaseFailed": "购买失败，请稍后重试。",
       "purchaseSynced": "积分已添加到账号。",

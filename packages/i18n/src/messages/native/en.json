@@ -232,9 +232,6 @@
     "signInTitle": "Sign in to use credits",
     "signInDescription": "Credits are tied to your account and sync across devices.",
     "packagesTitle": "Buy credits",
-    "demoConsumeTitle": "Demo usage",
-    "demoConsumeDescription": "Simulate credit spending before real usage flows are connected.",
-    "demoConsumeAmount": "Credits to use",
     "ordersTitle": "Purchase orders",
     "transactionsTitle": "Recent activity",
     "transactionsPageTitle": "Credit activity",
@@ -254,13 +251,10 @@
     },
     "actions": {
       "buy": "Buy",
-      "demoConsume": "Use credits",
       "processing": "Processing..."
     },
     "feedback": {
       "unavailable": "In-app credit purchases are unavailable in this build.",
-      "demoConsumeSuccess": "{{count}} credits used.",
-      "demoConsumeError": "Credit usage failed",
       "purchaseCancelled": "Purchase was cancelled",
       "purchaseFailed": "Purchase failed. Please try again.",
       "purchaseSynced": "Credits added to your account.",
