@@ -1,4 +1,4 @@
-import { and, eq, isNull, lt, or } from "drizzle-orm";
+import { and, eq, isNull, lt, or, sql } from "drizzle-orm";
 import {
   completeCreditOrderPurchase,
   grantCreditPackagePurchase,
@@ -549,6 +549,7 @@ async function handleCreemRefundCreated(
         cancelAtPeriodEnd: false,
         endedAt: providerEventAt,
         providerEventAt,
+        providerEventId: event.id,
         updatedAt: new Date(),
       })
       .where(
@@ -558,6 +559,10 @@ async function handleCreemRefundCreated(
           or(
             isNull(billingSubscription.providerEventAt),
             lt(billingSubscription.providerEventAt, providerEventAt),
+            and(
+              eq(billingSubscription.providerEventAt, providerEventAt),
+              sql`COALESCE(${billingSubscription.providerEventId}, '') < ${event.id}`,
+            ),
           ),
         ),
       );

@@ -1,15 +1,17 @@
-import { eq } from "drizzle-orm";
 import type Stripe from "stripe";
 import type { Database } from "@/db";
-import { billingSubscription } from "@/db/schema/payments";
-import { findSubscriptionByProviderId } from "../../../infrastructure/repositories/billing-store";
+import {
+  findSubscriptionByProviderId,
+  upsertBillingSubscriptionIfNewer,
+} from "../../../infrastructure/repositories/billing-store";
 
 export async function handleStripeInvoicePaid(
   db: Database,
   invoice: Stripe.Invoice,
   providerEventAt: Date,
+  providerEventId: string,
 ) {
-  await updateSubscriptionFromInvoice(db, invoice, "active", providerEventAt);
+  await updateSubscriptionFromInvoice(db, invoice, "active", providerEventAt, providerEventId);
 }
 
 /**
@@ -19,8 +21,9 @@ export async function handleStripeInvoicePaymentFailed(
   db: Database,
   invoice: Stripe.Invoice,
   providerEventAt: Date,
+  providerEventId: string,
 ) {
-  await updateSubscriptionFromInvoice(db, invoice, "past_due", providerEventAt);
+  await updateSubscriptionFromInvoice(db, invoice, "past_due", providerEventAt, providerEventId);
 }
 
 /**
@@ -30,8 +33,9 @@ export async function handleStripeInvoiceMarkedUncollectible(
   db: Database,
   invoice: Stripe.Invoice,
   providerEventAt: Date,
+  providerEventId: string,
 ) {
-  await updateSubscriptionFromInvoice(db, invoice, "unpaid", providerEventAt);
+  await updateSubscriptionFromInvoice(db, invoice, "unpaid", providerEventAt, providerEventId);
 }
 
 /**
@@ -41,8 +45,9 @@ export async function handleStripeInvoiceVoided(
   db: Database,
   invoice: Stripe.Invoice,
   providerEventAt: Date,
+  providerEventId: string,
 ) {
-  await updateSubscriptionFromInvoice(db, invoice, "unpaid", providerEventAt);
+  await updateSubscriptionFromInvoice(db, invoice, "unpaid", providerEventAt, providerEventId);
 }
 
 /**
@@ -53,6 +58,7 @@ async function updateSubscriptionFromInvoice(
   invoice: Stripe.Invoice,
   status: "active" | "past_due" | "unpaid",
   providerEventAt: Date,
+  providerEventId: string,
 ) {
   const subscriptionRef = invoice.parent?.subscription_details?.subscription;
   if (!subscriptionRef) return;
@@ -62,22 +68,23 @@ async function updateSubscriptionFromInvoice(
 
   const existing = await findSubscriptionByProviderId(db, "stripe", providerSubscriptionId);
   if (!existing || existing.status === "canceled") return;
-  if (existing.providerEventAt && providerEventAt.getTime() < existing.providerEventAt.getTime()) {
-    return;
-  }
-
-  const now = new Date();
   const linePeriodEnd = invoice.lines?.data?.at(0)?.period?.end;
   const currentPeriodEnd =
     typeof linePeriodEnd === "number" ? new Date(linePeriodEnd * 1000) : null;
 
-  await db
-    .update(billingSubscription)
-    .set({
-      status,
-      currentPeriodEnd: currentPeriodEnd ?? existing.currentPeriodEnd,
-      providerEventAt,
-      updatedAt: now,
-    })
-    .where(eq(billingSubscription.id, existing.id));
+  await upsertBillingSubscriptionIfNewer(db, {
+    userId: existing.userId,
+    provider: existing.provider,
+    providerSubscriptionId: existing.providerSubscriptionId,
+    providerCustomerId: existing.providerCustomerId,
+    planId: existing.planId,
+    priceId: existing.priceId,
+    status,
+    currentPeriodEnd: currentPeriodEnd ?? existing.currentPeriodEnd,
+    cancelAtPeriodEnd: existing.cancelAtPeriodEnd,
+    startedAt: existing.startedAt,
+    endedAt: existing.endedAt,
+    providerEventAt,
+    providerEventId,
+  });
 }

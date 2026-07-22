@@ -1,4 +1,3 @@
-import { eq } from "drizzle-orm";
 import type Stripe from "stripe";
 import {
   completeCreditOrderPurchase,
@@ -8,8 +7,10 @@ import {
   revokeCreditPurchaseBySource,
 } from "@/credits";
 import type { Database } from "@/db";
-import { billingPurchase } from "@/db/schema/payments";
-import { findPurchaseByProviderIntent } from "../../../infrastructure/repositories/billing-store";
+import {
+  findPurchaseByProviderIntent,
+  upsertBillingPurchaseIfNewer,
+} from "../../../infrastructure/repositories/billing-store";
 import { reconcileActivatedPriceWithExistingSubscriptions } from "../../shared/activated-price-effects";
 import { resolveUserFromMetadata } from "./owner-resolver";
 
@@ -20,12 +21,14 @@ export async function handleStripePaymentIntentSucceeded(
   db: Database,
   paymentIntent: Stripe.PaymentIntent,
   providerEventAt: Date,
+  providerEventId: string,
 ) {
   await upsertPurchaseFromPaymentIntent(db, {
     paymentIntent,
     status: "succeeded",
     paid: true,
     providerEventAt,
+    providerEventId,
   });
 }
 
@@ -36,12 +39,14 @@ export async function handleStripePaymentIntentFailed(
   db: Database,
   paymentIntent: Stripe.PaymentIntent,
   providerEventAt: Date,
+  providerEventId: string,
 ) {
   await upsertPurchaseFromPaymentIntent(db, {
     paymentIntent,
     status: "failed",
     paid: false,
     providerEventAt,
+    providerEventId,
   });
 }
 
@@ -52,12 +57,14 @@ export async function handleStripePaymentIntentCanceled(
   db: Database,
   paymentIntent: Stripe.PaymentIntent,
   providerEventAt: Date,
+  providerEventId: string,
 ) {
   await upsertPurchaseFromPaymentIntent(db, {
     paymentIntent,
     status: "failed",
     paid: false,
     providerEventAt,
+    providerEventId,
   });
 }
 
@@ -68,6 +75,7 @@ export async function handleStripeChargeRefunded(
   db: Database,
   charge: Stripe.Charge,
   providerEventAt: Date,
+  providerEventId: string,
 ) {
   if (!charge.refunded && charge.amount_refunded < charge.amount) {
     return;
@@ -97,15 +105,17 @@ export async function handleStripeChargeRefunded(
 
   const existing = await findPurchaseByProviderIntent(db, "stripe", paymentIntentId);
   if (!existing) return;
-  if (existing.providerEventAt && providerEventAt.getTime() < existing.providerEventAt.getTime()) {
-    return;
-  }
-
-  const now = new Date();
-  await db
-    .update(billingPurchase)
-    .set({ status: "refunded", providerEventAt, updatedAt: now })
-    .where(eq(billingPurchase.id, existing.id));
+  await upsertBillingPurchaseIfNewer(db, {
+    userId: existing.userId,
+    provider: existing.provider,
+    providerPaymentIntentId: existing.providerPaymentIntentId,
+    planId: existing.planId,
+    priceId: existing.priceId,
+    status: "refunded",
+    paidAt: existing.paidAt,
+    providerEventAt,
+    providerEventId,
+  });
 }
 
 /**
@@ -115,8 +125,9 @@ export async function handleStripeChargeDisputeUpdated(
   db: Database,
   dispute: Stripe.Dispute,
   providerEventAt: Date,
+  providerEventId: string,
 ) {
-  await updatePurchaseStatusFromDispute(db, dispute, providerEventAt);
+  await updatePurchaseStatusFromDispute(db, dispute, providerEventAt, providerEventId);
 }
 
 /**
@@ -126,8 +137,9 @@ export async function handleStripeChargeDisputeCreated(
   db: Database,
   dispute: Stripe.Dispute,
   providerEventAt: Date,
+  providerEventId: string,
 ) {
-  await updatePurchaseStatusFromDispute(db, dispute, providerEventAt);
+  await updatePurchaseStatusFromDispute(db, dispute, providerEventAt, providerEventId);
 }
 
 /**
@@ -137,8 +149,9 @@ export async function handleStripeChargeDisputeClosed(
   db: Database,
   dispute: Stripe.Dispute,
   providerEventAt: Date,
+  providerEventId: string,
 ) {
-  await updatePurchaseStatusFromDispute(db, dispute, providerEventAt);
+  await updatePurchaseStatusFromDispute(db, dispute, providerEventAt, providerEventId);
 }
 
 /**
@@ -151,10 +164,10 @@ async function upsertPurchaseFromPaymentIntent(
     status: "succeeded" | "failed";
     paid: boolean;
     providerEventAt: Date;
+    providerEventId: string;
   },
 ) {
   const paymentIntentId = input.paymentIntent.id;
-  const now = new Date();
   const existing = await findPurchaseByProviderIntent(db, "stripe", paymentIntentId);
   const metadata = input.paymentIntent.metadata ?? {};
 
@@ -176,13 +189,6 @@ async function upsertPurchaseFromPaymentIntent(
         providerPaymentId: paymentIntentId,
       });
     }
-    return;
-  }
-
-  if (
-    existing?.providerEventAt &&
-    input.providerEventAt.getTime() < existing.providerEventAt.getTime()
-  ) {
     return;
   }
 
@@ -215,37 +221,37 @@ async function upsertPurchaseFromPaymentIntent(
       return;
     }
 
-    await db.insert(billingPurchase).values({
-      id: crypto.randomUUID(),
+    const applied = await upsertBillingPurchaseIfNewer(db, {
       userId: user.userId,
       provider: "stripe",
       providerPaymentIntentId: paymentIntentId,
       planId,
       priceId,
       status: input.status,
-      paidAt: input.paid ? now : null,
+      paidAt: input.paid ? input.providerEventAt : null,
       providerEventAt: input.providerEventAt,
-      createdAt: now,
-      updatedAt: now,
+      providerEventId: input.providerEventId,
     });
 
-    if (input.status === "succeeded") {
+    if (applied && input.status === "succeeded") {
       await reconcileActivatedPriceWithExistingSubscriptions(db, user, priceId);
     }
     return;
   }
 
-  await db
-    .update(billingPurchase)
-    .set({
-      status: input.status,
-      paidAt: input.paid ? now : existing.paidAt,
-      providerEventAt: input.providerEventAt,
-      updatedAt: now,
-    })
-    .where(eq(billingPurchase.id, existing.id));
+  const applied = await upsertBillingPurchaseIfNewer(db, {
+    userId: existing.userId,
+    provider: existing.provider,
+    providerPaymentIntentId: existing.providerPaymentIntentId,
+    planId: existing.planId,
+    priceId: existing.priceId,
+    status: input.status,
+    paidAt: input.paid ? input.providerEventAt : existing.paidAt,
+    providerEventAt: input.providerEventAt,
+    providerEventId: input.providerEventId,
+  });
 
-  if (input.status === "succeeded") {
+  if (applied && input.status === "succeeded") {
     await reconcileActivatedPriceWithExistingSubscriptions(
       db,
       { userId: existing.userId },
@@ -279,6 +285,7 @@ async function updatePurchaseStatusFromDispute(
   db: Database,
   dispute: Stripe.Dispute,
   providerEventAt: Date,
+  providerEventId: string,
 ) {
   const paymentIntentRef = dispute.payment_intent;
   const paymentIntentId =
@@ -288,7 +295,13 @@ async function updatePurchaseStatusFromDispute(
   const status = mapDisputeStatusToPurchaseStatus(dispute.status);
   if (!status) return;
 
-  await updatePurchaseStatusByPaymentIntent(db, paymentIntentId, status, providerEventAt);
+  await updatePurchaseStatusByPaymentIntent(
+    db,
+    paymentIntentId,
+    status,
+    providerEventAt,
+    providerEventId,
+  );
 }
 
 /**
@@ -299,21 +312,20 @@ async function updatePurchaseStatusByPaymentIntent(
   providerPaymentIntentId: string,
   status: "succeeded" | "failed" | "refunded",
   providerEventAt: Date,
+  providerEventId: string,
 ) {
   const existing = await findPurchaseByProviderIntent(db, "stripe", providerPaymentIntentId);
   if (!existing) return;
   if (existing.status === "refunded" && status !== "refunded") return;
-  if (existing.providerEventAt && providerEventAt.getTime() < existing.providerEventAt.getTime()) {
-    return;
-  }
-
-  const now = new Date();
-  await db
-    .update(billingPurchase)
-    .set({
-      status,
-      providerEventAt,
-      updatedAt: now,
-    })
-    .where(eq(billingPurchase.id, existing.id));
+  await upsertBillingPurchaseIfNewer(db, {
+    userId: existing.userId,
+    provider: existing.provider,
+    providerPaymentIntentId: existing.providerPaymentIntentId,
+    planId: existing.planId,
+    priceId: existing.priceId,
+    status,
+    paidAt: existing.paidAt,
+    providerEventAt,
+    providerEventId,
+  });
 }
