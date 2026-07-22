@@ -7,16 +7,13 @@ import {
   revokeCreditPurchaseBySource,
 } from "@/credits";
 import type { Database } from "@/db";
-import {
-  billingCheckoutSession,
-  billingCustomer,
-  billingPurchase,
-  billingSubscription,
-} from "@/db/schema/payments";
+import { billingCheckoutSession, billingCustomer } from "@/db/schema/payments";
 import { findPriceById } from "@/payments/domain/plan-catalog";
 import {
   findPurchaseByProviderIntent,
   findSubscriptionByProviderId,
+  upsertBillingPurchaseIfNewer,
+  upsertBillingSubscriptionIfNewer,
   upsertBillingCustomer,
 } from "@/payments/infrastructure/repositories/billing-store";
 import type { BillingUser } from "@/payments/public/types";
@@ -171,50 +168,26 @@ async function upsertWaffoPurchase(
   input: {
     user: BillingUser;
     providerEventAt: Date;
+    providerEventId: string;
     providerPaymentId: string;
     planId: string;
     priceId: string;
     status: "succeeded" | "refunded";
   },
 ) {
-  const existing = await findPurchaseByProviderIntent(db, "waffo", input.providerPaymentId);
-  if (
-    existing?.providerEventAt &&
-    input.providerEventAt.getTime() < existing.providerEventAt.getTime()
-  ) {
-    return;
-  }
+  const applied = await upsertBillingPurchaseIfNewer(db, {
+    userId: input.user.userId,
+    provider: "waffo",
+    providerPaymentIntentId: input.providerPaymentId,
+    planId: input.planId,
+    priceId: input.priceId,
+    status: input.status,
+    paidAt: input.status === "succeeded" ? input.providerEventAt : null,
+    providerEventAt: input.providerEventAt,
+    providerEventId: input.providerEventId,
+  });
 
-  const now = new Date();
-  await db
-    .insert(billingPurchase)
-    .values({
-      id: crypto.randomUUID(),
-      userId: input.user.userId,
-      provider: "waffo",
-      providerPaymentIntentId: input.providerPaymentId,
-      planId: input.planId,
-      priceId: input.priceId,
-      status: input.status,
-      paidAt: input.status === "succeeded" ? input.providerEventAt : null,
-      providerEventAt: input.providerEventAt,
-      createdAt: now,
-      updatedAt: now,
-    })
-    .onConflictDoUpdate({
-      target: [billingPurchase.provider, billingPurchase.providerPaymentIntentId],
-      set: {
-        userId: input.user.userId,
-        planId: input.planId,
-        priceId: input.priceId,
-        status: input.status,
-        paidAt: input.status === "succeeded" ? input.providerEventAt : null,
-        providerEventAt: input.providerEventAt,
-        updatedAt: now,
-      },
-    });
-
-  if (input.status === "succeeded") {
+  if (applied && input.status === "succeeded") {
     await reconcileActivatedPriceWithExistingSubscriptions(db, input.user, input.priceId);
   }
 }
@@ -249,64 +222,33 @@ async function upsertWaffoSubscription(
     data: WebhookEventData;
     eventType: WaffoEvent["eventType"];
     providerEventAt: Date;
+    providerEventId: string;
     providerCustomerId: string;
     planId: string;
     priceId: string;
   },
 ) {
-  const existing = await findSubscriptionByProviderId(db, "waffo", input.data.orderId);
-  if (
-    existing?.providerEventAt &&
-    input.providerEventAt.getTime() < existing.providerEventAt.getTime()
-  ) {
-    return;
-  }
-
   const mappedState = mapSubscriptionState(input.eventType, input.data.orderStatus);
-  const now = new Date();
-  await db
-    .insert(billingSubscription)
-    .values({
-      id: crypto.randomUUID(),
-      userId: input.user.userId,
-      provider: "waffo",
-      providerSubscriptionId: input.data.orderId,
-      providerCustomerId: input.providerCustomerId,
-      planId: input.planId,
-      priceId: input.priceId,
-      status: mappedState.status,
-      currentPeriodEnd: toDate(input.data.currentPeriodEnd),
-      cancelAtPeriodEnd: mappedState.cancelAtPeriodEnd,
-      startedAt: toDate(input.data.currentPeriodStart),
-      endedAt:
-        mappedState.status === "canceled"
-          ? (toDate(input.data.canceledAt) ?? input.providerEventAt)
-          : null,
-      providerEventAt: input.providerEventAt,
-      createdAt: now,
-      updatedAt: now,
-    })
-    .onConflictDoUpdate({
-      target: [billingSubscription.provider, billingSubscription.providerSubscriptionId],
-      set: {
-        userId: input.user.userId,
-        providerCustomerId: input.providerCustomerId,
-        planId: input.planId,
-        priceId: input.priceId,
-        status: mappedState.status,
-        currentPeriodEnd: toDate(input.data.currentPeriodEnd),
-        cancelAtPeriodEnd: mappedState.cancelAtPeriodEnd,
-        startedAt: toDate(input.data.currentPeriodStart),
-        endedAt:
-          mappedState.status === "canceled"
-            ? (toDate(input.data.canceledAt) ?? input.providerEventAt)
-            : null,
-        providerEventAt: input.providerEventAt,
-        updatedAt: now,
-      },
-    });
+  const applied = await upsertBillingSubscriptionIfNewer(db, {
+    userId: input.user.userId,
+    provider: "waffo",
+    providerSubscriptionId: input.data.orderId,
+    providerCustomerId: input.providerCustomerId,
+    planId: input.planId,
+    priceId: input.priceId,
+    status: mappedState.status,
+    currentPeriodEnd: toDate(input.data.currentPeriodEnd),
+    cancelAtPeriodEnd: mappedState.cancelAtPeriodEnd,
+    startedAt: toDate(input.data.currentPeriodStart),
+    endedAt:
+      mappedState.status === "canceled"
+        ? (toDate(input.data.canceledAt) ?? input.providerEventAt)
+        : null,
+    providerEventAt: input.providerEventAt,
+    providerEventId: input.providerEventId,
+  });
 
-  if (mappedState.status === "active") {
+  if (applied && mappedState.status === "active") {
     await reconcileActivatedPriceWithExistingSubscriptions(db, input.user, input.priceId);
   }
 }
@@ -384,6 +326,7 @@ async function handleOrderCompleted(db: Database, event: WaffoEvent) {
   await upsertWaffoPurchase(db, {
     user,
     providerEventAt,
+    providerEventId: event.eventId ?? event.id,
     providerPaymentId,
     planId,
     priceId,
@@ -430,6 +373,7 @@ async function handleSubscriptionEvent(db: Database, event: WaffoEvent) {
     data: event.data,
     eventType: event.eventType,
     providerEventAt,
+    providerEventId: event.eventId ?? event.id,
     providerCustomerId,
     planId,
     priceId,
@@ -467,6 +411,7 @@ async function handleRefundSucceeded(db: Database, event: WaffoEvent) {
   await upsertWaffoPurchase(db, {
     user: { userId: purchase.userId },
     providerEventAt,
+    providerEventId: refundSourceId,
     providerPaymentId,
     planId: purchase.planId,
     priceId: purchase.priceId,

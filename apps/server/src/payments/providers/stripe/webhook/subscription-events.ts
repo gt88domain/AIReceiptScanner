@@ -1,10 +1,9 @@
 import type Stripe from "stripe";
 import type { Database } from "@/db";
-import { billingSubscription } from "@/db/schema/payments";
 import { findPriceByProviderPriceId } from "../../../domain/plan-catalog";
 import type { DbLike } from "../../../infrastructure/repositories/billing-store";
 import {
-  findSubscriptionByProviderId,
+  upsertBillingSubscriptionIfNewer,
   upsertBillingCustomer,
 } from "../../../infrastructure/repositories/billing-store";
 import type { BillingUser } from "../../../public/types";
@@ -17,6 +16,7 @@ export async function handleStripeSubscription(
   db: Database,
   subscription: Stripe.Subscription,
   providerEventAt: Date,
+  providerEventId: string,
 ) {
   const metadata = subscription.metadata ?? {};
   const providerCustomerId =
@@ -66,6 +66,7 @@ export async function handleStripeSubscription(
     planId,
     priceId,
     providerEventAt,
+    providerEventId,
   });
 }
 
@@ -80,21 +81,12 @@ async function upsertSubscriptionFromStripe(
     planId: string;
     priceId: string;
     providerEventAt: Date;
+    providerEventId: string;
   },
 ) {
-  const now = new Date();
   const status = mapStripeSubscriptionStatus(input.subscription.status);
   const itemPeriodEnd = input.subscription.items.data.at(0)?.current_period_end;
-  const existing = await findSubscriptionByProviderId(db, "stripe", input.subscription.id);
-
-  if (
-    existing?.providerEventAt &&
-    input.providerEventAt.getTime() < existing.providerEventAt.getTime()
-  ) {
-    return;
-  }
-
-  const payload = {
+  const applied = await upsertBillingSubscriptionIfNewer(db, {
     userId: input.user.userId,
     provider: "stripe" as const,
     providerSubscriptionId: input.subscription.id,
@@ -112,32 +104,10 @@ async function upsertSubscriptionFromStripe(
       : null,
     endedAt: input.subscription.ended_at ? new Date(input.subscription.ended_at * 1000) : null,
     providerEventAt: input.providerEventAt,
-  };
+    providerEventId: input.providerEventId,
+  });
 
-  await db
-    .insert(billingSubscription)
-    .values({
-      id: crypto.randomUUID(),
-      ...payload,
-      createdAt: now,
-      updatedAt: now,
-    })
-    .onConflictDoUpdate({
-      target: [billingSubscription.provider, billingSubscription.providerSubscriptionId],
-      set: {
-        userId: payload.userId,
-        providerCustomerId: payload.providerCustomerId,
-        planId: payload.planId,
-        priceId: payload.priceId,
-        status: payload.status,
-        currentPeriodEnd: payload.currentPeriodEnd,
-        cancelAtPeriodEnd: payload.cancelAtPeriodEnd,
-        startedAt: payload.startedAt,
-        endedAt: payload.endedAt,
-        providerEventAt: payload.providerEventAt,
-        updatedAt: now,
-      },
-    });
+  return Boolean(applied);
 }
 
 /**

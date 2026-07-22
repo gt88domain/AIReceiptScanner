@@ -6,12 +6,12 @@ import {
   markCreditOrderStatus,
 } from "@/credits";
 import type { Database } from "@/db";
-import { billingCheckoutSession, billingPurchase, billingSubscription } from "@/db/schema/payments";
+import { billingCheckoutSession } from "@/db/schema/payments";
 import type { DbLike } from "../../../infrastructure/repositories/billing-store";
 import {
-  findPurchaseByProviderIntent,
-  findSubscriptionByProviderId,
+  upsertBillingPurchaseIfNewer,
   upsertBillingCustomer,
+  upsertBillingSubscriptionIfNewer,
 } from "../../../infrastructure/repositories/billing-store";
 import type { BillingUser } from "../../../public/types";
 import { reconcileActivatedPriceWithExistingSubscriptions } from "../../shared/activated-price-effects";
@@ -24,6 +24,7 @@ export async function handleStripeCheckoutCompleted(
   db: Database,
   session: Stripe.Checkout.Session,
   providerEventAt: Date,
+  providerEventId: string,
 ) {
   const metadata = session.metadata ?? {};
   const [storedCheckoutSession] = await db
@@ -171,6 +172,7 @@ export async function handleStripeCheckoutCompleted(
       planId,
       priceId,
       providerEventAt,
+      providerEventId,
     });
   }
 
@@ -193,6 +195,7 @@ export async function handleStripeCheckoutCompleted(
       priceId,
       paid: isPaymentCompleted,
       providerEventAt,
+      providerEventId,
     });
   }
 }
@@ -312,47 +315,24 @@ async function upsertSubscriptionFromCheckout(
     planId: string;
     priceId: string;
     providerEventAt: Date;
+    providerEventId: string;
   },
 ) {
-  const now = new Date();
-  const existing = await findSubscriptionByProviderId(db, "stripe", input.providerSubscriptionId);
-
-  if (
-    existing?.providerEventAt &&
-    input.providerEventAt.getTime() < existing.providerEventAt.getTime()
-  ) {
-    return;
-  }
-
-  await db
-    .insert(billingSubscription)
-    .values({
-      id: crypto.randomUUID(),
-      userId: input.user.userId,
-      provider: "stripe",
-      providerSubscriptionId: input.providerSubscriptionId,
-      providerCustomerId: input.providerCustomerId,
-      planId: input.planId,
-      priceId: input.priceId,
-      status: "incomplete",
-      currentPeriodEnd: null,
-      cancelAtPeriodEnd: false,
-      startedAt: null,
-      endedAt: null,
-      providerEventAt: null,
-      createdAt: now,
-      updatedAt: now,
-    })
-    .onConflictDoUpdate({
-      target: [billingSubscription.provider, billingSubscription.providerSubscriptionId],
-      set: {
-        userId: input.user.userId,
-        providerCustomerId: input.providerCustomerId,
-        planId: input.planId,
-        priceId: input.priceId,
-        updatedAt: now,
-      },
-    });
+  await upsertBillingSubscriptionIfNewer(db, {
+    userId: input.user.userId,
+    provider: "stripe",
+    providerSubscriptionId: input.providerSubscriptionId,
+    providerCustomerId: input.providerCustomerId,
+    planId: input.planId,
+    priceId: input.priceId,
+    status: "incomplete",
+    currentPeriodEnd: null,
+    cancelAtPeriodEnd: false,
+    startedAt: null,
+    endedAt: null,
+    providerEventAt: input.providerEventAt,
+    providerEventId: input.providerEventId,
+  });
 }
 
 /**
@@ -367,54 +347,22 @@ async function upsertPurchaseFromCheckout(
     priceId: string;
     paid: boolean;
     providerEventAt: Date;
+    providerEventId: string;
   },
 ) {
-  const now = new Date();
-  const existing = await findPurchaseByProviderIntent(db, "stripe", input.providerPaymentIntentId);
+  const applied = await upsertBillingPurchaseIfNewer(db, {
+    userId: input.user.userId,
+    provider: "stripe",
+    providerPaymentIntentId: input.providerPaymentIntentId,
+    planId: input.planId,
+    priceId: input.priceId,
+    status: input.paid ? "succeeded" : "pending",
+    paidAt: input.paid ? input.providerEventAt : null,
+    providerEventAt: input.providerEventAt,
+    providerEventId: input.providerEventId,
+  });
 
-  if (
-    existing?.providerEventAt &&
-    input.providerEventAt.getTime() < existing.providerEventAt.getTime()
-  ) {
-    return;
-  }
-
-  if (!existing) {
-    await db.insert(billingPurchase).values({
-      id: crypto.randomUUID(),
-      userId: input.user.userId,
-      provider: "stripe",
-      providerPaymentIntentId: input.providerPaymentIntentId,
-      planId: input.planId,
-      priceId: input.priceId,
-      status: input.paid ? "succeeded" : "pending",
-      paidAt: input.paid ? now : null,
-      providerEventAt: input.providerEventAt,
-      createdAt: now,
-      updatedAt: now,
-    });
-
-    if (input.paid) {
-      await reconcileActivatedPriceWithExistingSubscriptions(db, input.user, input.priceId);
-    }
-    return;
-  }
-
-  await db
-    .update(billingPurchase)
-    .set({
-      status: input.paid ? "succeeded" : existing.status,
-      paidAt: input.paid ? now : existing.paidAt,
-      providerEventAt: input.providerEventAt,
-      updatedAt: now,
-    })
-    .where(eq(billingPurchase.id, existing.id));
-
-  if (input.paid) {
-    await reconcileActivatedPriceWithExistingSubscriptions(
-      db,
-      { userId: existing.userId },
-      existing.priceId,
-    );
+  if (applied && input.paid) {
+    await reconcileActivatedPriceWithExistingSubscriptions(db, input.user, input.priceId);
   }
 }

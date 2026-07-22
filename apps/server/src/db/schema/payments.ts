@@ -58,6 +58,7 @@ export const billingSubscription = sqliteTable(
     startedAt: integer("started_at", { mode: "timestamp" }), // When subscription started
     endedAt: integer("ended_at", { mode: "timestamp" }), // When subscription ended (if applicable)
     providerEventAt: integer("provider_event_at", { mode: "timestamp" }), // Latest provider event timestamp applied to this subscription
+    providerEventId: text("provider_event_id"), // Stable tie-breaker when provider events share a timestamp
     createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
   },
@@ -165,6 +166,7 @@ export const billingPurchase = sqliteTable(
     }).notNull(), // Current status of the purchase
     paidAt: integer("paid_at", { mode: "timestamp" }), // When payment was completed (if succeeded)
     providerEventAt: integer("provider_event_at", { mode: "timestamp" }), // Latest provider event timestamp applied to this purchase
+    providerEventId: text("provider_event_id"), // Stable tie-breaker when provider events share a timestamp
     createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
   },

@@ -1,4 +1,5 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
+import type { SQLWrapper } from "drizzle-orm";
 import type { ServerPaymentProviderKey } from "@repo/app-config";
 import type { Database } from "@/db";
 import { billingCustomer, billingPurchase, billingSubscription } from "@/db/schema/payments";
@@ -9,6 +10,73 @@ import type { BillingUser } from "../../public/types";
  */
 type DbTransaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
 type DbLike = Database | DbTransaction;
+type BillingSubscriptionState = Omit<
+  typeof billingSubscription.$inferInsert,
+  "id" | "createdAt" | "updatedAt"
+> & {
+  providerEventAt: Date;
+  providerEventId: string;
+};
+type BillingPurchaseState = Omit<
+  typeof billingPurchase.$inferInsert,
+  "id" | "createdAt" | "updatedAt"
+> & {
+  providerEventAt: Date;
+  providerEventId: string;
+};
+
+function isNewerProviderEvent(
+  providerEventAt: Date,
+  providerEventId: string,
+  currentEventAt: SQLWrapper,
+  currentEventId: SQLWrapper,
+) {
+  return sql`(
+    ${currentEventAt} IS NULL
+    OR ${currentEventAt} < ${Math.floor(providerEventAt.getTime() / 1000)}
+    OR (${currentEventAt} = ${Math.floor(providerEventAt.getTime() / 1000)} AND COALESCE(${currentEventId}, '') < ${providerEventId})
+  )`;
+}
+
+/** Atomically applies subscription state only when its provider event is newer. */
+async function upsertBillingSubscriptionIfNewer(db: DbLike, input: BillingSubscriptionState) {
+  const now = new Date();
+  const [updated] = await db
+    .insert(billingSubscription)
+    .values({ id: crypto.randomUUID(), ...input, createdAt: now, updatedAt: now })
+    .onConflictDoUpdate({
+      target: [billingSubscription.provider, billingSubscription.providerSubscriptionId],
+      set: { ...input, updatedAt: now },
+      where: isNewerProviderEvent(
+        input.providerEventAt,
+        input.providerEventId,
+        billingSubscription.providerEventAt,
+        billingSubscription.providerEventId,
+      ),
+    })
+    .returning({ id: billingSubscription.id });
+  return updated ?? null;
+}
+
+/** Atomically applies one-time purchase state only when its provider event is newer. */
+async function upsertBillingPurchaseIfNewer(db: DbLike, input: BillingPurchaseState) {
+  const now = new Date();
+  const [updated] = await db
+    .insert(billingPurchase)
+    .values({ id: crypto.randomUUID(), ...input, createdAt: now, updatedAt: now })
+    .onConflictDoUpdate({
+      target: [billingPurchase.provider, billingPurchase.providerPaymentIntentId],
+      set: { ...input, updatedAt: now },
+      where: isNewerProviderEvent(
+        input.providerEventAt,
+        input.providerEventId,
+        billingPurchase.providerEventAt,
+        billingPurchase.providerEventId,
+      ),
+    })
+    .returning({ id: billingPurchase.id });
+  return updated ?? null;
+}
 
 /**
  * Finds a billing customer by user and provider.
@@ -205,5 +273,7 @@ export {
   findPurchaseByProviderIntent,
   findSubscriptionByProviderId,
   hasTrialConsumingSubscriptionHistory,
+  upsertBillingPurchaseIfNewer,
   upsertBillingCustomer,
+  upsertBillingSubscriptionIfNewer,
 };

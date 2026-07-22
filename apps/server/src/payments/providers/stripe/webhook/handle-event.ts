@@ -35,6 +35,7 @@ export async function handleStripeEvent(db: Database, payload: unknown) {
         db,
         event.data.object as Stripe.Checkout.Session,
         providerEventAt,
+        event.id,
       );
       return;
     }
@@ -65,7 +66,12 @@ export async function handleStripeEvent(db: Database, payload: unknown) {
     case "customer.subscription.created":
     case "customer.subscription.updated":
     case "customer.subscription.deleted": {
-      await handleStripeSubscription(db, event.data.object as Stripe.Subscription, providerEventAt);
+      await handleStripeSubscription(
+        db,
+        event.data.object as Stripe.Subscription,
+        providerEventAt,
+        event.id,
+      );
       return;
     }
     case "payment_intent.succeeded": {
