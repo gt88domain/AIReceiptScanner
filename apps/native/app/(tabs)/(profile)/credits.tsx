@@ -38,7 +38,7 @@ export default function CreditsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const credits = useCredits();
-  const { isAuthenticated, isPending } = useAuth();
+  const { isAuthenticated, isPending, paymentsError, retryPaymentsSync } = useAuth();
   const { toastSuccess, toastError } = useToast();
   const [purchasePhase, setPurchasePhase] = useState<PurchasePhase>(null);
   const [mutedColor, backgroundColor] = useThemeColor(["muted", "background"]);
@@ -151,6 +151,19 @@ export default function CreditsScreen() {
             </View>
           ) : null}
 
+          {paymentsError ? (
+            <View className="mt-5 rounded-2xl border border-warning/30 bg-warning/10 p-4">
+              <Text className="text-sm leading-5 text-muted">{paymentsError.message}</Text>
+              <Button
+                className="mt-3 h-10 self-start"
+                variant="secondary"
+                onPress={() => void retryPaymentsSync()}
+              >
+                <Button.Label className="font-bold">{t("common.retry")}</Button.Label>
+              </Button>
+            </View>
+          ) : null}
+
           <Animated.View entering={FadeInUp.delay(80).duration(320)} className="mt-8">
             <Text className="mb-3 text-xl font-bold">{t("credits.packagesTitle")}</Text>
             <View className="gap-3">
@@ -179,7 +192,10 @@ export default function CreditsScreen() {
                       className="mt-4 h-11 items-center justify-center"
                       feedbackVariant="scale-ripple"
                       isDisabled={
-                        credits.isPurchasing || credits.isSyncing || !item.providerProductId
+                        credits.isPurchasing ||
+                        credits.isSyncing ||
+                        !credits.isAvailable ||
+                        !item.providerProductId
                       }
                       onPress={() => handlePurchase(item.id)}
                     >

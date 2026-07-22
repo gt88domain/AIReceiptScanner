@@ -183,7 +183,12 @@ function hasServerCaughtUpToLocalEntitlement(
 /** Exposes native purchase state by reconciling local RevenueCat data with the server billing record. */
 export function useNativePayments() {
   const config = nativePayments.getConfig();
-  const { isAuthenticated, isPaymentsReady, isPending: isAuthPending } = useAuth();
+  const {
+    isAuthenticated,
+    isPaymentsReady,
+    isPending: isAuthPending,
+    paymentsError,
+  } = useAuth();
   // When a purchase or restore succeeds locally, keep a short window where the
   // hook can prefer device entitlement data while the server catches up.
   const [localEntitlementSyncExpiresAt, setLocalEntitlementSyncExpiresAt] = useState<number | null>(
@@ -316,6 +321,9 @@ export function useNativePayments() {
 
   const purchase = useCallback(
     async (planId: string, priceId: string) => {
+      if (!isPaymentsReady) {
+        throw paymentsError ?? new Error("RevenueCat identity is not ready for purchases");
+      }
       setState((prev) => ({ ...prev, isPurchasing: true, error: null }));
 
       try {
@@ -382,12 +390,17 @@ export function useNativePayments() {
       deriveEntitlementState,
       isAuthPending,
       isAuthenticated,
+      isPaymentsReady,
+      paymentsError,
       refetchBillingStatus,
       startLocalEntitlementSyncWindow,
     ],
   );
 
   const restore = useCallback(async () => {
+    if (!isPaymentsReady) {
+      throw paymentsError ?? new Error("RevenueCat identity is not ready for restores");
+    }
     setState((prev) => ({ ...prev, isPurchasing: true, error: null }));
 
     try {
@@ -420,6 +433,8 @@ export function useNativePayments() {
     deriveEntitlementState,
     isAuthPending,
     isAuthenticated,
+    isPaymentsReady,
+    paymentsError,
     refetchBillingStatus,
     startLocalEntitlementSyncWindow,
   ]);
@@ -529,7 +544,7 @@ export function useNativePayments() {
   }, [isAuthenticated, localEntitlementSyncExpiresAt, refetchBillingStatus]);
 
   return {
-    isAvailable: config.isAvailable,
+    isAvailable: config.isAvailable && isPaymentsReady,
     offerings: state.offerings,
     // For signed-in users, keep the hook loading until the first server billing
     // fetch finishes, otherwise the UI may briefly render downgraded access.
@@ -538,6 +553,7 @@ export function useNativePayments() {
     currentEntitlement: resolvedEntitlementState.currentEntitlement,
     activePrice: resolvedEntitlementState.activePrice,
     isMembershipSyncing,
+    paymentsError,
     purchase,
     restore,
   };

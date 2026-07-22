@@ -1,4 +1,5 @@
 import { AntDesign } from "@expo/vector-icons";
+import { Button } from "heroui-native";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
@@ -20,7 +21,7 @@ export function SubscribedBanner() {
   );
 }
 
-export function UnavailableBanner() {
+export function UnavailableBanner({ onRetry }: { onRetry?: () => void }) {
   const { t } = useTranslation();
 
   return (
@@ -32,6 +33,11 @@ export function UnavailableBanner() {
       <Text className="mt-2 text-sm leading-5 text-muted">
         {t("premium.banner.unavailableDescription")}
       </Text>
+      {onRetry ? (
+        <Button className="mt-3 h-10 self-start" variant="secondary" onPress={onRetry}>
+          <Button.Label className="font-bold">{t("common.retry")}</Button.Label>
+        </Button>
+      ) : null}
     </Animated.View>
   );
 }

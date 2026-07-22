@@ -21,6 +21,7 @@ import { useNativePayments } from "@/hooks/use-native-payments";
 import { toStringArray } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useTabBarVisibility } from "@/providers/tab-bar-provider";
+import { useAuth } from "@/providers/auth-provider";
 
 type PurchasePhase = "confirming" | "processing" | "syncing" | null;
 
@@ -47,6 +48,7 @@ export default function PremiumScreen() {
   const { t } = useTranslation();
   const { toastSuccess, toastError } = useToast();
   const payments = useNativePayments();
+  const { paymentsError, retryPaymentsSync } = useAuth();
   const [selectedPlanKey, setSelectedPlanKey] = useState<string | null>(null);
   const [purchasePhase, setPurchasePhase] = useState<PurchasePhase>(null);
   const [backgroundColor] = useThemeColor(["background"]);
@@ -250,7 +252,11 @@ export default function PremiumScreen() {
               <Text className="mt-1 text-base leading-6 text-muted">{t("premium.subtitle")}</Text>
             </Animated.View>
 
-            {!hasEntitlement && !canPurchase ? <UnavailableBanner /> : null}
+            {!hasEntitlement && !canPurchase ? (
+              <UnavailableBanner
+                onRetry={paymentsError ? () => void retryPaymentsSync() : undefined}
+              />
+            ) : null}
 
             {hasEntitlement ? <MembershipStatusBanner label={currentMembershipLabel} /> : null}
 
