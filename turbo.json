@@ -25,6 +25,9 @@
     "check-types": {
       "dependsOn": ["^check-types"]
     },
+    "test": {
+      "dependsOn": ["^test"]
+    },
     "web#check-types": {
       "dependsOn": ["server#check-types"]
     },
