@@ -51,27 +51,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const [paymentsError, setPaymentsError] = useState<Error | null>(null);
 
-  const syncPaymentsIdentity = useCallback(async (nextUserId: string | null) => {
-    const attempt = ++syncAttemptRef.current;
-    lastSyncedUserIdRef.current = nextUserId;
-    setIsPaymentsReady(false);
-    setPaymentsError(null);
-    await queryClient.cancelQueries();
-    queryClient.clear();
-
-    try {
-      await nativePayments.syncAppUser(nextUserId);
-      if (attempt !== syncAttemptRef.current) return;
-      setIsPaymentsReady(true);
-    } catch (cause) {
-      if (attempt !== syncAttemptRef.current) return;
-      const error = nativePayments.toError(cause);
-      console.warn("[native payments] Failed to sync app user", error);
-      lastSyncedUserIdRef.current = undefined;
-      setPaymentsError(error);
+  const syncPaymentsIdentity = useCallback(
+    async (nextUserId: string | null) => {
+      const attempt = ++syncAttemptRef.current;
+      lastSyncedUserIdRef.current = nextUserId;
       setIsPaymentsReady(false);
-    }
-  }, [queryClient]);
+      setPaymentsError(null);
+      await queryClient.cancelQueries();
+      queryClient.clear();
+
+      try {
+        await nativePayments.syncAppUser(nextUserId);
+        if (attempt !== syncAttemptRef.current) return;
+        setIsPaymentsReady(true);
+      } catch (cause) {
+        if (attempt !== syncAttemptRef.current) return;
+        const error = nativePayments.toError(cause);
+        console.warn("[native payments] Failed to sync app user", error);
+        lastSyncedUserIdRef.current = undefined;
+        setPaymentsError(error);
+        setIsPaymentsReady(false);
+      }
+    },
+    [queryClient],
+  );
 
   useEffect(() => {
     if (!hasInitialized || nativePayments.getConfig().availability !== "available") {

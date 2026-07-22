@@ -9,7 +9,7 @@ import {
   revokeCreditPurchase,
 } from "@/credits";
 import type { Database } from "@/db";
-import { billingCustomer } from "@/db/schema/payments";
+import { billingCustomer, billingPurchase, billingSubscription } from "@/db/schema/payments";
 import {
   findNativePriceByProviderPriceId,
   nativePaymentsConfig,
@@ -22,16 +22,11 @@ import { reconcileActivatedPriceWithExistingSubscriptions } from "../../shared/a
 import type { RevenueCatWebhookEnvelope, RevenueCatWebhookEvent } from "../types";
 import { shouldIgnoreRevenueCatEvent } from "./event-filter";
 import { shouldSyncRevenueCatBillingState } from "./state-sync";
-
-function isAnonymousRevenueCatUserId(value: string | null | undefined) {
-  return !value || value.startsWith("$RCAnonymousID:");
-}
-
-function resolveRevenueCatUserId(event: RevenueCatWebhookEvent) {
-  const candidates = [event.app_user_id, event.original_app_user_id, ...(event.aliases ?? [])];
-
-  return candidates.find((candidate) => !isAnonymousRevenueCatUserId(candidate)) ?? null;
-}
+import {
+  markRevenueCatIdentitiesTransferred,
+  recordRevenueCatIdentities,
+  resolveKnownRevenueCatUserId,
+} from "./identity";
 
 function resolveRevenueCatSubscriptionStatus(event: RevenueCatWebhookEvent) {
   const expirationAt =
@@ -188,7 +183,57 @@ export async function handleRevenueCatEvent(db: Database, payload: unknown) {
     return;
   }
 
-  const userId = resolveRevenueCatUserId(event);
+  if (event.type === "TRANSFER") {
+    const fromAppUserIds = event.transferred_from ?? [];
+    const toAppUserIds = event.transferred_to ?? [];
+    const [fromUserId, toUserId] = await Promise.all([
+      resolveKnownRevenueCatUserId(db, fromAppUserIds),
+      resolveKnownRevenueCatUserId(db, toAppUserIds),
+    ]);
+
+    if (!fromUserId || !toUserId || fromUserId === toUserId) {
+      console.error("RevenueCat transfer has ambiguous or unknown account identities", {
+        eventId: event.id,
+        fromAppUserIds,
+        toAppUserIds,
+      });
+      return;
+    }
+
+    await db.batch([
+      db
+        .update(billingSubscription)
+        .set({ userId: toUserId, updatedAt: new Date() })
+        .where(
+          and(
+            eq(billingSubscription.provider, "revenuecat"),
+            eq(billingSubscription.userId, fromUserId),
+          ),
+        ),
+      db
+        .update(billingPurchase)
+        .set({ userId: toUserId, updatedAt: new Date() })
+        .where(
+          and(eq(billingPurchase.provider, "revenuecat"), eq(billingPurchase.userId, fromUserId)),
+        ),
+    ]);
+    await Promise.all([
+      markRevenueCatIdentitiesTransferred(db, {
+        appUserIds: fromAppUserIds,
+        transferEventId: event.id,
+        userId: fromUserId,
+      }),
+      recordRevenueCatIdentities(db, { appUserIds: toAppUserIds, userId: toUserId }),
+    ]);
+    return;
+  }
+
+  const identityCandidates = [
+    event.app_user_id,
+    event.original_app_user_id,
+    ...(event.aliases ?? []),
+  ];
+  const userId = await resolveKnownRevenueCatUserId(db, identityCandidates);
   if (!userId) {
     console.error("RevenueCat webhook missing non-anonymous app user id", {
       eventId: event.id,
@@ -203,9 +248,16 @@ export async function handleRevenueCatEvent(db: Database, payload: unknown) {
     return;
   }
 
+  await recordRevenueCatIdentities(db, { appUserIds: identityCandidates, userId });
+
   // RevenueCat documents PRODUCT_CHANGE as informational only.
   // The active entitlement changes when the follow-up INITIAL_PURCHASE / RENEWAL arrives.
   if (!shouldSyncRevenueCatBillingState(event)) {
+    return;
+  }
+
+  if (!event.product_id) {
+    console.error("RevenueCat webhook missing product id", { eventId: event.id, type: event.type });
     return;
   }
 

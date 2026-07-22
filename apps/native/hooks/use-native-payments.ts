@@ -183,12 +183,7 @@ function hasServerCaughtUpToLocalEntitlement(
 /** Exposes native purchase state by reconciling local RevenueCat data with the server billing record. */
 export function useNativePayments() {
   const config = nativePayments.getConfig();
-  const {
-    isAuthenticated,
-    isPaymentsReady,
-    isPending: isAuthPending,
-    paymentsError,
-  } = useAuth();
+  const { isAuthenticated, isPaymentsReady, isPending: isAuthPending, paymentsError } = useAuth();
   // When a purchase or restore succeeds locally, keep a short window where the
   // hook can prefer device entitlement data while the server catches up.
   const [localEntitlementSyncExpiresAt, setLocalEntitlementSyncExpiresAt] = useState<number | null>(

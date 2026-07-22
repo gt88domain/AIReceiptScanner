@@ -1,6 +1,25 @@
 import { SUPPORTED_SERVER_PAYMENT_PROVIDERS } from "@repo/app-config";
 import { SUBSCRIPTION_STATUSES } from "@repo/app-config/payments/web";
 import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { user } from "./auth";
+
+/** Maps RevenueCat App User IDs and aliases to one internal account. */
+export const revenueCatIdentity = sqliteTable(
+  "revenuecat_identity",
+  {
+    providerAppUserId: text("provider_app_user_id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    status: text("status", { enum: ["active", "transferred"] })
+      .notNull()
+      .default("active"),
+    transferEventId: text("transfer_event_id"),
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+  },
+  (table) => [index("revenuecat_identity_user_status_idx").on(table.userId, table.status)],
+);
 
 /**
  * Billing customers table - maps internal users to payment provider customers
