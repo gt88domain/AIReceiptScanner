@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { CheckCircleIcon, Loader2Icon, RefreshCwIcon } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -6,8 +5,8 @@ import { z } from "zod";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useBillingStatusQuery } from "@/hooks/use-payments";
 import { useTranslations } from "@/i18n";
-import { orpc } from "@/utils/orpc";
 
 const searchSchema = z.object({
   planId: z.string().optional(),
@@ -25,12 +24,7 @@ function RouteComponent() {
   const search = Route.useSearch();
   const [isPolling, setIsPolling] = useState(true);
 
-  const statusQuery = useQuery(
-    orpc.payments.getBillingStatus.queryOptions({
-      staleTime: 0,
-      refetchOnWindowFocus: true,
-    }),
-  );
+  const statusQuery = useBillingStatusQuery();
   const hasExpectedCheckoutTarget = Boolean(search.planId && search.priceId);
   const isCheckoutSynced = hasExpectedCheckoutTarget
     ? statusQuery.data?.activePlan?.id === search.planId &&

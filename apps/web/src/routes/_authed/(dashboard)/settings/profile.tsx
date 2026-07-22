@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useTranslations } from "@/i18n";
 import { authClient } from "@/lib/auth/auth-client";
-import { client, orpc } from "@/utils/orpc";
+import { useOrpc } from "@/hooks/use-orpc";
 import { getVisibleUserEmail, isPhoneUser } from "@repo/shared";
 
 export const Route = createFileRoute("/_authed/(dashboard)/settings/profile")({
@@ -29,6 +29,7 @@ export const Route = createFileRoute("/_authed/(dashboard)/settings/profile")({
 });
 
 function RouteComponent() {
+  const orpc = useOrpc();
   const t = useTranslations("dashboard.settings.profile");
   const { user } = Route.useRouteContext();
   const router = useRouter();
@@ -59,7 +60,7 @@ function RouteComponent() {
 
     setIsUploading(true);
     try {
-      const { url } = await client.storage.upload({ file, purpose: "avatar" });
+      const { url } = await orpc.storage.upload.call({ file, purpose: "avatar" });
       await updateProfile.mutateAsync({ image: url });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("avatarUploadError"));

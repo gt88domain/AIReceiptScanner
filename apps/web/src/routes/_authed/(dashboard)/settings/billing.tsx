@@ -13,13 +13,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { getBillingUrls } from "@/configs/web-config";
 import { useBillingStatusQuery, usePaymentPlansQuery } from "@/hooks/use-payments";
+import { useOrpc } from "@/hooks/use-orpc";
 import { useTranslations } from "@/i18n";
 import { resolveCheckoutPolicyDecision } from "@repo/app-config/membership";
 import { createCheckoutSuccessUrl } from "@/lib/payments/checkout-redirect-url";
 import { resolveBillingErrorMessage } from "@/lib/payments/error-message";
 import { findPriceProvider } from "@/lib/payments/find-price-provider";
 import { openProviderCheckoutUrl } from "@/lib/payments/open-checkout-url";
-import { orpc } from "@/utils/orpc";
 
 /** Props accepted by the shared pricing matrix component. */
 type PricingMatrixProps = ComponentProps<typeof PricingMatrix>;
@@ -37,6 +37,7 @@ export const Route = createFileRoute("/_authed/(dashboard)/settings/billing")({
 
 /** Billing settings page for subscriptions and membership plans. */
 function RouteComponent() {
+  const orpc = useOrpc();
   const t = useTranslations("dashboard.billing");
   const tPricing = useTranslations("landingPage.pricing");
   const plansQuery = usePaymentPlansQuery();

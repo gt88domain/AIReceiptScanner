@@ -8,11 +8,11 @@ import { NavigationProgress } from "@/components/layout/navigation-progress";
 import { webConfig } from "@/configs/web-config";
 import { getCurrentLocale } from "@/i18n";
 import { getGoogleAnalyticsScripts } from "@/lib/analytics/google-analytics";
-import type { orpc } from "@/utils/orpc";
+import type { OrpcUtils } from "@/utils/orpc";
 import appCss from "../styles/index.css?url";
 
 export interface RouterAppContext {
-  orpc: typeof orpc;
+  orpc: OrpcUtils;
   queryClient: QueryClient;
 }
 

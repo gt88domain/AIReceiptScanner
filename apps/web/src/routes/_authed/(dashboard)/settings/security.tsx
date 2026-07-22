@@ -10,11 +10,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { getAuthUrls } from "@/configs/web-config";
 import { useUserAuthStatus } from "@/hooks/use-user-auth-status";
+import { useOrpc } from "@/hooks/use-orpc";
 import { useTranslations } from "@/i18n";
 import { authClient } from "@/lib/auth/auth-client";
 import { getVisibleUserEmail, isPhoneUser } from "@repo/shared";
 import { formatProviderNames } from "@/utils/auth";
-import { orpc } from "@/utils/orpc";
 
 export const Route = createFileRoute("/_authed/(dashboard)/settings/security")({
   component: RouteComponent,
@@ -23,7 +23,11 @@ export const Route = createFileRoute("/_authed/(dashboard)/settings/security")({
 function RouteComponent() {
   const t = useTranslations("dashboard.security");
   const { user } = Route.useRouteContext();
-  const passwordStatus = useQuery(orpc.users.getPasswordStatus.queryOptions());
+  const orpc = useOrpc();
+  const passwordStatus = useQuery({
+    ...orpc.users.getPasswordStatus.queryOptions(),
+    queryKey: ["users", "password-status", user.id],
+  });
   const [isSending, setIsSending] = useState(false);
 
   // Use custom hook to manage auth status logic

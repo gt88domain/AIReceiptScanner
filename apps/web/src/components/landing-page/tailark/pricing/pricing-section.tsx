@@ -3,6 +3,7 @@ import type { ComponentProps } from "react";
 import { toast } from "sonner";
 import { getBillingUrls } from "@/configs/web-config";
 import { useBillingStatusQuery, usePaymentPlansQuery } from "@/hooks/use-payments";
+import { useOrpc } from "@/hooks/use-orpc";
 import { useTranslations } from "@/i18n";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { authClient } from "@/lib/auth/auth-client";
@@ -11,7 +12,6 @@ import { createCheckoutSuccessUrl } from "@/lib/payments/checkout-redirect-url";
 import { resolveBillingErrorMessage } from "@/lib/payments/error-message";
 import { findPriceProvider } from "@/lib/payments/find-price-provider";
 import { openProviderCheckoutUrl } from "@/lib/payments/open-checkout-url";
-import { orpc } from "@/utils/orpc";
 import { Section, SectionHeader } from "../section/section";
 import { PricingMatrix } from "./pricing-matrix";
 import { PricingSkeletonGrid } from "./pricing-skeleton-grid";
@@ -26,6 +26,7 @@ interface PricingSectionProps {
 }
 
 export function PricingSection({ title, subtitle }: PricingSectionProps) {
+  const orpc = useOrpc();
   const t = useTranslations("landingPage.pricing");
   const tBilling = useTranslations("dashboard.billing");
   const plansQuery = usePaymentPlansQuery();

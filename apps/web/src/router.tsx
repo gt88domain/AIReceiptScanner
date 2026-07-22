@@ -4,18 +4,21 @@ import { FullScreenLoading } from "@/components/feedback/full-screen-loading";
 import { deLocalizeUrl, localizeUrl } from "./i18n/client";
 import { Providers } from "./providers/providers.js";
 import { routeTree } from "./routeTree.gen";
-import { orpc, queryClient } from "./utils/orpc";
+import { getWebRequestContext } from "./utils/orpc";
 
 export const getRouter = () => {
+  const context = getWebRequestContext();
   const router = createTanStackRouter({
     routeTree,
     scrollRestoration: true,
     defaultPreload: "intent",
     defaultPreloadStaleTime: 0,
-    context: { orpc, queryClient },
+    context,
     defaultPendingComponent: () => <FullScreenLoading />,
     defaultErrorComponent: DefaultCatchBoundary,
-    InnerWrap: ({ children }) => <Providers>{children}</Providers>,
+    InnerWrap: ({ children }) => (
+      <Providers queryClient={context.queryClient}>{children}</Providers>
+    ),
     rewrite: {
       // Remove locale prefix before routing (e.g., /zh/about -> /about)
       input: ({ url }) => deLocalizeUrl(url),

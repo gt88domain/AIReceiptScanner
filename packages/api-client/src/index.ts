@@ -49,7 +49,16 @@ export function createRpcLink(options: ApiClientOptions): RPCLink<ApiClientConte
 		const serviceBindingBaseUrl = `${normalizeBaseUrl(baseUrl)}/rpc`;
 
 		const serviceFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-			const request = new Request(input, init);
+			const requestHeaders = new Headers(init?.headers);
+			const resolvedHeaders = await headers?.();
+			if (resolvedHeaders) {
+				for (const [key, value] of resolvedHeaders.entries()) {
+					if (!requestHeaders.has(key)) {
+						requestHeaders.set(key, value);
+					}
+				}
+			}
+			const request = new Request(input, { ...init, headers: requestHeaders });
 			return serviceBinding.fetch(request);
 		};
 

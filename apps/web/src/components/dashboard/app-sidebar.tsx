@@ -11,16 +11,17 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import type { CurrentUser } from "@/lib/auth/auth-server";
+import { useOrpc } from "@/hooks/use-orpc";
 import { sidebarData } from "../../configs/data/sidebar-data";
-import { client } from "@/utils/orpc";
 import { NavGroup } from "./nav-group";
 import { NavUser } from "./nav-user";
 
 export function AppSidebar({ user }: { user: CurrentUser }) {
   const { collapsible, variant } = useLayout();
+  const orpc = useOrpc();
   const adminAccess = useQuery({
-    queryKey: ["admin", "access"],
-    queryFn: () => client.admin.getAccess(),
+    ...orpc.admin.getAccess.queryOptions(),
+    queryKey: ["admin", "access", user.id],
   });
   const navGroups = adminAccess.data?.isAdmin
     ? [

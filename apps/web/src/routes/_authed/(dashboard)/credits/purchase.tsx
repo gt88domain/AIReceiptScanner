@@ -13,8 +13,8 @@ import {
   useCreditOrdersQuery,
   useCreditPackagesQuery,
 } from "@/hooks/use-credits";
+import { useOrpc } from "@/hooks/use-orpc";
 import { useTranslations } from "@/i18n";
-import { orpc } from "@/utils/orpc";
 
 const PENDING_CREDIT_ORDER_STORAGE_KEY = "credits.pendingOrderId";
 
@@ -30,6 +30,7 @@ function getCreditReturnUrl() {
 }
 
 function RouteComponent() {
+  const orpc = useOrpc();
   const t = useTranslations("dashboard.credits");
   const tRoot = useTranslations();
   const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);

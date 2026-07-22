@@ -3,6 +3,8 @@ import { CreditCard, Users, Webhook } from "lucide-react";
 import { AdminUsersTableContainer } from "@/components/dashboard/users";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useOrpc } from "@/hooks/use-orpc";
+import { authClient } from "@/lib/auth/auth-client";
 import {
   Table,
   TableBody,
@@ -11,7 +13,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { client } from "@/utils/orpc";
 
 const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
   dateStyle: "medium",
@@ -23,9 +24,12 @@ function formatDate(value: Date | null) {
 }
 
 export function AdminDashboard() {
+  const orpc = useOrpc();
+  const { data: session } = authClient.useSession();
   const overview = useQuery({
-    queryKey: ["admin", "overview"],
-    queryFn: () => client.admin.overview(),
+    ...orpc.admin.overview.queryOptions(),
+    queryKey: ["admin", "overview", session?.user.id],
+    enabled: Boolean(session?.user.id),
   });
 
   if (overview.isPending || !overview.data) {
