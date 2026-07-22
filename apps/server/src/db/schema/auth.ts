@@ -1,4 +1,4 @@
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const user = sqliteTable("user", {
   id: text("id").primaryKey(),
@@ -58,3 +58,15 @@ export const verification = sqliteTable("verification", {
   createdAt: integer("created_at", { mode: "timestamp" }),
   updatedAt: integer("updated_at", { mode: "timestamp" }),
 });
+
+/** Shared Better Auth rate-limit state. Required for multi-isolate Worker deployments. */
+export const rateLimit = sqliteTable(
+  "rateLimit",
+  {
+    id: text("id").primaryKey(),
+    key: text("key").notNull(),
+    count: integer("count").notNull(),
+    lastRequest: integer("lastRequest").notNull(),
+  },
+  (table) => [uniqueIndex("rate_limit_key_idx").on(table.key)],
+);

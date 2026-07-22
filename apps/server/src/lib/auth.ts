@@ -175,6 +175,9 @@ export function createAuth(d1: D1Database) {
     },
     rateLimit: {
       enabled: true,
+      // Database storage makes Better Auth's atomic consume step shared across Workers isolates.
+      // Better Auth keeps stricter built-in rules for sign-in, reset, and verification endpoints.
+      storage: "database",
       window: 60,
       max: 30,
     },

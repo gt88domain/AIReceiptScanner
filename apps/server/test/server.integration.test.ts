@@ -69,6 +69,21 @@ describe("server Worker", () => {
     });
   });
 
+  it("enforces Better Auth's shared sign-in limit", async () => {
+    const ip = `198.51.100.${crypto.getRandomValues(new Uint8Array(1))[0] ?? 1}`;
+    const response = () =>
+      exports.default.fetch("https://server.test/api/auth/sign-in/email", {
+        body: JSON.stringify({ email: "rate-limit@example.test", password: "wrong-password" }),
+        headers: { "CF-Connecting-IP": ip, "Content-Type": "application/json" },
+        method: "POST",
+      });
+
+    expect((await response()).status).toBe(401);
+    expect((await response()).status).toBe(401);
+    expect((await response()).status).toBe(401);
+    expect((await response()).status).toBe(429);
+  });
+
   it("does not expose the admin user directory to an ordinary user", async () => {
     const signedInClient = await signUp("ordinary-user@example.test");
 
