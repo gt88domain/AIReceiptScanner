@@ -18,8 +18,8 @@
     "fmt:check": "oxfmt --check"
   },
   "dependencies": {
-    "@orpc/client": "^1.14.8",
-    "@orpc/tanstack-query": "^1.14.8",
+    "@orpc/client": "catalog:",
+    "@orpc/tanstack-query": "catalog:",
     "@tanstack/react-query": "^5.101.4"
   },
   "devDependencies": {

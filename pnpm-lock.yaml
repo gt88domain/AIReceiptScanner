@@ -6,6 +6,21 @@ settings:
 
 catalogs:
   default:
+    '@orpc/client':
+      specifier: 1.14.8
+      version: 1.14.8
+    '@orpc/openapi':
+      specifier: 1.14.8
+      version: 1.14.8
+    '@orpc/server':
+      specifier: 1.14.8
+      version: 1.14.8
+    '@orpc/tanstack-query':
+      specifier: 1.14.8
+      version: 1.14.8
+    '@orpc/zod':
+      specifier: 1.14.8
+      version: 1.14.8
     '@types/react':
       specifier: 19.2.0
       version: 19.2.0
@@ -93,10 +108,10 @@ importers:
         specifier: ^1.4.1
         version: 1.4.1(expo-application@56.0.3(expo@56.0.16))(expo-constants@56.0.21)(react-native@0.85.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.2.3))
       '@orpc/client':
-        specifier: ^1.14.8
+        specifier: 'catalog:'
         version: 1.14.8
       '@orpc/tanstack-query':
-        specifier: ^1.14.8
+        specifier: 'catalog:'
         version: 1.14.8(@orpc/client@1.14.8)(@tanstack/query-core@5.101.4)
       '@react-native-async-storage/async-storage':
         specifier: ^2.2.0
@@ -271,16 +286,16 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0
       '@orpc/client':
-        specifier: ^1.14.8
+        specifier: 'catalog:'
         version: 1.14.8
       '@orpc/openapi':
-        specifier: ^1.14.8
+        specifier: 'catalog:'
         version: 1.14.8(ws@8.21.1)
       '@orpc/server':
-        specifier: ^1.14.8
+        specifier: 'catalog:'
         version: 1.14.8(ws@8.21.1)
       '@orpc/zod':
-        specifier: ^1.14.8
+        specifier: 'catalog:'
         version: 1.14.8(@orpc/contract@1.14.8)(@orpc/server@1.14.8(ws@8.21.1))(ws@8.21.1)(zod@4.4.3)
       '@react-email/components':
         specifier: ^1.0.12
@@ -389,10 +404,10 @@ importers:
         specifier: ^3.1.18
         version: 3.1.18
       '@orpc/client':
-        specifier: ^1.14.8
+        specifier: 'catalog:'
         version: 1.14.8
       '@orpc/tanstack-query':
-        specifier: ^1.14.8
+        specifier: 'catalog:'
         version: 1.14.8(@orpc/client@1.14.8)(@tanstack/query-core@5.101.4)
       '@radix-ui/react-accordion':
         specifier: ^1.2.17
@@ -675,10 +690,10 @@ importers:
   packages/api-client:
     dependencies:
       '@orpc/client':
-        specifier: ^1.14.8
+        specifier: 'catalog:'
         version: 1.14.8
       '@orpc/tanstack-query':
-        specifier: ^1.14.8
+        specifier: 'catalog:'
         version: 1.14.8(@orpc/client@1.14.8)(@tanstack/query-core@5.101.4)
       '@tanstack/react-query':
         specifier: ^5.101.4

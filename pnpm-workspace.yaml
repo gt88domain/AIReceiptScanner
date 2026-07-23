@@ -30,6 +30,11 @@ allowBuilds:
   unrs-resolver: false
 
 catalog:
+  "@orpc/client": 1.14.8
+  "@orpc/openapi": 1.14.8
+  "@orpc/server": 1.14.8
+  "@orpc/tanstack-query": 1.14.8
+  "@orpc/zod": 1.14.8
   "@types/react": 19.2.0
   "@types/react-dom": 19.2.0
   "@vitejs/plugin-react": 5.0.1
