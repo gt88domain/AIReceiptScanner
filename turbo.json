@@ -31,6 +31,9 @@
     "web#check-types": {
       "dependsOn": ["server#check-types"]
     },
+    "native#check-types": {
+      "dependsOn": ["server#check-types"]
+    },
     "test:integration": {
       "cache": false
     },
