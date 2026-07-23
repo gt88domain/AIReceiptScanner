@@ -25,6 +25,23 @@ export type ProductFeatures = {
   };
 };
 
+/** Test-friendly capability inputs with no provider or environment information. */
+export type ProductFeatureInput = {
+  admin?: boolean;
+  jobs?: boolean;
+  storage?: boolean;
+  web: {
+    billing: boolean;
+    credits: boolean;
+    creditPurchases: boolean;
+  };
+  native: {
+    billing: boolean;
+    credits: boolean;
+    creditPurchases: boolean;
+  };
+};
+
 function isCreditPurchasesEnabled(config: {
   enabled?: boolean;
   purchasesEnabled?: boolean;
@@ -33,7 +50,21 @@ function isCreditPurchasesEnabled(config: {
   return config.enabled === true && (config.purchasesEnabled ?? config.packages.length > 0);
 }
 
-/** Resolves one public, provider-secret-free capability contract for every runtime. */
+/** Creates a public, provider-secret-free contract for production or feature-matrix tests. */
+export function createProductFeatures(input: ProductFeatureInput): ProductFeatures {
+  return {
+    auth: true,
+    admin: input.admin ?? true,
+    billing: input.web.billing || input.native.billing,
+    credits: input.web.credits || input.native.credits,
+    storage: input.storage ?? false,
+    jobs: input.jobs ?? true,
+    web: input.web,
+    native: input.native,
+  };
+}
+
+/** Resolves the production contract from app configuration. */
 export function resolveProductFeatures(): ProductFeatures {
   const commonConfig = resolveCommonConfig();
   const webConfig = resolveWebCommonConfig();
@@ -43,11 +74,8 @@ export function resolveProductFeatures(): ProductFeatures {
   const webCredits = webConfig.credits.enabled === true;
   const nativeCredits = nativeConfig.credits.enabled === true;
 
-  return {
-    auth: true,
+  return createProductFeatures({
     admin: commonConfig.features.admin ?? true,
-    billing: webBilling || nativeBilling,
-    credits: webCredits || nativeCredits,
     storage: commonConfig.storage.enabled === true,
     jobs: commonConfig.features.jobs ?? true,
     web: {
@@ -60,11 +88,19 @@ export function resolveProductFeatures(): ProductFeatures {
       credits: nativeCredits,
       creditPurchases: isCreditPurchasesEnabled(nativeConfig.credits),
     },
-  };
+  });
 }
 
 /** Rejects only impossible module combinations before a server starts handling work. */
 export function validateFeatureDependencies(features = resolveProductFeatures()) {
+  if (features.web.creditPurchases && !features.web.credits) {
+    throw new Error("[features] Web credit purchases require web credits.");
+  }
+
+  if (features.native.creditPurchases && !features.native.credits) {
+    throw new Error("[features] Native credit purchases require native credits.");
+  }
+
   if (features.web.creditPurchases && !features.web.billing) {
     throw new Error("[features] Web credit purchases require web billing.");
   }
