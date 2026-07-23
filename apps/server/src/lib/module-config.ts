@@ -74,24 +74,25 @@ function validateNativeBillingEnvironment(env: ServerRuntimeEnv, missing: string
  */
 export function validateServerModuleEnvironment(
   env: ServerRuntimeEnv,
-  options: { requireStorageBinding?: boolean } = {},
+  options: { features?: ProductFeatures; requireStorageBinding?: boolean } = {},
 ): ProductFeatures {
+  const features = options.features ?? productFeatures;
   const missing: string[] = [];
   requireValue(env, "BETTER_AUTH_SECRET", missing);
 
-  if (productFeatures.admin) {
+  if (features.admin) {
     requireValue(env, "ADMIN_EMAILS", missing);
   }
 
-  if (productFeatures.web.billing) {
+  if (features.web.billing) {
     validateWebBillingEnvironment(env, missing);
   }
 
-  if (productFeatures.native.billing) {
+  if (features.native.billing) {
     validateNativeBillingEnvironment(env, missing);
   }
 
-  if (productFeatures.storage && options.requireStorageBinding && !env.STORAGE) {
+  if (features.storage && options.requireStorageBinding && !env.STORAGE) {
     missing.push("STORAGE binding");
   }
 
@@ -99,5 +100,5 @@ export function validateServerModuleEnvironment(
     throw new Error(`[config] Missing required values for enabled modules: ${missing.join(", ")}`);
   }
 
-  return productFeatures;
+  return features;
 }

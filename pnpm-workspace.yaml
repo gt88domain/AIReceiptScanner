@@ -16,7 +16,7 @@ overrides:
   esbuild@0.18.20: 0.28.1
   esbuild@0.27.4: 0.28.1
   picomatch@2.3.1: 2.3.2
-  postcss@8.4.31: 8.5.10
+  postcss@8.4.31: 8.5.12
   sharp@0.34.5: 0.35.0
   uuid@7.0.3: 11.1.1
   esm-env: "npm:esm-env-runtime@^0.1.1"

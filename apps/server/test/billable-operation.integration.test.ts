@@ -8,6 +8,7 @@ import {
   grantCredits,
 } from "@/credits";
 import { createDb } from "@/db";
+import { productFeatures } from "@/lib/module-config";
 import { describe, expect, it } from "vitest";
 
 const db = createDb(env.DB);
@@ -37,7 +38,7 @@ async function fund(user: { userId: string }) {
   });
 }
 
-describe("billable operations", () => {
+describe.skipIf(!productFeatures.credits)("billable operations", () => {
   it("does not expose generic credit consumption through the server facade", () => {
     expect(createCreditsService(db)).not.toHaveProperty("consumeCredits");
   });

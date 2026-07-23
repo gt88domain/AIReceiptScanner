@@ -8,6 +8,7 @@ import {
 } from "@/credits";
 import { createDb } from "@/db";
 import { creditOrder } from "@/db/schema/credits";
+import { productFeatures } from "@/lib/module-config";
 
 const db = createDb(env.DB);
 
@@ -57,7 +58,7 @@ async function createCompletedOrder(user: { userId: string }, suffix: string) {
   return { orderId, paymentId };
 }
 
-describe("credit payment disputes", () => {
+describe.skipIf(!productFeatures.credits)("credit payment disputes", () => {
   it("holds a lost chargeback account and records debt even after credits were consumed", async () => {
     const user = await createUser();
     const { paymentId } = await createCompletedOrder(user, crypto.randomUUID());
