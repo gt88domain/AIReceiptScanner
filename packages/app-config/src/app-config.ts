@@ -424,7 +424,7 @@ const appConfig: AppConfig = {
                 provider: "revenuecat",
                 providerPriceId: "tanstack_template_native_299_lifetime",
                 currency: "usd",
-                amountCents: 200000,
+                amountCents: 299,
                 priceType: "lifetime",
                 status: "active",
               },
