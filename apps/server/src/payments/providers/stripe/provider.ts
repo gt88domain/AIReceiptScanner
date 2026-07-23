@@ -7,6 +7,7 @@ import type {
   PaymentProvider,
   WebhookInput,
 } from "../../public/types";
+import { findStripeSubscriptionItemByPrice } from "./subscription-item";
 
 /**
  * Reads Stripe webhook secret from runtime environment.
@@ -134,15 +135,15 @@ export function createStripePaymentProvider(): PaymentProvider {
      */
     async updateSubscriptionPlan(input) {
       const subscription = await stripe.subscriptions.retrieve(input.subscriptionId);
-      const subscriptionItemId = subscription.items.data.at(0)?.id;
-      if (!subscriptionItemId) {
-        throw new Error("Stripe subscription item not found");
-      }
+      const subscriptionItem = findStripeSubscriptionItemByPrice(
+        subscription,
+        input.currentPriceId,
+      );
 
       await stripe.subscriptions.update(input.subscriptionId, {
         items: [
           {
-            id: subscriptionItemId,
+            id: subscriptionItem.id,
             price: input.targetPriceId,
           },
         ],

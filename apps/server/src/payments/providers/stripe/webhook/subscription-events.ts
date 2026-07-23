@@ -1,6 +1,5 @@
 import type Stripe from "stripe";
 import type { Database } from "@/db";
-import { findPriceByProviderPriceId } from "../../../domain/plan-catalog";
 import type { DbLike } from "../../../infrastructure/repositories/billing-store";
 import {
   upsertBillingSubscriptionIfNewer,
@@ -8,6 +7,7 @@ import {
 } from "../../../infrastructure/repositories/billing-store";
 import type { BillingUser } from "../../../public/types";
 import { resolveUserFromMetadata } from "./owner-resolver";
+import { findMappedStripeSubscriptionItem } from "../subscription-item";
 
 /**
  * Handles subscription create/update/delete events from Stripe.
@@ -36,19 +36,15 @@ export async function handleStripeSubscription(
     return;
   }
 
-  const priceIdFromStripe = subscription.items.data.at(0)?.price.id;
-  const mappedPrice = priceIdFromStripe
-    ? findPriceByProviderPriceId("stripe", priceIdFromStripe)
-    : undefined;
-
-  const planId = mappedPrice?.planId ?? metadata.planId;
-  const priceId = mappedPrice?.id ?? metadata.priceId;
-
-  if (!planId || !priceId) {
-    console.error("Stripe subscription missing plan or price mapping", {
+  let mappedItem: ReturnType<typeof findMappedStripeSubscriptionItem>;
+  try {
+    mappedItem = findMappedStripeSubscriptionItem(subscription);
+  } catch (error) {
+    console.error("Stripe subscription has an ambiguous plan item", {
       providerSubscriptionId: subscription.id,
-      priceIdFromStripe,
+      itemPriceIds: subscription.items.data.map((item) => item.price.id),
       metadata,
+      error,
     });
     return;
   }
@@ -63,10 +59,11 @@ export async function handleStripeSubscription(
   await upsertSubscriptionFromStripe(db, {
     user,
     subscription,
-    planId,
-    priceId,
+    planId: mappedItem.price.planId,
+    priceId: mappedItem.price.id,
     providerEventAt,
     providerEventId,
+    subscriptionItem: mappedItem.item,
   });
 }
 
@@ -82,10 +79,10 @@ async function upsertSubscriptionFromStripe(
     priceId: string;
     providerEventAt: Date;
     providerEventId: string;
+    subscriptionItem: Stripe.SubscriptionItem;
   },
 ) {
   const status = mapStripeSubscriptionStatus(input.subscription.status);
-  const itemPeriodEnd = input.subscription.items.data.at(0)?.current_period_end;
   const applied = await upsertBillingSubscriptionIfNewer(db, {
     userId: input.user.userId,
     provider: "stripe" as const,
@@ -97,7 +94,10 @@ async function upsertSubscriptionFromStripe(
     planId: input.planId,
     priceId: input.priceId,
     status,
-    currentPeriodEnd: typeof itemPeriodEnd === "number" ? new Date(itemPeriodEnd * 1000) : null,
+    currentPeriodEnd:
+      typeof input.subscriptionItem.current_period_end === "number"
+        ? new Date(input.subscriptionItem.current_period_end * 1000)
+        : null,
     cancelAtPeriodEnd: input.subscription.cancel_at_period_end ?? false,
     startedAt: input.subscription.start_date
       ? new Date(input.subscription.start_date * 1000)

@@ -52,9 +52,18 @@ export async function upgradeSubscription(db: Database, input: UpgradeSubscripti
     .orderBy(desc(billingSubscription.updatedAt))
     .limit(1);
   if (!subscription) throw new Error("Active subscription not found");
+  const currentPrice = findPriceById(subscription.priceId);
+  if (
+    !currentPrice ||
+    currentPrice.provider !== providerKey ||
+    currentPrice.priceType !== "subscription"
+  ) {
+    throw new Error("Current subscription price is not available");
+  }
 
   await provider.updateSubscriptionPlan({
     subscriptionId: subscription.providerSubscriptionId,
+    currentPriceId: currentPrice.providerPriceId,
     targetPriceId: price.providerPriceId,
   });
   await db
