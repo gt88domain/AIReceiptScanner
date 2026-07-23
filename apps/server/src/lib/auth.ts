@@ -70,6 +70,7 @@ export function createAuth(d1: D1Database) {
       schema,
     }),
     account: {
+      encryptOAuthTokens: true,
       accountLinking: {
         enabled: true,
         trustedProviders: ["google", "github"],
@@ -160,6 +161,7 @@ export function createAuth(d1: D1Database) {
         clientId: env.GITHUB_CLIENT_ID || "",
         clientSecret: env.GITHUB_CLIENT_SECRET || "",
         redirectURI: joinUrl(env.SERVER_URL, "/api/auth/callback/github"),
+        scope: ["read:user", "user:email"],
       },
       google: {
         prompt: "select_account",
@@ -167,6 +169,7 @@ export function createAuth(d1: D1Database) {
         clientId: env.GOOGLE_CLIENT_ID || "",
         clientSecret: env.GOOGLE_CLIENT_SECRET || "",
         redirectURI: joinUrl(env.SERVER_URL, "/api/auth/callback/google"),
+        scope: ["openid", "email", "profile"],
       },
       apple: {
         ...getAppleProviderConfig(),
