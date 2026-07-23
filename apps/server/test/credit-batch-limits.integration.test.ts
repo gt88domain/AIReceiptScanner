@@ -3,6 +3,7 @@ import { and, eq, gt } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { beginBillableOperation, expireCredits, grantCredits } from "@/credits";
 import { createDb } from "@/db";
+import { productFeatures } from "@/lib/module-config";
 import { creditTransaction } from "@/db/schema/credits";
 import {
   CREDIT_CONSUMPTION_GRANT_LIMIT,
@@ -43,7 +44,7 @@ async function grantOneCreditPerRow(
   }
 }
 
-describe("credit batch limits", () => {
+describe.skipIf(!productFeatures.credits)("credit batch limits", () => {
   it("rejects fragmented consumption without partially debiting grants", async () => {
     const user = await createUser("credit-fragmented-consume");
     await grantOneCreditPerRow(user, CREDIT_CONSUMPTION_GRANT_LIMIT + 1);

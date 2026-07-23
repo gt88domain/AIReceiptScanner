@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { completeCreditOrderPurchase, getBalance } from "@/credits";
 import { createDb } from "@/db";
 import { creditOrder } from "@/db/schema/credits";
+import { productFeatures } from "@/lib/module-config";
 
 const db = createDb(env.DB);
 
@@ -21,7 +22,7 @@ async function createUser() {
   return { userId: user!.id };
 }
 
-describe("credit order fulfillment", () => {
+describe.skipIf(!productFeatures.credits)("credit order fulfillment", () => {
   it("fulfills the immutable order snapshot and rejects a mismatched payment amount", async () => {
     const user = await createUser();
     const orderId = crypto.randomUUID();

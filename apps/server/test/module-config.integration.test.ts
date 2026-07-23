@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { createProductFeatures } from "@repo/app-config";
 import { productFeatures, validateServerModuleEnvironment } from "@/lib/module-config";
 
 const configuredEnv = {
@@ -10,26 +11,32 @@ const configuredEnv = {
 };
 
 describe("enabled server modules", () => {
-  it("derives billing, credits, and jobs from the shared public contract", () => {
+  it("uses the product's shared public contract", () => {
     expect(productFeatures).toMatchObject({
+      auth: true,
       admin: true,
-      billing: true,
-      credits: true,
-      jobs: true,
-      storage: false,
-      web: { billing: true, creditPurchases: true },
-      native: { billing: true, creditPurchases: true },
     });
   });
 
-  it("requires only the secrets selected by enabled providers", () => {
-    expect(() => validateServerModuleEnvironment(configuredEnv)).not.toThrow();
+  it("can validate an explicit paid feature matrix", () => {
+    const paidFeatures = createProductFeatures({
+      jobs: true,
+      native: { billing: true, credits: true, creditPurchases: true },
+      web: { billing: true, credits: true, creditPurchases: true },
+    });
 
     expect(() =>
-      validateServerModuleEnvironment({
-        ...configuredEnv,
-        REVENUECAT_WEBHOOK_SECRET: "",
-      }),
+      validateServerModuleEnvironment(configuredEnv, { features: paidFeatures }),
+    ).not.toThrow();
+
+    expect(() =>
+      validateServerModuleEnvironment(
+        {
+          ...configuredEnv,
+          REVENUECAT_WEBHOOK_SECRET: "",
+        },
+        { features: paidFeatures },
+      ),
     ).toThrow("REVENUECAT_WEBHOOK_SECRET");
   });
 });
