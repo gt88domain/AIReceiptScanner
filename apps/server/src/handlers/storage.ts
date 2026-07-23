@@ -7,6 +7,7 @@
 
 import type { Context as HonoContext } from "hono";
 import { resolveCommonConfig } from "@repo/app-config/config";
+import { isServerFeatureEnabled } from "../lib/module-config";
 import { getStorageProvider, parseStoragePath } from "../storage";
 
 /**
@@ -24,6 +25,10 @@ import { getStorageProvider, parseStoragePath } from "../storage";
 export async function handleFileServe(
   c: HonoContext<{ Bindings: Cloudflare.Env }>,
 ): Promise<Response> {
+  if (!isServerFeatureEnabled("storage")) {
+    return c.notFound();
+  }
+
   const storagePath = c.req.path.replace("/api/storage/", "");
   const parsedStoragePath = parseStoragePath(storagePath);
   const storageKeyPrefixes = resolveCommonConfig().storage.keyPrefixes;

@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { formatCurrency } from "@repo/shared";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { CoinsIcon, Loader2Icon, ReceiptTextIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -15,10 +15,16 @@ import {
 } from "@/hooks/use-credits";
 import { useOrpc } from "@/hooks/use-orpc";
 import { useTranslations } from "@/i18n";
+import { webConfig } from "@/configs/web-config";
 
 const PENDING_CREDIT_ORDER_STORAGE_KEY = "credits.pendingOrderId";
 
 export const Route = createFileRoute("/_authed/(dashboard)/credits/purchase")({
+  beforeLoad: () => {
+    if (!webConfig.creditPurchasesEnabled) {
+      throw redirect({ to: "/credits/transactions" });
+    }
+  },
   component: RouteComponent,
 });
 

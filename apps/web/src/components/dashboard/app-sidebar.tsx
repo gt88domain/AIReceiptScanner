@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import type { CurrentUser } from "@/lib/auth/auth-server";
 import { useOrpc } from "@/hooks/use-orpc";
+import { webConfig } from "@/configs/web-config";
 import { sidebarData } from "../../configs/data/sidebar-data";
 import { NavGroup } from "./nav-group";
 import { NavUser } from "./nav-user";
@@ -22,6 +23,7 @@ export function AppSidebar({ user }: { user: CurrentUser }) {
   const adminAccess = useQuery({
     ...orpc.admin.getAccess.queryOptions(),
     queryKey: ["admin", "access", user.id],
+    enabled: webConfig.adminEnabled,
   });
   const navGroups = adminAccess.data?.isAdmin
     ? [

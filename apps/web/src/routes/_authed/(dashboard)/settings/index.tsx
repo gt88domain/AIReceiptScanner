@@ -3,6 +3,7 @@ import { CircleUserRoundIcon, CoinsIcon, CreditCardIcon, ShieldCheckIcon } from 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslations } from "@/i18n";
+import { webConfig } from "@/configs/web-config";
 
 export const Route = createFileRoute("/_authed/(dashboard)/settings/")({
   component: RouteComponent,
@@ -26,20 +27,24 @@ function RouteComponent() {
           title={t("profileTitle")}
           to="/settings/profile"
         />
-        <SettingsCard
-          action={t("billingAction")}
-          description={t("billingDescription")}
-          icon={CreditCardIcon}
-          title={t("billingTitle")}
-          to="/settings/billing"
-        />
-        <SettingsCard
-          action={t("creditsAction")}
-          description={t("creditsDescription")}
-          icon={CoinsIcon}
-          title={t("creditsTitle")}
-          to="/credits/purchase"
-        />
+        {webConfig.billingEnabled ? (
+          <SettingsCard
+            action={t("billingAction")}
+            description={t("billingDescription")}
+            icon={CreditCardIcon}
+            title={t("billingTitle")}
+            to="/settings/billing"
+          />
+        ) : null}
+        {webConfig.creditsEnabled ? (
+          <SettingsCard
+            action={t("creditsAction")}
+            description={t("creditsDescription")}
+            icon={CoinsIcon}
+            title={t("creditsTitle")}
+            to={webConfig.creditPurchasesEnabled ? "/credits/purchase" : "/credits/transactions"}
+          />
+        ) : null}
         <SettingsCard
           action={t("securityAction")}
           description={t("securityDescription")}
@@ -63,7 +68,12 @@ function SettingsCard({
   description: string;
   icon: typeof CircleUserRoundIcon;
   title: string;
-  to: "/settings/profile" | "/settings/billing" | "/credits/purchase" | "/settings/security";
+  to:
+    | "/settings/profile"
+    | "/settings/billing"
+    | "/credits/purchase"
+    | "/credits/transactions"
+    | "/settings/security";
 }) {
   return (
     <Card>

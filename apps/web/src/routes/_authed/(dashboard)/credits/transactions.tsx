@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { resolveCreditTransactionLabel, resolveCreditTransactionSource } from "@repo/shared";
 import {
   ChevronLeftIcon,
@@ -35,6 +35,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCreditTransactionsQuery } from "@/hooks/use-credits";
 import { useTranslations } from "@/i18n";
+import { webConfig } from "@/configs/web-config";
 
 type TransactionFilter = "all" | "purchase" | "usage";
 const transactionFilters = ["all", "purchase", "usage"] as const;
@@ -42,6 +43,11 @@ const transactionColumnIds = ["type", "package", "source", "amount", "date"] as 
 type TransactionColumnId = (typeof transactionColumnIds)[number];
 
 export const Route = createFileRoute("/_authed/(dashboard)/credits/transactions")({
+  beforeLoad: () => {
+    if (!webConfig.creditsEnabled) {
+      throw redirect({ to: "/dashboard" });
+    }
+  },
   component: RouteComponent,
 });
 

@@ -3,7 +3,7 @@ import { ORPCError } from "@orpc/server";
 import { getCheckoutDecisionReasonFromError } from "@repo/app-config/payments/web-policy";
 import { z } from "zod";
 import type { Context } from "@/lib/context";
-import { protectedProcedure } from "@/lib/orpc";
+import { protectedBillingProcedure } from "@/lib/orpc";
 import { createPaymentOperationError } from "@/lib/payment-operation-error";
 import { providerEnum } from "@/payments/public/schemas";
 
@@ -74,7 +74,7 @@ export const paymentsRouter = {
    * Creates a checkout session to initiate payment for a specific plan and price
    * Returns a URL that redirects the user to the payment provider's checkout page
    */
-  createCheckoutSession: protectedProcedure
+  createCheckoutSession: protectedBillingProcedure
     .input(createCheckoutInputSchema)
     .output(
       z.object({
@@ -111,7 +111,7 @@ export const paymentsRouter = {
    * Returns a URL that redirects the user to manage their existing subscriptions
    * (cancel, update payment method, view invoices, etc.)
    */
-  createPortalSession: protectedProcedure
+  createPortalSession: protectedBillingProcedure
     .input(createPortalInputSchema)
     .output(
       z.object({
@@ -136,7 +136,7 @@ export const paymentsRouter = {
    * Upgrades an active subscription in-app without redirecting to provider portal.
    * This keeps upgrade-only guardrails and blocks reverse operations.
    */
-  upgradeSubscription: protectedProcedure
+  upgradeSubscription: protectedBillingProcedure
     .input(upgradeSubscriptionInputSchema)
     .output(
       z.object({

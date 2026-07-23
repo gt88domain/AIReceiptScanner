@@ -36,8 +36,7 @@
  * - GOOGLE_CLIENT_ID/SECRET: Google OAuth credentials
  */
 
-import { isNativePaymentsEnabled } from "@repo/app-config/payments/native";
-import { Hono } from "hono";
+import { Hono, type Context as HonoContext } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { secureHeaders } from "hono/secure-headers";
 import { runCreditMaintenance } from "./credits";
@@ -49,6 +48,12 @@ import { rpcHandler } from "./handlers/rpc";
 import { handleFileServe } from "./handlers/storage";
 import { createAuth } from "./lib/auth";
 import { createContext } from "./lib/context";
+import {
+  isNativeBillingEnabled,
+  isServerFeatureEnabled,
+  productFeatures,
+  validateServerModuleEnvironment,
+} from "./lib/module-config";
 import { authSessionMiddleware } from "./middlewares/auth";
 import { apiCorsMiddleware, authCorsMiddleware } from "./middlewares/cors";
 import { errorHandler } from "./middlewares/error";
@@ -134,6 +139,11 @@ app.use(
   }),
 );
 
+function disabledWebhookResponse(c: HonoContext<{ Bindings: Cloudflare.Env }>, provider: string) {
+  console.info(JSON.stringify({ event: "webhook_ignored", provider, reason: "billing_disabled" }));
+  return c.body(null, 204);
+}
+
 // ============================================================================
 // Route Handlers
 // ============================================================================
@@ -171,6 +181,10 @@ app.on(["POST", "GET"], "/api/auth/*", async (c) => {
  * Receives Stripe webhook events and processes them with raw body validation.
  */
 app.post("/api/webhooks/stripe", async (c) => {
+  if (!isServerFeatureEnabled("billing")) {
+    return disabledWebhookResponse(c, "stripe");
+  }
+
   const context = await createContext({ context: c });
   const rawBody = await c.req.text();
   const signature = c.req.header("stripe-signature");
@@ -192,6 +206,10 @@ app.post("/api/webhooks/stripe", async (c) => {
  * Receives Creem webhook events and validates the HMAC signature header.
  */
 app.post("/api/webhooks/creem", async (c) => {
+  if (!isServerFeatureEnabled("billing")) {
+    return disabledWebhookResponse(c, "creem");
+  }
+
   const context = await createContext({ context: c });
   const rawBody = await c.req.text();
   const signature = c.req.header("creem-signature");
@@ -213,6 +231,10 @@ app.post("/api/webhooks/creem", async (c) => {
  * Receives Waffo webhook events and validates the RSA signature header.
  */
 app.post("/api/webhooks/waffo", async (c) => {
+  if (!isServerFeatureEnabled("billing")) {
+    return disabledWebhookResponse(c, "waffo");
+  }
+
   const context = await createContext({ context: c });
   const rawBody = await c.req.text();
   const signature = c.req.header("x-waffo-signature");
@@ -235,8 +257,8 @@ app.post("/api/webhooks/waffo", async (c) => {
  * Authorization header before dispatching to the payments service.
  */
 app.post("/api/webhooks/revenuecat", async (c) => {
-  if (!isNativePaymentsEnabled) {
-    return c.json({ error: "not_found" }, 404);
+  if (!isNativeBillingEnabled()) {
+    return disabledWebhookResponse(c, "revenuecat");
   }
 
   const context = await createContext({ context: c });
@@ -352,18 +374,32 @@ app.get("/session", (c) => {
 
 export default {
   fetch(request, env, ctx) {
+    if (env.NODE_ENV === "production") {
+      validateServerModuleEnvironment(env, { requireStorageBinding: true });
+    }
     return app.fetch(request, env, ctx);
   },
   async scheduled(controller, env) {
-    const db = createDb(env.DB);
+    if (!productFeatures.jobs) {
+      console.info(JSON.stringify({ event: "scheduled_ignored", reason: "jobs_disabled" }));
+      return;
+    }
+
     if (controller.cron !== "*/10 * * * *") return;
 
-    await processPendingWebhookEvents(db);
-    await processBillingOutbox(db);
-    await alertPendingWebhookEvents(db, env.ADMIN_EMAILS);
+    const db = createDb(env.DB);
+    if (productFeatures.billing) {
+      await processPendingWebhookEvents(db);
+      await processBillingOutbox(db);
+      await alertPendingWebhookEvents(db, env.ADMIN_EMAILS);
+    }
 
     const scheduledAt = new Date(controller.scheduledTime);
-    if (scheduledAt.getUTCHours() === 16 && scheduledAt.getUTCMinutes() === 10) {
+    if (
+      productFeatures.credits &&
+      scheduledAt.getUTCHours() === 16 &&
+      scheduledAt.getUTCMinutes() === 10
+    ) {
       // Daily maintenance only expires eligible free credits; paid packages never expire.
       await runCreditMaintenance(db);
     }

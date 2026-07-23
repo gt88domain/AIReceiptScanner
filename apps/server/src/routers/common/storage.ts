@@ -2,7 +2,7 @@ import { env } from "cloudflare:workers";
 import { ORPCError } from "@orpc/server";
 import { SUPPORTED_STORAGE_PROVIDERS } from "@repo/app-config";
 import { z } from "zod";
-import { protectedProcedure } from "@/lib/orpc";
+import { storageProcedure } from "@/lib/orpc";
 import {
   generateStorageKey,
   getStorageProvider,
@@ -13,7 +13,6 @@ import {
   getUserStoragePrefixes,
   isAllowedFileSize,
   isAllowedFileType,
-  isStorageEnabled,
   parseStoragePublicUrl,
   resolveStorageProviderKey,
 } from "@/storage";
@@ -47,7 +46,7 @@ const listOutputSchema = z.object({
 });
 
 export const storageRouter = {
-  upload: protectedProcedure
+  upload: storageProcedure
     .input(uploadInputSchema)
     .output(uploadOutputSchema)
     .handler(async ({ context, input }) => {
@@ -59,12 +58,6 @@ export const storageRouter = {
       if (!userId) {
         throw new ORPCError("UNAUTHORIZED", {
           message: t("errors.unauthorized"),
-        });
-      }
-
-      if (!isStorageEnabled()) {
-        throw new ORPCError("FORBIDDEN", {
-          message: "File uploads are disabled",
         });
       }
 
@@ -111,7 +104,7 @@ export const storageRouter = {
       };
     }),
 
-  list: protectedProcedure
+  list: storageProcedure
     .input(listInputSchema)
     .output(listOutputSchema)
     .handler(async ({ context, input }) => {
@@ -157,7 +150,7 @@ export const storageRouter = {
       };
     }),
 
-  delete: protectedProcedure
+  delete: storageProcedure
     .input(z.object({ url: z.string() }))
     .output(z.object({ success: z.boolean() }))
     .handler(async ({ context, input }) => {

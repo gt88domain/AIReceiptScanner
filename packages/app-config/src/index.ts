@@ -4,6 +4,9 @@ export {
   resolveWebCommonConfig,
 } from "./app-config";
 
+export { resolveProductFeatures, validateFeatureDependencies } from "./features";
+export type { ProductFeatures } from "./features";
+
 export {
   type AppCommonConfig,
   type AppConfig,

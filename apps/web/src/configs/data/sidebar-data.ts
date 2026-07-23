@@ -3,6 +3,8 @@ import type { SidebarData } from "@/components/dashboard/types";
 import { webConfig } from "@/configs/web-config";
 
 const creditsEnabled = webConfig.creditsEnabled;
+const billingEnabled = webConfig.billingEnabled;
+const creditUrl = webConfig.creditPurchasesEnabled ? "/credits/purchase" : "/credits/transactions";
 
 export const sidebarData: SidebarData = {
   user: {
@@ -34,16 +36,20 @@ export const sidebarData: SidebarData = {
               url: "/settings/profile",
               icon: UserCog,
             },
-            {
-              title: "dashboard.nav.billing",
-              url: "/settings/billing",
-              icon: ShieldCheck,
-            },
+            ...(billingEnabled
+              ? [
+                  {
+                    title: "dashboard.nav.billing",
+                    url: "/settings/billing",
+                    icon: ShieldCheck,
+                  },
+                ]
+              : []),
             ...(creditsEnabled
               ? [
                   {
                     title: "dashboard.nav.credits",
-                    url: "/credits/purchase",
+                    url: creditUrl,
                     icon: Coins,
                   },
                 ]

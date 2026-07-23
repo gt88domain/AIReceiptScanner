@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCreditBalanceQuery } from "@/hooks/use-credits";
 import { useTranslations } from "@/i18n";
 import { useBillingStatusQuery } from "@/hooks/use-payments";
+import { webConfig } from "@/configs/web-config";
 
 export const Route = createFileRoute("/_authed/(dashboard)/dashboard")({
   component: RouteComponent,
@@ -15,8 +16,8 @@ function RouteComponent() {
   const { user } = Route.useRouteContext();
   const t = useTranslations("dashboard.home");
   const tBilling = useTranslations("dashboard.billing");
-  const billingQuery = useBillingStatusQuery();
-  const creditBalanceQuery = useCreditBalanceQuery();
+  const billingQuery = useBillingStatusQuery({ enabled: webConfig.billingEnabled });
+  const creditBalanceQuery = useCreditBalanceQuery({ enabled: webConfig.creditsEnabled });
   const billingTier = billingQuery.data?.currentEntitlement.tier ?? "free";
   const billingSummary =
     billingTier === "free" ? tBilling("free") : tBilling(`membershipTypes.${billingTier}`);
@@ -44,39 +45,49 @@ function RouteComponent() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CreditCardIcon className="size-5" />
-            <CardTitle>{t("billingTitle")}</CardTitle>
-            <CardDescription>
-              {billingQuery.isLoading ? <Skeleton className="h-4 w-24" /> : billingSummary}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild variant="outline" size="sm">
-              <Link to="/settings/billing">{t("billingAction")}</Link>
-            </Button>
-          </CardContent>
-        </Card>
+        {webConfig.billingEnabled ? (
+          <Card>
+            <CardHeader className="pb-3">
+              <CreditCardIcon className="size-5" />
+              <CardTitle>{t("billingTitle")}</CardTitle>
+              <CardDescription>
+                {billingQuery.isLoading ? <Skeleton className="h-4 w-24" /> : billingSummary}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/settings/billing">{t("billingAction")}</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ) : null}
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CoinsIcon className="size-5" />
-            <CardTitle>{t("creditsTitle")}</CardTitle>
-            <CardDescription>
-              {creditBalanceQuery.isLoading ? (
-                <Skeleton className="h-4 w-16" />
-              ) : (
-                t("creditsBalance", { count: creditBalanceQuery.data?.balance ?? 0 })
-              )}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild variant="outline" size="sm">
-              <Link to="/credits/purchase">{t("creditsAction")}</Link>
-            </Button>
-          </CardContent>
-        </Card>
+        {webConfig.creditsEnabled ? (
+          <Card>
+            <CardHeader className="pb-3">
+              <CoinsIcon className="size-5" />
+              <CardTitle>{t("creditsTitle")}</CardTitle>
+              <CardDescription>
+                {creditBalanceQuery.isLoading ? (
+                  <Skeleton className="h-4 w-16" />
+                ) : (
+                  t("creditsBalance", { count: creditBalanceQuery.data?.balance ?? 0 })
+                )}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild variant="outline" size="sm">
+                <Link
+                  to={
+                    webConfig.creditPurchasesEnabled ? "/credits/purchase" : "/credits/transactions"
+                  }
+                >
+                  {t("creditsAction")}
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ) : null}
 
         <Card>
           <CardHeader className="pb-3">

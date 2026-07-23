@@ -9,7 +9,7 @@ import {
   listCreditTransactionsOutputSchema,
 } from "@/credits/public/schemas";
 import type { Context } from "@/lib/context";
-import { protectedProcedure, publicProcedure } from "@/lib/orpc";
+import { creditsProcedure, protectedCreditsProcedure } from "@/lib/orpc";
 
 /** Resolves the authenticated user for protected credit endpoints. */
 function resolveCreditUser(context: Context): { userId: string } {
@@ -41,17 +41,17 @@ const listTransactionsInputSchema = paginatedCreditsInputSchema.extend({
 
 /** Common credit API routes shared by web and native clients. */
 export const creditsRouter = {
-  listPackages: publicProcedure
+  listPackages: creditsProcedure
     .input(listPackagesInputSchema)
     .output(z.array(creditPackageSchema))
     .handler(({ context, input }) => context.credits.listPackages(input)),
 
-  getBalance: protectedProcedure.output(creditBalanceSchema).handler(({ context }) => {
+  getBalance: protectedCreditsProcedure.output(creditBalanceSchema).handler(({ context }) => {
     const user = resolveCreditUser(context);
     return context.credits.getBalance(user);
   }),
 
-  listTransactions: protectedProcedure
+  listTransactions: protectedCreditsProcedure
     .input(listTransactionsInputSchema)
     .output(listCreditTransactionsOutputSchema)
     .handler(({ context, input }) => {
@@ -59,7 +59,7 @@ export const creditsRouter = {
       return context.credits.listTransactions({ user, ...input });
     }),
 
-  listOrders: protectedProcedure
+  listOrders: protectedCreditsProcedure
     .input(paginatedCreditsInputSchema)
     .output(listCreditOrdersOutputSchema)
     .handler(({ context, input }) => {

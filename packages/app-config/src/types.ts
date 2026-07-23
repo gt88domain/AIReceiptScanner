@@ -222,6 +222,8 @@ export type CreditPackageConfig = {
 export type AppCreditsConfig = {
   /** Toggle that enables credit system paths. */
   enabled?: boolean;
+  /** Allows this platform to sell configured credit packages through billing. */
+  purchasesEnabled?: boolean;
   /** Purchasable credit packages. */
   packages: CreditPackageConfig[];
   /** One-time signup grant. */
@@ -233,6 +235,13 @@ export type StorageUploadPurpose = "avatar";
 
 /** Common app configuration shared by all platforms. */
 export type AppCommonConfig = {
+  /** Product capabilities that are not platform-specific provider settings. */
+  features: {
+    /** Enables administrator-only UI and API surfaces. */
+    admin?: boolean;
+    /** Enables scheduled maintenance, webhook retries, and billing outbox processing. */
+    jobs?: boolean;
+  };
   /** Generic app metadata. */
   app: {
     /** Human-readable app name. */

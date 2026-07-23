@@ -165,6 +165,10 @@ const membershipPlans = [
 const appConfig: AppConfig = {
   // Shared defaults inherited by web and native unless a platform overrides them.
   common: {
+    features: {
+      admin: true,
+      jobs: true,
+    },
     // Public app metadata used in UI, links, and platform setup.
     app: {
       // Product display name.
@@ -254,6 +258,8 @@ const appConfig: AppConfig = {
     credits: {
       // Controls whether web credit routes and sidebar entries are visible.
       enabled: true,
+      // Allows web checkout for credit packages. Disable to keep grants/usage without sales.
+      purchasesEnabled: true,
       // Optional free credit grant for new web users.
       signupGrant: creditSignupGrant,
       // Credit packages available through web checkout.
@@ -354,6 +360,8 @@ const appConfig: AppConfig = {
     credits: {
       // Controls whether native credit screens and queries are available.
       enabled: true,
+      // Allows native store purchases for credit packages.
+      purchasesEnabled: true,
       // Optional free credit grant for new native users.
       signupGrant: creditSignupGrant,
       // Credit packages available through native in-app purchases.

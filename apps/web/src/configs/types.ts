@@ -6,7 +6,10 @@ export interface WebConfig {
   AppName: string;
   AppUrl: string;
   supportEmail: string;
+  adminEnabled: boolean;
+  billingEnabled: boolean;
   creditsEnabled: boolean;
+  creditPurchasesEnabled: boolean;
   storageEnabled: boolean;
   auth: {
     methods: {

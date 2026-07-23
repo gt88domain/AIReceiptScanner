@@ -4,6 +4,7 @@ import { z } from "zod";
 import { user } from "@/db/schema/auth";
 import { billingEvent, billingPurchase, billingSubscription } from "@/db/schema/payments";
 import { isAdminEmail } from "@/lib/admin";
+import { isServerFeatureEnabled } from "@/lib/module-config";
 import { adminProcedure, protectedProcedure } from "@/lib/orpc";
 import { replayBillingOutboxJob } from "@/payments/application/billing-outbox";
 import { replayWebhookEvent } from "@/payments/application/webhook-observability";
@@ -79,7 +80,9 @@ const overviewSchema = z.object({
 /** Read-only operational data. Payment entitlements remain webhook-owned. */
 export const adminRouter = {
   getAccess: protectedProcedure.handler(({ context }) => ({
-    isAdmin: isAdminEmail(context.session?.user.email, context.env.ADMIN_EMAILS),
+    isAdmin:
+      isServerFeatureEnabled("admin") &&
+      isAdminEmail(context.session?.user.email, context.env.ADMIN_EMAILS),
   })),
 
   listUsers: adminProcedure

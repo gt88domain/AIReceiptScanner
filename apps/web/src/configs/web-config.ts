@@ -1,4 +1,4 @@
-import { resolveWebCommonConfig } from "@repo/app-config";
+import { resolveProductFeatures, resolveWebCommonConfig } from "@repo/app-config";
 import { trimTrailingSlash } from "@repo/shared";
 import { getCurrentLocale } from "@/i18n";
 import { defaultLocale } from "@/i18n/config";
@@ -8,6 +8,7 @@ import { themePresets } from "./theme-presets";
 import type { WebConfig, AuthUrls, BillingUrls } from "./types";
 
 const commonConfig = resolveWebCommonConfig();
+const productFeatures = resolveProductFeatures();
 const webRoutes = commonConfig.routes;
 
 const fallbackThemePresetKey = "clean-slate" as const satisfies ThemePresetKey;
@@ -50,8 +51,11 @@ export const webConfig: WebConfig = {
   AppName: commonConfig.app.name,
   AppUrl: resolveAppUrl(),
   supportEmail: commonConfig.app.supportEmail,
-  creditsEnabled: commonConfig.credits.enabled ?? false,
-  storageEnabled: commonConfig.storage.enabled ?? false,
+  adminEnabled: productFeatures.admin,
+  billingEnabled: productFeatures.web.billing,
+  creditsEnabled: productFeatures.web.credits,
+  creditPurchasesEnabled: productFeatures.web.creditPurchases,
+  storageEnabled: productFeatures.storage,
   auth: {
     methods: {
       emailPasswordEnabled: commonConfig.auth.methods.emailPasswordEnabled ?? false,
