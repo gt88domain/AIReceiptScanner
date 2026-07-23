@@ -34,6 +34,7 @@
     "db:migrate": "turbo -F server db:migrate",
     "db:migrate:local": "turbo -F server db:migrate:local",
     "db:migrate:production": "turbo -F server db:migrate:production",
+    "module:check": "pnpm --filter server module:check",
     "db:studio:production": "turbo -F server db:studio:production",
     "deploy:web": "turbo -F web deploy",
     "deploy:server": "turbo -F server deploy",
