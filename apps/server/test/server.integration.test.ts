@@ -136,6 +136,31 @@ describe("server Worker", () => {
     expect(response.status).toBe(404);
   });
 
+  it("updates the avatar reference before deleting the replaced object", async () => {
+    const email = "avatar-update@example.test";
+    const signedInClient = await signUp(email);
+    const currentUser = await env.DB.prepare("SELECT id FROM user WHERE email = ?")
+      .bind(email)
+      .first<{ id: string }>();
+    expect(currentUser).not.toBeNull();
+
+    const oldKey = `avatars/${currentUser?.id}/old-avatar.png`;
+    const newKey = `avatars/${currentUser?.id}/new-avatar.png`;
+    const oldUrl = `${env.SERVER_URL}/api/storage/r2/${oldKey}`;
+    const newUrl = `${env.SERVER_URL}/api/storage/r2/${newKey}`;
+    await env.STORAGE.put(oldKey, "old avatar");
+    await env.STORAGE.put(newKey, "new avatar");
+    await env.DB.prepare("UPDATE user SET image = ? WHERE id = ?")
+      .bind(oldUrl, currentUser?.id)
+      .run();
+
+    await expect(signedInClient.users.update({ image: newUrl })).resolves.toMatchObject({
+      image: newUrl,
+    });
+    await expect(env.STORAGE.get(oldKey)).resolves.toBeNull();
+    await expect(env.STORAGE.get(newKey)).resolves.not.toBeNull();
+  });
+
   it("adds a valid footer newsletter subscription to Resend Contacts", async () => {
     const response = await exports.default.fetch("https://server.test/api/newsletter/subscribe", {
       body: JSON.stringify({ email: "reader@example.com" }),

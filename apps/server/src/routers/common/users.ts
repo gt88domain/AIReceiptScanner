@@ -31,6 +31,27 @@ function normalizeUserForOutput(userItem: z.infer<typeof userSchema>) {
   return { ...userItem, name: getVisibleUserName(userItem) };
 }
 
+async function deleteOwnedAvatar(userId: string, image: string) {
+  const publicBaseUrl = getStoragePublicBaseUrl(env.SERVER_URL);
+  const parsedStorageUrl = parseStoragePublicUrl(publicBaseUrl, image);
+  if (!parsedStorageUrl?.key.startsWith(getUserStoragePrefix("avatar", userId))) {
+    return;
+  }
+
+  const storageProvider = getStorageProvider({
+    storage: env.STORAGE,
+    provider: parsedStorageUrl.provider,
+    aliyunOssEnv: env,
+  });
+  await storageProvider.delete(parsedStorageUrl.key).catch((error) => {
+    console.error("Failed to delete unused avatar", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      key: parsedStorageUrl.key,
+      userId,
+    });
+  });
+}
+
 export const usersRouter = {
   getCurrentUser: publicProcedure.handler(({ context }) => getCurrentUserFromContext(context)),
   getPasswordStatus: protectedProcedure
@@ -134,42 +155,38 @@ export const usersRouter = {
         });
       }
 
-      // If updating avatar, delete the old one first
-      if (input.image !== undefined) {
-        const [currentUser] = await db
-          .select({ image: user.image })
-          .from(user)
-          .where(eq(user.id, userId));
+      const [currentUser] =
+        input.image === undefined
+          ? []
+          : await db.select({ image: user.image }).from(user).where(eq(user.id, userId));
 
-        if (currentUser?.image) {
-          const publicBaseUrl = getStoragePublicBaseUrl(env.SERVER_URL);
-          const parsedStorageUrl = parseStoragePublicUrl(publicBaseUrl, currentUser.image);
-          if (parsedStorageUrl?.key.startsWith(getUserStoragePrefix("avatar", userId))) {
-            const storageProvider = getStorageProvider({
-              storage: env.STORAGE,
-              provider: parsedStorageUrl.provider,
-              aliyunOssEnv: env,
-            });
-            await storageProvider.delete(parsedStorageUrl.key).catch(() => {
-              // Ignore errors if file doesn't exist
-            });
-          }
+      const stagedAvatar =
+        typeof input.image === "string" && input.image !== currentUser?.image ? input.image : null;
+      let updatedUser: typeof user.$inferSelect | undefined;
+      try {
+        [updatedUser] = await db
+          .update(user)
+          .set({
+            ...input,
+            updatedAt: new Date(),
+          })
+          .where(eq(user.id, userId))
+          .returning();
+
+        if (!updatedUser) {
+          throw new ORPCError("NOT_FOUND", {
+            message: t("errors.notFound"),
+          });
         }
+      } catch (error) {
+        if (stagedAvatar) {
+          await deleteOwnedAvatar(userId, stagedAvatar);
+        }
+        throw error;
       }
 
-      const [updatedUser] = await db
-        .update(user)
-        .set({
-          ...input,
-          updatedAt: new Date(),
-        })
-        .where(eq(user.id, userId))
-        .returning();
-
-      if (!updatedUser) {
-        throw new ORPCError("NOT_FOUND", {
-          message: t("errors.notFound"),
-        });
+      if (currentUser?.image && currentUser.image !== updatedUser.image) {
+        await deleteOwnedAvatar(userId, currentUser.image);
       }
 
       return normalizeUserForOutput(updatedUser);
