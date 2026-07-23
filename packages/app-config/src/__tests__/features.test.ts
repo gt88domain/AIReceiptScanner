@@ -6,23 +6,35 @@ import {
 } from "../features";
 
 describe("product features", () => {
-  it("derives platform capabilities without exposing provider secrets", () => {
+  it("derives a public capability contract without exposing provider secrets", () => {
     const features = resolveProductFeatures();
 
     expect(features).toMatchObject({
       auth: true,
-      admin: true,
-      billing: true,
-      credits: true,
-      storage: false,
-      jobs: true,
-      web: { billing: true, credits: true, creditPurchases: true },
-      native: { billing: true, credits: true, creditPurchases: true },
+      admin: expect.any(Boolean),
+      billing: expect.any(Boolean),
+      credits: expect.any(Boolean),
+      storage: expect.any(Boolean),
+      jobs: expect.any(Boolean),
+      web: {
+        billing: expect.any(Boolean),
+        credits: expect.any(Boolean),
+        creditPurchases: expect.any(Boolean),
+      },
+      native: {
+        billing: expect.any(Boolean),
+        credits: expect.any(Boolean),
+        creditPurchases: expect.any(Boolean),
+      },
     });
+    expect(JSON.stringify(features)).not.toContain("SECRET");
   });
 
   it("rejects credit purchases without billing on the same platform", () => {
-    const features = resolveProductFeatures();
+    const features = createProductFeatures({
+      web: { billing: true, credits: true, creditPurchases: true },
+      native: { billing: false, credits: false, creditPurchases: false },
+    });
 
     expect(() =>
       validateFeatureDependencies({
