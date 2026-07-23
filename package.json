@@ -7,10 +7,10 @@
   ],
   "type": "module",
   "scripts": {
-    "lint": "turbo -F web -F server -F native lint",
-    "lint:fix": "turbo -F web -F server -F native lint:fix",
-    "fmt": "turbo -F web -F server -F native fmt",
-    "fmt:check": "turbo -F web -F server -F native fmt:check",
+    "lint": "turbo lint",
+    "lint:fix": "turbo lint:fix",
+    "fmt": "turbo fmt",
+    "fmt:check": "turbo fmt:check",
     "ruler:apply": "pnpm dlx @intellectronica/ruler@latest apply --local-only",
     "dev": "turbo dev",
     "build": "turbo build",
@@ -51,7 +51,7 @@
     "turbo": "^2.10.5"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,mjs,cjs}": "pnpm run lint"
+    "*.{js,jsx,ts,tsx,mjs,cjs}": "pnpm exec oxlint"
   },
   "config": {
     "commitizen": {
