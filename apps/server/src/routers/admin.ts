@@ -1,5 +1,5 @@
 import { ACTIVE_SUBSCRIPTION_STATUSES } from "@repo/app-config/payments/web";
-import { and, asc, count, desc, eq, inArray, isNull, like, or } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { user } from "@/db/schema/auth";
 import { billingEvent, billingPurchase, billingSubscription } from "@/db/schema/payments";
@@ -90,9 +90,9 @@ export const adminRouter = {
         isNull(user.deletedAt),
         input.name
           ? or(
-              like(user.name, `%${input.name}%`),
-              like(user.email, `%${input.name}%`),
-              like(user.phoneNumber, `%${input.name}%`),
+              sql`instr(lower(${user.name}), lower(${input.name})) > 0`,
+              sql`instr(lower(${user.email}), lower(${input.name})) > 0`,
+              sql`instr(lower(${user.phoneNumber}), lower(${input.name})) > 0`,
             )
           : undefined,
       );

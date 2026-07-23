@@ -106,7 +106,7 @@ export function createAuth(d1: D1Database) {
     },
     trustedOrigins: [
       env.WEBSITE_URL || "",
-      nativeConfig.app.name + "://",
+      nativeConfig.app.nativeScheme + "://",
 
       // Development mode - Expo's exp:// scheme with local IP ranges
       ...(runtimeNodeEnv === "development"

@@ -16,10 +16,11 @@ function getSessionClient(cookie: string) {
   });
 }
 
-async function signUp(email: string) {
+async function signUp(email: string, name = "Integration Test") {
+  const ip = `198.51.${crypto.getRandomValues(new Uint8Array(1))[0]}.${crypto.getRandomValues(new Uint8Array(1))[0]}`;
   const signUpResponse = await exports.default.fetch("https://server.test/api/auth/sign-up/email", {
-    body: JSON.stringify({ email, name: "Integration Test", password: "test-password-123" }),
-    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, name, password: "test-password-123" }),
+    headers: { "CF-Connecting-IP": ip, "Content-Type": "application/json" },
     method: "POST",
   });
   expect(signUpResponse.status).toBe(200);
@@ -27,7 +28,7 @@ async function signUp(email: string) {
 
   const response = await exports.default.fetch("https://server.test/api/auth/sign-in/email", {
     body: JSON.stringify({ email, password: "test-password-123" }),
-    headers: { "Content-Type": "application/json" },
+    headers: { "CF-Connecting-IP": ip, "Content-Type": "application/json" },
     method: "POST",
   });
   expect(response.status).toBe(200);
@@ -90,6 +91,21 @@ describe("server Worker", () => {
     await expect(signedInClient.admin.listUsers({})).rejects.toMatchObject({
       code: "FORBIDDEN",
       status: 403,
+    });
+  });
+
+  it("treats LIKE wildcard characters in an admin user search literally", async () => {
+    const adminClient = await signUp("admin@example.test");
+    const literalName = `literal%needle-${crypto.randomUUID()}`;
+    await signUp(`literal-percent-${crypto.randomUUID()}@example.test`, literalName);
+    await signUp(
+      `literal-decoy-${crypto.randomUUID()}@example.test`,
+      literalName.replace("%", "X"),
+    );
+
+    await expect(adminClient.admin.listUsers({ name: literalName })).resolves.toMatchObject({
+      total: 1,
+      data: [expect.objectContaining({ name: literalName })],
     });
   });
 
