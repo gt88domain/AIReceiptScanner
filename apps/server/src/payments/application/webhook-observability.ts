@@ -1,4 +1,4 @@
-import { and, asc, eq, gte, isNull, lte, or, sql } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import type { Database } from "@/db";
 import { billingEvent } from "@/db/schema/payments";
 import { getEmailProvider } from "@/emails";
@@ -8,6 +8,9 @@ const PENDING_WEBHOOK_ALERT_AFTER_MS = 15 * 60 * 1000;
 const PENDING_WEBHOOK_ALERT_MIN_ATTEMPTS = 2;
 const MAX_ERROR_LENGTH = 500;
 const WEBHOOK_PROCESSING_LEASE_MS = 5 * 60 * 1000;
+const MAX_WEBHOOK_ATTEMPTS = 8;
+const RETRY_BASE_DELAY_MS = 60 * 1000;
+const RETRY_MAX_DELAY_MS = 60 * 60 * 1000;
 
 type PendingWebhookAlert = {
   id: string;
@@ -21,7 +24,7 @@ type PendingWebhookAlert = {
 
 type SendPendingWebhookAlert = (alert: PendingWebhookAlert) => Promise<void>;
 
-function sanitizeError(error: unknown) {
+export function sanitizePaymentJobError(error: unknown) {
   const message = error instanceof Error ? error.message : "Unknown webhook processing error";
   return message
     .replace(/https?:\/\/\S+/gi, "[url]")
@@ -29,6 +32,11 @@ function sanitizeError(error: unknown) {
     .replace(/\b(?:sk|pk|whsec|re)_[A-Za-z0-9_-]+\b/g, "[secret]")
     .replace(/\s+/g, " ")
     .slice(0, MAX_ERROR_LENGTH);
+}
+
+function retryAt(now: Date, attemptCount: number) {
+  const multiplier = 2 ** Math.max(0, attemptCount - 1);
+  return new Date(now.getTime() + Math.min(RETRY_BASE_DELAY_MS * multiplier, RETRY_MAX_DELAY_MS));
 }
 
 /** Atomically claims a pending or expired webhook lease for one handler invocation. */
@@ -59,22 +67,53 @@ export async function claimWebhookEvent(db: Database, eventId: string, now = new
   return Boolean(claimed);
 }
 
-/** Releases a failed claim so the provider can retry it after the configured retry time. */
+/** Releases a failed claim with bounded exponential backoff, or dead-letters it. */
 export async function releaseWebhookEventClaim(
   db: Database,
   eventId: string,
   error: unknown,
   now = new Date(),
 ) {
+  const [event] = await db
+    .select({ attemptCount: billingEvent.attemptCount })
+    .from(billingEvent)
+    .where(eq(billingEvent.id, eventId))
+    .limit(1);
+  const exhausted = (event?.attemptCount ?? MAX_WEBHOOK_ATTEMPTS) >= MAX_WEBHOOK_ATTEMPTS;
   await db
     .update(billingEvent)
     .set({
-      processingStatus: "pending",
+      processingStatus: exhausted ? "dead_letter" : "pending",
       leaseUntil: null,
-      nextRetryAt: now,
-      lastError: sanitizeError(error),
+      nextRetryAt: exhausted ? null : retryAt(now, event?.attemptCount ?? 1),
+      deadLetteredAt: exhausted ? now : null,
+      lastError: sanitizePaymentJobError(error),
     })
     .where(and(eq(billingEvent.id, eventId), eq(billingEvent.processingStatus, "processing")));
+}
+
+/** Reopens one non-successful event after an administrator fixes its cause. */
+export async function replayWebhookEvent(db: Database, eventId: string, now = new Date()) {
+  const [replayed] = await db
+    .update(billingEvent)
+    .set({
+      processingStatus: "pending",
+      attemptCount: 0,
+      lastAttemptAt: null,
+      lastError: null,
+      leaseUntil: null,
+      nextRetryAt: now,
+      alertedAt: null,
+      deadLetteredAt: null,
+    })
+    .where(
+      and(
+        eq(billingEvent.id, eventId),
+        inArray(billingEvent.processingStatus, ["pending", "dead_letter"]),
+      ),
+    )
+    .returning({ id: billingEvent.id });
+  return Boolean(replayed);
 }
 
 async function sendPendingWebhookAlert(recipients: readonly string[], alert: PendingWebhookAlert) {
@@ -89,14 +128,14 @@ async function sendPendingWebhookAlert(recipients: readonly string[], alert: Pen
       `First received: ${alert.firstReceivedAt?.toISOString() ?? "unknown"}`,
       `Last attempted: ${alert.lastAttemptAt?.toISOString() ?? "unknown"}`,
       `Last error: ${alert.lastError ?? "unknown"}`,
-      "Review it in the read-only administrator dashboard and replay it from the payment provider if needed.",
+      "Review and replay it through the administrator procedure after correcting the failure.",
     ].join("\n"),
   });
 }
 
 /**
- * Sends one operational alert per pending event. It deliberately does not replay
- * payment events: only the provider remains the source of retry and payment truth.
+ * Sends one operational alert per pending or dead-letter event. Automatic retries
+ * are bounded; only an administrator may reopen a dead letter.
  */
 export async function alertPendingWebhookEvents(
   db: Database,
@@ -124,7 +163,7 @@ export async function alertPendingWebhookEvents(
     .from(billingEvent)
     .where(
       and(
-        eq(billingEvent.processingStatus, "pending"),
+        inArray(billingEvent.processingStatus, ["pending", "dead_letter"]),
         isNull(billingEvent.alertedAt),
         lte(billingEvent.firstReceivedAt, threshold),
         gte(billingEvent.attemptCount, PENDING_WEBHOOK_ALERT_MIN_ATTEMPTS),
@@ -145,7 +184,7 @@ export async function alertPendingWebhookEvents(
     } catch (error) {
       console.error("Failed to send pending webhook alert", {
         eventId: event.id,
-        error: sanitizeError(error),
+        error: sanitizePaymentJobError(error),
       });
     }
   }

@@ -5,6 +5,8 @@ import { user } from "@/db/schema/auth";
 import { billingEvent, billingPurchase, billingSubscription } from "@/db/schema/payments";
 import { isAdminEmail } from "@/lib/admin";
 import { adminProcedure, protectedProcedure } from "@/lib/orpc";
+import { replayBillingOutboxJob } from "@/payments/application/billing-outbox";
+import { replayWebhookEvent } from "@/payments/application/webhook-observability";
 
 const listUsersInputSchema = z.object({
   page: z.number().min(1).default(1),
@@ -64,7 +66,7 @@ const overviewSchema = z.object({
       id: z.string(),
       provider: z.string(),
       eventType: z.string(),
-      processingStatus: z.enum(["pending", "processing", "processed"]),
+      processingStatus: z.enum(["pending", "processing", "processed", "dead_letter"]),
       processedAt: z.date(),
       firstReceivedAt: z.date().nullable(),
       lastAttemptAt: z.date().nullable(),
@@ -121,6 +123,20 @@ export const adminRouter = {
       const total = countResult.at(0)?.count ?? 0;
       return { data: users, pageCount: Math.ceil(total / input.perPage), total };
     }),
+
+  replayWebhook: adminProcedure
+    .input(z.object({ eventId: z.string().uuid() }))
+    .output(z.object({ queued: z.boolean() }))
+    .handler(async ({ context, input }) => ({
+      queued: await replayWebhookEvent(context.db, input.eventId),
+    })),
+
+  replayBillingOutboxJob: adminProcedure
+    .input(z.object({ jobId: z.string().uuid() }))
+    .output(z.object({ queued: z.boolean() }))
+    .handler(async ({ context, input }) => ({
+      queued: await replayBillingOutboxJob(context.db, input.jobId),
+    })),
 
   overview: adminProcedure.output(overviewSchema).handler(async ({ context }) => {
     const activeStatuses = [...ACTIVE_SUBSCRIPTION_STATUSES];

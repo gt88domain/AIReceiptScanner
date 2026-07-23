@@ -9,7 +9,7 @@ import type { BillingUser } from "../../public/types";
  * Supports both top-level DB clients and transaction-scoped clients.
  */
 type DbTransaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
-type DbLike = Database | DbTransaction;
+export type DbLike = Database | DbTransaction;
 type BillingSubscriptionState = Omit<
   typeof billingSubscription.$inferInsert,
   "id" | "createdAt" | "updatedAt"
@@ -267,7 +267,6 @@ async function hasTrialConsumingSubscriptionHistory(
   return Boolean(subscription);
 }
 
-export type { DbLike };
 export {
   findBillingCustomer,
   findPurchaseByProviderIntent,

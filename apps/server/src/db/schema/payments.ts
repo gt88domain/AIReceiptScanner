@@ -87,6 +87,7 @@ export const billingSubscription = sqliteTable(
       table.provider,
       table.providerSubscriptionId,
     ),
+    index("billing_subscription_user_status_idx").on(table.userId, table.status),
   ],
 );
 
@@ -119,6 +120,7 @@ export const billingCheckoutSession = sqliteTable(
       table.provider,
       table.providerSessionId,
     ),
+    index("billing_checkout_session_user_created_idx").on(table.userId, table.createdAt),
   ],
 );
 
@@ -136,11 +138,12 @@ export const billingEvent = sqliteTable(
     providerEventId: text("provider_event_id").notNull(), // Event ID from provider (for idempotency)
     eventType: text("event_type").notNull(), // Type of event (e.g., "invoice.paid")
     processedAt: integer("processed_at", { mode: "timestamp" }).notNull(), // When we processed the event
-    payloadJson: text("payload_json").notNull(), // Full event payload as JSON
+    payloadJson: text("payload_json").notNull(), // Verified provider event payload as JSON
+    handlerVersion: integer("handler_version").notNull().default(1),
     // Processing state for at-least-once delivery. `pending` rows allow providers to safely
     // retry failed handler runs because they stay re-processable until marked `processed`.
     processingStatus: text("processing_status", {
-      enum: ["pending", "processing", "processed"],
+      enum: ["pending", "processing", "processed", "dead_letter"],
     })
       .notNull()
       .default("pending"),
@@ -153,6 +156,7 @@ export const billingEvent = sqliteTable(
     leaseUntil: integer("lease_until", { mode: "timestamp" }),
     nextRetryAt: integer("next_retry_at", { mode: "timestamp" }),
     alertedAt: integer("alerted_at", { mode: "timestamp" }),
+    deadLetteredAt: integer("dead_lettered_at", { mode: "timestamp" }),
   },
   (table) => [
     // Ensure each provider event is only processed once (idempotency)
@@ -161,6 +165,47 @@ export const billingEvent = sqliteTable(
       table.processingStatus,
       table.alertedAt,
       table.firstReceivedAt,
+    ),
+    index("billing_event_retry_idx").on(
+      table.processingStatus,
+      table.nextRetryAt,
+      table.leaseUntil,
+    ),
+  ],
+);
+
+/**
+ * Durable, idempotent external payment effects. Webhook handlers enqueue a job
+ * and return; the Worker cron performs provider calls with retry and a lease.
+ */
+export const billingOutbox = sqliteTable(
+  "billing_outbox",
+  {
+    id: text("id").primaryKey(),
+    jobType: text("job_type", { enum: ["cancel_previous_subscription"] }).notNull(),
+    provider: text("provider", { enum: SUPPORTED_SERVER_PAYMENT_PROVIDERS }).notNull(),
+    deduplicationKey: text("deduplication_key").notNull(),
+    payloadJson: text("payload_json").notNull(),
+    processingStatus: text("processing_status", {
+      enum: ["pending", "processing", "processed", "dead_letter"],
+    })
+      .notNull()
+      .default("pending"),
+    attemptCount: integer("attempt_count").notNull().default(0),
+    lastAttemptAt: integer("last_attempt_at", { mode: "timestamp" }),
+    lastError: text("last_error"),
+    leaseUntil: integer("lease_until", { mode: "timestamp" }),
+    nextRetryAt: integer("next_retry_at", { mode: "timestamp" }),
+    deadLetteredAt: integer("dead_lettered_at", { mode: "timestamp" }),
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("billing_outbox_deduplication_idx").on(table.deduplicationKey),
+    index("billing_outbox_retry_idx").on(
+      table.processingStatus,
+      table.nextRetryAt,
+      table.leaseUntil,
     ),
   ],
 );
@@ -195,5 +240,6 @@ export const billingPurchase = sqliteTable(
       table.provider,
       table.providerPaymentIntentId,
     ),
+    index("billing_purchase_user_status_idx").on(table.userId, table.status),
   ],
 );

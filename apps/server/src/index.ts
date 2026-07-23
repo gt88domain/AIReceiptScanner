@@ -53,6 +53,8 @@ import { authSessionMiddleware } from "./middlewares/auth";
 import { apiCorsMiddleware, authCorsMiddleware } from "./middlewares/cors";
 import { errorHandler } from "./middlewares/error";
 import { i18nMiddleware } from "./middlewares/i18n";
+import { processBillingOutbox } from "./payments/application/billing-outbox";
+import { processPendingWebhookEvents } from "./payments/application/webhook-dispatch";
 import { alertPendingWebhookEvents } from "./payments/application/webhook-observability";
 
 const app = new Hono<{ Bindings: Cloudflare.Env }>();
@@ -356,6 +358,8 @@ export default {
     const db = createDb(env.DB);
     if (controller.cron !== "*/10 * * * *") return;
 
+    await processPendingWebhookEvents(db);
+    await processBillingOutbox(db);
     await alertPendingWebhookEvents(db, env.ADMIN_EMAILS);
 
     const scheduledAt = new Date(controller.scheduledTime);

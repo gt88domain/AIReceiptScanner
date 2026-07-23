@@ -113,6 +113,13 @@
       "when": 1784810000000,
       "tag": "0015_auth_rate_limit",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "6",
+      "when": 1784775247471,
+      "tag": "0016_even_santa_claus",
+      "breakpoints": true
     }
   ]
 }
