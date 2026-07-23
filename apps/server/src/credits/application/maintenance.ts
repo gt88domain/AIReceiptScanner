@@ -1,9 +1,10 @@
-import { and, eq, gt, gte, isNull, lte, or, sql } from "drizzle-orm";
+import { and, asc, eq, gt, gte, isNull, lte, or, sql } from "drizzle-orm";
 import type { Database } from "@/db";
 import { creditOrder, creditTransaction } from "@/db/schema/credits";
 import {
   PENDING_ORDER_EXPIRATION_HOURS,
   assertCreditsEnabled,
+  CREDIT_EXPIRATION_BATCH_LIMIT,
   createAccountDebitUpdate,
   createBatchChangeGuard,
   findTransactionBySource,
@@ -18,7 +19,9 @@ export async function expireCredits(db: Database, now = new Date()) {
   const expiredGrants = await db
     .select()
     .from(creditTransaction)
-    .where(and(gt(creditTransaction.remainingAmount, 0), lte(creditTransaction.expiresAt, now)));
+    .where(and(gt(creditTransaction.remainingAmount, 0), lte(creditTransaction.expiresAt, now)))
+    .orderBy(asc(creditTransaction.expiresAt), asc(creditTransaction.id))
+    .limit(CREDIT_EXPIRATION_BATCH_LIMIT);
 
   let expiredAmount = 0;
   for (const grant of expiredGrants) {
@@ -106,7 +109,11 @@ export async function expireCredits(db: Database, now = new Date()) {
     }
   }
 
-  return { expiredTransactions: expiredGrants.length, expiredAmount };
+  return {
+    expiredTransactions: expiredGrants.length,
+    expiredAmount,
+    hasMore: expiredGrants.length === CREDIT_EXPIRATION_BATCH_LIMIT,
+  };
 }
 
 async function expirePendingCreditOrders(db: Database, now = new Date()) {
@@ -131,7 +138,7 @@ async function expirePendingCreditOrders(db: Database, now = new Date()) {
 export async function runCreditMaintenance(db: Database, now = new Date()) {
   if (!getConfig().enabled) {
     return {
-      expiration: { expiredTransactions: 0, expiredAmount: 0 },
+      expiration: { expiredTransactions: 0, expiredAmount: 0, hasMore: false },
       orders: { expiredOrders: 0 },
     };
   }

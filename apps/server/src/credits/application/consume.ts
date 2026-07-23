@@ -4,6 +4,7 @@ import { creditTransaction } from "@/db/schema/credits";
 import {
   assertCreditsEnabled,
   assertPositiveAmount,
+  CREDIT_CONSUMPTION_GRANT_LIMIT,
   createAccountDebitUpdate,
   createBatchChangeGuard,
   ensureCreditAccount,
@@ -147,14 +148,18 @@ export async function consumeCredits(
           or(isNull(creditTransaction.expiresAt), gt(creditTransaction.expiresAt, now)),
         ),
       )
-      .orderBy(asc(creditTransaction.createdAt));
-    const grants = grantRows.sort((a, b) => {
-      const aExpiry = a.expiresAt?.getTime() ?? Number.POSITIVE_INFINITY;
-      const bExpiry = b.expiresAt?.getTime() ?? Number.POSITIVE_INFINITY;
-      return aExpiry - bExpiry || a.createdAt.getTime() - b.createdAt.getTime();
-    });
+      .orderBy(
+        asc(isNull(creditTransaction.expiresAt)),
+        asc(creditTransaction.expiresAt),
+        asc(creditTransaction.createdAt),
+      )
+      .limit(CREDIT_CONSUMPTION_GRANT_LIMIT);
+    const grants = grantRows;
     const available = grants.reduce((sum, item) => sum + item.remainingAmount, 0);
     if (available < input.amount) {
+      if (grants.length === CREDIT_CONSUMPTION_GRANT_LIMIT) {
+        throw new Error("Credit balance is too fragmented to consume safely");
+      }
       throw new Error("Insufficient credits");
     }
 

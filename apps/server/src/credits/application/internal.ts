@@ -7,6 +7,10 @@ import type { CreditSource } from "./types";
 
 export const EXPIRING_WINDOW_DAYS = 7;
 export const PENDING_ORDER_EXPIRATION_HOURS = 24;
+// ponytail: One atomic D1 batch may consume 40 grants. Consolidate grants or add a durable
+// reservation/continuation flow before raising this ceiling.
+export const CREDIT_CONSUMPTION_GRANT_LIMIT = 40;
+export const CREDIT_EXPIRATION_BATCH_LIMIT = 100;
 export type CreditBatchItem = BatchItem<"sqlite">;
 
 export function getConfig() {
