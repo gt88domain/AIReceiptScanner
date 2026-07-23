@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: read
-  security-events: write
 
 jobs:
   osv:
@@ -16,5 +16,7 @@ jobs:
     with:
       scan-args: |-
         --lockfile=pnpm-lock.yaml
-      upload-sarif: true
+      # This private repository is not licensed for GitHub Code Security, so
+      # uploading SARIF would fail before the actual vulnerability scan runs.
+      upload-sarif: false
       fail-on-vuln: true
