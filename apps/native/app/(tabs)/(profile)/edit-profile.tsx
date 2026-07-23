@@ -19,7 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { orpc } from "@/lib/orpc";
 import { uploadNativeStorageFile } from "@/lib/storage/upload";
 import { NativeImagePicker } from "@/lib/image-picker/image-picker";
-import { getVisibleUserEmail, isPhoneUser } from "@repo/shared";
+import { getVisibleUserEmail } from "@repo/shared";
 import { getErrorMessage } from "@/utils/error";
 
 export default function EditProfileScreen() {
@@ -37,7 +37,6 @@ export default function EditProfileScreen() {
   const [avatarUri, setAvatarUri] = React.useState(user?.image ?? null);
   const [isUploadingAvatar, setIsUploadingAvatar] = React.useState(false);
   const visibleEmail = user ? getVisibleUserEmail(user) : null;
-  const phoneNumber = user?.phoneNumber ?? null;
   const isStorageEnabled = appConfig.storageEnabled;
 
   useTabBarVisibility(true);
@@ -188,7 +187,7 @@ export default function EditProfileScreen() {
             }}
           />
 
-          {user && !isPhoneUser(user) ? (
+          {user ? (
             <View className="mb-6">
               <Text className="mb-2 ml-1 text-sm font-medium text-foreground">
                 {t("profile.email")}
@@ -200,15 +199,6 @@ export default function EditProfileScreen() {
               </View>
             </View>
           ) : null}
-
-          <View className="mb-6">
-            <Text className="mb-2 ml-1 text-sm font-medium text-foreground">
-              {t("profile.phone")}
-            </Text>
-            <View className="h-12 justify-center rounded-lg border border-border bg-surface-secondary px-4">
-              <Text className="text-base text-muted">{phoneNumber ?? t("profile.notLinked")}</Text>
-            </View>
-          </View>
         </Animated.View>
 
         <View className="px-6 pb-6" style={{ paddingBottom: insets.bottom + 24 }}>

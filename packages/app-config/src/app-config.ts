@@ -188,8 +188,6 @@ const appConfig: AppConfig = {
         emailPasswordEnabled: true,
         // Controls email OTP auth UI entry points.
         emailOtpEnabled: false,
-        // Controls SMS auth UI entry points.
-        smsEnabled: false,
         // Controls GitHub sign-in UI entry points.
         githubEnabled: false,
         // Controls Google sign-in UI entry points.
@@ -207,15 +205,6 @@ const appConfig: AppConfig = {
           expiresInSeconds: 300,
           // Maximum failed verification attempts per issued code.huo
           allowedAttempts: 3,
-          // Client-side resend cooldown in seconds.
-          resendCooldownSeconds: 60,
-        },
-        // SMS one-time verification code settings.
-        sms: {
-          // Number of digits in one-time verification codes.
-          otpLength: 6,
-          // Verification code lifetime in seconds.
-          expiresInSeconds: 300,
           // Client-side resend cooldown in seconds.
           resendCooldownSeconds: 60,
         },
@@ -257,11 +246,6 @@ const appConfig: AppConfig = {
     // Canonical product-level membership semantics shared by web, native, and server.
     membership: {
       plans: membershipPlans,
-    },
-    // SMS verification settings.
-    sms: {
-      // Provider used to send SMS messages.
-      provider: "aliyun",
     },
   },
   // Web-only configuration.
@@ -491,7 +475,6 @@ function resolvePlatformCommonConfig(platformConfig: AppPlatformCommonConfig) {
     auth: platformConfig.auth,
     email: platformConfig.email,
     storage: platformConfig.storage,
-    sms: platformConfig.sms,
   };
 
   if (Object.keys(commonOverrides).length === 0) {

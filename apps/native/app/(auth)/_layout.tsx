@@ -55,7 +55,6 @@ export default function AuthLayout() {
           headerTransparent: true,
         }}
       />
-      <Stack.Screen name="phone-otp" options={{ headerShown: false, title: "" }} />
       <Stack.Screen
         name="callback"
         options={{ headerShown: false, title: "", presentation: "fullScreenModal" }}

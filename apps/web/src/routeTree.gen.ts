@@ -28,7 +28,6 @@ import { Route as PubliclegalTermsRouteImport } from './routes/_public/(legal)/t
 import { Route as PublicmarketingContactRouteImport } from './routes/_public/(marketing)/contact'
 import { Route as ApiNewsletterSubscribeRouteImport } from './routes/api/newsletter/subscribe'
 import { Route as authAuthUnauthedForgotPasswordRouteImport } from './routes/(auth)/auth/_unauthed/forgot-password'
-import { Route as authAuthUnauthedPhoneVerifyRouteImport } from './routes/(auth)/auth/_unauthed/phone-verify'
 import { Route as authAuthUnauthedSignInRouteImport } from './routes/(auth)/auth/_unauthed/sign-in'
 import { Route as authAuthUnauthedSignUpRouteImport } from './routes/(auth)/auth/_unauthed/sign-up'
 import { Route as AutheddashboardCreditsPurchaseRouteImport } from './routes/_authed/(dashboard)/credits/purchase'
@@ -140,12 +139,6 @@ const authAuthUnauthedForgotPasswordRoute =
     path: '/forgot-password',
     getParentRoute: () => authAuthUnauthedRouteRoute,
   } as any)
-const authAuthUnauthedPhoneVerifyRoute =
-  authAuthUnauthedPhoneVerifyRouteImport.update({
-    id: '/phone-verify',
-    path: '/phone-verify',
-    getParentRoute: () => authAuthUnauthedRouteRoute,
-  } as any)
 const authAuthUnauthedSignInRoute = authAuthUnauthedSignInRouteImport.update({
   id: '/sign-in',
   path: '/sign-in',
@@ -252,7 +245,6 @@ export interface FileRoutesByFullPath {
   '/contact': typeof PublicmarketingContactRoute
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
   '/auth/forgot-password': typeof authAuthUnauthedForgotPasswordRoute
-  '/auth/phone-verify': typeof authAuthUnauthedPhoneVerifyRoute
   '/auth/sign-in': typeof authAuthUnauthedSignInRoute
   '/auth/sign-up': typeof authAuthUnauthedSignUpRoute
   '/credits/purchase': typeof AutheddashboardCreditsPurchaseRoute
@@ -285,7 +277,6 @@ export interface FileRoutesByTo {
   '/contact': typeof PublicmarketingContactRoute
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
   '/auth/forgot-password': typeof authAuthUnauthedForgotPasswordRoute
-  '/auth/phone-verify': typeof authAuthUnauthedPhoneVerifyRoute
   '/auth/sign-in': typeof authAuthUnauthedSignInRoute
   '/auth/sign-up': typeof authAuthUnauthedSignUpRoute
   '/credits/purchase': typeof AutheddashboardCreditsPurchaseRoute
@@ -323,7 +314,6 @@ export interface FileRoutesById {
   '/_public/(marketing)/contact': typeof PublicmarketingContactRoute
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
   '/(auth)/auth/_unauthed/forgot-password': typeof authAuthUnauthedForgotPasswordRoute
-  '/(auth)/auth/_unauthed/phone-verify': typeof authAuthUnauthedPhoneVerifyRoute
   '/(auth)/auth/_unauthed/sign-in': typeof authAuthUnauthedSignInRoute
   '/(auth)/auth/_unauthed/sign-up': typeof authAuthUnauthedSignUpRoute
   '/_authed/(dashboard)/credits/purchase': typeof AutheddashboardCreditsPurchaseRoute
@@ -360,7 +350,6 @@ export interface FileRouteTypes {
     | '/contact'
     | '/api/newsletter/subscribe'
     | '/auth/forgot-password'
-    | '/auth/phone-verify'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/credits/purchase'
@@ -393,7 +382,6 @@ export interface FileRouteTypes {
     | '/contact'
     | '/api/newsletter/subscribe'
     | '/auth/forgot-password'
-    | '/auth/phone-verify'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/credits/purchase'
@@ -430,7 +418,6 @@ export interface FileRouteTypes {
     | '/_public/(marketing)/contact'
     | '/api/newsletter/subscribe'
     | '/(auth)/auth/_unauthed/forgot-password'
-    | '/(auth)/auth/_unauthed/phone-verify'
     | '/(auth)/auth/_unauthed/sign-in'
     | '/(auth)/auth/_unauthed/sign-up'
     | '/_authed/(dashboard)/credits/purchase'
@@ -595,13 +582,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authAuthUnauthedForgotPasswordRouteImport
       parentRoute: typeof authAuthUnauthedRouteRoute
     }
-    '/(auth)/auth/_unauthed/phone-verify': {
-      id: '/(auth)/auth/_unauthed/phone-verify'
-      path: '/phone-verify'
-      fullPath: '/auth/phone-verify'
-      preLoaderRoute: typeof authAuthUnauthedPhoneVerifyRouteImport
-      parentRoute: typeof authAuthUnauthedRouteRoute
-    }
     '/(auth)/auth/_unauthed/sign-in': {
       id: '/(auth)/auth/_unauthed/sign-in'
       path: '/sign-in'
@@ -757,14 +737,12 @@ const BillingRouteRouteWithChildren = BillingRouteRoute._addFileChildren(
 
 interface authAuthUnauthedRouteRouteChildren {
   authAuthUnauthedForgotPasswordRoute: typeof authAuthUnauthedForgotPasswordRoute
-  authAuthUnauthedPhoneVerifyRoute: typeof authAuthUnauthedPhoneVerifyRoute
   authAuthUnauthedSignInRoute: typeof authAuthUnauthedSignInRoute
   authAuthUnauthedSignUpRoute: typeof authAuthUnauthedSignUpRoute
 }
 
 const authAuthUnauthedRouteRouteChildren: authAuthUnauthedRouteRouteChildren = {
   authAuthUnauthedForgotPasswordRoute: authAuthUnauthedForgotPasswordRoute,
-  authAuthUnauthedPhoneVerifyRoute: authAuthUnauthedPhoneVerifyRoute,
   authAuthUnauthedSignInRoute: authAuthUnauthedSignInRoute,
   authAuthUnauthedSignUpRoute: authAuthUnauthedSignUpRoute,
 }

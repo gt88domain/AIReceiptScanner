@@ -17,7 +17,7 @@ A modern full-stack TypeScript template for building SaaS applications with zero
 | **Backend**      | Hono + Cloudflare Workers                             |
 | **Database**     | Cloudflare D1 (SQLite) + Drizzle ORM                  |
 | **API**          | oRPC (end-to-end type-safe)                           |
-| **Auth**         | Better Auth (Email/Password, GitHub, Google, Apple, Phone/SMS OTP) |
+| **Auth**         | Better Auth (Email/Password, GitHub, Google, Apple) |
 | **Payments**     | Stripe + Creem (web), RevenueCat (native), credits system |
 | **Mobile**       | React Native + Expo                                   |
 | **Email**        | Resend + React Email templates                        |
@@ -31,7 +31,6 @@ A modern full-stack TypeScript template for building SaaS applications with zero
 
 - Email/password with verification
 - OAuth providers (GitHub, Google, Apple)
-- Phone number / SMS OTP sign-in (Alibaba Cloud SMS)
 - Session management with Better Auth
 - Protected routes and middleware
 
@@ -237,9 +236,6 @@ GOOGLE_CLIENT_SECRET=your_google_client_secret
 # Apple Sign In
 APPLE_APP_BUNDLE_IDENTIFIER=your.app.bundle.id
 
-# Phone / SMS OTP (Alibaba Cloud SMS)
-ALIBABA_CLOUD_ACCESS_KEY_ID=your_access_key_id
-ALIBABA_CLOUD_ACCESS_KEY_SECRET=your_access_key_secret
 ```
 
 ### Email Configuration

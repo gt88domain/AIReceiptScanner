@@ -12,18 +12,16 @@ import { useSocialSignIn } from "@/hooks/use-social-sign-in";
 import { useTranslations } from "@/i18n";
 import { cn } from "@/lib/utils";
 import { EmailSignInForm } from "./email/email-sign-in-form";
-import { PhoneSignInForm } from "./phone/phone-sign-in-form";
 import { TermsAgreement } from "./terms-agreement";
 
 type SignInFormProps = React.ComponentProps<"div"> & {
   initialMethod?: SignInMethod;
 };
 
-type SignInMethod = "email" | "phone" | "otp";
+type SignInMethod = "email" | "otp";
 
 const enabledSignInMethods = [
   webConfig.auth.methods.emailPasswordEnabled ? "email" : null,
-  webConfig.auth.methods.smsEnabled ? "phone" : null,
   webConfig.auth.methods.emailOtpEnabled ? "otp" : null,
 ].filter((method): method is SignInMethod => method !== null);
 const defaultSignInMethod = enabledSignInMethods[0] ?? "email";
@@ -42,8 +40,6 @@ export function SignInForm({ initialMethod = "email", className, ...props }: Sig
     switch (method) {
       case "email":
         return t("signIn.description");
-      case "phone":
-        return t("signIn.phoneDescription");
       case "otp":
         return t("signIn.emailOtpDescription");
     }
@@ -69,17 +65,6 @@ export function SignInForm({ initialMethod = "email", className, ...props }: Sig
             transition={{ duration: 0.2, ease: "easeOut" }}
           >
             <EmailSignInForm mode="password" />
-          </motion.div>
-        );
-      case "phone":
-        return (
-          <motion.div
-            key="phone-otp"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-          >
-            <PhoneSignInForm />
           </motion.div>
         );
       case "otp":
@@ -125,11 +110,6 @@ export function SignInForm({ initialMethod = "email", className, ...props }: Sig
                         {t("signIn.emailTab")}
                       </TabsTrigger>
                     ) : null}
-                    {webConfig.auth.methods.smsEnabled ? (
-                      <TabsTrigger value="phone" className="rounded-full">
-                        {t("signIn.phoneTab")}
-                      </TabsTrigger>
-                    ) : null}
                     {webConfig.auth.methods.emailOtpEnabled ? (
                       <TabsTrigger value="otp" className="rounded-full">
                         {t("auth.emailOtpMode")}
@@ -140,11 +120,6 @@ export function SignInForm({ initialMethod = "email", className, ...props }: Sig
                 {webConfig.auth.methods.emailPasswordEnabled ? (
                   <TabsContent value="email" className={cn(!isEmailOtpVerifying && "mt-4")}>
                     {renderSignInMethodContent("email")}
-                  </TabsContent>
-                ) : null}
-                {webConfig.auth.methods.smsEnabled ? (
-                  <TabsContent value="phone" className="mt-4">
-                    {renderSignInMethodContent("phone")}
                   </TabsContent>
                 ) : null}
                 {webConfig.auth.methods.emailOtpEnabled ? (

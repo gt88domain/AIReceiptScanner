@@ -12,14 +12,12 @@ export interface WebConfig {
     methods: {
       emailPasswordEnabled: boolean;
       emailOtpEnabled: boolean;
-      smsEnabled: boolean;
       githubEnabled: boolean;
       googleEnabled: boolean;
       appleEnabled: boolean;
     };
     otp: {
       email: AppCommonConfig["auth"]["otp"]["email"];
-      sms: AppCommonConfig["auth"]["otp"]["sms"];
     };
   };
   defaultThemePresetKey: ThemePresetKey;

@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { useTranslations } from "@/i18n";
 import { authClient } from "@/lib/auth/auth-client";
 import { useOrpc } from "@/hooks/use-orpc";
-import { getVisibleUserEmail, isPhoneUser } from "@repo/shared";
+import { getVisibleUserEmail } from "@repo/shared";
 
 export const Route = createFileRoute("/_authed/(dashboard)/settings/profile")({
   component: RouteComponent,
@@ -51,8 +51,6 @@ function RouteComponent() {
   });
 
   const visibleEmail = getVisibleUserEmail(user);
-  const visiblePhoneNumber = user.phoneNumber ?? null;
-  const hasPhoneLogin = isPhoneUser(user);
   const isStorageEnabled = webConfig.storageEnabled;
 
   const handleAvatarUpload = async (file: File) => {
@@ -172,21 +170,11 @@ function RouteComponent() {
                 }}
               />
 
-              {!hasPhoneLogin && (
-                <Field>
-                  <FieldLabel>{t("email")}</FieldLabel>
-                  <Input disabled value={visibleEmail ?? t("notLinked")} />
-                  <FieldDescription>{t("emailDescription")}</FieldDescription>
-                </Field>
-              )}
-
-              {hasPhoneLogin && (
-                <Field>
-                  <FieldLabel>{t("phone")}</FieldLabel>
-                  <Input disabled value={visiblePhoneNumber ?? t("notLinked")} />
-                  <FieldDescription>{t("phoneDescription")}</FieldDescription>
-                </Field>
-              )}
+              <Field>
+                <FieldLabel>{t("email")}</FieldLabel>
+                <Input disabled value={visibleEmail ?? t("notLinked")} />
+                <FieldDescription>{t("emailDescription")}</FieldDescription>
+              </Field>
 
               <div className="flex justify-end">
                 <form.Subscribe>
