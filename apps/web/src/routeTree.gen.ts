@@ -10,39 +10,39 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SplatRouteImport } from './routes/$'
-import { Route as BillingRouteRouteImport } from './routes/billing/route'
 import { Route as PublicRouteRouteImport } from './routes/_public/route'
-import { Route as DocsSplatRouteImport } from './routes/docs/$'
-import { Route as BillingSuccessRouteImport } from './routes/billing/success'
-import { Route as BillingCancelRouteImport } from './routes/billing/cancel'
-import { Route as ApiSearchRouteImport } from './routes/api/search'
-import { Route as ApiContactRouteImport } from './routes/api/contact'
-import { Route as AutheddashboardRouteRouteImport } from './routes/_authed/(dashboard)/route'
+import { Route as BillingRouteRouteImport } from './routes/billing/route'
 import { Route as authAuthRouteRouteImport } from './routes/(auth)/auth/route'
-import { Route as ApiNewsletterSubscribeRouteImport } from './routes/api/newsletter/subscribe'
-import { Route as PublicmarketingContactRouteImport } from './routes/_public/(marketing)/contact'
-import { Route as PubliclegalTermsRouteImport } from './routes/_public/(legal)/terms'
-import { Route as PubliclegalPrivacyRouteImport } from './routes/_public/(legal)/privacy'
-import { Route as AutheddashboardAdminRouteImport } from './routes/_authed/(dashboard)/admin'
-import { Route as authAuthResetPasswordRouteImport } from './routes/(auth)/auth/reset-password'
-import { Route as AutheddashboardDashboardRouteRouteImport } from './routes/_authed/(dashboard)/dashboard/route'
+import { Route as AutheddashboardRouteRouteImport } from './routes/_authed/(dashboard)/route'
+import { Route as ApiContactRouteImport } from './routes/api/contact'
+import { Route as ApiSearchRouteImport } from './routes/api/search'
+import { Route as BillingCancelRouteImport } from './routes/billing/cancel'
+import { Route as BillingSuccessRouteImport } from './routes/billing/success'
+import { Route as DocsSplatRouteImport } from './routes/docs/$'
 import { Route as authAuthUnauthedRouteRouteImport } from './routes/(auth)/auth/_unauthed/route'
-import { Route as PublicmarketingListingIndexRouteImport } from './routes/_public/(marketing)/listing/index'
-import { Route as PublicmarketingBlogIndexRouteImport } from './routes/_public/(marketing)/blog/index'
-import { Route as PublicmarketinglandingPageIndexRouteImport } from './routes/_public/(marketing)/(landing-page)/index'
-import { Route as AutheddashboardSettingsIndexRouteImport } from './routes/_authed/(dashboard)/settings/index'
-import { Route as PublicmarketingTemplatesLandingComposerRouteImport } from './routes/_public/(marketing)/templates/landing-composer'
-import { Route as PublicmarketingListingSlugRouteImport } from './routes/_public/(marketing)/listing/$slug'
-import { Route as PublicmarketingBlogSlugRouteImport } from './routes/_public/(marketing)/blog/$slug'
-import { Route as AutheddashboardSettingsSecurityRouteImport } from './routes/_authed/(dashboard)/settings/security'
-import { Route as AutheddashboardSettingsProfileRouteImport } from './routes/_authed/(dashboard)/settings/profile'
-import { Route as AutheddashboardSettingsBillingRouteImport } from './routes/_authed/(dashboard)/settings/billing'
-import { Route as AutheddashboardCreditsTransactionsRouteImport } from './routes/_authed/(dashboard)/credits/transactions'
-import { Route as AutheddashboardCreditsPurchaseRouteImport } from './routes/_authed/(dashboard)/credits/purchase'
-import { Route as authAuthUnauthedSignUpRouteImport } from './routes/(auth)/auth/_unauthed/sign-up'
-import { Route as authAuthUnauthedSignInRouteImport } from './routes/(auth)/auth/_unauthed/sign-in'
-import { Route as authAuthUnauthedPhoneVerifyRouteImport } from './routes/(auth)/auth/_unauthed/phone-verify'
+import { Route as authAuthResetPasswordRouteImport } from './routes/(auth)/auth/reset-password'
+import { Route as AutheddashboardAdminRouteImport } from './routes/_authed/(dashboard)/admin'
+import { Route as AutheddashboardDashboardRouteRouteImport } from './routes/_authed/(dashboard)/dashboard/route'
+import { Route as PubliclegalPrivacyRouteImport } from './routes/_public/(legal)/privacy'
+import { Route as PubliclegalTermsRouteImport } from './routes/_public/(legal)/terms'
+import { Route as PublicmarketingContactRouteImport } from './routes/_public/(marketing)/contact'
+import { Route as ApiNewsletterSubscribeRouteImport } from './routes/api/newsletter/subscribe'
 import { Route as authAuthUnauthedForgotPasswordRouteImport } from './routes/(auth)/auth/_unauthed/forgot-password'
+import { Route as authAuthUnauthedPhoneVerifyRouteImport } from './routes/(auth)/auth/_unauthed/phone-verify'
+import { Route as authAuthUnauthedSignInRouteImport } from './routes/(auth)/auth/_unauthed/sign-in'
+import { Route as authAuthUnauthedSignUpRouteImport } from './routes/(auth)/auth/_unauthed/sign-up'
+import { Route as AutheddashboardCreditsPurchaseRouteImport } from './routes/_authed/(dashboard)/credits/purchase'
+import { Route as AutheddashboardCreditsTransactionsRouteImport } from './routes/_authed/(dashboard)/credits/transactions'
+import { Route as AutheddashboardSettingsIndexRouteImport } from './routes/_authed/(dashboard)/settings/index'
+import { Route as AutheddashboardSettingsBillingRouteImport } from './routes/_authed/(dashboard)/settings/billing'
+import { Route as AutheddashboardSettingsProfileRouteImport } from './routes/_authed/(dashboard)/settings/profile'
+import { Route as AutheddashboardSettingsSecurityRouteImport } from './routes/_authed/(dashboard)/settings/security'
+import { Route as PublicmarketinglandingPageIndexRouteImport } from './routes/_public/(marketing)/(landing-page)/index'
+import { Route as PublicmarketingBlogIndexRouteImport } from './routes/_public/(marketing)/blog/index'
+import { Route as PublicmarketingBlogSlugRouteImport } from './routes/_public/(marketing)/blog/$slug'
+import { Route as PublicmarketingListingIndexRouteImport } from './routes/_public/(marketing)/listing/index'
+import { Route as PublicmarketingListingSlugRouteImport } from './routes/_public/(marketing)/listing/$slug'
+import { Route as PublicmarketingTemplatesLandingComposerRouteImport } from './routes/_public/(marketing)/templates/landing-composer'
 import { Route as PublicmarketingBlogCategorySlugRouteImport } from './routes/_public/(marketing)/blog/category/$slug'
 
 const SplatRoute = SplatRouteImport.update({
@@ -50,43 +50,13 @@ const SplatRoute = SplatRouteImport.update({
   path: '/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BillingRouteRoute = BillingRouteRouteImport.update({
-  id: '/billing',
-  path: '/billing',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PublicRouteRoute = PublicRouteRouteImport.update({
   id: '/_public',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DocsSplatRoute = DocsSplatRouteImport.update({
-  id: '/docs/$',
-  path: '/docs/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BillingSuccessRoute = BillingSuccessRouteImport.update({
-  id: '/success',
-  path: '/success',
-  getParentRoute: () => BillingRouteRoute,
-} as any)
-const BillingCancelRoute = BillingCancelRouteImport.update({
-  id: '/cancel',
-  path: '/cancel',
-  getParentRoute: () => BillingRouteRoute,
-} as any)
-const ApiSearchRoute = ApiSearchRouteImport.update({
-  id: '/api/search',
-  path: '/api/search',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiContactRoute = ApiContactRouteImport.update({
-  id: '/api/contact',
-  path: '/api/contact',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AutheddashboardRouteRoute = AutheddashboardRouteRouteImport.update({
-  id: '/_authed/(dashboard)',
-  path: '',
+const BillingRouteRoute = BillingRouteRouteImport.update({
+  id: '/billing',
+  path: '/billing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const authAuthRouteRoute = authAuthRouteRouteImport.update({
@@ -94,35 +64,49 @@ const authAuthRouteRoute = authAuthRouteRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiNewsletterSubscribeRoute = ApiNewsletterSubscribeRouteImport.update({
-  id: '/api/newsletter/subscribe',
-  path: '/api/newsletter/subscribe',
+const AutheddashboardRouteRoute = AutheddashboardRouteRouteImport.update({
+  id: '/_authed/(dashboard)',
+  path: '',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PublicmarketingContactRoute = PublicmarketingContactRouteImport.update({
-  id: '/(marketing)/contact',
-  path: '/contact',
-  getParentRoute: () => PublicRouteRoute,
+const ApiContactRoute = ApiContactRouteImport.update({
+  id: '/api/contact',
+  path: '/api/contact',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const PubliclegalTermsRoute = PubliclegalTermsRouteImport.update({
-  id: '/(legal)/terms',
-  path: '/terms',
-  getParentRoute: () => PublicRouteRoute,
+const ApiSearchRoute = ApiSearchRouteImport.update({
+  id: '/api/search',
+  path: '/api/search',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const PubliclegalPrivacyRoute = PubliclegalPrivacyRouteImport.update({
-  id: '/(legal)/privacy',
-  path: '/privacy',
-  getParentRoute: () => PublicRouteRoute,
+const BillingCancelRoute = BillingCancelRouteImport.update({
+  id: '/cancel',
+  path: '/cancel',
+  getParentRoute: () => BillingRouteRoute,
 } as any)
-const AutheddashboardAdminRoute = AutheddashboardAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => AutheddashboardRouteRoute,
+const BillingSuccessRoute = BillingSuccessRouteImport.update({
+  id: '/success',
+  path: '/success',
+  getParentRoute: () => BillingRouteRoute,
+} as any)
+const DocsSplatRoute = DocsSplatRouteImport.update({
+  id: '/docs/$',
+  path: '/docs/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const authAuthUnauthedRouteRoute = authAuthUnauthedRouteRouteImport.update({
+  id: '/_unauthed',
+  getParentRoute: () => authAuthRouteRoute,
 } as any)
 const authAuthResetPasswordRoute = authAuthResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
   getParentRoute: () => authAuthRouteRoute,
+} as any)
+const AutheddashboardAdminRoute = AutheddashboardAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AutheddashboardRouteRoute,
 } as any)
 const AutheddashboardDashboardRouteRoute =
   AutheddashboardDashboardRouteRouteImport.update({
@@ -130,67 +114,52 @@ const AutheddashboardDashboardRouteRoute =
     path: '/dashboard',
     getParentRoute: () => AutheddashboardRouteRoute,
   } as any)
-const authAuthUnauthedRouteRoute = authAuthUnauthedRouteRouteImport.update({
-  id: '/_unauthed',
-  getParentRoute: () => authAuthRouteRoute,
-} as any)
-const PublicmarketingListingIndexRoute =
-  PublicmarketingListingIndexRouteImport.update({
-    id: '/(marketing)/listing/',
-    path: '/listing/',
-    getParentRoute: () => PublicRouteRoute,
-  } as any)
-const PublicmarketingBlogIndexRoute =
-  PublicmarketingBlogIndexRouteImport.update({
-    id: '/(marketing)/blog/',
-    path: '/blog/',
-    getParentRoute: () => PublicRouteRoute,
-  } as any)
-const PublicmarketinglandingPageIndexRoute =
-  PublicmarketinglandingPageIndexRouteImport.update({
-    id: '/(marketing)/(landing-page)/',
-    path: '/',
-    getParentRoute: () => PublicRouteRoute,
-  } as any)
-const AutheddashboardSettingsIndexRoute =
-  AutheddashboardSettingsIndexRouteImport.update({
-    id: '/settings/',
-    path: '/settings/',
-    getParentRoute: () => AutheddashboardRouteRoute,
-  } as any)
-const PublicmarketingTemplatesLandingComposerRoute =
-  PublicmarketingTemplatesLandingComposerRouteImport.update({
-    id: '/(marketing)/templates/landing-composer',
-    path: '/templates/landing-composer',
-    getParentRoute: () => PublicRouteRoute,
-  } as any)
-const PublicmarketingListingSlugRoute =
-  PublicmarketingListingSlugRouteImport.update({
-    id: '/(marketing)/listing/$slug',
-    path: '/listing/$slug',
-    getParentRoute: () => PublicRouteRoute,
-  } as any)
-const PublicmarketingBlogSlugRoute = PublicmarketingBlogSlugRouteImport.update({
-  id: '/(marketing)/blog/$slug',
-  path: '/blog/$slug',
+const PubliclegalPrivacyRoute = PubliclegalPrivacyRouteImport.update({
+  id: '/(legal)/privacy',
+  path: '/privacy',
   getParentRoute: () => PublicRouteRoute,
 } as any)
-const AutheddashboardSettingsSecurityRoute =
-  AutheddashboardSettingsSecurityRouteImport.update({
-    id: '/settings/security',
-    path: '/settings/security',
-    getParentRoute: () => AutheddashboardRouteRoute,
+const PubliclegalTermsRoute = PubliclegalTermsRouteImport.update({
+  id: '/(legal)/terms',
+  path: '/terms',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicmarketingContactRoute = PublicmarketingContactRouteImport.update({
+  id: '/(marketing)/contact',
+  path: '/contact',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const ApiNewsletterSubscribeRoute = ApiNewsletterSubscribeRouteImport.update({
+  id: '/api/newsletter/subscribe',
+  path: '/api/newsletter/subscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const authAuthUnauthedForgotPasswordRoute =
+  authAuthUnauthedForgotPasswordRouteImport.update({
+    id: '/forgot-password',
+    path: '/forgot-password',
+    getParentRoute: () => authAuthUnauthedRouteRoute,
   } as any)
-const AutheddashboardSettingsProfileRoute =
-  AutheddashboardSettingsProfileRouteImport.update({
-    id: '/settings/profile',
-    path: '/settings/profile',
-    getParentRoute: () => AutheddashboardRouteRoute,
+const authAuthUnauthedPhoneVerifyRoute =
+  authAuthUnauthedPhoneVerifyRouteImport.update({
+    id: '/phone-verify',
+    path: '/phone-verify',
+    getParentRoute: () => authAuthUnauthedRouteRoute,
   } as any)
-const AutheddashboardSettingsBillingRoute =
-  AutheddashboardSettingsBillingRouteImport.update({
-    id: '/settings/billing',
-    path: '/settings/billing',
+const authAuthUnauthedSignInRoute = authAuthUnauthedSignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => authAuthUnauthedRouteRoute,
+} as any)
+const authAuthUnauthedSignUpRoute = authAuthUnauthedSignUpRouteImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
+  getParentRoute: () => authAuthUnauthedRouteRoute,
+} as any)
+const AutheddashboardCreditsPurchaseRoute =
+  AutheddashboardCreditsPurchaseRouteImport.update({
+    id: '/credits/purchase',
+    path: '/credits/purchase',
     getParentRoute: () => AutheddashboardRouteRoute,
   } as any)
 const AutheddashboardCreditsTransactionsRoute =
@@ -199,33 +168,64 @@ const AutheddashboardCreditsTransactionsRoute =
     path: '/credits/transactions',
     getParentRoute: () => AutheddashboardRouteRoute,
   } as any)
-const AutheddashboardCreditsPurchaseRoute =
-  AutheddashboardCreditsPurchaseRouteImport.update({
-    id: '/credits/purchase',
-    path: '/credits/purchase',
+const AutheddashboardSettingsIndexRoute =
+  AutheddashboardSettingsIndexRouteImport.update({
+    id: '/settings/',
+    path: '/settings/',
     getParentRoute: () => AutheddashboardRouteRoute,
   } as any)
-const authAuthUnauthedSignUpRoute = authAuthUnauthedSignUpRouteImport.update({
-  id: '/sign-up',
-  path: '/sign-up',
-  getParentRoute: () => authAuthUnauthedRouteRoute,
-} as any)
-const authAuthUnauthedSignInRoute = authAuthUnauthedSignInRouteImport.update({
-  id: '/sign-in',
-  path: '/sign-in',
-  getParentRoute: () => authAuthUnauthedRouteRoute,
-} as any)
-const authAuthUnauthedPhoneVerifyRoute =
-  authAuthUnauthedPhoneVerifyRouteImport.update({
-    id: '/phone-verify',
-    path: '/phone-verify',
-    getParentRoute: () => authAuthUnauthedRouteRoute,
+const AutheddashboardSettingsBillingRoute =
+  AutheddashboardSettingsBillingRouteImport.update({
+    id: '/settings/billing',
+    path: '/settings/billing',
+    getParentRoute: () => AutheddashboardRouteRoute,
   } as any)
-const authAuthUnauthedForgotPasswordRoute =
-  authAuthUnauthedForgotPasswordRouteImport.update({
-    id: '/forgot-password',
-    path: '/forgot-password',
-    getParentRoute: () => authAuthUnauthedRouteRoute,
+const AutheddashboardSettingsProfileRoute =
+  AutheddashboardSettingsProfileRouteImport.update({
+    id: '/settings/profile',
+    path: '/settings/profile',
+    getParentRoute: () => AutheddashboardRouteRoute,
+  } as any)
+const AutheddashboardSettingsSecurityRoute =
+  AutheddashboardSettingsSecurityRouteImport.update({
+    id: '/settings/security',
+    path: '/settings/security',
+    getParentRoute: () => AutheddashboardRouteRoute,
+  } as any)
+const PublicmarketinglandingPageIndexRoute =
+  PublicmarketinglandingPageIndexRouteImport.update({
+    id: '/(marketing)/(landing-page)/',
+    path: '/',
+    getParentRoute: () => PublicRouteRoute,
+  } as any)
+const PublicmarketingBlogIndexRoute =
+  PublicmarketingBlogIndexRouteImport.update({
+    id: '/(marketing)/blog/',
+    path: '/blog/',
+    getParentRoute: () => PublicRouteRoute,
+  } as any)
+const PublicmarketingBlogSlugRoute = PublicmarketingBlogSlugRouteImport.update({
+  id: '/(marketing)/blog/$slug',
+  path: '/blog/$slug',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicmarketingListingIndexRoute =
+  PublicmarketingListingIndexRouteImport.update({
+    id: '/(marketing)/listing/',
+    path: '/listing/',
+    getParentRoute: () => PublicRouteRoute,
+  } as any)
+const PublicmarketingListingSlugRoute =
+  PublicmarketingListingSlugRouteImport.update({
+    id: '/(marketing)/listing/$slug',
+    path: '/listing/$slug',
+    getParentRoute: () => PublicRouteRoute,
+  } as any)
+const PublicmarketingTemplatesLandingComposerRoute =
+  PublicmarketingTemplatesLandingComposerRouteImport.update({
+    id: '/(marketing)/templates/landing-composer',
+    path: '/templates/landing-composer',
+    getParentRoute: () => PublicRouteRoute,
   } as any)
 const PublicmarketingBlogCategorySlugRoute =
   PublicmarketingBlogCategorySlugRouteImport.update({
@@ -238,7 +238,7 @@ export interface FileRoutesByFullPath {
   '/': typeof PublicmarketinglandingPageIndexRoute
   '/billing': typeof BillingRouteRouteWithChildren
   '/$': typeof SplatRoute
-  '/auth': typeof authAuthUnauthedRouteRouteWithChildren
+  '/auth': typeof authAuthRouteRouteWithChildren
   '/api/contact': typeof ApiContactRoute
   '/api/search': typeof ApiSearchRoute
   '/billing/cancel': typeof BillingCancelRoute
@@ -271,7 +271,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/billing': typeof BillingRouteRouteWithChildren
   '/$': typeof SplatRoute
-  '/auth': typeof authAuthUnauthedRouteRouteWithChildren
+  '/auth': typeof authAuthRouteRouteWithChildren
   '/api/contact': typeof ApiContactRoute
   '/api/search': typeof ApiSearchRoute
   '/billing/cancel': typeof BillingCancelRoute
@@ -469,13 +469,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/billing': {
-      id: '/billing'
-      path: '/billing'
-      fullPath: '/billing'
-      preLoaderRoute: typeof BillingRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_public': {
       id: '/_public'
       path: ''
@@ -483,46 +476,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/docs/$': {
-      id: '/docs/$'
-      path: '/docs/$'
-      fullPath: '/docs/$'
-      preLoaderRoute: typeof DocsSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/billing/success': {
-      id: '/billing/success'
-      path: '/success'
-      fullPath: '/billing/success'
-      preLoaderRoute: typeof BillingSuccessRouteImport
-      parentRoute: typeof BillingRouteRoute
-    }
-    '/billing/cancel': {
-      id: '/billing/cancel'
-      path: '/cancel'
-      fullPath: '/billing/cancel'
-      preLoaderRoute: typeof BillingCancelRouteImport
-      parentRoute: typeof BillingRouteRoute
-    }
-    '/api/search': {
-      id: '/api/search'
-      path: '/api/search'
-      fullPath: '/api/search'
-      preLoaderRoute: typeof ApiSearchRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/contact': {
-      id: '/api/contact'
-      path: '/api/contact'
-      fullPath: '/api/contact'
-      preLoaderRoute: typeof ApiContactRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authed/(dashboard)': {
-      id: '/_authed/(dashboard)'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof AutheddashboardRouteRouteImport
+    '/billing': {
+      id: '/billing'
+      path: '/billing'
+      fullPath: '/billing'
+      preLoaderRoute: typeof BillingRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(auth)/auth': {
@@ -532,18 +490,81 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authAuthRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/newsletter/subscribe': {
-      id: '/api/newsletter/subscribe'
-      path: '/api/newsletter/subscribe'
-      fullPath: '/api/newsletter/subscribe'
-      preLoaderRoute: typeof ApiNewsletterSubscribeRouteImport
+    '/_authed/(dashboard)': {
+      id: '/_authed/(dashboard)'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AutheddashboardRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_public/(marketing)/contact': {
-      id: '/_public/(marketing)/contact'
-      path: '/contact'
-      fullPath: '/contact'
-      preLoaderRoute: typeof PublicmarketingContactRouteImport
+    '/api/contact': {
+      id: '/api/contact'
+      path: '/api/contact'
+      fullPath: '/api/contact'
+      preLoaderRoute: typeof ApiContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/search': {
+      id: '/api/search'
+      path: '/api/search'
+      fullPath: '/api/search'
+      preLoaderRoute: typeof ApiSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/billing/cancel': {
+      id: '/billing/cancel'
+      path: '/cancel'
+      fullPath: '/billing/cancel'
+      preLoaderRoute: typeof BillingCancelRouteImport
+      parentRoute: typeof BillingRouteRoute
+    }
+    '/billing/success': {
+      id: '/billing/success'
+      path: '/success'
+      fullPath: '/billing/success'
+      preLoaderRoute: typeof BillingSuccessRouteImport
+      parentRoute: typeof BillingRouteRoute
+    }
+    '/docs/$': {
+      id: '/docs/$'
+      path: '/docs/$'
+      fullPath: '/docs/$'
+      preLoaderRoute: typeof DocsSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(auth)/auth/_unauthed': {
+      id: '/(auth)/auth/_unauthed'
+      path: ''
+      fullPath: '/auth'
+      preLoaderRoute: typeof authAuthUnauthedRouteRouteImport
+      parentRoute: typeof authAuthRouteRoute
+    }
+    '/(auth)/auth/reset-password': {
+      id: '/(auth)/auth/reset-password'
+      path: '/reset-password'
+      fullPath: '/auth/reset-password'
+      preLoaderRoute: typeof authAuthResetPasswordRouteImport
+      parentRoute: typeof authAuthRouteRoute
+    }
+    '/_authed/(dashboard)/admin': {
+      id: '/_authed/(dashboard)/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AutheddashboardAdminRouteImport
+      parentRoute: typeof AutheddashboardRouteRoute
+    }
+    '/_authed/(dashboard)/dashboard': {
+      id: '/_authed/(dashboard)/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AutheddashboardDashboardRouteRouteImport
+      parentRoute: typeof AutheddashboardRouteRoute
+    }
+    '/_public/(legal)/privacy': {
+      id: '/_public/(legal)/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PubliclegalPrivacyRouteImport
       parentRoute: typeof PublicRouteRoute
     }
     '/_public/(legal)/terms': {
@@ -553,137 +574,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PubliclegalTermsRouteImport
       parentRoute: typeof PublicRouteRoute
     }
-    '/_public/(legal)/privacy': {
-      id: '/_public/(legal)/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof PubliclegalPrivacyRouteImport
+    '/_public/(marketing)/contact': {
+      id: '/_public/(marketing)/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof PublicmarketingContactRouteImport
       parentRoute: typeof PublicRouteRoute
     }
-    '/_authed/(dashboard)/admin': {
-      id: '/_authed/(dashboard)/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AutheddashboardAdminRouteImport
-      parentRoute: typeof AutheddashboardRouteRoute
+    '/api/newsletter/subscribe': {
+      id: '/api/newsletter/subscribe'
+      path: '/api/newsletter/subscribe'
+      fullPath: '/api/newsletter/subscribe'
+      preLoaderRoute: typeof ApiNewsletterSubscribeRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/(auth)/auth/reset-password': {
-      id: '/(auth)/auth/reset-password'
-      path: '/reset-password'
-      fullPath: '/auth/reset-password'
-      preLoaderRoute: typeof authAuthResetPasswordRouteImport
-      parentRoute: typeof authAuthRouteRoute
-    }
-    '/_authed/(dashboard)/dashboard': {
-      id: '/_authed/(dashboard)/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AutheddashboardDashboardRouteRouteImport
-      parentRoute: typeof AutheddashboardRouteRoute
-    }
-    '/(auth)/auth/_unauthed': {
-      id: '/(auth)/auth/_unauthed'
-      path: ''
-      fullPath: '/auth'
-      preLoaderRoute: typeof authAuthUnauthedRouteRouteImport
-      parentRoute: typeof authAuthRouteRoute
-    }
-    '/_public/(marketing)/listing/': {
-      id: '/_public/(marketing)/listing/'
-      path: '/listing'
-      fullPath: '/listing/'
-      preLoaderRoute: typeof PublicmarketingListingIndexRouteImport
-      parentRoute: typeof PublicRouteRoute
-    }
-    '/_public/(marketing)/blog/': {
-      id: '/_public/(marketing)/blog/'
-      path: '/blog'
-      fullPath: '/blog/'
-      preLoaderRoute: typeof PublicmarketingBlogIndexRouteImport
-      parentRoute: typeof PublicRouteRoute
-    }
-    '/_public/(marketing)/(landing-page)/': {
-      id: '/_public/(marketing)/(landing-page)/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof PublicmarketinglandingPageIndexRouteImport
-      parentRoute: typeof PublicRouteRoute
-    }
-    '/_authed/(dashboard)/settings/': {
-      id: '/_authed/(dashboard)/settings/'
-      path: '/settings'
-      fullPath: '/settings/'
-      preLoaderRoute: typeof AutheddashboardSettingsIndexRouteImport
-      parentRoute: typeof AutheddashboardRouteRoute
-    }
-    '/_public/(marketing)/templates/landing-composer': {
-      id: '/_public/(marketing)/templates/landing-composer'
-      path: '/templates/landing-composer'
-      fullPath: '/templates/landing-composer'
-      preLoaderRoute: typeof PublicmarketingTemplatesLandingComposerRouteImport
-      parentRoute: typeof PublicRouteRoute
-    }
-    '/_public/(marketing)/listing/$slug': {
-      id: '/_public/(marketing)/listing/$slug'
-      path: '/listing/$slug'
-      fullPath: '/listing/$slug'
-      preLoaderRoute: typeof PublicmarketingListingSlugRouteImport
-      parentRoute: typeof PublicRouteRoute
-    }
-    '/_public/(marketing)/blog/$slug': {
-      id: '/_public/(marketing)/blog/$slug'
-      path: '/blog/$slug'
-      fullPath: '/blog/$slug'
-      preLoaderRoute: typeof PublicmarketingBlogSlugRouteImport
-      parentRoute: typeof PublicRouteRoute
-    }
-    '/_authed/(dashboard)/settings/security': {
-      id: '/_authed/(dashboard)/settings/security'
-      path: '/settings/security'
-      fullPath: '/settings/security'
-      preLoaderRoute: typeof AutheddashboardSettingsSecurityRouteImport
-      parentRoute: typeof AutheddashboardRouteRoute
-    }
-    '/_authed/(dashboard)/settings/profile': {
-      id: '/_authed/(dashboard)/settings/profile'
-      path: '/settings/profile'
-      fullPath: '/settings/profile'
-      preLoaderRoute: typeof AutheddashboardSettingsProfileRouteImport
-      parentRoute: typeof AutheddashboardRouteRoute
-    }
-    '/_authed/(dashboard)/settings/billing': {
-      id: '/_authed/(dashboard)/settings/billing'
-      path: '/settings/billing'
-      fullPath: '/settings/billing'
-      preLoaderRoute: typeof AutheddashboardSettingsBillingRouteImport
-      parentRoute: typeof AutheddashboardRouteRoute
-    }
-    '/_authed/(dashboard)/credits/transactions': {
-      id: '/_authed/(dashboard)/credits/transactions'
-      path: '/credits/transactions'
-      fullPath: '/credits/transactions'
-      preLoaderRoute: typeof AutheddashboardCreditsTransactionsRouteImport
-      parentRoute: typeof AutheddashboardRouteRoute
-    }
-    '/_authed/(dashboard)/credits/purchase': {
-      id: '/_authed/(dashboard)/credits/purchase'
-      path: '/credits/purchase'
-      fullPath: '/credits/purchase'
-      preLoaderRoute: typeof AutheddashboardCreditsPurchaseRouteImport
-      parentRoute: typeof AutheddashboardRouteRoute
-    }
-    '/(auth)/auth/_unauthed/sign-up': {
-      id: '/(auth)/auth/_unauthed/sign-up'
-      path: '/sign-up'
-      fullPath: '/auth/sign-up'
-      preLoaderRoute: typeof authAuthUnauthedSignUpRouteImport
-      parentRoute: typeof authAuthUnauthedRouteRoute
-    }
-    '/(auth)/auth/_unauthed/sign-in': {
-      id: '/(auth)/auth/_unauthed/sign-in'
-      path: '/sign-in'
-      fullPath: '/auth/sign-in'
-      preLoaderRoute: typeof authAuthUnauthedSignInRouteImport
+    '/(auth)/auth/_unauthed/forgot-password': {
+      id: '/(auth)/auth/_unauthed/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/auth/forgot-password'
+      preLoaderRoute: typeof authAuthUnauthedForgotPasswordRouteImport
       parentRoute: typeof authAuthUnauthedRouteRoute
     }
     '/(auth)/auth/_unauthed/phone-verify': {
@@ -693,12 +602,103 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authAuthUnauthedPhoneVerifyRouteImport
       parentRoute: typeof authAuthUnauthedRouteRoute
     }
-    '/(auth)/auth/_unauthed/forgot-password': {
-      id: '/(auth)/auth/_unauthed/forgot-password'
-      path: '/forgot-password'
-      fullPath: '/auth/forgot-password'
-      preLoaderRoute: typeof authAuthUnauthedForgotPasswordRouteImport
+    '/(auth)/auth/_unauthed/sign-in': {
+      id: '/(auth)/auth/_unauthed/sign-in'
+      path: '/sign-in'
+      fullPath: '/auth/sign-in'
+      preLoaderRoute: typeof authAuthUnauthedSignInRouteImport
       parentRoute: typeof authAuthUnauthedRouteRoute
+    }
+    '/(auth)/auth/_unauthed/sign-up': {
+      id: '/(auth)/auth/_unauthed/sign-up'
+      path: '/sign-up'
+      fullPath: '/auth/sign-up'
+      preLoaderRoute: typeof authAuthUnauthedSignUpRouteImport
+      parentRoute: typeof authAuthUnauthedRouteRoute
+    }
+    '/_authed/(dashboard)/credits/purchase': {
+      id: '/_authed/(dashboard)/credits/purchase'
+      path: '/credits/purchase'
+      fullPath: '/credits/purchase'
+      preLoaderRoute: typeof AutheddashboardCreditsPurchaseRouteImport
+      parentRoute: typeof AutheddashboardRouteRoute
+    }
+    '/_authed/(dashboard)/credits/transactions': {
+      id: '/_authed/(dashboard)/credits/transactions'
+      path: '/credits/transactions'
+      fullPath: '/credits/transactions'
+      preLoaderRoute: typeof AutheddashboardCreditsTransactionsRouteImport
+      parentRoute: typeof AutheddashboardRouteRoute
+    }
+    '/_authed/(dashboard)/settings/': {
+      id: '/_authed/(dashboard)/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof AutheddashboardSettingsIndexRouteImport
+      parentRoute: typeof AutheddashboardRouteRoute
+    }
+    '/_authed/(dashboard)/settings/billing': {
+      id: '/_authed/(dashboard)/settings/billing'
+      path: '/settings/billing'
+      fullPath: '/settings/billing'
+      preLoaderRoute: typeof AutheddashboardSettingsBillingRouteImport
+      parentRoute: typeof AutheddashboardRouteRoute
+    }
+    '/_authed/(dashboard)/settings/profile': {
+      id: '/_authed/(dashboard)/settings/profile'
+      path: '/settings/profile'
+      fullPath: '/settings/profile'
+      preLoaderRoute: typeof AutheddashboardSettingsProfileRouteImport
+      parentRoute: typeof AutheddashboardRouteRoute
+    }
+    '/_authed/(dashboard)/settings/security': {
+      id: '/_authed/(dashboard)/settings/security'
+      path: '/settings/security'
+      fullPath: '/settings/security'
+      preLoaderRoute: typeof AutheddashboardSettingsSecurityRouteImport
+      parentRoute: typeof AutheddashboardRouteRoute
+    }
+    '/_public/(marketing)/(landing-page)/': {
+      id: '/_public/(marketing)/(landing-page)/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof PublicmarketinglandingPageIndexRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/(marketing)/blog/': {
+      id: '/_public/(marketing)/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof PublicmarketingBlogIndexRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/(marketing)/blog/$slug': {
+      id: '/_public/(marketing)/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof PublicmarketingBlogSlugRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/(marketing)/listing/': {
+      id: '/_public/(marketing)/listing/'
+      path: '/listing'
+      fullPath: '/listing/'
+      preLoaderRoute: typeof PublicmarketingListingIndexRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/(marketing)/listing/$slug': {
+      id: '/_public/(marketing)/listing/$slug'
+      path: '/listing/$slug'
+      fullPath: '/listing/$slug'
+      preLoaderRoute: typeof PublicmarketingListingSlugRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/(marketing)/templates/landing-composer': {
+      id: '/_public/(marketing)/templates/landing-composer'
+      path: '/templates/landing-composer'
+      fullPath: '/templates/landing-composer'
+      preLoaderRoute: typeof PublicmarketingTemplatesLandingComposerRouteImport
+      parentRoute: typeof PublicRouteRoute
     }
     '/_public/(marketing)/blog/category/$slug': {
       id: '/_public/(marketing)/blog/category/$slug'
