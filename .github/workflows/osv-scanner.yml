@@ -7,16 +7,16 @@ on:
   workflow_dispatch:
 
 permissions:
-  actions: read
   contents: read
 
 jobs:
   osv:
-    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2.3.8
-    with:
-      scan-args: |-
-        --lockfile=pnpm-lock.yaml
-      # This private repository is not licensed for GitHub Code Security, so
-      # uploading SARIF would fail before the actual vulnerability scan runs.
-      upload-sarif: false
-      fail-on-vuln: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Direct scanner execution keeps the failure gate on private GitHub Free
+      # repositories, where the reusable workflow cannot start or upload SARIF.
+      - uses: google/osv-scanner-action/osv-scanner-action@8dc09193bb540e09b23da07ad7e30bd33bf87018 # v2.3.8
+        with:
+          scan-args: |-
+            --lockfile=pnpm-lock.yaml
