@@ -4,6 +4,7 @@ import { getCheckoutDecisionReasonFromError } from "@repo/app-config/payments/we
 import { z } from "zod";
 import type { Context } from "@/lib/context";
 import { protectedProcedure } from "@/lib/orpc";
+import { createPaymentOperationError } from "@/lib/payment-operation-error";
 import { providerEnum } from "@/payments/public/schemas";
 
 /**
@@ -101,9 +102,7 @@ export const paymentsRouter = {
             data: { reason },
           });
         }
-        throw new ORPCError("BAD_REQUEST", {
-          message: error instanceof Error ? error.message : "Checkout failed. Please try again.",
-        });
+        throw createPaymentOperationError("CHECKOUT_CREATION_FAILED", error);
       }
     }),
 
@@ -129,10 +128,7 @@ export const paymentsRouter = {
         });
         return { url: session.url };
       } catch (error) {
-        throw new ORPCError("BAD_REQUEST", {
-          message:
-            error instanceof Error ? error.message : "Portal session failed. Please try again.",
-        });
+        throw createPaymentOperationError("BILLING_PORTAL_CREATION_FAILED", error);
       }
     }),
 
@@ -166,9 +162,7 @@ export const paymentsRouter = {
           });
         }
 
-        throw new ORPCError("BAD_REQUEST", {
-          message: error instanceof Error ? error.message : "Upgrade failed. Please try again.",
-        });
+        throw createPaymentOperationError("SUBSCRIPTION_UPGRADE_FAILED", error);
       }
     }),
 };
