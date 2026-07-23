@@ -11,10 +11,7 @@ import { authClient } from "@/lib/auth/auth.client";
 import { orpc } from "@/lib/orpc";
 import { useAuth } from "@/providers/auth-provider";
 import { useTabBarVisibility } from "@/providers/tab-bar-provider";
-import {
-  getVisibleUserEmail,
-  isPhoneUser,
-} from "@repo/shared";
+import { getVisibleUserEmail } from "@repo/shared";
 
 function formatProviderName(provider: "github" | "google", t: (key: string) => string) {
   return t(`auth.providers.${provider}`);
@@ -35,14 +32,12 @@ export default function SecurityScreen() {
   useTabBarVisibility(true);
 
   const visibleEmail = getVisibleUserEmail(user);
-  const visiblePhoneNumber = user.phoneNumber ?? null;
   const hasPassword = passwordStatus.data?.hasPassword ?? false;
   const socialProviders = passwordStatus.data?.socialProviders ?? [];
   const isLoading = passwordStatus.isLoading;
   const isError = passwordStatus.isError;
   const isSocialUser = !isLoading && !isError && !hasPassword && socialProviders.length > 0;
   const isPasswordUser = !isLoading && !isError && hasPassword;
-  const hasPhoneLogin = isPhoneUser(user);
   const providerNames = socialProviders
     .map((provider) => formatProviderName(provider, t))
     .join(" / ");
@@ -118,36 +113,6 @@ export default function SecurityScreen() {
               </Text>
               <Text className="text-sm text-muted">
                 {t("security.socialLoginSecurity", { providers: providerNames })}
-              </Text>
-            </View>
-          </View>
-        ) : hasPhoneLogin ? (
-          <View className="gap-4 rounded-2xl bg-surface p-6">
-            <View className="flex-row items-center gap-3">
-              <MaterialIcons name="verified-user" size={20} color={successColor} />
-              <View className="flex-1 gap-1">
-                <Text className="text-base font-semibold text-foreground">
-                  {t("security.phone.title")}
-                </Text>
-                <Text className="text-sm text-muted">
-                  {t("security.phone.verifiedNumber", { phoneNumber: visiblePhoneNumber ?? "" })}
-                </Text>
-              </View>
-              <Text className="text-sm font-medium" style={{ color: successColor }}>
-                {t("security.phone.verified")}
-              </Text>
-            </View>
-
-            <View className="gap-2 rounded-xl bg-background px-4 py-4">
-              <Text className="text-sm font-semibold text-foreground">
-                {isPasswordUser
-                  ? t("security.phone.passwordEnabledTitle")
-                  : t("security.phone.otpOnlyTitle")}
-              </Text>
-              <Text className="text-sm text-muted">
-                {isPasswordUser
-                  ? t("security.phone.passwordEnabledDescription")
-                  : t("security.phone.otpOnlyDescription")}
               </Text>
             </View>
           </View>

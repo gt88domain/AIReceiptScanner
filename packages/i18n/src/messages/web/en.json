@@ -36,8 +36,9 @@
         "integrations": "Integrations",
         "pricing": "Pricing",
         "faq": "FAQ",
-        "testimonials": "Testimonials",
+        "listing": "Listing template",
         "blog": "Blog",
+        "contact": "Contact",
         "docs": "Docs"
       },
       "actions": {
@@ -107,7 +108,19 @@
     },
     "footer": {
       "description": "A collection of components for your startup business or side project.",
-      "copyright": "© {year} easystarter.dev. All rights reserved.",
+      "copyright": "© {year} TanStack Template. All rights reserved.",
+      "newsletter": {
+        "title": "Get product updates",
+        "description": "A short, useful note when we ship something worth sharing.",
+        "emailLabel": "Email address",
+        "placeholder": "you@example.com",
+        "submit": "Subscribe",
+        "submitting": "Adding…",
+        "privacy": "No spam. Unsubscribe any time.",
+        "success": "You're subscribed.",
+        "error": "We couldn't subscribe you. Please try again.",
+        "rateLimited": "Please wait a minute before trying again."
+      },
       "social": {
         "github": "GitHub",
         "twitter": "Twitter"
@@ -118,7 +131,7 @@
           "links": {
             "overview": "Overview",
             "pricing": "Pricing",
-            "marketplace": "Marketplace",
+            "listingTemplate": "Listing template",
             "features": "Features"
           }
         },
@@ -127,11 +140,105 @@
           "links": {
             "privacy": "Privacy",
             "terms": "Terms",
-            "about": "About",
-            "blog": "Blog"
+            "docs": "Docs",
+            "blog": "Blog",
+            "contact": "Contact"
           }
         }
       }
+    }
+  },
+  "listingTemplate": {
+    "eyebrow": "Reusable public pattern",
+    "title": "Listing page template",
+    "description": "A production-ready starting point for directories, marketplaces, resource libraries, and searchable catalogs.",
+    "resultCount": "{count} patterns",
+    "searchLabel": "Search templates",
+    "searchPlaceholder": "Search by use case or capability",
+    "filterLabel": "Filters",
+    "categoryLabel": "Use case",
+    "allCategories": "All patterns",
+    "layoutLabel": "Layout",
+    "allLayouts": "All layouts",
+    "sortLabel": "Sort patterns",
+    "sortRecommended": "Recommended",
+    "sortNewest": "Newest",
+    "sortName": "Name",
+    "emptyTitle": "No patterns match",
+    "emptyDescription": "Try a different search or clear one of the filters.",
+    "clearFilters": "Clear filters",
+    "viewDetails": "View details",
+    "backToListing": "Back to templates",
+    "detail": {
+      "includedTitle": "Included pattern capabilities",
+      "includedSearch": "Search-ready filtering controls",
+      "includedFilters": "Faceted category and layout filters",
+      "includedResponsive": "Responsive grid and row layouts",
+      "includedEmptyState": "Empty and loading state building blocks",
+      "previewTitle": "Layout preview",
+      "useCaseTitle": "Best for",
+      "copyLink": "Copy link",
+      "copiedLink": "Copied",
+      "startUsing": "Start using"
+    },
+    "items": {
+      "directory": {
+        "title": "Vendor directory",
+        "description": "Public cards with category, location, and capability filters.",
+        "category": "Directory",
+        "layout": "Grid"
+      },
+      "marketplace": {
+        "title": "Template marketplace",
+        "description": "Searchable catalog with pricing cues and collection filters.",
+        "category": "Marketplace",
+        "layout": "Grid"
+      },
+      "resources": {
+        "title": "Resource library",
+        "description": "Guides, tools, and downloads with topic and format facets.",
+        "category": "Content",
+        "layout": "Grid"
+      },
+      "changelog": {
+        "title": "Changelog feed",
+        "description": "Chronological product updates with version and type filters.",
+        "category": "Content",
+        "layout": "Rows"
+      },
+      "jobs": {
+        "title": "Jobs board",
+        "description": "Role listings with location, work mode, and team filters.",
+        "category": "Directory",
+        "layout": "Rows"
+      },
+      "projects": {
+        "title": "Project gallery",
+        "description": "Work showcase with tags, collections, and load-more pagination.",
+        "category": "Marketplace",
+        "layout": "Grid"
+      }
+    }
+  },
+  "contact": {
+    "eyebrow": "Contact",
+    "title": "How can we help?",
+    "description": "Tell us what you are building, what you need, or where you are stuck. We will reply by email.",
+    "formTitle": "Send a message",
+    "formDescription": "We usually reply within one business day.",
+    "name": "Name",
+    "email": "Email",
+    "message": "Message",
+    "messagePlaceholder": "What would you like to discuss?",
+    "submit": "Send message",
+    "submitting": "Sending…",
+    "success": "Thanks — your message has been sent.",
+    "error": "We could not send your message. Please try again or email us directly.",
+    "rateLimited": "Please wait a minute before sending another message.",
+    "validation": {
+      "name": "Enter at least 2 characters.",
+      "email": "Enter a valid email address.",
+      "message": "Enter at least 10 characters."
     }
   },
   "blog": {
@@ -267,6 +374,7 @@
       "general": "General",
       "dashboard": "Dashboard",
       "users": "Users",
+      "admin": "Administrator",
       "other": "Other",
       "settings": "Settings",
       "profile": "Profile",
@@ -287,6 +395,24 @@
         "description": "Are you sure you want to sign out? You will need to sign in again to access your account.",
         "confirm": "Sign out"
       }
+    },
+    "home": {
+      "title": "Welcome back, {name}",
+      "description": "Your account foundation is ready. Add the product workflows your SaaS needs next.",
+      "profileTitle": "Profile",
+      "profileDescription": "Set the name your customers and teammates see.",
+      "profileAction": "Edit profile",
+      "billingTitle": "Billing",
+      "billingDescription": "Configure plans when you are ready to sell.",
+      "billingAction": "View billing",
+      "creditsTitle": "Credits",
+      "creditsDescription": "Use this optional ledger for usage-based products.",
+      "creditsAction": "Manage credits",
+      "creditsBalance": "{count} credits available",
+      "securityTitle": "Security",
+      "securityVerified": "Email verified",
+      "securityUnverified": "Email verification needed",
+      "securityAction": "Review security"
     },
     "billing": {
       "title": "Billing",
@@ -338,12 +464,7 @@
       "buy": "Buy",
       "checkoutError": "Credit checkout failed",
       "orderCreditedToast": "{packageName} credits delivered.",
-      "demoConsumeTitle": "Demo usage",
-      "demoConsumeDescription": "Simulate credit spending before real usage flows are connected.",
-      "demoConsumeAmount": "Credits to use",
-      "demoConsume": "Use credits",
-      "demoConsumeSuccess": "{count} credits used.",
-      "demoConsumeError": "Credit usage failed",
+      "viewTransactions": "View history",
       "refresh": "Refresh",
       "transactionsTitle": "Recent transactions",
       "transactionsPageTitle": "Credit transactions",
@@ -387,8 +508,8 @@
       }
     },
     "users": {
-      "title": "User management",
-      "description": "Review and manage registered user accounts.",
+      "title": "Registered users",
+      "description": "Read-only administrator view of registered accounts.",
       "refresh": "Refresh",
       "table": {
         "avatar": "Avatar",
@@ -432,6 +553,22 @@
       "meetsGrowth": "Meets growth projections"
     },
     "settings": {
+      "home": {
+        "title": "Account center",
+        "description": "Manage your profile, billing, credits, and account security in one place.",
+        "profileTitle": "Profile",
+        "profileDescription": "Update the account details customers and teammates see.",
+        "profileAction": "Edit profile",
+        "billingTitle": "Billing",
+        "billingDescription": "Review your subscription, plans, and payment options.",
+        "billingAction": "Manage billing",
+        "creditsTitle": "Credits",
+        "creditsDescription": "Review your balance, buy credits, and see usage history.",
+        "creditsAction": "Manage credits",
+        "securityTitle": "Security",
+        "securityDescription": "Review how you sign in and keep the account secure.",
+        "securityAction": "Review security"
+      },
       "profile": {
         "title": "Profile",
         "description": "This is how others will see you on the site.",
@@ -487,95 +624,6 @@
         "verified": "Verified",
         "verifiedNumber": "Verified number: {phoneNumber}"
       }
-    },
-    "usersTable": {
-      "title": "Users Management",
-      "description": "Example table using the useDataTable hook with URL-based state management",
-      "filterPlaceholder": "Filter users...",
-      "columns": "Columns",
-      "selectAll": "Select all",
-      "selectRow": "Select row",
-      "name": "Name",
-      "email": "Email",
-      "status": "Status",
-      "role": "Role",
-      "createdAt": "Created At",
-      "actions": "Actions",
-      "openMenu": "Open menu",
-      "copyUserId": "Copy user ID",
-      "viewUser": "View user",
-      "editUser": "Edit user",
-      "noResults": "No results.",
-      "rowsSelected": "{selected} of {total} row(s) selected.",
-      "previous": "Previous",
-      "next": "Next",
-      "statusOptions": {
-        "active": "Active",
-        "inactive": "Inactive",
-        "pending": "Pending"
-      },
-      "roleOptions": {
-        "admin": "Admin",
-        "user": "User",
-        "moderator": "Moderator"
-      }
-    },
-    "cards": {
-      "totalEarning": "Total Earning",
-      "comparisonText": "Compare to last year ($84,325)",
-      "menu": "Menu",
-      "menuActions": {
-        "share": "Share",
-        "update": "Update",
-        "refresh": "Refresh"
-      }
-    },
-    "statistics": {
-      "shippedOrders": "Shipped Orders",
-      "damagedReturns": "Damaged Returns",
-      "missedDeliverySlots": "Missed Delivery Slots",
-      "thanLastWeek": "than last week"
-    },
-    "productInsights": {
-      "title": "Product insight",
-      "publishedOn": "Published on 12 MAY 2025 - 6:10 PM",
-      "productReached": "Product reached",
-      "orderPlaced": "Order placed",
-      "productAlt": "Product"
-    },
-    "salesMetrics": {
-      "title": "Sales metrics",
-      "companyName": "Sandy's Company",
-      "companyEmail": "sandy@company.com",
-      "salesTrend": "Sales trend",
-      "discountOffers": "Discount offers",
-      "netProfit": "Net profit",
-      "totalOrders": "Total orders",
-      "revenueGoal": "Revenue goal",
-      "totalProfit": "Total Profit",
-      "planCompleted": "Plan completed",
-      "salesPlan": "Sales plan",
-      "percentageProfit": "Percentage profit from total sales",
-      "cohortAnalysis": "Cohort analysis indicators",
-      "cohortDescription": "Analyzes the behaviour of a group of users who joined a product/service at the same time. over a certain period.",
-      "openStatistics": "Open Statistics",
-      "percentageChange": "Percentage Change",
-      "months": {
-        "january": "January",
-        "february": "February",
-        "march": "March"
-      }
-    },
-    "chart": {
-      "totalVisitors": "Total Visitors",
-      "totalForLast3Months": "Total for the last 3 months",
-      "last3Months": "Last 3 months",
-      "last30Days": "Last 30 days",
-      "last7Days": "Last 7 days",
-      "selectValue": "Select a value",
-      "visitors": "Visitors",
-      "desktop": "Desktop",
-      "mobile": "Mobile"
     }
   },
   "billingSuccess": {
@@ -583,16 +631,20 @@
     "description": "Thanks for upgrading. Your access will be updated shortly.",
     "syncingTitle": "Confirming your subscription status",
     "syncingDescription": "You'll be redirected to billing once activation is complete.",
-    "goToBilling": "Go to billing"
+    "goToBilling": "Go to billing",
+    "refreshStatus": "Refresh status",
+    "manualRefreshDescription": "We could not confirm the updated access yet. Open billing to review the current status, then refresh if needed."
   },
   "billingCancel": {
     "title": "Payment canceled",
     "description": "No worries. You can resume checkout anytime.",
-    "backToBilling": "Back to billing"
+    "backToBilling": "Back to billing",
+    "choosePlan": "Choose a plan",
+    "backToDashboard": "Back to dashboard"
   },
   "seo": {
     "home": {
-      "description": "EasyStarter is a modern full-stack TypeScript SaaS template with auth, billing, i18n, and deployment workflows built in."
+      "description": "TanStack Template is a modern full-stack TypeScript SaaS template with auth, billing, i18n, and deployment workflows built in."
     },
     "noIndex": {
       "descriptionTemplate": "{page} pages are private workflows and are excluded from search indexing.",
@@ -644,7 +696,7 @@
         },
         "contactUs": {
           "title": "Contact Us",
-          "content": "If you have privacy questions or requests, contact us at support@easystarter.dev."
+          "content": "If you have privacy questions or requests, contact us at support@demo.aiarticles.com."
         }
       }
     },
@@ -686,7 +738,7 @@
         },
         "contactUs": {
           "title": "Contact Us",
-          "content": "For questions about these terms, please contact support@easystarter.dev."
+          "content": "For questions about these terms, please contact support@demo.aiarticles.com."
         }
       }
     }

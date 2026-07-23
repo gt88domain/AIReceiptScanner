@@ -2,8 +2,6 @@ import type { ReactElement } from "react";
 import { getEmailProvider } from "..";
 import { withLocale } from "../locale";
 
-const emailProvider = getEmailProvider();
-
 export async function sendEmail({
   to,
   subject,
@@ -13,11 +11,11 @@ export async function sendEmail({
 }: {
   to: string;
   subject: string;
-  template: ReactElement;
+  template?: ReactElement;
   from?: string;
   text?: string;
 }) {
-  await emailProvider.send({
+  await getEmailProvider().send({
     to,
     subject,
     template,

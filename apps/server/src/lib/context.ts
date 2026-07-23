@@ -29,6 +29,7 @@ export async function createContext({ context }: CreateContextOptions) {
   });
   const deletedAt = rawSession ? await getUserDeletedAt(db, rawSession.user.id) : null;
   const session = finalizeSoftDeletedSession(rawSession, deletedAt);
+  const authenticatedUser = session?.user ?? null;
   const locale = getLocaleFromRequest(context.req.raw);
   const sessionRequest = rawSession?.session as
     | { ipAddress?: string | null; userAgent?: string | null }
@@ -48,12 +49,17 @@ export async function createContext({ context }: CreateContextOptions) {
     signupGrant: {
       hashSecret: context.env.BETTER_AUTH_SECRET,
       ipAddress: getClientIp(headers) ?? sessionRequest?.ipAddress ?? null,
-      userAgent: normalizeHeaderValue(headers.get("user-agent")) ?? sessionRequest?.userAgent ?? null,
+      userAgent:
+        normalizeHeaderValue(headers.get("user-agent")) ?? sessionRequest?.userAgent ?? null,
     },
   });
 
   return {
+    // Server-only Worker bindings. Never return this object from an RPC procedure.
+    env: context.env,
     session,
+    // This is the only deletion-state check for the request. Procedures reuse it.
+    authenticatedUser,
     db,
     auth,
     locale,

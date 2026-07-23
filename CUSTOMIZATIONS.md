@@ -9,8 +9,49 @@ module behavior, or template process. Do not record ordinary site content edits.
 
 This repository starts from the unpacked EasyStarter snapshot imported on
 2026-07-13. The archive did not retain an upstream Git commit, so this file is
-the initial authoritative comparison record. Before synchronizing upstream,
-add the official EasyStarter remote and identify its matching release or commit.
+the initial authoritative comparison record.
+
+### Provenance Record
+
+| Field                    | Value                                                                                                                              |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Official upstream        | `https://github.com/sunshineLixun/easystarter.git`                                                                                 |
+| Original upstream commit | **Unresolved** — the imported archive contained no Git metadata or release identifier. Do not substitute the current upstream tip. |
+| Import date              | 2026-07-13                                                                                                                         |
+| Local import checkpoint  | `20bef4d40d201b226a168b0684ec3b71ad677385` (`chore: initialize MySaaS EasyStarter template`)                                       |
+| Local patch series       | `git log --reverse 20bef4d..HEAD`                                                                                                  |
+
+The original upstream SHA must be recovered from the archive filename, purchase
+record, or original clone before an upstream baseline tag is created. A guessed
+SHA is worse than an explicit unknown because it makes security provenance
+unreliable.
+
+### Repeatable Upstream Sync
+
+Once the original SHA is known, establish the baseline exactly once:
+
+```bash
+git remote add upstream https://github.com/sunshineLixun/easystarter.git
+git fetch upstream --tags
+git tag -a upstream/easystarter-import <original-upstream-sha> -m "EasyStarter import baseline"
+```
+
+Record that SHA in the table above. For every later upstream update, generate a
+reviewable patch between two upstream commits, apply it deliberately, and keep
+the local commits as the patch series:
+
+```bash
+git fetch upstream --tags
+git diff upstream/easystarter-import <candidate-upstream-sha> > /tmp/easystarter-upstream.patch
+git apply --check /tmp/easystarter-upstream.patch
+git apply --3way /tmp/easystarter-upstream.patch
+pnpm lint && pnpm fmt:check && pnpm check-types
+git add -p
+git commit -m "chore(upstream): sync EasyStarter <candidate-upstream-sha>"
+```
+
+If `git apply --check` fails, resolve only the reported conflicts, document the
+affected core files in a dated entry below, and rerun the same verification.
 
 ### Runtime Differences From EasyStarter
 

@@ -35,6 +35,7 @@
     "fileNotFound": "ストレージにファイルが見つかりません",
     "uploadFailed": "ファイルのアップロードに失敗しました。もう一度お試しください",
     "invalidUrl": "無効なURLが指定されました",
-    "accountDeleted": "このアカウントは削除されました"
+    "accountDeleted": "このアカウントは削除されました",
+    "activeSubscriptionDeletion": "アカウントを削除する前に、有効なサブスクリプションを解約してください"
   }
 }

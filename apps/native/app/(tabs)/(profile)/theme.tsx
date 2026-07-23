@@ -23,12 +23,7 @@ interface ThemeSectionProps {
   title: string;
 }
 
-function ThemeOptionItem({
-  description,
-  isSelected,
-  onPress,
-  title,
-}: ThemeOptionItemProps) {
+function ThemeOptionItem({ description, isSelected, onPress, title }: ThemeOptionItemProps) {
   const [accentColor] = useThemeColor(["accent"]);
 
   return (
@@ -38,11 +33,7 @@ function ThemeOptionItem({
         <ListGroup.ItemDescription>{description}</ListGroup.ItemDescription>
       </ListGroup.ItemContent>
       <ListGroup.ItemSuffix>
-        {isSelected ? (
-          <MaterialIcons name="check" size={18} color={accentColor} />
-        ) : (
-          <View />
-        )}
+        {isSelected ? <MaterialIcons name="check" size={18} color={accentColor} /> : <View />}
       </ListGroup.ItemSuffix>
     </ListGroup.Item>
   );

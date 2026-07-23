@@ -7,11 +7,11 @@ import nativeZh from "./native/zh.json";
 export type NativeMessages = typeof nativeEn;
 
 export const nativeMessages: LocaleRecord<NativeMessages> = {
-	en: nativeEn,
-	zh: nativeZh,
-	jp: nativeJp,
+  en: nativeEn,
+  zh: nativeZh,
+  jp: nativeJp,
 };
 
 export function getNativeMessages(locale: Locale): NativeMessages {
-	return nativeMessages[locale];
+  return nativeMessages[locale];
 }

@@ -4,7 +4,10 @@ apps/*/dist
 .DS_Store
 .turbo
 .alchemy
-.env
+.env*
+!.env*.example
+.dev.vars*
+!.dev.vars.example
 .worktrees
 apps/server/src/**/*.js
 apps/server/src/**/*.js.map

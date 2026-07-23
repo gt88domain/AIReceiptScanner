@@ -1,5 +1,5 @@
 /**
- * EasyStarter API Server
+ * TanStack Template API Server
  *
  * A Hono-based API server running on Cloudflare Workers with D1 database.
  *
@@ -36,21 +36,31 @@
  * - GOOGLE_CLIENT_ID/SECRET: Google OAuth credentials
  */
 
-import { isNativePaymentsEnabled } from "@repo/app-config/payments/native";
-import { Hono } from "hono";
+import { Hono, type Context as HonoContext } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { secureHeaders } from "hono/secure-headers";
 import { runCreditMaintenance } from "./credits";
 import { createDb } from "./db";
 import { apiHandler } from "./handlers/api";
+import { sendContactMessage } from "./handlers/contact";
+import { subscribeNewsletter } from "./handlers/newsletter";
 import { rpcHandler } from "./handlers/rpc";
 import { handleFileServe } from "./handlers/storage";
 import { createAuth } from "./lib/auth";
 import { createContext } from "./lib/context";
+import {
+  isNativeBillingEnabled,
+  isServerFeatureEnabled,
+  productFeatures,
+  validateServerModuleEnvironment,
+} from "./lib/module-config";
 import { authSessionMiddleware } from "./middlewares/auth";
 import { apiCorsMiddleware, authCorsMiddleware } from "./middlewares/cors";
 import { errorHandler } from "./middlewares/error";
 import { i18nMiddleware } from "./middlewares/i18n";
+import { processBillingOutbox } from "./payments/application/billing-outbox";
+import { processPendingWebhookEvents } from "./payments/application/webhook-dispatch";
+import { alertPendingWebhookEvents } from "./payments/application/webhook-observability";
 
 const app = new Hono<{ Bindings: Cloudflare.Env }>();
 // ============================================================================
@@ -105,6 +115,22 @@ app.use("/api/auth/*", authCorsMiddleware);
  */
 app.use("/api/*", apiCorsMiddleware);
 app.use("/rpc/*", apiCorsMiddleware);
+app.post(
+  "/api/newsletter/subscribe",
+  bodyLimit({
+    maxSize: 1024,
+    onError: (c) => c.json({ error: "Payload too large" }, 413),
+  }),
+  subscribeNewsletter,
+);
+app.post(
+  "/api/contact",
+  bodyLimit({
+    maxSize: 16 * 1024,
+    onError: (c) => c.json({ error: "Payload too large" }, 413),
+  }),
+  sendContactMessage,
+);
 app.use(
   "/api/webhooks/*",
   bodyLimit({
@@ -112,6 +138,11 @@ app.use(
     onError: (c) => c.json({ error: "Payload too large" }, 413),
   }),
 );
+
+function disabledWebhookResponse(c: HonoContext<{ Bindings: Cloudflare.Env }>, provider: string) {
+  console.info(JSON.stringify({ event: "webhook_ignored", provider, reason: "billing_disabled" }));
+  return c.body(null, 204);
+}
 
 // ============================================================================
 // Route Handlers
@@ -150,6 +181,10 @@ app.on(["POST", "GET"], "/api/auth/*", async (c) => {
  * Receives Stripe webhook events and processes them with raw body validation.
  */
 app.post("/api/webhooks/stripe", async (c) => {
+  if (!isServerFeatureEnabled("billing")) {
+    return disabledWebhookResponse(c, "stripe");
+  }
+
   const context = await createContext({ context: c });
   const rawBody = await c.req.text();
   const signature = c.req.header("stripe-signature");
@@ -171,6 +206,10 @@ app.post("/api/webhooks/stripe", async (c) => {
  * Receives Creem webhook events and validates the HMAC signature header.
  */
 app.post("/api/webhooks/creem", async (c) => {
+  if (!isServerFeatureEnabled("billing")) {
+    return disabledWebhookResponse(c, "creem");
+  }
+
   const context = await createContext({ context: c });
   const rawBody = await c.req.text();
   const signature = c.req.header("creem-signature");
@@ -192,6 +231,10 @@ app.post("/api/webhooks/creem", async (c) => {
  * Receives Waffo webhook events and validates the RSA signature header.
  */
 app.post("/api/webhooks/waffo", async (c) => {
+  if (!isServerFeatureEnabled("billing")) {
+    return disabledWebhookResponse(c, "waffo");
+  }
+
   const context = await createContext({ context: c });
   const rawBody = await c.req.text();
   const signature = c.req.header("x-waffo-signature");
@@ -214,8 +257,8 @@ app.post("/api/webhooks/waffo", async (c) => {
  * Authorization header before dispatching to the payments service.
  */
 app.post("/api/webhooks/revenuecat", async (c) => {
-  if (!isNativePaymentsEnabled) {
-    return c.json({ error: "not_found" }, 404);
+  if (!isNativeBillingEnabled()) {
+    return disabledWebhookResponse(c, "revenuecat");
   }
 
   const context = await createContext({ context: c });
@@ -285,12 +328,12 @@ app.use("/api/*", async (c, next) => {
  * GET /
  *
  * Returns server status for monitoring and load balancer health checks.
- * Response: { status: "ok", service: "easystarter API", version: "1.0.0", timestamp: ISO8601 }
+ * Response: { status: "ok", service: "tanstack-template API", version: "1.0.0", timestamp: ISO8601 }
  */
 app.get("/", (c) =>
   c.json({
     status: "ok",
-    service: "easystarter API",
+    service: "tanstack-template API",
     version: "1.0.0",
     timestamp: new Date().toISOString(),
   }),
@@ -331,11 +374,34 @@ app.get("/session", (c) => {
 
 export default {
   fetch(request, env, ctx) {
+    if (env.NODE_ENV === "production") {
+      validateServerModuleEnvironment(env, { requireStorageBinding: true });
+    }
     return app.fetch(request, env, ctx);
   },
-  async scheduled(_controller, env) {
-    // Daily maintenance only expires eligible free credits; paid packages never expire.
+  async scheduled(controller, env) {
+    if (!productFeatures.jobs) {
+      console.info(JSON.stringify({ event: "scheduled_ignored", reason: "jobs_disabled" }));
+      return;
+    }
+
+    if (controller.cron !== "*/10 * * * *") return;
+
     const db = createDb(env.DB);
-    await runCreditMaintenance(db);
+    if (productFeatures.billing) {
+      await processPendingWebhookEvents(db);
+      await processBillingOutbox(db);
+      await alertPendingWebhookEvents(db, env.ADMIN_EMAILS);
+    }
+
+    const scheduledAt = new Date(controller.scheduledTime);
+    if (
+      productFeatures.credits &&
+      scheduledAt.getUTCHours() === 16 &&
+      scheduledAt.getUTCMinutes() === 10
+    ) {
+      // Daily maintenance only expires eligible free credits; paid packages never expire.
+      await runCreditMaintenance(db);
+    }
   },
 } satisfies ExportedHandler<Cloudflare.Env>;

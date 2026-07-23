@@ -35,6 +35,7 @@
     "fileNotFound": "File not found in storage",
     "uploadFailed": "Failed to upload file. Please try again",
     "invalidUrl": "Invalid URL provided",
-    "accountDeleted": "This account has been deleted"
+    "accountDeleted": "This account has been deleted",
+    "activeSubscriptionDeletion": "Cancel your active subscription before deleting your account"
   }
 }

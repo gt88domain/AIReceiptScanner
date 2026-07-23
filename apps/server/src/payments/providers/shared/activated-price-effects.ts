@@ -5,7 +5,7 @@ import { billingSubscription } from "@/db/schema/payments";
 import { findPriceById } from "@/payments/domain/plan-catalog";
 import type { DbLike } from "@/payments/infrastructure/repositories/billing-store";
 import type { BillingUser } from "@/payments/public/types";
-import { getPaymentProvider } from "../index";
+import { enqueueCancelPreviousSubscription } from "../../application/billing-outbox";
 
 /**
  * Applies cross-provider side effects after a higher-tier price activates.
@@ -40,7 +40,6 @@ async function cancelLowerTierSubscriptionsAtPeriodEnd(
   user: BillingUser,
   targetTier: "yearly" | "lifetime",
 ) {
-  const now = new Date();
   const cancellableStatuses = new Set(["active", "trialing", "past_due", "unpaid"]);
   const subscriptions = await db
     .select()
@@ -74,18 +73,9 @@ async function cancelLowerTierSubscriptionsAtPeriodEnd(
       continue;
     }
 
-    const provider = getPaymentProvider(subscription.provider);
-    await provider.setSubscriptionCancelAtPeriodEnd({
+    await enqueueCancelPreviousSubscription(db, {
+      provider: subscription.provider,
       subscriptionId: subscription.providerSubscriptionId,
-      cancelAtPeriodEnd: true,
     });
-
-    await db
-      .update(billingSubscription)
-      .set({
-        cancelAtPeriodEnd: true,
-        updatedAt: now,
-      })
-      .where(eq(billingSubscription.id, subscription.id));
   }
 }

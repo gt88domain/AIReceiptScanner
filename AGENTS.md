@@ -1,6 +1,6 @@
 ## Project Overview
 
-EasyStarter is a TypeScript monorepo built with Turborepo and pnpm workspaces.
+TanStack Template is a TypeScript monorepo built with Turborepo and pnpm workspaces.
 
 - `apps/web`: React 19 + TanStack Start web app, Vite dev server on port 3000.
 - `apps/server`: Hono + Cloudflare Workers API server, Wrangler dev server on port 3001.
@@ -112,12 +112,49 @@ that newly orphaned code.
 Commit messages should follow Conventional Commits. Use `pnpm commit` when the
 user asks to create a commit.
 
+## Demo Page Deployment
+
+For a completed change that affects a user-facing page or visual web UI:
+
+1. Run focused page verification appropriate to the change.
+2. Create a Git checkpoint commit and push the current branch to `origin`.
+3. Run `pnpm deploy:web` to update the production web domain configured for the project.
+4. Verify the affected production URL and report the commit and URL.
+
+Do not run page verification or deploy for non-page changes (for example,
+server-only code, refactors, configuration, documentation, or tests) unless the
+user explicitly requests it.
+
 ## Configuration And Secrets
 
 Use env examples such as `apps/web/.env.development.example` and
 `apps/web/.env.production.example` when setting up local env files. Server
 runtime configuration is in `apps/server/wrangler.jsonc`. Do not commit real
 secrets.
+
+## Authorization And Billing Boundaries
+
+Keep administrator access, authenticated-user access, and paid entitlement as
+separate concepts.
+
+- Administrators are determined only by a production-only `ADMIN_EMAILS` secret
+  allowlist. Normalize email addresses before comparison and perform the check
+  on the server for every administrative procedure.
+- A logged-in user is ordinary unless their session email is in that allowlist.
+  Do not add `user.role`, `user_roles`, role management, or a database-backed
+  admin grant without an explicit product decision.
+- Free versus paid is an entitlement, not a role. Resolve it only from verified
+  payment-provider webhook records such as successful purchases and active
+  subscriptions.
+- Frontend plan badges and hidden navigation are presentation only. They must
+  never grant paid features or administrative access.
+- Administrative user and billing data must be exposed only by server-side
+  admin procedures. A `protectedProcedure` alone is not an admin check.
+- Do not let a payment event grant administrator access, and do not let an
+  administrator flag synthesize a paid entitlement.
+- Authorization or webhook changes require focused tests for ordinary-user
+  denial, admin allowlist access, paid-user non-admin denial, and webhook
+  idempotency.
 
 ## Skills
 

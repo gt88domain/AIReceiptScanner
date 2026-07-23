@@ -16,14 +16,12 @@ import { Text } from "@/components/ui/text";
 import { appConfig } from "@/configs/app-config";
 import { EmailOtpRequestForm } from "./email/email-otp-request-form";
 import { EmailSignInForm } from "./email/email-sign-in-form";
-import { PhoneSignInForm } from "./phone/phone-sign-in-form";
 import { hasVisibleSocialSignInMethods, SocialSignInButtons } from "./social-sign-in-buttons";
 
-type SignInMethod = "email" | "phone" | "otp";
+type SignInMethod = "email" | "otp";
 
 const enabledSignInMethods = [
   appConfig.auth.methods.emailPasswordEnabled ? "email" : null,
-  appConfig.auth.methods.smsEnabled ? "phone" : null,
   appConfig.auth.methods.emailOtpEnabled ? "otp" : null,
 ].filter((method): method is SignInMethod => method !== null);
 const defaultSignInMethod = enabledSignInMethods[0] ?? "email";
@@ -44,8 +42,6 @@ export function SignInForm() {
     switch (method) {
       case "email":
         return <EmailSignInForm />;
-      case "phone":
-        return <PhoneSignInForm />;
       case "otp":
         return <EmailOtpRequestForm />;
     }
@@ -83,11 +79,6 @@ export function SignInForm() {
                         <Tabs.Label>{t("auth.emailTab")}</Tabs.Label>
                       </Tabs.Trigger>
                     ) : null}
-                    {appConfig.auth.methods.smsEnabled ? (
-                      <Tabs.Trigger value="phone" className="flex-1">
-                        <Tabs.Label>{t("auth.phoneTab")}</Tabs.Label>
-                      </Tabs.Trigger>
-                    ) : null}
                     {appConfig.auth.methods.emailOtpEnabled ? (
                       <Tabs.Trigger value="otp" className="flex-1">
                         <Tabs.Label>{t("auth.emailOtpMode")}</Tabs.Label>
@@ -99,11 +90,6 @@ export function SignInForm() {
                     {appConfig.auth.methods.emailPasswordEnabled ? (
                       <Tabs.Content value="email">
                         {renderSignInMethodContent("email")}
-                      </Tabs.Content>
-                    ) : null}
-                    {appConfig.auth.methods.smsEnabled ? (
-                      <Tabs.Content value="phone">
-                        {renderSignInMethodContent("phone")}
                       </Tabs.Content>
                     ) : null}
                     {appConfig.auth.methods.emailOtpEnabled ? (

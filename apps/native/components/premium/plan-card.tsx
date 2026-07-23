@@ -77,12 +77,19 @@ export function PlanCard({
 
         <View className="ml-3 flex-1">
           <View className="flex-row items-center gap-2">
-            <Text className={cn("text-[15px] font-semibold", isSelected && !isDisabled && "text-foreground")}>
+            <Text
+              className={cn(
+                "text-[15px] font-semibold",
+                isSelected && !isDisabled && "text-foreground",
+              )}
+            >
               {title}
             </Text>
             {isCurrent ? (
               <View className="rounded-md bg-muted/15 px-2 py-0.5">
-                <Text className="text-[10px] font-bold tracking-wide text-muted">{t("premium.currentPlan")}</Text>
+                <Text className="text-[10px] font-bold tracking-wide text-muted">
+                  {t("premium.currentPlan")}
+                </Text>
               </View>
             ) : badge ? (
               <View className="rounded-md bg-accent/15 px-2 py-0.5">
@@ -94,16 +101,10 @@ export function PlanCard({
         </View>
 
         <View className="items-end">
-          <Text
-            selectable
-            className="text-lg font-bold"
-            style={{ fontVariant: ["tabular-nums"] }}
-          >
+          <Text selectable className="text-lg font-bold" style={{ fontVariant: ["tabular-nums"] }}>
             {price}
           </Text>
-          {suffix ? (
-            <Text className="text-[11px] text-muted">{suffix}</Text>
-          ) : null}
+          {suffix ? <Text className="text-[11px] text-muted">{suffix}</Text> : null}
         </View>
       </Animated.View>
     </Pressable>

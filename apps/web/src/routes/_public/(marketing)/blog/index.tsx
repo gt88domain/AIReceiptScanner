@@ -40,6 +40,8 @@ export const Route = createFileRoute("/_public/(marketing)/blog/")({
       canonicalPath: "/blog",
       type: "article",
       siteName: webConfig.AppName,
+      robots: "noindex,nofollow",
+      alternates: false,
       ldJson: {
         "@context": "https://schema.org",
         "@type": "Blog",

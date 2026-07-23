@@ -119,6 +119,8 @@ export type SetSubscriptionCancelAtPeriodEndInput = {
 export type UpdateSubscriptionPlanInput = {
   /** Provider subscription identifier. */
   subscriptionId: string;
+  /** Current provider price identifier used to select the subscription item. */
+  currentPriceId: string;
   /** Target provider price identifier. */
   targetPriceId: string;
 };

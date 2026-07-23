@@ -6,7 +6,7 @@ icon: Rocket
 
 ## 概要
 
-EasyStarter は **Cloudflare** へのデプロイに最適化されています：
+TanStack Template は **Cloudflare** へのデプロイに最適化されています：
 
 - **Web**: Cloudflare Pages
 - **Server**: Cloudflare Workers
@@ -77,7 +77,7 @@ Wrangler でシークレットを設定：
 cd apps/server
 
 # 認証
-npx wrangler secret put AUTH_SECRET
+npx wrangler secret put BETTER_AUTH_SECRET
 
 # OAuth
 npx wrangler secret put GITHUB_CLIENT_ID
@@ -107,8 +107,8 @@ pnpm db:migrate --remote
 
 ## トラブルシューティング
 
-| 問題               | 解決策                               |
-| ------------------ | ------------------------------------ |
-| CORS エラー        | server 設定の `WEBSITE_URL` を確認   |
-| 認証が動作しない   | `AUTH_SECRET` が設定されているか確認 |
-| データベースエラー | `db:migrate --remote` を実行         |
+| 問題               | 解決策                                      |
+| ------------------ | ------------------------------------------- |
+| CORS エラー        | server 設定の `WEBSITE_URL` を確認          |
+| 認証が動作しない   | `BETTER_AUTH_SECRET` が設定されているか確認 |
+| データベースエラー | `db:migrate --remote` を実行                |

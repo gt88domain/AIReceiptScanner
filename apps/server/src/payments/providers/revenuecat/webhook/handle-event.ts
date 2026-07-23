@@ -15,24 +15,18 @@ import {
   nativePaymentsConfig,
 } from "@repo/app-config/payments/native";
 import {
-  findPurchaseByProviderIntent,
-  findSubscriptionByProviderId,
+  upsertBillingPurchaseIfNewer,
+  upsertBillingSubscriptionIfNewer,
 } from "@/payments/infrastructure/repositories/billing-store";
 import { reconcileActivatedPriceWithExistingSubscriptions } from "../../shared/activated-price-effects";
 import type { RevenueCatWebhookEnvelope, RevenueCatWebhookEvent } from "../types";
 import { shouldIgnoreRevenueCatEvent } from "./event-filter";
-import { shouldApplyRevenueCatStateEvent } from "./event-order";
 import { shouldSyncRevenueCatBillingState } from "./state-sync";
-
-function isAnonymousRevenueCatUserId(value: string | null | undefined) {
-  return !value || value.startsWith("$RCAnonymousID:");
-}
-
-function resolveRevenueCatUserId(event: RevenueCatWebhookEvent) {
-  const candidates = [event.app_user_id, event.original_app_user_id, ...(event.aliases ?? [])];
-
-  return candidates.find((candidate) => !isAnonymousRevenueCatUserId(candidate)) ?? null;
-}
+import {
+  markRevenueCatIdentitiesTransferred,
+  recordRevenueCatIdentities,
+  resolveKnownRevenueCatUserId,
+} from "./identity";
 
 function resolveRevenueCatSubscriptionStatus(event: RevenueCatWebhookEvent) {
   const expirationAt =
@@ -103,7 +97,6 @@ async function upsertRevenueCatSubscription(
     priceId: string;
   },
 ) {
-  const now = new Date();
   const providerSubscriptionId = input.event.original_transaction_id ?? input.event.transaction_id;
 
   if (!providerSubscriptionId) {
@@ -113,18 +106,6 @@ async function upsertRevenueCatSubscription(
   // Convert provider event timestamp
   const providerEventAt = new Date(input.event.event_timestamp_ms);
 
-  // Idempotency & concurrency check: only apply updates if the incoming event is newer than the existing record to prevent out-of-order updates.
-  const existing = await findSubscriptionByProviderId(db, "revenuecat", providerSubscriptionId);
-  if (
-    existing &&
-    !shouldApplyRevenueCatStateEvent({
-      currentEventAt: existing.providerEventAt,
-      incomingEventTimestampMs: input.event.event_timestamp_ms,
-    })
-  ) {
-    return;
-  }
-
   const startedAt =
     typeof input.event.purchased_at_ms === "number" ? new Date(input.event.purchased_at_ms) : null;
   const currentPeriodEnd =
@@ -133,10 +114,8 @@ async function upsertRevenueCatSubscription(
       : null;
   const endedAt = input.event.type === "EXPIRATION" && currentPeriodEnd ? currentPeriodEnd : null;
 
-  await db
-    .insert(billingSubscription)
-    .values({
-      id: crypto.randomUUID(),
+  return Boolean(
+    await upsertBillingSubscriptionIfNewer(db, {
       userId: input.userId,
       provider: "revenuecat",
       providerSubscriptionId,
@@ -149,25 +128,9 @@ async function upsertRevenueCatSubscription(
       startedAt,
       endedAt,
       providerEventAt,
-      createdAt: now,
-      updatedAt: now,
-    })
-    .onConflictDoUpdate({
-      target: [billingSubscription.provider, billingSubscription.providerSubscriptionId],
-      set: {
-        userId: input.userId,
-        providerCustomerId: input.userId,
-        planId: input.planId,
-        priceId: input.priceId,
-        status: resolveRevenueCatSubscriptionStatus(input.event),
-        currentPeriodEnd,
-        cancelAtPeriodEnd: shouldSetCancelAtPeriodEnd(input.event),
-        startedAt,
-        endedAt,
-        providerEventAt,
-        updatedAt: now,
-      },
-    });
+      providerEventId: input.event.id,
+    }),
+  );
 }
 
 async function upsertRevenueCatPurchase(
@@ -185,21 +148,8 @@ async function upsertRevenueCatPurchase(
     return;
   }
 
-  const now = new Date();
   // Convert provider event timestamp
   const providerEventAt = new Date(input.event.event_timestamp_ms);
-
-  // Idempotency & concurrency check: only apply updates if the incoming event is newer than the existing record to prevent out-of-order updates.
-  const existing = await findPurchaseByProviderIntent(db, "revenuecat", providerPaymentIntentId);
-  if (
-    existing &&
-    !shouldApplyRevenueCatStateEvent({
-      currentEventAt: existing.providerEventAt,
-      incomingEventTimestampMs: input.event.event_timestamp_ms,
-    })
-  ) {
-    return;
-  }
 
   const paidAt =
     typeof input.event.purchased_at_ms === "number" ? new Date(input.event.purchased_at_ms) : null;
@@ -208,10 +158,8 @@ async function upsertRevenueCatPurchase(
       ? "refunded"
       : "succeeded";
 
-  await db
-    .insert(billingPurchase)
-    .values({
-      id: crypto.randomUUID(),
+  return Boolean(
+    await upsertBillingPurchaseIfNewer(db, {
       userId: input.userId,
       provider: "revenuecat",
       providerPaymentIntentId,
@@ -220,21 +168,9 @@ async function upsertRevenueCatPurchase(
       status,
       paidAt,
       providerEventAt,
-      createdAt: now,
-      updatedAt: now,
-    })
-    .onConflictDoUpdate({
-      target: [billingPurchase.provider, billingPurchase.providerPaymentIntentId],
-      set: {
-        userId: input.userId,
-        planId: input.planId,
-        priceId: input.priceId,
-        status,
-        paidAt,
-        providerEventAt,
-        updatedAt: now,
-      },
-    });
+      providerEventId: input.event.id,
+    }),
+  );
 }
 
 export async function handleRevenueCatEvent(db: Database, payload: unknown) {
@@ -247,7 +183,57 @@ export async function handleRevenueCatEvent(db: Database, payload: unknown) {
     return;
   }
 
-  const userId = resolveRevenueCatUserId(event);
+  if (event.type === "TRANSFER") {
+    const fromAppUserIds = event.transferred_from ?? [];
+    const toAppUserIds = event.transferred_to ?? [];
+    const [fromUserId, toUserId] = await Promise.all([
+      resolveKnownRevenueCatUserId(db, fromAppUserIds),
+      resolveKnownRevenueCatUserId(db, toAppUserIds),
+    ]);
+
+    if (!fromUserId || !toUserId || fromUserId === toUserId) {
+      console.error("RevenueCat transfer has ambiguous or unknown account identities", {
+        eventId: event.id,
+        fromAppUserIds,
+        toAppUserIds,
+      });
+      return;
+    }
+
+    await db.batch([
+      db
+        .update(billingSubscription)
+        .set({ userId: toUserId, updatedAt: new Date() })
+        .where(
+          and(
+            eq(billingSubscription.provider, "revenuecat"),
+            eq(billingSubscription.userId, fromUserId),
+          ),
+        ),
+      db
+        .update(billingPurchase)
+        .set({ userId: toUserId, updatedAt: new Date() })
+        .where(
+          and(eq(billingPurchase.provider, "revenuecat"), eq(billingPurchase.userId, fromUserId)),
+        ),
+    ]);
+    await Promise.all([
+      markRevenueCatIdentitiesTransferred(db, {
+        appUserIds: fromAppUserIds,
+        transferEventId: event.id,
+        userId: fromUserId,
+      }),
+      recordRevenueCatIdentities(db, { appUserIds: toAppUserIds, userId: toUserId }),
+    ]);
+    return;
+  }
+
+  const identityCandidates = [
+    event.app_user_id,
+    event.original_app_user_id,
+    ...(event.aliases ?? []),
+  ];
+  const userId = await resolveKnownRevenueCatUserId(db, identityCandidates);
   if (!userId) {
     console.error("RevenueCat webhook missing non-anonymous app user id", {
       eventId: event.id,
@@ -262,9 +248,16 @@ export async function handleRevenueCatEvent(db: Database, payload: unknown) {
     return;
   }
 
+  await recordRevenueCatIdentities(db, { appUserIds: identityCandidates, userId });
+
   // RevenueCat documents PRODUCT_CHANGE as informational only.
   // The active entitlement changes when the follow-up INITIAL_PURCHASE / RENEWAL arrives.
   if (!shouldSyncRevenueCatBillingState(event)) {
+    return;
+  }
+
+  if (!event.product_id) {
+    console.error("RevenueCat webhook missing product id", { eventId: event.id, type: event.type });
     return;
   }
 
@@ -342,21 +335,26 @@ export async function handleRevenueCatEvent(db: Database, payload: unknown) {
   await upsertRevenueCatCustomer(db, userId, userId);
 
   if (mappedPrice.price.priceType === "lifetime") {
-    await upsertRevenueCatPurchase(db, {
+    const applied = await upsertRevenueCatPurchase(db, {
       userId,
       event,
       planId: mappedPrice.plan.id,
       priceId: mappedPrice.price.id,
     });
-    await reconcileActivatedPriceWithExistingSubscriptions(db, { userId }, mappedPrice.price.id);
+    if (applied) {
+      await reconcileActivatedPriceWithExistingSubscriptions(db, { userId }, mappedPrice.price.id);
+    }
     return;
   }
 
-  await upsertRevenueCatSubscription(db, {
+  const applied = await upsertRevenueCatSubscription(db, {
     userId,
     event,
     planId: mappedPrice.plan.id,
     priceId: mappedPrice.price.id,
   });
+  if (applied) {
+    await reconcileActivatedPriceWithExistingSubscriptions(db, { userId }, mappedPrice.price.id);
+  }
   await reconcileActivatedPriceWithExistingSubscriptions(db, { userId }, mappedPrice.price.id);
 }

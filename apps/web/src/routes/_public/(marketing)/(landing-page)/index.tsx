@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { DynamicLandingPage } from "@/components/landing-page/dynamic-landing-page";
+import { StaticLandingPage } from "@/components/landing-page/static-landing-page";
 import { webConfig } from "@/configs/web-config";
 import { getCurrentLocale, getMessages } from "@/i18n";
 import { buildSeoHead } from "@/utils/seo";
@@ -33,7 +33,7 @@ export const Route = createFileRoute("/_public/(marketing)/(landing-page)/")({
 function HomeComponent() {
   return (
     <div className="flex flex-col">
-      <DynamicLandingPage />
+      <StaticLandingPage />
     </div>
   );
 }

@@ -1,33 +1,42 @@
 {
-  "name": "easystarter-server",
+  "name": "your-worker-name",
   "main": "src/index.ts",
   "compatibility_date": "2026-07-14",
   "compatibility_flags": ["nodejs_compat"],
+  "routes": [
+    {
+      "pattern": "api.your-domain.example",
+      "custom_domain": true,
+    },
+  ],
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "easysaas-db",
-      "database_id": "5d06ae22-22dc-42a4-b6fc-4a53720c9f69",
+      "database_name": "your-d1-database-name",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "src/db/migrations",
     },
   ],
   "vars": {
     "NODE_ENV": "production",
-    "WEBSITE_URL": "https://cf.easystarter.dev",
-    "SERVER_URL": "https://server.easystarter.dev",
-    // Add non-sensitive public IDs here:
-    // GitHub OAuth client ID
-    "GITHUB_CLIENT_ID": "Ov23liJZZtODJ0YsClHs",
-    // Google OAuth client ID
-    "GOOGLE_CLIENT_ID": "895860292632-mt94ccat279506bmk2n59s8c4evt87me.apps.googleusercontent.com",
+    "WEBSITE_URL": "https://your-domain.example",
+    "SERVER_URL": "https://api.your-domain.example",
+    // Add OAuth client IDs only after enabling the matching provider in app-config.
+    "GITHUB_CLIENT_ID": "",
+    "GOOGLE_CLIENT_ID": "",
+    "APPLE_APP_BUNDLE_IDENTIFIER": "",
+  },
+  "secrets": {
+    "required": ["ADMIN_EMAILS", "BETTER_AUTH_SECRET"],
   },
   "r2_buckets": [
     {
       "binding": "STORAGE",
-      "bucket_name": "easysaas-bucket",
+      "bucket_name": "your-r2-bucket-name",
     },
   ],
   "triggers": {
-    "crons": ["10 16 * * *"],
+    "crons": ["*/10 * * * *"],
   },
   "observability": {
     "logs": {

@@ -6,7 +6,7 @@ icon: Rocket
 
 ## 概述
 
-EasyStarter 针对 **Cloudflare** 部署进行了优化：
+TanStack Template 针对 **Cloudflare** 部署进行了优化：
 
 - **Web**: Cloudflare Pages
 - **Server**: Cloudflare Workers
@@ -77,7 +77,7 @@ pnpm run deploy
 cd apps/server
 
 # 认证
-npx wrangler secret put AUTH_SECRET
+npx wrangler secret put BETTER_AUTH_SECRET
 
 # OAuth
 npx wrangler secret put GITHUB_CLIENT_ID
@@ -110,5 +110,5 @@ pnpm db:migrate --remote
 | 问题       | 解决方案                           |
 | ---------- | ---------------------------------- |
 | CORS 错误  | 检查 server 配置中的 `WEBSITE_URL` |
-| 认证不工作 | 确认 `AUTH_SECRET` 已设置          |
+| 认证不工作 | 确认 `BETTER_AUTH_SECRET` 已设置   |
 | 数据库错误 | 运行 `db:migrate --remote`         |

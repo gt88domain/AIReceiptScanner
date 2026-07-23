@@ -35,6 +35,7 @@
     "fileNotFound": "存储中未找到文件",
     "uploadFailed": "文件上传失败，请重试",
     "invalidUrl": "提供的URL无效",
-    "accountDeleted": "该用户已删除"
+    "accountDeleted": "该用户已删除",
+    "activeSubscriptionDeletion": "请先取消仍在生效的订阅，再删除账户"
   }
 }

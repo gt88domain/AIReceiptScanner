@@ -64,6 +64,69 @@
       "when": 1780282528002,
       "tag": "0008_rare_leper_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1784274623339,
+      "tag": "0009_milky_bullseye",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1784670000000,
+      "tag": "0010_billable_operation_security",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1784770000000,
+      "tag": "0011_webhook_processing_claim",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1784780000000,
+      "tag": "0012_billing_provider_event_tiebreak",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1784790000000,
+      "tag": "0013_revenuecat_identity",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1784800000000,
+      "tag": "0014_credit_payment_dispute",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1784810000000,
+      "tag": "0015_auth_rate_limit",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "6",
+      "when": 1784775247471,
+      "tag": "0016_even_santa_claus",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1784775911518,
+      "tag": "0017_credit_ledger_invariants",
+      "breakpoints": true
     }
   ]
 }

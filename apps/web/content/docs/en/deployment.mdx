@@ -6,7 +6,7 @@ icon: Rocket
 
 ## Overview
 
-EasyStarter is optimized for deployment on **Cloudflare**:
+TanStack Template is optimized for deployment on **Cloudflare**:
 
 - **Web**: Cloudflare Pages
 - **Server**: Cloudflare Workers
@@ -77,7 +77,7 @@ Set secrets using Wrangler:
 cd apps/server
 
 # Authentication
-npx wrangler secret put AUTH_SECRET
+npx wrangler secret put BETTER_AUTH_SECRET
 
 # OAuth
 npx wrangler secret put GITHUB_CLIENT_ID
@@ -110,5 +110,5 @@ pnpm db:migrate --remote
 | Issue            | Solution                             |
 | ---------------- | ------------------------------------ |
 | CORS errors      | Check `WEBSITE_URL` in server config |
-| Auth not working | Verify `AUTH_SECRET` is set          |
+| Auth not working | Verify `BETTER_AUTH_SECRET` is set   |
 | Database errors  | Run `db:migrate --remote`            |

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { orpc } from "@/utils/orpc";
+import { authClient } from "@/lib/auth/auth-client";
+import { useOrpc } from "./use-orpc";
 
 type UsePaymentPlansQueryOptions = {
   enabled?: boolean;
@@ -15,6 +16,7 @@ type UseBillingStatusQueryOptions = {
 };
 
 export function usePaymentPlansQuery(options?: UsePaymentPlansQueryOptions) {
+  const orpc = useOrpc();
   const enabled = options?.enabled ?? true;
   return useQuery(
     orpc.payments.listPlans.queryOptions({
@@ -26,15 +28,19 @@ export function usePaymentPlansQuery(options?: UsePaymentPlansQueryOptions) {
 }
 
 export function useBillingStatusQuery(options?: UseBillingStatusQueryOptions) {
+  const orpc = useOrpc();
+  const { data: session } = authClient.useSession();
+  const userId = session?.user.id;
   const enabled = options?.enabled ?? true;
 
-  return useQuery(
-    orpc.payments.getBillingStatus.queryOptions({
+  return useQuery({
+    ...orpc.payments.getBillingStatus.queryOptions({
       staleTime: 60_000,
       refetchOnWindowFocus: true,
-      enabled,
     }),
-  );
+    queryKey: ["billing", "status", userId],
+    enabled: enabled && Boolean(userId),
+  });
 }
 
 export function useCurrentSubscription(options?: UseCurrentSubscriptionOptions) {

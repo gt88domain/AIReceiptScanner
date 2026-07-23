@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { CheckCircleIcon, Loader2Icon, ShieldCheckIcon, SmartphoneIcon } from "lucide-react";
+import { CheckCircleIcon, Loader2Icon, ShieldCheckIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -10,11 +10,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { getAuthUrls } from "@/configs/web-config";
 import { useUserAuthStatus } from "@/hooks/use-user-auth-status";
+import { useOrpc } from "@/hooks/use-orpc";
 import { useTranslations } from "@/i18n";
 import { authClient } from "@/lib/auth/auth-client";
-import { getVisibleUserEmail, isPhoneUser } from "@repo/shared";
+import { getVisibleUserEmail } from "@repo/shared";
 import { formatProviderNames } from "@/utils/auth";
-import { orpc } from "@/utils/orpc";
 
 export const Route = createFileRoute("/_authed/(dashboard)/settings/security")({
   component: RouteComponent,
@@ -23,15 +23,17 @@ export const Route = createFileRoute("/_authed/(dashboard)/settings/security")({
 function RouteComponent() {
   const t = useTranslations("dashboard.security");
   const { user } = Route.useRouteContext();
-  const passwordStatus = useQuery(orpc.users.getPasswordStatus.queryOptions());
+  const orpc = useOrpc();
+  const passwordStatus = useQuery({
+    ...orpc.users.getPasswordStatus.queryOptions(),
+    queryKey: ["users", "password-status", user.id],
+  });
   const [isSending, setIsSending] = useState(false);
 
   // Use custom hook to manage auth status logic
   const authStatus = useUserAuthStatus({ passwordStatus });
   const { isLoading, isError, isSocialUser, isPasswordUser, socialProviders } = authStatus;
   const visibleEmail = getVisibleUserEmail(user);
-  const visiblePhoneNumber = user.phoneNumber ?? null;
-  const hasPhoneLogin = isPhoneUser(user);
 
   const handleSendReset = async () => {
     if (!visibleEmail) return;
@@ -128,26 +130,6 @@ function RouteComponent() {
                   })}
                 </AlertDescription>
               </Alert>
-            </div>
-          ) : hasPhoneLogin ? (
-            <div className="flex items-center justify-between p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
-              <div className="flex items-center gap-3">
-                <SmartphoneIcon className="h-4 w-4 text-blue-600" />
-                <div>
-                  <p className="text-sm font-medium">{t("phone.title")}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {t("phone.verifiedNumber", {
-                      phoneNumber: visiblePhoneNumber ?? "",
-                    })}
-                  </p>
-                </div>
-              </div>
-              <Badge
-                variant="secondary"
-                className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-              >
-                {t("phone.verified")}
-              </Badge>
             </div>
           ) : isPasswordUser ? (
             // Interface for users with password

@@ -1,17 +1,13 @@
-import { trimTrailingSlash } from "@repo/shared";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { ClientOnly, Link } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
 import React from "react";
-import { LandingPageComposer } from "@/components/features/landing-page-composer";
 import { ThemeSwitch } from "@/components/features/theme-switch";
 import { LocaleSwitcher } from "@/components/i18n";
 import { BrandLogo } from "@/components/logos/brand-logo";
 import UserMenu from "@/components/navigation/user-menu";
 import { Button } from "@/components/ui/button";
-import { supportedLocales, useTranslations } from "@/i18n";
+import { useTranslations } from "@/i18n";
 import { cn } from "@/lib/utils";
-
-const landingPagePaths = new Set(["/", ...supportedLocales.map((locale) => `/${locale}`)]);
 
 const MENU_CLOSE_ANIMATION_MS = 220;
 
@@ -28,9 +24,6 @@ export const Header = () => {
   const [isClosing, setIsClosing] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
   const closeTimerRef = React.useRef<number | null>(null);
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const normalizedPathname = trimTrailingSlash(pathname) || "/";
-  const showLandingPageComposer = landingPagePaths.has(normalizedPathname);
   const mobileMenuId = "marketing-mobile-menu";
 
   const menuItems = React.useMemo<MenuItem[]>(
@@ -39,8 +32,8 @@ export const Header = () => {
       { name: t("menu.integrations"), to: "/", hash: "integrations" },
       { name: t("menu.pricing"), to: "/", hash: "pricing" },
       { name: t("menu.faq"), to: "/", hash: "faq" },
-      { name: t("menu.testimonials"), to: "/", hash: "testimonials" },
       { name: t("menu.blog"), to: "/blog" },
+      { name: t("menu.contact"), to: "/contact" },
       { name: t("menu.docs"), href: "/docs" },
     ],
     [t],
@@ -200,12 +193,11 @@ export const Header = () => {
               </div>
               <div className="flex w-full flex-col space-y-3 lg:w-fit lg:flex-row lg:gap-3 lg:space-y-0">
                 <div className="flex flex-wrap gap-2 justify-start lg:space-x-4 lg:gap-0">
-                  {showLandingPageComposer && (
-                    <LandingPageComposer onActionComplete={closeMobileMenu} />
-                  )}
                   <ThemeSwitch onActionComplete={closeMobileMenu} />
                   <LocaleSwitcher onActionComplete={closeMobileMenu} />
-                  <UserMenu onActionComplete={closeMobileMenu} />
+                  <ClientOnly fallback={<div aria-hidden="true" className="h-9 w-24" />}>
+                    <UserMenu onActionComplete={closeMobileMenu} />
+                  </ClientOnly>
                 </div>
               </div>
             </div>

@@ -26,19 +26,17 @@ export const fumadocsI18n = defineI18n({
 });
 
 const { provider } = defineI18nUI(fumadocsI18n, {
-  translations: {
-    en: {
-      displayName: localeDisplayNames.en,
-      search: "Search",
-    },
-    zh: {
-      displayName: localeDisplayNames.zh,
-      search: "搜索",
-    },
-    jp: {
-      displayName: localeDisplayNames.jp,
-      search: "検索",
-    },
+  en: {
+    displayName: localeDisplayNames.en,
+    search: "Search",
+  },
+  zh: {
+    displayName: localeDisplayNames.zh,
+    search: "搜索",
+  },
+  jp: {
+    displayName: localeDisplayNames.jp,
+    search: "検索",
   },
 });
 

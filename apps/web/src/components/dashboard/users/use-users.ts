@@ -2,14 +2,17 @@
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import type { SortingState } from "@tanstack/react-table";
-import { client } from "@/utils/orpc";
+import { authClient } from "@/lib/auth/auth-client";
+import { useOrpc } from "@/hooks/use-orpc";
 
 // Query keys for cache management
 export const usersKeys = {
-  all: ["users"] as const,
+  all: ["admin", "users"] as const,
   lists: () => [...usersKeys.all, "lists"] as const,
-  list: (params: { pageIndex: number; pageSize: number; search: string; sorting: SortingState }) =>
-    [...usersKeys.lists(), params] as const,
+  list: (
+    params: { pageIndex: number; pageSize: number; search: string; sorting: SortingState },
+    userId: string | null,
+  ) => [...usersKeys.lists(), params, userId] as const,
 };
 
 interface UseUsersParams {
@@ -24,15 +27,21 @@ interface UseUsersParams {
  * Uses keepPreviousData to avoid flickering when changing pages.
  */
 export function useUsers({ pageIndex, pageSize, search, sorting }: UseUsersParams) {
+  const orpc = useOrpc();
+  const { data: session } = authClient.useSession();
   return useQuery({
-    queryKey: usersKeys.list({
-      pageIndex,
-      pageSize,
-      search,
-      sorting,
-    }),
+    queryKey: usersKeys.list(
+      {
+        pageIndex,
+        pageSize,
+        search,
+        sorting,
+      },
+      session?.user.id ?? null,
+    ),
+    enabled: Boolean(session?.user.id),
     queryFn: async () => {
-      const result = await client.users.list({
+      const result = await orpc.admin.listUsers.call({
         page: pageIndex + 1,
         perPage: pageSize,
         name: search || undefined,

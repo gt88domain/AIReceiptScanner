@@ -7,6 +7,7 @@
 
 import type { Context as HonoContext } from "hono";
 import { resolveCommonConfig } from "@repo/app-config/config";
+import { isServerFeatureEnabled } from "../lib/module-config";
 import { getStorageProvider, parseStoragePath } from "../storage";
 
 /**
@@ -24,12 +25,20 @@ import { getStorageProvider, parseStoragePath } from "../storage";
 export async function handleFileServe(
   c: HonoContext<{ Bindings: Cloudflare.Env }>,
 ): Promise<Response> {
+  if (!isServerFeatureEnabled("storage")) {
+    return c.notFound();
+  }
+
   const storagePath = c.req.path.replace("/api/storage/", "");
   const parsedStoragePath = parseStoragePath(storagePath);
   const storageKeyPrefixes = resolveCommonConfig().storage.keyPrefixes;
 
   if (!parsedStoragePath) {
     return c.json({ error: "File key is required" }, 400);
+  }
+
+  if (!parsedStoragePath.key.startsWith(`${storageKeyPrefixes.avatar}/`)) {
+    return c.json({ error: "Public storage only serves avatars" }, 404);
   }
 
   // Use storage provider for file serving
@@ -51,10 +60,7 @@ export async function handleFileServe(
     headers.set("Content-Type", file.httpMetadata.contentType);
   }
 
-  // Set cache headers (1 day for avatars, 1 hour for others)
-  const isAvatar = parsedStoragePath.key.startsWith(`${storageKeyPrefixes.avatar}/`);
-  const maxAge = isAvatar ? 86400 : 3600;
-  headers.set("Cache-Control", `public, max-age=${maxAge}`);
+  headers.set("Cache-Control", "public, max-age=86400");
 
   // Set ETag for cache validation
   headers.set("ETag", file.etag);

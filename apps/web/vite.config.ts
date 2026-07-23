@@ -9,7 +9,6 @@ import viteReact from "@vitejs/plugin-react";
 import mdx from "fumadocs-mdx/vite";
 import { parse } from "jsonc-parser";
 import { defineConfig, loadEnv } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
 import * as MdxConfig from "./source.config";
 
 const publicPages = [
@@ -84,6 +83,14 @@ function resolveBuildEnvValue(
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, appDirectory, "");
   const wranglerVars = loadWranglerVars();
+  const clientBuildEnv = Object.fromEntries(
+    Object.keys(wranglerVars)
+      .filter((key) => key.startsWith("VITE_"))
+      .map((key) => [
+        `import.meta.env.${key}`,
+        JSON.stringify(resolveBuildEnvValue(key, [process.env, env, wranglerVars]) ?? ""),
+      ]),
+  );
   const sitemapHost = resolveBuildEnvValue("VITE_APP_URL", [
     process.env,
     env,
@@ -93,6 +100,10 @@ export default defineConfig(({ mode }) => {
   // development: .env, .env.local, .env.development, .env.development.local
   // production: .env, .env.local, .env.production, .env.production.local
   return {
+    define: clientBuildEnv,
+    resolve: {
+      tsconfigPaths: true,
+    },
     server: {
       port: 3000,
     },
@@ -102,7 +113,6 @@ export default defineConfig(({ mode }) => {
     plugins: [
       cloudflare({ viteEnvironment: { name: "ssr" } }),
       devtools(),
-      tsconfigPaths(),
       tailwindcss(),
       tanstackStart({
         srcDirectory: "src",

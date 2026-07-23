@@ -2,7 +2,8 @@ import { env } from "cloudflare:workers";
 import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 import type { Context } from "@/lib/context";
-import { protectedProcedure } from "@/lib/orpc";
+import { webCreditPurchaseProcedure } from "@/lib/orpc";
+import { createPaymentOperationError } from "@/lib/payment-operation-error";
 
 /** Web payment providers that can create credit package checkout sessions. */
 const webCreditProviderEnum = z.enum(["stripe", "creem"]);
@@ -39,7 +40,7 @@ function resolveCreditUser(context: Context): { userId: string } {
 
 /** Web-only credit routes for checkout creation. */
 export const webCreditsRouter = {
-  createCheckoutSession: protectedProcedure
+  createCheckoutSession: webCreditPurchaseProcedure
     .input(createCreditCheckoutInputSchema)
     .output(z.object({ url: z.url(), orderId: z.string() }))
     .handler(async ({ context, input }) => {
@@ -54,9 +55,7 @@ export const webCreditsRouter = {
         });
         return { url: session.url, orderId: session.creditOrderId };
       } catch (error) {
-        throw new ORPCError("BAD_REQUEST", {
-          message: error instanceof Error ? error.message : "Credit checkout failed",
-        });
+        throw createPaymentOperationError("CREDIT_CHECKOUT_CREATION_FAILED", error);
       }
     }),
 };

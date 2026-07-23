@@ -232,9 +232,6 @@
     "signInTitle": "ログインしてクレジットを利用",
     "signInDescription": "クレジットはアカウントに紐づき、端末間で同期されます。",
     "packagesTitle": "クレジットを購入",
-    "demoConsumeTitle": "デモ利用",
-    "demoConsumeDescription": "実際の利用フローを接続する前に、クレジット消費をシミュレートします。",
-    "demoConsumeAmount": "利用するクレジット数",
     "ordersTitle": "購入注文",
     "transactionsTitle": "最近の履歴",
     "transactionsPageTitle": "クレジット履歴",
@@ -254,13 +251,10 @@
     },
     "actions": {
       "buy": "購入",
-      "demoConsume": "クレジットを使う",
       "processing": "処理中..."
     },
     "feedback": {
       "unavailable": "このビルドではアプリ内クレジット購入を利用できません。",
-      "demoConsumeSuccess": "{{count}} クレジットを利用しました。",
-      "demoConsumeError": "クレジット利用に失敗しました",
       "purchaseCancelled": "購入はキャンセルされました",
       "purchaseFailed": "購入に失敗しました。もう一度お試しください。",
       "purchaseSynced": "クレジットがアカウントに追加されました。",

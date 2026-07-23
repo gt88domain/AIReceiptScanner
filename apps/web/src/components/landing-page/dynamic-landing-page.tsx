@@ -8,7 +8,11 @@ const landingPageComponentFactories: Partial<Record<string, () => ReactElement>>
 export function DynamicLandingPage() {
   const { selectedComponents } = useLandingPageComposer();
 
-  if (selectedComponents.length === 0) {
+  return <LandingPage sections={selectedComponents} />;
+}
+
+function LandingPage({ sections }: { sections: readonly string[] }) {
+  if (sections.length === 0) {
     return (
       <div className="mx-auto w-full max-w-4xl px-6 py-24 text-center">
         <h2 className="text-2xl font-semibold">No section selected</h2>
@@ -21,7 +25,7 @@ export function DynamicLandingPage() {
 
   return (
     <>
-      {selectedComponents.map((key) => {
+      {sections.map((key) => {
         const renderComponent = landingPageComponentFactories[key];
         return renderComponent ? <Fragment key={key}>{renderComponent()}</Fragment> : null;
       })}

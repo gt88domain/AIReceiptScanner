@@ -1,8 +1,14 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "easystarter-web",
+  "name": "tanstack-template-web",
   "compatibility_date": "2026-07-14",
   "compatibility_flags": ["nodejs_compat"],
+  "routes": [
+    {
+      "pattern": "demo.aiarticles.com",
+      "custom_domain": true,
+    },
+  ],
   "main": "@tanstack/react-start/server-entry",
   "assets": {
     "not_found_handling": "single-page-application",
@@ -10,14 +16,12 @@
   "services": [
     {
       "binding": "API_SERVICE",
-      "service": "easystarter-server",
+      "service": "tanstack-template-server",
     },
   ],
   "vars": {
-    "VITE_SERVER_URL": "https://server.easystarter.dev",
-    "VITE_APP_URL": "https://cf.easystarter.dev",
-    "VITE_GA_MEASUREMENT_ID": "G-SRZ5KLY3P9",
-    "VITE_OPENPANEL_CLIENT_ID": "affbe40d-1e4d-4f75-a01f-0887995a43b3",
+    "VITE_SERVER_URL": "https://api.demo.aiarticles.com",
+    "VITE_APP_URL": "https://demo.aiarticles.com",
   },
   "observability": {
     "logs": {

@@ -1,0 +1,16 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "composite": false,
+    "ignoreDeprecations": "5.0",
+    "noEmit": true,
+    "baseUrl": "../../..",
+    "paths": {
+      "@/*": ["apps/server/src/*"],
+      "@repo/api-client": ["packages/api-client/src/index.ts"]
+    },
+    "rootDir": "../../..",
+    "types": ["@cloudflare/vitest-pool-workers/types", "node", "vitest/globals"]
+  },
+  "include": ["./**/*.ts", "../src/**/*.ts", "../src/**/*.tsx", "../worker-configuration.d.ts"]
+}

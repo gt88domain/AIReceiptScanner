@@ -52,7 +52,7 @@ export type RevenueCatWebhookEvent = {
   /** The purchase timestamp in milliseconds, if applicable */
   purchased_at_ms?: number | null;
   /** The ID of the product associated with the event */
-  product_id: string;
+  product_id?: string | null;
   /** The transaction ID, if available */
   transaction_id?: string | null;
   /** The original transaction ID, if available */
@@ -67,6 +67,10 @@ export type RevenueCatWebhookEvent = {
   expiration_reason?: string | null;
   /** The ID of the new product, applicable for product changes */
   new_product_id?: string | null;
+  /** App User IDs transactions and entitlements moved away from in a TRANSFER event. */
+  transferred_from?: string[] | null;
+  /** App User IDs receiving transactions and entitlements in a TRANSFER event. */
+  transferred_to?: string[] | null;
 };
 
 /**

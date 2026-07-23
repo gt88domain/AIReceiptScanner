@@ -7,11 +7,11 @@ import serverZh from "./server/zh.json";
 export type ServerMessages = typeof serverEn;
 
 export const serverMessages: LocaleRecord<ServerMessages> = {
-	en: serverEn,
-	zh: serverZh,
-	jp: serverJp,
+  en: serverEn,
+  zh: serverZh,
+  jp: serverJp,
 };
 
 export function getServerMessages(locale: Locale): ServerMessages {
-	return serverMessages[locale];
+  return serverMessages[locale];
 }

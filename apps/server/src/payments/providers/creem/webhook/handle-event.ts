@@ -1,8 +1,8 @@
-import { and, eq, isNull, lt, or } from "drizzle-orm";
+import { and, eq, isNull, lt, or, sql } from "drizzle-orm";
 import {
   completeCreditOrderPurchase,
-  grantCreditPackagePurchase,
   markCreditOrderRefunded,
+  recordCreditPaymentDispute,
   revokeCreditPurchaseBySource,
 } from "@/credits";
 import type { Database } from "@/db";
@@ -16,7 +16,9 @@ import { findPriceById, findPriceByProviderPriceId } from "@/payments/domain/pla
 import {
   findPurchaseByProviderIntent,
   findSubscriptionByProviderId,
+  upsertBillingPurchaseIfNewer,
   upsertBillingCustomer,
+  upsertBillingSubscriptionIfNewer,
 } from "@/payments/infrastructure/repositories/billing-store";
 import type { BillingUser } from "@/payments/public/types";
 import { reconcileActivatedPriceWithExistingSubscriptions } from "../../shared/activated-price-effects";
@@ -24,6 +26,7 @@ import { mapCreemSubscriptionState } from "../shared";
 import type { CreemSubscriptionState } from "../shared";
 import type {
   CreemCheckoutCompletedObject,
+  CreemDisputeObject,
   CreemMetadata,
   CreemRefundObject,
   CreemSubscription,
@@ -166,12 +169,12 @@ async function upsertCreemSubscription(
   input: {
     user: BillingUser;
     providerEventAt: Date;
+    providerEventId: string;
     subscription: CreemSubscription;
     planId: string;
     priceId: string;
   },
 ) {
-  const now = new Date();
   const mappedState = mapCreemSubscriptionState(input.subscription.status);
   const providerCustomerId = getCreemCustomerId(input.subscription.customer);
 
@@ -179,52 +182,23 @@ async function upsertCreemSubscription(
     throw new Error("Creem subscription missing customer id");
   }
 
-  const existing = await findSubscriptionByProviderId(db, "creem", input.subscription.id);
-  if (
-    existing?.providerEventAt &&
-    input.providerEventAt.getTime() < existing.providerEventAt.getTime()
-  ) {
-    return;
-  }
+  const applied = await upsertBillingSubscriptionIfNewer(db, {
+    userId: input.user.userId,
+    provider: "creem",
+    providerSubscriptionId: input.subscription.id,
+    providerCustomerId,
+    planId: input.planId,
+    priceId: input.priceId,
+    status: mappedState.status,
+    currentPeriodEnd: toDate(input.subscription.current_period_end_date),
+    cancelAtPeriodEnd: mappedState.cancelAtPeriodEnd,
+    startedAt: toDate(input.subscription.current_period_start_date),
+    endedAt: mappedState.status === "canceled" ? toDate(input.subscription.canceled_at) : null,
+    providerEventAt: input.providerEventAt,
+    providerEventId: input.providerEventId,
+  });
 
-  // Upsert keeps subscription state idempotent across repeated deliveries.
-  await db
-    .insert(billingSubscription)
-    .values({
-      id: crypto.randomUUID(),
-      userId: input.user.userId,
-      provider: "creem",
-      providerSubscriptionId: input.subscription.id,
-      providerCustomerId,
-      planId: input.planId,
-      priceId: input.priceId,
-      status: mappedState.status,
-      currentPeriodEnd: toDate(input.subscription.current_period_end_date),
-      cancelAtPeriodEnd: mappedState.cancelAtPeriodEnd,
-      startedAt: toDate(input.subscription.current_period_start_date),
-      endedAt: mappedState.status === "canceled" ? toDate(input.subscription.canceled_at) : null,
-      providerEventAt: input.providerEventAt,
-      createdAt: now,
-      updatedAt: now,
-    })
-    .onConflictDoUpdate({
-      target: [billingSubscription.provider, billingSubscription.providerSubscriptionId],
-      set: {
-        userId: input.user.userId,
-        providerCustomerId,
-        planId: input.planId,
-        priceId: input.priceId,
-        status: mappedState.status,
-        currentPeriodEnd: toDate(input.subscription.current_period_end_date),
-        cancelAtPeriodEnd: mappedState.cancelAtPeriodEnd,
-        startedAt: toDate(input.subscription.current_period_start_date),
-        endedAt: mappedState.status === "canceled" ? toDate(input.subscription.canceled_at) : null,
-        providerEventAt: input.providerEventAt,
-        updatedAt: now,
-      },
-    });
-
-  if (mappedState.status === "active" || mappedState.status === "trialing") {
+  if (applied && (mappedState.status === "active" || mappedState.status === "trialing")) {
     // A newly activated higher-tier Creem entitlement may require older Stripe subscriptions to stop renewing.
     await reconcileActivatedPriceWithExistingSubscriptions(db, input.user, input.priceId);
   }
@@ -238,51 +212,26 @@ async function upsertCreemPurchase(
   input: {
     user: BillingUser;
     providerEventAt: Date;
+    providerEventId: string;
     providerTransactionId: string;
     planId: string;
     priceId: string;
     status: "succeeded" | "refunded";
   },
 ) {
-  const now = new Date();
-  const existing = await findPurchaseByProviderIntent(db, "creem", input.providerTransactionId);
+  const applied = await upsertBillingPurchaseIfNewer(db, {
+    userId: input.user.userId,
+    provider: "creem",
+    providerPaymentIntentId: input.providerTransactionId,
+    planId: input.planId,
+    priceId: input.priceId,
+    status: input.status,
+    paidAt: input.status === "succeeded" ? input.providerEventAt : null,
+    providerEventAt: input.providerEventAt,
+    providerEventId: input.providerEventId,
+  });
 
-  if (
-    existing?.providerEventAt &&
-    input.providerEventAt.getTime() < existing.providerEventAt.getTime()
-  ) {
-    return;
-  }
-
-  await db
-    .insert(billingPurchase)
-    .values({
-      id: crypto.randomUUID(),
-      userId: input.user.userId,
-      provider: "creem",
-      providerPaymentIntentId: input.providerTransactionId,
-      planId: input.planId,
-      priceId: input.priceId,
-      status: input.status,
-      paidAt: input.status === "succeeded" ? input.providerEventAt : null,
-      providerEventAt: input.providerEventAt,
-      createdAt: now,
-      updatedAt: now,
-    })
-    .onConflictDoUpdate({
-      target: [billingPurchase.provider, billingPurchase.providerPaymentIntentId],
-      set: {
-        userId: input.user.userId,
-        planId: input.planId,
-        priceId: input.priceId,
-        status: input.status,
-        paidAt: input.status === "succeeded" ? input.providerEventAt : null,
-        providerEventAt: input.providerEventAt,
-        updatedAt: now,
-      },
-    });
-
-  if (input.status === "succeeded") {
+  if (applied && input.status === "succeeded") {
     await reconcileActivatedPriceWithExistingSubscriptions(db, input.user, input.priceId);
   }
 }
@@ -360,31 +309,16 @@ async function handleCreemCheckoutCompleted(
     const creditPackageId = metadata.creditPackageId;
     const creditOrderId = metadata.creditOrderId;
     const sourceId = object.order?.transaction ?? object.order?.id ?? object.id;
-    if (!creditPackageId) {
-      throw new Error(`Creem credit checkout missing package id for session ${object.id}`);
+    if (!creditPackageId || !creditOrderId) {
+      throw new Error(`Creem credit checkout missing immutable order for session ${object.id}`);
     }
 
-    if (creditOrderId) {
-      await completeCreditOrderPurchase(db, {
-        orderId: creditOrderId,
-        sourceProvider: "creem",
-        sourceId,
-        providerSessionId: object.id,
-        providerPaymentId: sourceId,
-        metadata: {
-          checkoutSessionId: object.id,
-          orderId: object.order?.id ?? null,
-          transactionId: object.order?.transaction ?? null,
-        },
-      });
-      return;
-    }
-
-    await grantCreditPackagePurchase(db, {
-      user,
-      packageId: creditPackageId,
+    await completeCreditOrderPurchase(db, {
+      orderId: creditOrderId,
       sourceProvider: "creem",
       sourceId,
+      providerSessionId: object.id,
+      providerPaymentId: sourceId,
       metadata: {
         checkoutSessionId: object.id,
         orderId: object.order?.id ?? null,
@@ -418,6 +352,7 @@ async function handleCreemCheckoutCompleted(
     await upsertCreemSubscription(db, {
       user,
       providerEventAt,
+      providerEventId: event.id,
       subscription: normalizedSubscription,
       planId,
       priceId,
@@ -429,6 +364,7 @@ async function handleCreemCheckoutCompleted(
     await upsertCreemPurchase(db, {
       user,
       providerEventAt,
+      providerEventId: event.id,
       providerTransactionId: object.order.transaction,
       planId,
       priceId,
@@ -494,6 +430,7 @@ async function handleCreemSubscriptionEvent(
   await upsertCreemSubscription(db, {
     user,
     providerEventAt: new Date(event.created_at),
+    providerEventId: event.id,
     subscription: normalizedSubscription,
     planId,
     priceId,
@@ -581,6 +518,7 @@ async function handleCreemRefundCreated(
     await upsertCreemPurchase(db, {
       user,
       providerEventAt,
+      providerEventId: event.id,
       providerTransactionId: object.transaction.id,
       planId: purchase.planId,
       priceId: purchase.priceId,
@@ -597,6 +535,7 @@ async function handleCreemRefundCreated(
         cancelAtPeriodEnd: false,
         endedAt: providerEventAt,
         providerEventAt,
+        providerEventId: event.id,
         updatedAt: new Date(),
       })
       .where(
@@ -606,6 +545,10 @@ async function handleCreemRefundCreated(
           or(
             isNull(billingSubscription.providerEventAt),
             lt(billingSubscription.providerEventAt, providerEventAt),
+            and(
+              eq(billingSubscription.providerEventAt, providerEventAt),
+              sql`COALESCE(${billingSubscription.providerEventId}, '') < ${event.id}`,
+            ),
           ),
         ),
       );
@@ -613,14 +556,26 @@ async function handleCreemRefundCreated(
 }
 
 /**
- * Logs Creem disputes so chargebacks stay visible until a dedicated state transition exists.
+ * Holds the matched account as soon as Creem opens a dispute.
  */
-function handleCreemDisputeCreated(event: CreemWebhookEnvelope) {
-  console.error("Creem dispute created", {
+async function handleCreemDisputeCreated(
+  db: Database,
+  event: CreemWebhookEnvelope,
+  object: CreemDisputeObject,
+) {
+  const providerCustomerId = getCreemCustomerId(object.customer);
+  const user = await resolveCreemUser(db, { providerCustomerId });
+  if (!user) {
+    throw new Error(`Creem dispute missing a known billing user for dispute ${object.id}`);
+  }
+
+  await recordCreditPaymentDispute(db, {
+    provider: "creem",
+    providerDisputeId: object.id,
+    userId: user.userId,
+    status: "open",
+    providerEventAt: new Date(event.created_at),
     providerEventId: event.id,
-    providerDisputeId: "id" in event.object ? event.object.id : null,
-    providerCustomerId:
-      "customer" in event.object ? getCreemCustomerId(event.object.customer) : null,
   });
 }
 
@@ -654,7 +609,7 @@ export async function handleCreemEvent(db: Database, payload: unknown) {
       await handleCreemRefundCreated(db, event, event.object as CreemRefundObject);
       return;
     case "dispute.created":
-      handleCreemDisputeCreated(event);
+      await handleCreemDisputeCreated(db, event, event.object as CreemDisputeObject);
       return;
   }
 }

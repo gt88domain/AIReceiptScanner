@@ -1,4 +1,4 @@
-# EasyStarter
+# TanStack Template
 
 A modern full-stack TypeScript template for building SaaS applications with zero configuration required.
 
@@ -17,7 +17,7 @@ A modern full-stack TypeScript template for building SaaS applications with zero
 | **Backend**      | Hono + Cloudflare Workers                             |
 | **Database**     | Cloudflare D1 (SQLite) + Drizzle ORM                  |
 | **API**          | oRPC (end-to-end type-safe)                           |
-| **Auth**         | Better Auth (Email/Password, GitHub, Google, Apple, Phone/SMS OTP) |
+| **Auth**         | Better Auth (Email/Password, GitHub, Google, Apple) |
 | **Payments**     | Stripe + Creem (web), RevenueCat (native), credits system |
 | **Mobile**       | React Native + Expo                                   |
 | **Email**        | Resend + React Email templates                        |
@@ -31,7 +31,6 @@ A modern full-stack TypeScript template for building SaaS applications with zero
 
 - Email/password with verification
 - OAuth providers (GitHub, Google, Apple)
-- Phone number / SMS OTP sign-in (Alibaba Cloud SMS)
 - Session management with Better Auth
 - Protected routes and middleware
 
@@ -68,7 +67,7 @@ A modern full-stack TypeScript template for building SaaS applications with zero
 ```bash
 # 1. Clone and install dependencies
 git clone <your-repo-url>
-cd easystarter
+cd tanstack-template
 pnpm install
 
 # 2. Set up environment files (copy from examples and configure)
@@ -77,8 +76,8 @@ pnpm install
 #    apps/native/.env.development.local.example → apps/native/.env.development.local
 # Configure your database, auth providers, payments, etc.
 
-# 3. Initialize database
-pnpm db:push
+# 3. Initialize local D1 and apply versioned migrations
+pnpm db:migrate
 
 # 4. Start development servers
 pnpm dev
@@ -116,6 +115,7 @@ pnpm dev
 - `docs/native-revenuecat-payments.md` — Native in-app purchases with RevenueCat
 - `docs/native-local-builds.md` — Building the native app locally
 - `docs/native-email-verification-with-ngrok.md` — Native email verification setup with ngrok
+- `docs/template-adoption.md` — Buyer-owned identifiers and deployment checklist
 
 ## 🛠️ Available Scripts
 
@@ -213,11 +213,11 @@ The project uses Cloudflare D1 (SQLite) with Drizzle ORM:
 # Generate migration after schema changes
 pnpm db:generate
 
-# Push schema to development database
-pnpm db:push
-
-# Run migrations in production
+# Run migrations locally (default)
 pnpm db:migrate
+
+# Run reviewed migrations against production (explicit CI credentials only)
+pnpm db:migrate:production
 ```
 
 ### Authentication Setup
@@ -236,9 +236,6 @@ GOOGLE_CLIENT_SECRET=your_google_client_secret
 # Apple Sign In
 APPLE_APP_BUNDLE_IDENTIFIER=your.app.bundle.id
 
-# Phone / SMS OTP (Alibaba Cloud SMS)
-ALIBABA_CLOUD_ACCESS_KEY_ID=your_access_key_id
-ALIBABA_CLOUD_ACCESS_KEY_SECRET=your_access_key_secret
 ```
 
 ### Email Configuration

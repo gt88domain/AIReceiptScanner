@@ -1,5 +1,5 @@
 {
-  "name": "easystarter",
+  "name": "tanstack-template",
   "private": true,
   "workspaces": [
     "apps/*",
@@ -7,14 +7,17 @@
   ],
   "type": "module",
   "scripts": {
-    "lint": "turbo -F web -F server -F native lint",
-    "lint:fix": "turbo -F web -F server -F native lint:fix",
-    "fmt": "turbo -F web -F server -F native fmt",
-    "fmt:check": "turbo -F web -F server -F native fmt:check",
+    "lint": "turbo lint",
+    "lint:fix": "turbo lint:fix",
+    "fmt": "turbo fmt",
+    "fmt:check": "turbo fmt:check",
     "ruler:apply": "pnpm dlx @intellectronica/ruler@latest apply --local-only",
     "dev": "turbo dev",
     "build": "turbo build",
     "check-types": "turbo check-types",
+    "test:unit": "turbo test",
+    "test:template": "pnpm --filter server test:config && pnpm --filter server exec tsx ../../scripts/check-security-headers.ts",
+    "test:integration": "turbo test:integration",
     "dev:native": "turbo -F native dev",
     "dev:web": "turbo -F web dev",
     "dev:server": "turbo -F server dev",
@@ -24,29 +27,32 @@
     "dev:android-device+server": "turbo run dev:android-device --filter=native --filter=server --parallel",
     "dev:web+server": "turbo -F web -F server dev",
     "dev:native+server": "turbo run dev --filter=native --filter=server --parallel",
-    "db:push": "turbo -F server db:push",
     "db:studio": "turbo -F server db:studio",
     "db:studio:local": "turbo -F server db:studio:local",
     "db:generate": "turbo -F server db:generate",
+    "db:check": "turbo -F server db:check",
     "db:migrate": "turbo -F server db:migrate",
     "db:migrate:local": "turbo -F server db:migrate:local",
+    "db:migrate:production": "turbo -F server db:migrate:production",
+    "module:check": "pnpm --filter server module:check",
+    "db:studio:production": "turbo -F server db:studio:production",
     "deploy:web": "turbo -F web deploy",
     "deploy:server": "turbo -F server deploy",
     "deploy": "pnpm deploy:server && pnpm deploy:web",
     "husky:install": "husky install",
-    "commit": "git add . && npx cz && git push",
+    "commit": "npx cz",
     "clean": "rm -rf node_modules apps/*/node_modules packages/*/node_modules .turbo apps/*/.turbo && pnpm store prune"
   },
   "devDependencies": {
     "cz-conventional-changelog": "^3.3.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.1.2",
+    "lint-staged": "^16.4.0",
     "oxfmt": "^0.35.0",
-    "oxlint": "^1.50.0",
-    "turbo": "^2.8.3"
+    "oxlint": "^1.75.0",
+    "turbo": "^2.10.5"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,mjs,cjs}": "pnpm run lint"
+    "*.{js,jsx,ts,tsx,mjs,cjs}": "pnpm exec oxlint"
   },
   "config": {
     "commitizen": {

@@ -35,6 +35,7 @@ export async function handleStripeEvent(db: Database, payload: unknown) {
         db,
         event.data.object as Stripe.Checkout.Session,
         providerEventAt,
+        event.id,
       );
       return;
     }
@@ -65,7 +66,12 @@ export async function handleStripeEvent(db: Database, payload: unknown) {
     case "customer.subscription.created":
     case "customer.subscription.updated":
     case "customer.subscription.deleted": {
-      await handleStripeSubscription(db, event.data.object as Stripe.Subscription, providerEventAt);
+      await handleStripeSubscription(
+        db,
+        event.data.object as Stripe.Subscription,
+        providerEventAt,
+        event.id,
+      );
       return;
     }
     case "payment_intent.succeeded": {
@@ -73,6 +79,7 @@ export async function handleStripeEvent(db: Database, payload: unknown) {
         db,
         event.data.object as Stripe.PaymentIntent,
         providerEventAt,
+        event.id,
       );
       return;
     }
@@ -81,6 +88,7 @@ export async function handleStripeEvent(db: Database, payload: unknown) {
         db,
         event.data.object as Stripe.PaymentIntent,
         providerEventAt,
+        event.id,
       );
       return;
     }
@@ -89,12 +97,18 @@ export async function handleStripeEvent(db: Database, payload: unknown) {
         db,
         event.data.object as Stripe.PaymentIntent,
         providerEventAt,
+        event.id,
       );
       return;
     }
     case "invoice.paid":
     case "invoice.payment_succeeded": {
-      await handleStripeInvoicePaid(db, event.data.object as Stripe.Invoice, providerEventAt);
+      await handleStripeInvoicePaid(
+        db,
+        event.data.object as Stripe.Invoice,
+        providerEventAt,
+        event.id,
+      );
       return;
     }
     case "invoice.payment_failed": {
@@ -102,6 +116,7 @@ export async function handleStripeEvent(db: Database, payload: unknown) {
         db,
         event.data.object as Stripe.Invoice,
         providerEventAt,
+        event.id,
       );
       return;
     }
@@ -110,11 +125,17 @@ export async function handleStripeEvent(db: Database, payload: unknown) {
         db,
         event.data.object as Stripe.Invoice,
         providerEventAt,
+        event.id,
       );
       return;
     }
     case "invoice.voided": {
-      await handleStripeInvoiceVoided(db, event.data.object as Stripe.Invoice, providerEventAt);
+      await handleStripeInvoiceVoided(
+        db,
+        event.data.object as Stripe.Invoice,
+        providerEventAt,
+        event.id,
+      );
       return;
     }
     case "charge.dispute.updated": {
@@ -122,6 +143,7 @@ export async function handleStripeEvent(db: Database, payload: unknown) {
         db,
         event.data.object as Stripe.Dispute,
         providerEventAt,
+        event.id,
       );
       return;
     }
@@ -130,6 +152,7 @@ export async function handleStripeEvent(db: Database, payload: unknown) {
         db,
         event.data.object as Stripe.Dispute,
         providerEventAt,
+        event.id,
       );
       return;
     }
@@ -138,11 +161,17 @@ export async function handleStripeEvent(db: Database, payload: unknown) {
         db,
         event.data.object as Stripe.Dispute,
         providerEventAt,
+        event.id,
       );
       return;
     }
     case "charge.refunded": {
-      await handleStripeChargeRefunded(db, event.data.object as Stripe.Charge, providerEventAt);
+      await handleStripeChargeRefunded(
+        db,
+        event.data.object as Stripe.Charge,
+        providerEventAt,
+        event.id,
+      );
       return;
     }
     default:

@@ -1,4 +1,6 @@
 import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { ShieldCheck } from "lucide-react";
 import { BrandLogo } from "@/components/logos/brand-logo";
 import { useLayout } from "@/components/providers/layout-provider";
 import {
@@ -9,12 +11,29 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import type { CurrentUser } from "@/lib/auth/auth-server";
+import { useOrpc } from "@/hooks/use-orpc";
+import { webConfig } from "@/configs/web-config";
 import { sidebarData } from "../../configs/data/sidebar-data";
 import { NavGroup } from "./nav-group";
 import { NavUser } from "./nav-user";
 
 export function AppSidebar({ user }: { user: CurrentUser }) {
   const { collapsible, variant } = useLayout();
+  const orpc = useOrpc();
+  const adminAccess = useQuery({
+    ...orpc.admin.getAccess.queryOptions(),
+    queryKey: ["admin", "access", user.id],
+    enabled: webConfig.adminEnabled,
+  });
+  const navGroups = adminAccess.data?.isAdmin
+    ? [
+        ...sidebarData.navGroups,
+        {
+          title: "dashboard.nav.admin",
+          items: [{ title: "dashboard.nav.admin", url: "/admin", icon: ShieldCheck }],
+        },
+      ]
+    : sidebarData.navGroups;
   return (
     <Sidebar collapsible={collapsible} variant={variant}>
       <SidebarHeader>
@@ -30,7 +49,7 @@ export function AppSidebar({ user }: { user: CurrentUser }) {
         </Link>
       </SidebarHeader>
       <SidebarContent>
-        {sidebarData.navGroups.map((props) => (
+        {navGroups.map((props) => (
           <NavGroup key={props.title} {...props} />
         ))}
       </SidebarContent>

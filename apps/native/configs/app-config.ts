@@ -26,14 +26,12 @@ export const appConfig: AppConfig = {
     methods: {
       emailPasswordEnabled: commonConfig.auth.methods.emailPasswordEnabled ?? false,
       emailOtpEnabled: commonConfig.auth.methods.emailOtpEnabled ?? false,
-      smsEnabled: commonConfig.auth.methods.smsEnabled ?? false,
       githubEnabled: commonConfig.auth.methods.githubEnabled ?? false,
       googleEnabled: commonConfig.auth.methods.googleEnabled ?? false,
       appleEnabled: commonConfig.auth.methods.appleEnabled ?? false,
     },
     otp: {
       email: commonConfig.auth.otp.email,
-      sms: commonConfig.auth.otp.sms,
     },
   },
   safeAreaTop: 80,

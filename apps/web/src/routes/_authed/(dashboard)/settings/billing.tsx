@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { CreditCardIcon, ExternalLinkIcon, Loader2Icon } from "lucide-react";
 import { type ComponentProps, useEffect } from "react";
 import { toast } from "sonner";
@@ -11,15 +11,15 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getBillingUrls } from "@/configs/web-config";
+import { getBillingUrls, webConfig } from "@/configs/web-config";
 import { useBillingStatusQuery, usePaymentPlansQuery } from "@/hooks/use-payments";
+import { useOrpc } from "@/hooks/use-orpc";
 import { useTranslations } from "@/i18n";
 import { resolveCheckoutPolicyDecision } from "@repo/app-config/membership";
 import { createCheckoutSuccessUrl } from "@/lib/payments/checkout-redirect-url";
 import { resolveBillingErrorMessage } from "@/lib/payments/error-message";
 import { findPriceProvider } from "@/lib/payments/find-price-provider";
 import { openProviderCheckoutUrl } from "@/lib/payments/open-checkout-url";
-import { orpc } from "@/utils/orpc";
 
 /** Props accepted by the shared pricing matrix component. */
 type PricingMatrixProps = ComponentProps<typeof PricingMatrix>;
@@ -32,11 +32,17 @@ type PricingMatrixIsCtaDisabled = NonNullable<PricingMatrixProps["isCtaDisabled"
 
 /** File-based route definition for the authenticated billing settings page. */
 export const Route = createFileRoute("/_authed/(dashboard)/settings/billing")({
+  beforeLoad: () => {
+    if (!webConfig.billingEnabled) {
+      throw redirect({ to: "/dashboard" });
+    }
+  },
   component: RouteComponent,
 });
 
 /** Billing settings page for subscriptions and membership plans. */
 function RouteComponent() {
+  const orpc = useOrpc();
   const t = useTranslations("dashboard.billing");
   const tPricing = useTranslations("landingPage.pricing");
   const plansQuery = usePaymentPlansQuery();

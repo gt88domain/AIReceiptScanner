@@ -60,6 +60,7 @@ export function createAuth(d1: D1Database) {
   if (cached) return cached;
 
   const db = drizzle(d1);
+  const runtimeNodeEnv: string | undefined = process.env.NODE_ENV;
   const { cookieDomain, sameSite, secure } = resolveCookiePolicy(env.SERVER_URL, env.WEBSITE_URL);
   const auth = betterAuth<BetterAuthOptions>({
     baseURL: env.SERVER_URL || "",
@@ -69,6 +70,7 @@ export function createAuth(d1: D1Database) {
       schema,
     }),
     account: {
+      encryptOAuthTokens: true,
       accountLinking: {
         enabled: true,
         trustedProviders: ["google", "github"],
@@ -104,10 +106,10 @@ export function createAuth(d1: D1Database) {
     },
     trustedOrigins: [
       env.WEBSITE_URL || "",
-      nativeConfig.app.name + "://",
+      nativeConfig.app.nativeScheme + "://",
 
       // Development mode - Expo's exp:// scheme with local IP ranges
-      ...(process.env.NODE_ENV === "development"
+      ...(runtimeNodeEnv === "development"
         ? [
             "exp://", // Trust all Expo URLs (prefix matching)
             "exp://**", // Trust all Expo URLs (wildcard matching)
@@ -159,6 +161,7 @@ export function createAuth(d1: D1Database) {
         clientId: env.GITHUB_CLIENT_ID || "",
         clientSecret: env.GITHUB_CLIENT_SECRET || "",
         redirectURI: joinUrl(env.SERVER_URL, "/api/auth/callback/github"),
+        scope: ["read:user", "user:email"],
       },
       google: {
         prompt: "select_account",
@@ -166,6 +169,7 @@ export function createAuth(d1: D1Database) {
         clientId: env.GOOGLE_CLIENT_ID || "",
         clientSecret: env.GOOGLE_CLIENT_SECRET || "",
         redirectURI: joinUrl(env.SERVER_URL, "/api/auth/callback/google"),
+        scope: ["openid", "email", "profile"],
       },
       apple: {
         ...getAppleProviderConfig(),
@@ -174,6 +178,9 @@ export function createAuth(d1: D1Database) {
     },
     rateLimit: {
       enabled: true,
+      // Database storage makes Better Auth's atomic consume step shared across Workers isolates.
+      // Better Auth keeps stricter built-in rules for sign-in, reset, and verification endpoints.
+      storage: "database",
       window: 60,
       max: 30,
     },

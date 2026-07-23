@@ -18,9 +18,9 @@ export const localeCookieName = "locale";
  * Used in locale switchers and language menus.
  */
 export const localeDisplayNames: LocaleRecord<string> = {
-	en: "English",
-	zh: "中文",
-	jp: "日本語",
+  en: "English",
+  zh: "中文",
+  jp: "日本語",
 };
 
 /**
@@ -28,9 +28,9 @@ export const localeDisplayNames: LocaleRecord<string> = {
  * Used for og:locale meta tags.
  */
 export const localeToOpenGraph: LocaleRecord<string> = {
-	en: "en_US",
-	zh: "zh_CN",
-	jp: "ja_JP",
+  en: "en_US",
+  zh: "zh_CN",
+  jp: "ja_JP",
 };
 
 /**
@@ -38,13 +38,13 @@ export const localeToOpenGraph: LocaleRecord<string> = {
  * Used for Intl formatting APIs.
  */
 export const localeToDateFormat: LocaleRecord<string> = {
-	en: "en-US",
-	zh: "zh-CN",
-	jp: "ja-JP",
+  en: "en-US",
+  zh: "zh-CN",
+  jp: "ja-JP",
 };
 
 export function isValidLocale(locale: string | undefined): locale is Locale {
-	return supportedLocales.includes(locale as Locale);
+  return supportedLocales.includes(locale as Locale);
 }
 
 /**

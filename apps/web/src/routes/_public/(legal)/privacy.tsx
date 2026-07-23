@@ -63,7 +63,7 @@ function RouteComponent() {
           </div>
 
           <footer className="border-t pt-6 text-sm text-muted-foreground">
-            {commonT("contactLabel")}: support@easystarter.dev
+            {commonT("contactLabel")}: {webConfig.supportEmail}
           </footer>
         </article>
       </div>

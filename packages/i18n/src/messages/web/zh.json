@@ -36,8 +36,9 @@
         "integrations": "集成",
         "pricing": "价格",
         "faq": "常见问题",
-        "testimonials": "用户评价",
+        "listing": "列表页模板",
         "blog": "博客",
+        "contact": "联系我们",
         "docs": "文档"
       },
       "actions": {
@@ -107,7 +108,19 @@
     },
     "footer": {
       "description": "为你的创业项目或副业提供的一套组件集合。",
-      "copyright": "© {year} easystarter.dev. 保留所有权利。",
+      "copyright": "© {year} TanStack Template. 保留所有权利。",
+      "newsletter": {
+        "title": "获取产品更新",
+        "description": "只在有值得分享的新内容时发送简短更新。",
+        "emailLabel": "邮箱地址",
+        "placeholder": "you@example.com",
+        "submit": "订阅",
+        "submitting": "正在订阅…",
+        "privacy": "不发送垃圾邮件，随时可以退订。",
+        "success": "订阅成功。",
+        "error": "订阅失败，请稍后重试。",
+        "rateLimited": "请等待一分钟后再试。"
+      },
       "social": {
         "github": "GitHub",
         "twitter": "Twitter"
@@ -118,7 +131,7 @@
           "links": {
             "overview": "概览",
             "pricing": "价格",
-            "marketplace": "市场",
+            "listingTemplate": "列表页模板",
             "features": "功能"
           }
         },
@@ -127,11 +140,105 @@
           "links": {
             "privacy": "隐私",
             "terms": "条款",
-            "about": "关于",
-            "blog": "博客"
+            "docs": "文档",
+            "blog": "博客",
+            "contact": "联系我们"
           }
         }
       }
+    }
+  },
+  "listingTemplate": {
+    "eyebrow": "可复用公开页面模式",
+    "title": "列表页面模板",
+    "description": "适用于目录、市场、资源库和可搜索目录的生产级起点。",
+    "resultCount": "{count} 个模式",
+    "searchLabel": "搜索模板",
+    "searchPlaceholder": "按使用场景或能力搜索",
+    "filterLabel": "筛选",
+    "categoryLabel": "使用场景",
+    "allCategories": "全部模式",
+    "layoutLabel": "布局",
+    "allLayouts": "全部布局",
+    "sortLabel": "排序方式",
+    "sortRecommended": "推荐",
+    "sortNewest": "最新",
+    "sortName": "名称",
+    "emptyTitle": "没有匹配的模式",
+    "emptyDescription": "尝试其他搜索词，或清除部分筛选条件。",
+    "clearFilters": "清除筛选",
+    "viewDetails": "查看详情",
+    "backToListing": "返回模板列表",
+    "detail": {
+      "includedTitle": "包含的模式能力",
+      "includedSearch": "可直接接入搜索的筛选控件",
+      "includedFilters": "分类和布局的分面筛选",
+      "includedResponsive": "响应式网格与列表布局",
+      "includedEmptyState": "空状态和加载状态基础组件",
+      "previewTitle": "布局预览",
+      "useCaseTitle": "适用场景",
+      "copyLink": "复制链接",
+      "copiedLink": "已复制",
+      "startUsing": "开始使用"
+    },
+    "items": {
+      "directory": {
+        "title": "供应商目录",
+        "description": "带分类、位置和能力筛选的公开卡片。",
+        "category": "目录",
+        "layout": "网格"
+      },
+      "marketplace": {
+        "title": "模板市场",
+        "description": "带价格提示和集合筛选的可搜索目录。",
+        "category": "市场",
+        "layout": "网格"
+      },
+      "resources": {
+        "title": "资源库",
+        "description": "可按主题和格式筛选的指南、工具与下载内容。",
+        "category": "内容",
+        "layout": "网格"
+      },
+      "changelog": {
+        "title": "更新日志",
+        "description": "带版本和类型筛选的按时间排序产品更新。",
+        "category": "内容",
+        "layout": "列表"
+      },
+      "jobs": {
+        "title": "职位看板",
+        "description": "带地点、工作方式和团队筛选的职位列表。",
+        "category": "目录",
+        "layout": "列表"
+      },
+      "projects": {
+        "title": "项目画廊",
+        "description": "带标签、集合和加载更多分页的作品展示。",
+        "category": "市场",
+        "layout": "网格"
+      }
+    }
+  },
+  "contact": {
+    "eyebrow": "联系我们",
+    "title": "有什么可以帮你？",
+    "description": "告诉我们你正在构建什么、需要什么，或遇到了什么问题。我们会通过邮件回复。",
+    "formTitle": "发送消息",
+    "formDescription": "我们通常会在一个工作日内回复。",
+    "name": "姓名",
+    "email": "邮箱",
+    "message": "消息",
+    "messagePlaceholder": "你想讨论什么？",
+    "submit": "发送消息",
+    "submitting": "发送中…",
+    "success": "谢谢，你的消息已发送。",
+    "error": "消息发送失败，请重试或直接通过邮件联系我们。",
+    "rateLimited": "请等待一分钟后再发送消息。",
+    "validation": {
+      "name": "请输入至少 2 个字符。",
+      "email": "请输入有效的邮箱地址。",
+      "message": "请输入至少 10 个字符。"
     }
   },
   "blog": {
@@ -267,6 +374,7 @@
       "general": "常规",
       "dashboard": "仪表盘",
       "users": "用户管理",
+      "admin": "管理员",
       "other": "其他",
       "settings": "设置",
       "profile": "个人资料",
@@ -287,6 +395,24 @@
         "description": "确定要退出登录吗？您需要重新登录才能访问您的账号。",
         "confirm": "退出登录"
       }
+    },
+    "home": {
+      "title": "欢迎回来，{name}",
+      "description": "账号基础已就绪。接下来可按 SaaS 产品需求添加业务工作流。",
+      "profileTitle": "个人资料",
+      "profileDescription": "设置客户和团队成员看到的名称。",
+      "profileAction": "编辑资料",
+      "billingTitle": "账单",
+      "billingDescription": "准备销售时再配置套餐。",
+      "billingAction": "查看账单",
+      "creditsTitle": "积分",
+      "creditsDescription": "按量计费产品可选用此账本。",
+      "creditsAction": "管理积分",
+      "creditsBalance": "可用 {count} 积分",
+      "securityTitle": "安全",
+      "securityVerified": "邮箱已验证",
+      "securityUnverified": "需要验证邮箱",
+      "securityAction": "查看安全设置"
     },
     "billing": {
       "title": "账单",
@@ -338,12 +464,7 @@
       "buy": "购买",
       "checkoutError": "积分结算失败",
       "orderCreditedToast": "{packageName} 积分已到账。",
-      "demoConsumeTitle": "模拟消耗",
-      "demoConsumeDescription": "在真实消耗场景接入前，先模拟扣减积分。",
-      "demoConsumeAmount": "消耗积分数量",
-      "demoConsume": "消耗积分",
-      "demoConsumeSuccess": "已消耗 {count} 积分。",
-      "demoConsumeError": "积分消耗失败",
+      "viewTransactions": "查看流水",
       "refresh": "刷新",
       "transactionsTitle": "最近流水",
       "transactionsPageTitle": "积分流水",
@@ -387,8 +508,8 @@
       }
     },
     "users": {
-      "title": "用户管理",
-      "description": "查看和管理已注册用户账号。",
+      "title": "注册用户",
+      "description": "管理员只读查看已注册账号。",
       "refresh": "刷新",
       "table": {
         "avatar": "头像",
@@ -432,6 +553,22 @@
       "meetsGrowth": "符合增长预测"
     },
     "settings": {
+      "home": {
+        "title": "账户中心",
+        "description": "在一个地方管理个人资料、账单、积分和账户安全。",
+        "profileTitle": "个人资料",
+        "profileDescription": "更新客户和团队成员可见的账户信息。",
+        "profileAction": "编辑资料",
+        "billingTitle": "账单",
+        "billingDescription": "查看订阅、套餐和支付选项。",
+        "billingAction": "管理账单",
+        "creditsTitle": "积分",
+        "creditsDescription": "查看余额、购买积分和使用流水。",
+        "creditsAction": "管理积分",
+        "securityTitle": "安全",
+        "securityDescription": "查看登录方式并保护账户安全。",
+        "securityAction": "查看安全设置"
+      },
       "profile": {
         "title": "个人资料",
         "description": "这是你在网站上的公开展示信息。",
@@ -487,95 +624,6 @@
         "verified": "已验证",
         "verifiedNumber": "已验证号码：{phoneNumber}"
       }
-    },
-    "usersTable": {
-      "title": "用户管理",
-      "description": "使用 useDataTable 钩子和基于 URL 的状态管理的表格示例",
-      "filterPlaceholder": "筛选用户...",
-      "columns": "列",
-      "selectAll": "全选",
-      "selectRow": "选择行",
-      "name": "姓名",
-      "email": "邮箱",
-      "status": "状态",
-      "role": "角色",
-      "createdAt": "创建时间",
-      "actions": "操作",
-      "openMenu": "打开菜单",
-      "copyUserId": "复制用户ID",
-      "viewUser": "查看用户",
-      "editUser": "编辑用户",
-      "noResults": "无结果。",
-      "rowsSelected": "已选择 {selected} / {total} 行。",
-      "previous": "上一页",
-      "next": "下一页",
-      "statusOptions": {
-        "active": "活跃",
-        "inactive": "非活跃",
-        "pending": "待处理"
-      },
-      "roleOptions": {
-        "admin": "管理员",
-        "user": "用户",
-        "moderator": "版主"
-      }
-    },
-    "cards": {
-      "totalEarning": "总收入",
-      "comparisonText": "与去年相比 ($84,325)",
-      "menu": "菜单",
-      "menuActions": {
-        "share": "分享",
-        "update": "更新",
-        "refresh": "刷新"
-      }
-    },
-    "statistics": {
-      "shippedOrders": "已发货订单",
-      "damagedReturns": "损坏退货",
-      "missedDeliverySlots": "错过的配送时段",
-      "thanLastWeek": "比上周"
-    },
-    "productInsights": {
-      "title": "产品洞察",
-      "publishedOn": "发布于 2025年5月12日 - 下午6:10",
-      "productReached": "产品触达",
-      "orderPlaced": "订单下达",
-      "productAlt": "产品"
-    },
-    "salesMetrics": {
-      "title": "销售指标",
-      "companyName": "Sandy 公司",
-      "companyEmail": "sandy@company.com",
-      "salesTrend": "销售趋势",
-      "discountOffers": "折扣优惠",
-      "netProfit": "净利润",
-      "totalOrders": "总订单",
-      "revenueGoal": "收入目标",
-      "totalProfit": "总利润",
-      "planCompleted": "计划完成",
-      "salesPlan": "销售计划",
-      "percentageProfit": "总销售额的利润百分比",
-      "cohortAnalysis": "队列分析指标",
-      "cohortDescription": "分析在同一时间加入产品/服务的一组用户在特定时期内的行为。",
-      "openStatistics": "开放统计",
-      "percentageChange": "百分比变化",
-      "months": {
-        "january": "一月",
-        "february": "二月",
-        "march": "三月"
-      }
-    },
-    "chart": {
-      "totalVisitors": "总访客数",
-      "totalForLast3Months": "过去3个月的总数",
-      "last3Months": "过去3个月",
-      "last30Days": "过去30天",
-      "last7Days": "过去7天",
-      "selectValue": "选择一个值",
-      "visitors": "访客",
-      "desktop": "桌面端",
-      "mobile": "移动端"
     }
   },
   "billingSuccess": {
@@ -583,16 +631,20 @@
     "description": "感谢升级，我们会尽快更新你的权限。",
     "syncingTitle": "正在确认订阅状态",
     "syncingDescription": "激活完成后将自动跳转到账单页面。",
-    "goToBilling": "前往账单"
+    "goToBilling": "前往账单",
+    "refreshStatus": "刷新状态",
+    "manualRefreshDescription": "暂时无法确认权限更新。请打开账单查看当前状态，必要时再刷新。"
   },
   "billingCancel": {
     "title": "支付已取消",
     "description": "你可以随时重新发起结算。",
-    "backToBilling": "返回账单"
+    "backToBilling": "返回账单",
+    "choosePlan": "选择套餐",
+    "backToDashboard": "返回仪表盘"
   },
   "seo": {
     "home": {
-      "description": "EasyStarter 是一个现代全栈 TypeScript SaaS 模板，内置认证、支付、国际化与部署能力。"
+      "description": "TanStack Template 是一个现代全栈 TypeScript SaaS 模板，内置认证、支付、国际化与部署能力。"
     },
     "noIndex": {
       "descriptionTemplate": "{page}页面属于站内流程页，已禁止搜索引擎收录。",
@@ -644,7 +696,7 @@
         },
         "contactUs": {
           "title": "联系我们",
-          "content": "如果你对隐私有任何问题或请求，请通过 support@easystarter.dev 联系我们。"
+          "content": "如果你对隐私有任何问题或请求，请通过 support@demo.aiarticles.com 联系我们。"
         }
       }
     },
@@ -686,7 +738,7 @@
         },
         "contactUs": {
           "title": "联系我们",
-          "content": "如果你对本条款有疑问，请联系 support@easystarter.dev。"
+          "content": "如果你对本条款有疑问，请联系 support@demo.aiarticles.com。"
         }
       }
     }

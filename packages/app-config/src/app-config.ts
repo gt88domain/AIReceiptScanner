@@ -83,7 +83,7 @@ const nativeCreditPackages = [
       // iOS product configured in RevenueCat/App Store Connect.
       ios: {
         provider: "revenuecat",
-        providerProductId: "easystarter_credits_starter_ios",
+        providerProductId: "tanstack_template_credits_starter_ios",
         currency: "usd",
         amountCents: 499,
         status: "active",
@@ -91,7 +91,7 @@ const nativeCreditPackages = [
       // Android product configured in RevenueCat/Google Play.
       android: {
         provider: "revenuecat",
-        providerProductId: "easystarter_credits_starter_android",
+        providerProductId: "tanstack_template_credits_starter_android",
         currency: "usd",
         amountCents: 499,
         status: "active",
@@ -108,7 +108,7 @@ const nativeCreditPackages = [
       // iOS product configured in RevenueCat/App Store Connect.
       ios: {
         provider: "revenuecat",
-        providerProductId: "easystarter_credits_growth_ios",
+        providerProductId: "tanstack_template_credits_growth_ios",
         currency: "usd",
         amountCents: 1999,
         status: "active",
@@ -116,7 +116,7 @@ const nativeCreditPackages = [
       // Android product configured in RevenueCat/Google Play.
       android: {
         provider: "revenuecat",
-        providerProductId: "easystarter_credits_growth_android",
+        providerProductId: "tanstack_template_credits_growth_android",
         currency: "usd",
         amountCents: 1999,
         status: "active",
@@ -165,18 +165,22 @@ const membershipPlans = [
 const appConfig: AppConfig = {
   // Shared defaults inherited by web and native unless a platform overrides them.
   common: {
+    features: {
+      admin: true,
+      jobs: true,
+    },
     // Public app metadata used in UI, links, and platform setup.
     app: {
       // Product display name.
-      name: "EasyStarter",
+      name: "TanStack Template",
       // Deep-link scheme used by the native app.
-      nativeScheme: "easystarter-native",
+      nativeScheme: "com.aiarticles.template",
       // Public support contact.
-      supportEmail: "support@easystarter.com",
+      supportEmail: "support@demo.aiarticles.com",
       // Official marketing or product website.
-      websiteUrl: "https://www.easystarter.com",
+      websiteUrl: "https://demo.aiarticles.com",
       // Public social profile URL.
-      socialUrl: "https://x.com/ios_1261142602",
+      socialUrl: "https://x.com",
       // App Store listing URL used by sharing and rating flows.
       appStoreUrl: "https://apps.apple.com/app/id",
     },
@@ -188,14 +192,12 @@ const appConfig: AppConfig = {
         emailPasswordEnabled: true,
         // Controls email OTP auth UI entry points.
         emailOtpEnabled: false,
-        // Controls SMS auth UI entry points.
-        smsEnabled: false,
         // Controls GitHub sign-in UI entry points.
-        githubEnabled: true,
+        githubEnabled: false,
         // Controls Google sign-in UI entry points.
-        googleEnabled: true,
+        googleEnabled: false,
         // Controls Apple sign-in UI entry points.
-        appleEnabled: true,
+        appleEnabled: false,
       },
       // One-time code settings shared by auth flows.
       otp: {
@@ -210,15 +212,6 @@ const appConfig: AppConfig = {
           // Client-side resend cooldown in seconds.
           resendCooldownSeconds: 60,
         },
-        // SMS one-time verification code settings.
-        sms: {
-          // Number of digits in one-time verification codes.
-          otpLength: 6,
-          // Verification code lifetime in seconds.
-          expiresInSeconds: 300,
-          // Client-side resend cooldown in seconds.
-          resendCooldownSeconds: 60,
-        },
       },
     },
     // Outbound email provider settings.
@@ -228,13 +221,13 @@ const appConfig: AppConfig = {
       // Sender address parts combined into localPart@domain.
       from: {
         localPart: "noreply",
-        domain: "easystarter.dev",
+        domain: "mail.aibranding.com",
       },
     },
     // File upload and public asset storage settings.
     storage: {
-      // Controls storage-backed UI entry points.
-      enabled: true,
+      // Disabled by default: the template does not expose an upload feature.
+      enabled: false,
       // Provider used for file storage.
       provider: "r2",
       // Public API path used to serve stored files.
@@ -242,36 +235,21 @@ const appConfig: AppConfig = {
       // Storage key prefixes by upload purpose.
       keyPrefixes: {
         avatar: "avatars",
-        attachment: "attachments",
       },
       // Prefix used when a purpose-specific prefix is unavailable.
       fallbackPrefix: "files",
       // Allowed upload MIME types by purpose.
       allowedTypes: {
         avatar: ["image/jpeg", "image/png", "image/gif", "image/webp"],
-        attachment: [
-          "image/jpeg",
-          "image/png",
-          "image/gif",
-          "image/webp",
-          "application/pdf",
-          "text/plain",
-        ],
       },
       // Maximum upload size in bytes by purpose.
       maxFileSizes: {
         avatar: 5 * 1024 * 1024,
-        attachment: 25 * 1024 * 1024,
       },
     },
     // Canonical product-level membership semantics shared by web, native, and server.
     membership: {
       plans: membershipPlans,
-    },
-    // SMS verification settings.
-    sms: {
-      // Provider used to send SMS messages.
-      provider: "aliyun",
     },
   },
   // Web-only configuration.
@@ -280,6 +258,8 @@ const appConfig: AppConfig = {
     credits: {
       // Controls whether web credit routes and sidebar entries are visible.
       enabled: true,
+      // Allows web checkout for credit packages. Disable to keep grants/usage without sales.
+      purchasesEnabled: true,
       // Optional free credit grant for new web users.
       signupGrant: creditSignupGrant,
       // Credit packages available through web checkout.
@@ -380,6 +360,8 @@ const appConfig: AppConfig = {
     credits: {
       // Controls whether native credit screens and queries are available.
       enabled: true,
+      // Allows native store purchases for credit packages.
+      purchasesEnabled: true,
       // Optional free credit grant for new native users.
       signupGrant: creditSignupGrant,
       // Credit packages available through native in-app purchases.
@@ -388,9 +370,9 @@ const appConfig: AppConfig = {
     // Native app metadata overrides.
     app: {
       // Native app display name.
-      name: "easystarter-native",
+      name: "TanStack Template",
       // Deep-link scheme used by the native app.
-      nativeScheme: "easystarter-native",
+      nativeScheme: "com.aiarticles.template",
     },
     // Native deep-link and legal document routes.
     routes: {
@@ -420,7 +402,7 @@ const appConfig: AppConfig = {
                 // Monthly iOS subscription product.
                 id: "monthly",
                 provider: "revenuecat",
-                providerPriceId: "easystarternative_10_1m",
+                providerPriceId: "tanstack_template_native_10_1m",
                 currency: "usd",
                 amountCents: 1000,
                 priceType: "subscription",
@@ -431,7 +413,7 @@ const appConfig: AppConfig = {
                 // Yearly iOS subscription product.
                 id: "yearly",
                 provider: "revenuecat",
-                providerPriceId: "easystarternative_100_1y",
+                providerPriceId: "tanstack_template_native_100_1y",
                 currency: "usd",
                 amountCents: 10000,
                 priceType: "subscription",
@@ -448,9 +430,9 @@ const appConfig: AppConfig = {
                 // Lifetime iOS product.
                 id: "lifetime",
                 provider: "revenuecat",
-                providerPriceId: "easystarternative_299_lifetime",
+                providerPriceId: "tanstack_template_native_299_lifetime",
                 currency: "usd",
-                amountCents: 200000,
+                amountCents: 299,
                 priceType: "lifetime",
                 status: "active",
               },
@@ -501,7 +483,6 @@ function resolvePlatformCommonConfig(platformConfig: AppPlatformCommonConfig) {
     auth: platformConfig.auth,
     email: platformConfig.email,
     storage: platformConfig.storage,
-    sms: platformConfig.sms,
   };
 
   if (Object.keys(commonOverrides).length === 0) {

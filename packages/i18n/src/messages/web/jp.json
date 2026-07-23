@@ -36,8 +36,9 @@
         "integrations": "連携",
         "pricing": "料金",
         "faq": "よくある質問",
-        "testimonials": "お客様の声",
+        "listing": "一覧ページテンプレート",
         "blog": "ブログ",
+        "contact": "お問い合わせ",
         "docs": "ドキュメント"
       },
       "actions": {
@@ -107,7 +108,19 @@
     },
     "footer": {
       "description": "スタートアップやサイドプロジェクト向けのコンポーネントコレクションです。",
-      "copyright": "© {year} easystarter.dev. All rights reserved.",
+      "copyright": "© {year} TanStack Template. All rights reserved.",
+      "newsletter": {
+        "title": "プロダクト更新を受け取る",
+        "description": "共有する価値がある更新だけを簡潔にお届けします。",
+        "emailLabel": "メールアドレス",
+        "placeholder": "you@example.com",
+        "submit": "登録",
+        "submitting": "登録中…",
+        "privacy": "スパムは送りません。いつでも配信停止できます。",
+        "success": "登録しました。",
+        "error": "登録できませんでした。もう一度お試しください。",
+        "rateLimited": "1分ほど待ってからもう一度お試しください。"
+      },
       "social": {
         "github": "GitHub",
         "twitter": "Twitter"
@@ -118,7 +131,7 @@
           "links": {
             "overview": "概要",
             "pricing": "料金",
-            "marketplace": "マーケットプレイス",
+            "listingTemplate": "一覧ページテンプレート",
             "features": "機能"
           }
         },
@@ -127,11 +140,105 @@
           "links": {
             "privacy": "プライバシー",
             "terms": "利用規約",
-            "about": "会社情報",
-            "blog": "ブログ"
+            "docs": "ドキュメント",
+            "blog": "ブログ",
+            "contact": "お問い合わせ"
           }
         }
       }
+    }
+  },
+  "listingTemplate": {
+    "eyebrow": "再利用可能な公開パターン",
+    "title": "一覧ページテンプレート",
+    "description": "ディレクトリ、マーケットプレイス、リソースライブラリ、検索可能なカタログ向けの本番対応の出発点です。",
+    "resultCount": "{count} 件のパターン",
+    "searchLabel": "テンプレートを検索",
+    "searchPlaceholder": "用途または機能で検索",
+    "filterLabel": "絞り込み",
+    "categoryLabel": "用途",
+    "allCategories": "すべてのパターン",
+    "layoutLabel": "レイアウト",
+    "allLayouts": "すべてのレイアウト",
+    "sortLabel": "並び順",
+    "sortRecommended": "おすすめ",
+    "sortNewest": "新着",
+    "sortName": "名前",
+    "emptyTitle": "一致するパターンがありません",
+    "emptyDescription": "検索語を変えるか、フィルターを解除してください。",
+    "clearFilters": "フィルターを解除",
+    "viewDetails": "詳細を見る",
+    "backToListing": "テンプレート一覧に戻る",
+    "detail": {
+      "includedTitle": "含まれるパターン機能",
+      "includedSearch": "検索に対応した絞り込みコントロール",
+      "includedFilters": "カテゴリとレイアウトのファセットフィルター",
+      "includedResponsive": "レスポンシブなグリッドとリストレイアウト",
+      "includedEmptyState": "空状態・ローディング状態の基礎コンポーネント",
+      "previewTitle": "レイアウトプレビュー",
+      "useCaseTitle": "おすすめの用途",
+      "copyLink": "リンクをコピー",
+      "copiedLink": "コピーしました",
+      "startUsing": "始める"
+    },
+    "items": {
+      "directory": {
+        "title": "ベンダーディレクトリ",
+        "description": "カテゴリ、場所、機能で絞り込める公開カード。",
+        "category": "ディレクトリ",
+        "layout": "グリッド"
+      },
+      "marketplace": {
+        "title": "テンプレートマーケットプレイス",
+        "description": "価格の手がかりとコレクション絞り込みを備えた検索可能なカタログ。",
+        "category": "マーケットプレイス",
+        "layout": "グリッド"
+      },
+      "resources": {
+        "title": "リソースライブラリ",
+        "description": "トピックと形式で絞り込めるガイド、ツール、ダウンロード。",
+        "category": "コンテンツ",
+        "layout": "グリッド"
+      },
+      "changelog": {
+        "title": "変更履歴フィード",
+        "description": "バージョンと種別で絞り込める時系列の製品更新。",
+        "category": "コンテンツ",
+        "layout": "リスト"
+      },
+      "jobs": {
+        "title": "求人ボード",
+        "description": "勤務地、勤務形態、チームで絞り込める求人一覧。",
+        "category": "ディレクトリ",
+        "layout": "リスト"
+      },
+      "projects": {
+        "title": "プロジェクトギャラリー",
+        "description": "タグ、コレクション、さらに読み込むページネーション付きの作品紹介。",
+        "category": "マーケットプレイス",
+        "layout": "グリッド"
+      }
+    }
+  },
+  "contact": {
+    "eyebrow": "お問い合わせ",
+    "title": "どのようにお手伝いできますか？",
+    "description": "構築中のもの、必要なこと、困っていることをお知らせください。メールで返信します。",
+    "formTitle": "メッセージを送信",
+    "formDescription": "通常は 1 営業日以内に返信します。",
+    "name": "お名前",
+    "email": "メールアドレス",
+    "message": "メッセージ",
+    "messagePlaceholder": "相談したい内容を入力してください",
+    "submit": "メッセージを送信",
+    "submitting": "送信中…",
+    "success": "ありがとうございます。メッセージを送信しました。",
+    "error": "メッセージを送信できませんでした。再試行するか、直接メールでお問い合わせください。",
+    "rateLimited": "次のメッセージを送信する前に 1 分お待ちください。",
+    "validation": {
+      "name": "2 文字以上入力してください。",
+      "email": "有効なメールアドレスを入力してください。",
+      "message": "10 文字以上入力してください。"
     }
   },
   "blog": {
@@ -267,6 +374,7 @@
       "general": "一般",
       "dashboard": "ダッシュボード",
       "users": "ユーザー",
+      "admin": "管理者",
       "other": "その他",
       "settings": "設定",
       "profile": "プロフィール",
@@ -287,6 +395,24 @@
         "description": "ログアウトしてもよろしいですか？再度アカウントにアクセスするにはログインが必要です。",
         "confirm": "ログアウト"
       }
+    },
+    "home": {
+      "title": "おかえりなさい、{name}",
+      "description": "アカウントの基盤は準備できました。次に SaaS に必要なプロダクトフローを追加できます。",
+      "profileTitle": "プロフィール",
+      "profileDescription": "顧客とチームに表示する名前を設定します。",
+      "profileAction": "プロフィールを編集",
+      "billingTitle": "請求",
+      "billingDescription": "販売の準備ができたらプランを設定します。",
+      "billingAction": "請求を表示",
+      "creditsTitle": "クレジット",
+      "creditsDescription": "従量課金プロダクトでは、この任意の台帳を利用できます。",
+      "creditsAction": "クレジットを管理",
+      "creditsBalance": "{count} クレジットを利用可能",
+      "securityTitle": "セキュリティ",
+      "securityVerified": "メール認証済み",
+      "securityUnverified": "メール認証が必要です",
+      "securityAction": "セキュリティを確認"
     },
     "billing": {
       "title": "請求",
@@ -338,12 +464,7 @@
       "buy": "購入",
       "checkoutError": "クレジット決済に失敗しました",
       "orderCreditedToast": "{packageName} のクレジットが反映されました。",
-      "demoConsumeTitle": "デモ利用",
-      "demoConsumeDescription": "実際の利用フローを接続する前に、クレジット消費をシミュレートします。",
-      "demoConsumeAmount": "利用するクレジット数",
-      "demoConsume": "クレジットを使う",
-      "demoConsumeSuccess": "{count} クレジットを利用しました。",
-      "demoConsumeError": "クレジット利用に失敗しました",
+      "viewTransactions": "履歴を見る",
       "refresh": "更新",
       "transactionsTitle": "最近の履歴",
       "transactionsPageTitle": "クレジット履歴",
@@ -387,8 +508,8 @@
       }
     },
     "users": {
-      "title": "ユーザー管理",
-      "description": "登録済みユーザーアカウントを確認・管理します。",
+      "title": "登録ユーザー",
+      "description": "管理者専用の登録アカウント閲覧画面です。",
       "refresh": "更新",
       "table": {
         "avatar": "アバター",
@@ -432,6 +553,22 @@
       "meetsGrowth": "成長予測に一致"
     },
     "settings": {
+      "home": {
+        "title": "アカウントセンター",
+        "description": "プロフィール、請求、クレジット、アカウントのセキュリティを一か所で管理します。",
+        "profileTitle": "プロフィール",
+        "profileDescription": "顧客とチームに表示されるアカウント情報を更新します。",
+        "profileAction": "プロフィールを編集",
+        "billingTitle": "請求",
+        "billingDescription": "サブスクリプション、プラン、支払いオプションを確認します。",
+        "billingAction": "請求を管理",
+        "creditsTitle": "クレジット",
+        "creditsDescription": "残高、クレジット購入、利用履歴を確認します。",
+        "creditsAction": "クレジットを管理",
+        "securityTitle": "セキュリティ",
+        "securityDescription": "サインイン方法を確認し、アカウントを安全に保ちます。",
+        "securityAction": "セキュリティを確認"
+      },
       "profile": {
         "title": "プロフィール",
         "description": "これは、サイト上でのあなたの見え方です。",
@@ -487,95 +624,6 @@
         "verified": "認証済み",
         "verifiedNumber": "認証済み番号: {phoneNumber}"
       }
-    },
-    "usersTable": {
-      "title": "ユーザー管理",
-      "description": "useDataTableフックとURLベースの状態管理を使用したテーブルの例",
-      "filterPlaceholder": "ユーザーを絞り込み...",
-      "columns": "列",
-      "selectAll": "すべて選択",
-      "selectRow": "行を選択",
-      "name": "名前",
-      "email": "メール",
-      "status": "ステータス",
-      "role": "役割",
-      "createdAt": "作成日",
-      "actions": "アクション",
-      "openMenu": "メニューを開く",
-      "copyUserId": "ユーザーIDをコピー",
-      "viewUser": "ユーザーを表示",
-      "editUser": "ユーザーを編集",
-      "noResults": "結果がありません。",
-      "rowsSelected": "{selected} / {total} 行が選択されています。",
-      "previous": "前へ",
-      "next": "次へ",
-      "statusOptions": {
-        "active": "アクティブ",
-        "inactive": "非アクティブ",
-        "pending": "保留中"
-      },
-      "roleOptions": {
-        "admin": "管理者",
-        "user": "ユーザー",
-        "moderator": "モデレーター"
-      }
-    },
-    "cards": {
-      "totalEarning": "総収入",
-      "comparisonText": "昨年と比較 ($84,325)",
-      "menu": "メニュー",
-      "menuActions": {
-        "share": "共有",
-        "update": "更新",
-        "refresh": "更新"
-      }
-    },
-    "statistics": {
-      "shippedOrders": "発送済み注文",
-      "damagedReturns": "破損返品",
-      "missedDeliverySlots": "配送時間の逃し",
-      "thanLastWeek": "先週より"
-    },
-    "productInsights": {
-      "title": "製品インサイト",
-      "publishedOn": "2025年5月12日 午後6:10 に公開",
-      "productReached": "製品リーチ",
-      "orderPlaced": "注文配置",
-      "productAlt": "製品"
-    },
-    "salesMetrics": {
-      "title": "売上指標",
-      "companyName": "Sandy の会社",
-      "companyEmail": "sandy@company.com",
-      "salesTrend": "売上トレンド",
-      "discountOffers": "割引オファー",
-      "netProfit": "純利益",
-      "totalOrders": "総注文数",
-      "revenueGoal": "収益目標",
-      "totalProfit": "総利益",
-      "planCompleted": "計画完了",
-      "salesPlan": "売上計画",
-      "percentageProfit": "総売上からの利益率",
-      "cohortAnalysis": "コホート分析指標",
-      "cohortDescription": "同じ時期に製品/サービスに参加したユーザーグループの一定期間における行動を分析します。",
-      "openStatistics": "オープン統計",
-      "percentageChange": "パーセンテージ変化",
-      "months": {
-        "january": "1月",
-        "february": "2月",
-        "march": "3月"
-      }
-    },
-    "chart": {
-      "totalVisitors": "総訪問者数",
-      "totalForLast3Months": "過去3ヶ月の合計",
-      "last3Months": "過去3ヶ月",
-      "last30Days": "過去30日",
-      "last7Days": "過去7日",
-      "selectValue": "値を選択",
-      "visitors": "訪問者",
-      "desktop": "デスクトップ",
-      "mobile": "モバイル"
     }
   },
   "billingSuccess": {
@@ -583,16 +631,20 @@
     "description": "ご利用ありがとうございます。まもなく権限が更新されます。",
     "syncingTitle": "サブスクリプション状況を確認中",
     "syncingDescription": "有効化が完了すると請求ページへ自動的に移動します。",
-    "goToBilling": "請求へ戻る"
+    "goToBilling": "請求へ戻る",
+    "refreshStatus": "ステータスを更新",
+    "manualRefreshDescription": "更新後のアクセスをまだ確認できません。請求画面で現在の状態を確認し、必要に応じて更新してください。"
   },
   "billingCancel": {
     "title": "決済がキャンセルされました",
     "description": "いつでも再度チェックアウトできます。",
-    "backToBilling": "請求へ戻る"
+    "backToBilling": "請求へ戻る",
+    "choosePlan": "プランを選択",
+    "backToDashboard": "ダッシュボードへ戻る"
   },
   "seo": {
     "home": {
-      "description": "EasyStarter は、認証・課金・多言語対応を備えたモダンな TypeScript SaaS テンプレートです。"
+      "description": "TanStack Template は、認証・課金・多言語対応を備えたモダンな TypeScript SaaS テンプレートです。"
     },
     "noIndex": {
       "descriptionTemplate": "{page}ページは内部フローのため、検索エンジンのインデックス対象外です。",
@@ -644,7 +696,7 @@
         },
         "contactUs": {
           "title": "お問い合わせ",
-          "content": "プライバシーに関するご質問やご要望は support@easystarter.dev までご連絡ください。"
+          "content": "プライバシーに関するご質問やご要望は support@demo.aiarticles.com までご連絡ください。"
         }
       }
     },
@@ -686,7 +738,7 @@
         },
         "contactUs": {
           "title": "お問い合わせ",
-          "content": "本規約に関するご質問は support@easystarter.dev までご連絡ください。"
+          "content": "本規約に関するご質問は support@demo.aiarticles.com までご連絡ください。"
         }
       }
     }

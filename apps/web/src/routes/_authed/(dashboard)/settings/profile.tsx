@@ -21,14 +21,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { useTranslations } from "@/i18n";
 import { authClient } from "@/lib/auth/auth-client";
-import { client, orpc } from "@/utils/orpc";
-import { getVisibleUserEmail, isPhoneUser } from "@repo/shared";
+import { useOrpc } from "@/hooks/use-orpc";
+import { getVisibleUserEmail } from "@repo/shared";
 
 export const Route = createFileRoute("/_authed/(dashboard)/settings/profile")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const orpc = useOrpc();
   const t = useTranslations("dashboard.settings.profile");
   const { user } = Route.useRouteContext();
   const router = useRouter();
@@ -50,8 +51,6 @@ function RouteComponent() {
   });
 
   const visibleEmail = getVisibleUserEmail(user);
-  const visiblePhoneNumber = user.phoneNumber ?? null;
-  const hasPhoneLogin = isPhoneUser(user);
   const isStorageEnabled = webConfig.storageEnabled;
 
   const handleAvatarUpload = async (file: File) => {
@@ -59,7 +58,7 @@ function RouteComponent() {
 
     setIsUploading(true);
     try {
-      const { url } = await client.storage.upload({ file, purpose: "avatar" });
+      const { url } = await orpc.storage.upload.call({ file, purpose: "avatar" });
       await updateProfile.mutateAsync({ image: url });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("avatarUploadError"));
@@ -171,21 +170,11 @@ function RouteComponent() {
                 }}
               />
 
-              {!hasPhoneLogin && (
-                <Field>
-                  <FieldLabel>{t("email")}</FieldLabel>
-                  <Input disabled value={visibleEmail ?? t("notLinked")} />
-                  <FieldDescription>{t("emailDescription")}</FieldDescription>
-                </Field>
-              )}
-
-              {hasPhoneLogin && (
-                <Field>
-                  <FieldLabel>{t("phone")}</FieldLabel>
-                  <Input disabled value={visiblePhoneNumber ?? t("notLinked")} />
-                  <FieldDescription>{t("phoneDescription")}</FieldDescription>
-                </Field>
-              )}
+              <Field>
+                <FieldLabel>{t("email")}</FieldLabel>
+                <Input disabled value={visibleEmail ?? t("notLinked")} />
+                <FieldDescription>{t("emailDescription")}</FieldDescription>
+              </Field>
 
               <div className="flex justify-end">
                 <form.Subscribe>

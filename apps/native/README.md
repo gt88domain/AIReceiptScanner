@@ -1,6 +1,6 @@
 # Native App
 
-React Native + Expo app for EasyStarter.
+React Native + Expo app for TanStack Template.
 
 ## Get Started
 
@@ -75,13 +75,13 @@ It is also the recommended mode for testing Apple sign-in because Apple login no
 This app uses a custom URL scheme:
 
 ```text
-easystarter-native://
+com.aiarticles.template://
 ```
 
 The auth callback route is:
 
 ```text
-easystarter-native:///callback
+com.aiarticles.template:///callback
 ```
 
 ### Important limitation of Expo Go
@@ -90,7 +90,7 @@ Expo Go usually cannot validate the final auth callback redirect for this projec
 
 - Expo Go does not install your app as a standalone native app
 - Expo Go does not reliably register your custom scheme for system-wide callback handling
-- tapping `easystarter-native:///callback` from Mail or Safari may not reopen your project
+- tapping `com.aiarticles.template:///callback` from Mail or Safari may not reopen your project
 
 If you need to test:
 

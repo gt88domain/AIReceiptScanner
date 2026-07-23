@@ -2,7 +2,7 @@ import { env } from "cloudflare:workers";
 import { ORPCError } from "@orpc/server";
 import { SUPPORTED_STORAGE_PROVIDERS } from "@repo/app-config";
 import { z } from "zod";
-import { protectedProcedure } from "@/lib/orpc";
+import { storageProcedure } from "@/lib/orpc";
 import {
   generateStorageKey,
   getStorageProvider,
@@ -17,7 +17,7 @@ import {
   resolveStorageProviderKey,
 } from "@/storage";
 
-const uploadPurposeSchema = z.enum(["avatar", "attachment"]);
+const uploadPurposeSchema = z.literal("avatar");
 const storageProviderSchema = z.enum(SUPPORTED_STORAGE_PROVIDERS);
 
 const uploadInputSchema = z.object({
@@ -46,7 +46,7 @@ const listOutputSchema = z.object({
 });
 
 export const storageRouter = {
-  upload: protectedProcedure
+  upload: storageProcedure
     .input(uploadInputSchema)
     .output(uploadOutputSchema)
     .handler(async ({ context, input }) => {
@@ -104,7 +104,7 @@ export const storageRouter = {
       };
     }),
 
-  list: protectedProcedure
+  list: storageProcedure
     .input(listInputSchema)
     .output(listOutputSchema)
     .handler(async ({ context, input }) => {
@@ -150,7 +150,7 @@ export const storageRouter = {
       };
     }),
 
-  delete: protectedProcedure
+  delete: storageProcedure
     .input(z.object({ url: z.string() }))
     .output(z.object({ success: z.boolean() }))
     .handler(async ({ context, input }) => {

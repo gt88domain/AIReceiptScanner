@@ -1,17 +1,10 @@
-import {
-  Coins,
-  LayoutDashboard,
-  ReceiptText,
-  Settings,
-  Shield,
-  ShieldCheck,
-  UserCog,
-  Users,
-} from "lucide-react";
+import { Coins, LayoutDashboard, Settings, Shield, ShieldCheck, UserCog } from "lucide-react";
 import type { SidebarData } from "@/components/dashboard/types";
 import { webConfig } from "@/configs/web-config";
 
 const creditsEnabled = webConfig.creditsEnabled;
+const billingEnabled = webConfig.billingEnabled;
+const creditUrl = webConfig.creditPurchasesEnabled ? "/credits/purchase" : "/credits/transactions";
 
 export const sidebarData: SidebarData = {
   user: {
@@ -28,32 +21,8 @@ export const sidebarData: SidebarData = {
           url: "/dashboard",
           icon: LayoutDashboard,
         },
-        {
-          title: "dashboard.nav.users",
-          url: "/users",
-          icon: Users,
-        },
       ],
     },
-    ...(creditsEnabled
-      ? [
-          {
-            title: "dashboard.nav.credits",
-            items: [
-              {
-                title: "dashboard.nav.creditPurchase",
-                url: "/credits/purchase",
-                icon: Coins,
-              },
-              {
-                title: "dashboard.nav.creditTransactions",
-                url: "/credits/transactions",
-                icon: ReceiptText,
-              },
-            ],
-          },
-        ]
-      : []),
     {
       title: "dashboard.nav.other",
       items: [
@@ -67,15 +36,28 @@ export const sidebarData: SidebarData = {
               url: "/settings/profile",
               icon: UserCog,
             },
+            ...(billingEnabled
+              ? [
+                  {
+                    title: "dashboard.nav.billing",
+                    url: "/settings/billing",
+                    icon: ShieldCheck,
+                  },
+                ]
+              : []),
+            ...(creditsEnabled
+              ? [
+                  {
+                    title: "dashboard.nav.credits",
+                    url: creditUrl,
+                    icon: Coins,
+                  },
+                ]
+              : []),
             {
               title: "dashboard.nav.security",
               url: "/settings/security",
               icon: Shield,
-            },
-            {
-              title: "dashboard.nav.billing",
-              url: "/settings/billing",
-              icon: ShieldCheck,
             },
           ],
         },

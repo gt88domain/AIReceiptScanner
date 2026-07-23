@@ -18,9 +18,6 @@ export const SUPPORTED_SERVER_PAYMENT_PROVIDERS = [
 /** Supported storage providers available in app configuration. */
 export const SUPPORTED_STORAGE_PROVIDERS = ["r2", "aliyun-oss"] as const;
 
-/** Supported SMS providers available in app configuration. */
-export const SUPPORTED_SMS_PROVIDERS = ["aliyun"] as const;
-
 /** Union type of all supported email provider keys. */
 export type EmailProviderKey = (typeof SUPPORTED_EMAIL_PROVIDERS)[number];
 
@@ -35,9 +32,6 @@ export type NativePaymentProviderKey = (typeof SUPPORTED_NATIVE_PAYMENT_PROVIDER
 
 /** Union type of all supported storage provider keys. */
 export type StorageProviderKey = (typeof SUPPORTED_STORAGE_PROVIDERS)[number];
-
-/** Union type of all supported SMS provider keys. */
-export type SmsProviderKey = (typeof SUPPORTED_SMS_PROVIDERS)[number];
 
 /** Lifecycle status for plans and prices. */
 export type PlanStatus = "active" | "archived";
@@ -228,6 +222,8 @@ export type CreditPackageConfig = {
 export type AppCreditsConfig = {
   /** Toggle that enables credit system paths. */
   enabled?: boolean;
+  /** Allows this platform to sell configured credit packages through billing. */
+  purchasesEnabled?: boolean;
   /** Purchasable credit packages. */
   packages: CreditPackageConfig[];
   /** One-time signup grant. */
@@ -235,10 +231,17 @@ export type AppCreditsConfig = {
 };
 
 /** Supported upload purposes used by the storage module. */
-export type StorageUploadPurpose = "avatar" | "attachment";
+export type StorageUploadPurpose = "avatar";
 
 /** Common app configuration shared by all platforms. */
 export type AppCommonConfig = {
+  /** Product capabilities that are not platform-specific provider settings. */
+  features: {
+    /** Enables administrator-only UI and API surfaces. */
+    admin?: boolean;
+    /** Enables scheduled maintenance, webhook retries, and billing outbox processing. */
+    jobs?: boolean;
+  };
   /** Generic app metadata. */
   app: {
     /** Human-readable app name. */
@@ -262,8 +265,6 @@ export type AppCommonConfig = {
       emailPasswordEnabled?: boolean;
       /** Toggle that controls email OTP auth UI entry points. */
       emailOtpEnabled?: boolean;
-      /** Toggle that controls SMS auth UI entry points. */
-      smsEnabled?: boolean;
       /** Toggle that controls GitHub sign-in UI entry points. */
       githubEnabled?: boolean;
       /** Toggle that controls Google sign-in UI entry points. */
@@ -281,15 +282,6 @@ export type AppCommonConfig = {
         expiresInSeconds: number;
         /** Maximum failed verification attempts per issued code. */
         allowedAttempts: number;
-        /** Client-side resend cooldown in seconds. */
-        resendCooldownSeconds: number;
-      };
-      /** SMS one-time verification code settings. */
-      sms: {
-        /** One-time code length. */
-        otpLength: number;
-        /** One-time code expiry in seconds. */
-        expiresInSeconds: number;
         /** Client-side resend cooldown in seconds. */
         resendCooldownSeconds: number;
       };
@@ -326,11 +318,6 @@ export type AppCommonConfig = {
   };
   /** Product-level membership catalog shared by all platforms. */
   membership: MembershipCatalogConfig;
-  /** SMS configuration shared by auth flows. */
-  sms: {
-    /** SMS provider key. */
-    provider: SmsProviderKey;
-  };
 };
 
 /**
@@ -347,8 +334,6 @@ export type AppPlatformCommonConfig = {
   email?: DeepPartial<AppCommonConfig["email"]>;
   /** Optional storage configuration overrides. */
   storage?: DeepPartial<AppCommonConfig["storage"]>;
-  /** Optional SMS configuration overrides. */
-  sms?: DeepPartial<AppCommonConfig["sms"]>;
 };
 
 /** Web-specific app configuration. */

@@ -78,6 +78,8 @@ export const Route = createFileRoute("/_public/(marketing)/blog/$slug")({
       imageAlt: title,
       type: "article",
       siteName: webConfig.AppName,
+      robots: "noindex,nofollow",
+      alternates: false,
     });
   },
   component: RouteComponent,

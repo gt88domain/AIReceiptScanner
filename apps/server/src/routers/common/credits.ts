@@ -9,7 +9,7 @@ import {
   listCreditTransactionsOutputSchema,
 } from "@/credits/public/schemas";
 import type { Context } from "@/lib/context";
-import { protectedProcedure, publicProcedure } from "@/lib/orpc";
+import { creditsProcedure, protectedCreditsProcedure } from "@/lib/orpc";
 
 /** Resolves the authenticated user for protected credit endpoints. */
 function resolveCreditUser(context: Context): { userId: string } {
@@ -39,28 +39,19 @@ const listTransactionsInputSchema = paginatedCreditsInputSchema.extend({
   sourceType: z.enum(CREDIT_SOURCE_TYPES).optional(),
 });
 
-/** Input schema for idempotent credit consumption. */
-const consumeInputSchema = z.object({
-  amount: z.number().int().positive(),
-  idempotencyKey: z.string().min(8).max(120),
-  metadata: z
-    .record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()]))
-    .optional(),
-});
-
 /** Common credit API routes shared by web and native clients. */
 export const creditsRouter = {
-  listPackages: publicProcedure
+  listPackages: creditsProcedure
     .input(listPackagesInputSchema)
     .output(z.array(creditPackageSchema))
     .handler(({ context, input }) => context.credits.listPackages(input)),
 
-  getBalance: protectedProcedure.output(creditBalanceSchema).handler(({ context }) => {
+  getBalance: protectedCreditsProcedure.output(creditBalanceSchema).handler(({ context }) => {
     const user = resolveCreditUser(context);
     return context.credits.getBalance(user);
   }),
 
-  listTransactions: protectedProcedure
+  listTransactions: protectedCreditsProcedure
     .input(listTransactionsInputSchema)
     .output(listCreditTransactionsOutputSchema)
     .handler(({ context, input }) => {
@@ -68,30 +59,11 @@ export const creditsRouter = {
       return context.credits.listTransactions({ user, ...input });
     }),
 
-  listOrders: protectedProcedure
+  listOrders: protectedCreditsProcedure
     .input(paginatedCreditsInputSchema)
     .output(listCreditOrdersOutputSchema)
     .handler(({ context, input }) => {
       const user = resolveCreditUser(context);
       return context.credits.listOrders({ user, ...input });
-    }),
-
-  consume: protectedProcedure
-    .input(consumeInputSchema)
-    .output(creditBalanceSchema)
-    .handler(async ({ context, input }) => {
-      const user = resolveCreditUser(context);
-      try {
-        return await context.credits.consumeCredits({
-          user,
-          amount: input.amount,
-          idempotencyKey: input.idempotencyKey,
-          metadata: input.metadata ?? null,
-        });
-      } catch (error) {
-        throw new ORPCError("BAD_REQUEST", {
-          message: error instanceof Error ? error.message : "Credit consumption failed",
-        });
-      }
     }),
 };

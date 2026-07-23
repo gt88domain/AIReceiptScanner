@@ -53,5 +53,6 @@ lerna-debug.log*
 *.db*
 
 # typescript
+.types/
 *.tsbuildinfo
 next-env.d.ts

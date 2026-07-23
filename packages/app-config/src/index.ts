@@ -5,6 +5,13 @@ export {
 } from "./app-config";
 
 export {
+  createProductFeatures,
+  resolveProductFeatures,
+  validateFeatureDependencies,
+} from "./features";
+export type { ProductFeatureInput, ProductFeatures } from "./features";
+
+export {
   type AppCommonConfig,
   type AppConfig,
   type AppCreditsConfig,
@@ -32,7 +39,6 @@ export {
   type PriceType,
   type ProviderPriceEnvironment,
   type ServerPaymentProviderKey,
-  type SmsProviderKey,
   type StorageProviderKey,
   type StorageUploadPurpose,
   type WebPaymentProviderKey,
@@ -44,7 +50,6 @@ export {
 export {
   SUPPORTED_EMAIL_PROVIDERS,
   SUPPORTED_NATIVE_PAYMENT_PROVIDERS,
-  SUPPORTED_SMS_PROVIDERS,
   SUPPORTED_SERVER_PAYMENT_PROVIDERS,
   SUPPORTED_STORAGE_PROVIDERS,
   SUPPORTED_WEB_PAYMENT_PROVIDERS,

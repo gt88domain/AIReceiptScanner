@@ -1,25 +1,30 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { formatCurrency } from "@repo/shared";
-import { createFileRoute } from "@tanstack/react-router";
-import { CoinsIcon, Loader2Icon, ZapIcon } from "lucide-react";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { CoinsIcon, Loader2Icon, ReceiptTextIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AnimatedNumberText } from "@/components/ui/animated-number-text";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   useCreditBalanceQuery,
   useCreditOrdersQuery,
   useCreditPackagesQuery,
 } from "@/hooks/use-credits";
+import { useOrpc } from "@/hooks/use-orpc";
 import { useTranslations } from "@/i18n";
-import { orpc } from "@/utils/orpc";
+import { webConfig } from "@/configs/web-config";
 
 const PENDING_CREDIT_ORDER_STORAGE_KEY = "credits.pendingOrderId";
 
 export const Route = createFileRoute("/_authed/(dashboard)/credits/purchase")({
+  beforeLoad: () => {
+    if (!webConfig.creditPurchasesEnabled) {
+      throw redirect({ to: "/credits/transactions" });
+    }
+  },
   component: RouteComponent,
 });
 
@@ -31,17 +36,14 @@ function getCreditReturnUrl() {
 }
 
 function RouteComponent() {
+  const orpc = useOrpc();
   const t = useTranslations("dashboard.credits");
   const tRoot = useTranslations();
-  const queryClient = useQueryClient();
   const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
-  const [consumeAmount, setConsumeAmount] = useState("1");
   const creditPackagesQuery = useCreditPackagesQuery();
   const creditBalanceQuery = useCreditBalanceQuery();
   const creditOrdersQuery = useCreditOrdersQuery(Boolean(pendingOrderId));
   const creditOrders = creditOrdersQuery.data?.data;
-  const consumeAmountValue = Number(consumeAmount);
-  const canConsumeCredits = Number.isInteger(consumeAmountValue) && consumeAmountValue > 0;
 
   const createCreditCheckout = useMutation({
     ...orpc.web.credits.createCheckoutSession.mutationOptions(),
@@ -52,22 +54,6 @@ function RouteComponent() {
     },
     onError: (error: Error) => {
       toast.error(`${t("checkoutError")}: ${error.message}`);
-    },
-  });
-
-  const consumeCredits = useMutation({
-    ...orpc.credits.consume.mutationOptions(),
-    onSuccess: async (_balance, variables) => {
-      await creditBalanceQuery.refetch();
-      await queryClient.invalidateQueries({ queryKey: ["credits", "transactions"] });
-      toast.success(
-        t("demoConsumeSuccess", {
-          count: variables.amount,
-        }),
-      );
-    },
-    onError: (error: Error) => {
-      toast.error(`${t("demoConsumeError")}: ${error.message}`);
     },
   });
 
@@ -118,30 +104,23 @@ function RouteComponent() {
     });
   };
 
-  const handleDemoConsume = () => {
-    if (!canConsumeCredits) {
-      return;
-    }
-
-    consumeCredits.mutate({
-      amount: consumeAmountValue,
-      idempotencyKey: `demo-credit-consume-${crypto.randomUUID()}`,
-      metadata: {
-        reason: "demo",
-        source: "credits_purchase_page",
-      },
-    });
-  };
-
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CoinsIcon className="size-5" />
-            {t("purchaseTitle")}
-          </CardTitle>
-          <CardDescription>{t("purchaseDescription")}</CardDescription>
+        <CardHeader className="flex flex-row items-start justify-between gap-4">
+          <div className="space-y-1.5">
+            <CardTitle className="flex items-center gap-2">
+              <CoinsIcon className="size-5" />
+              {t("purchaseTitle")}
+            </CardTitle>
+            <CardDescription>{t("purchaseDescription")}</CardDescription>
+          </div>
+          <Button asChild variant="outline" size="sm" className="shrink-0">
+            <Link to="/credits/transactions">
+              <ReceiptTextIcon className="mr-2 size-4" />
+              {t("viewTransactions")}
+            </Link>
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
@@ -206,40 +185,6 @@ function RouteComponent() {
                 <p className="text-sm text-muted-foreground">{t("emptyPackages")}</p>
               )}
             </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ZapIcon className="size-5" />
-            {t("demoConsumeTitle")}
-          </CardTitle>
-          <CardDescription>{t("demoConsumeDescription")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex max-w-md gap-2">
-            <Input
-              type="number"
-              min={1}
-              step={1}
-              inputMode="numeric"
-              value={consumeAmount}
-              aria-label={t("demoConsumeAmount")}
-              onChange={(event) => setConsumeAmount(event.target.value)}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              disabled={!canConsumeCredits || consumeCredits.isPending}
-              onClick={handleDemoConsume}
-            >
-              {consumeCredits.isPending ? (
-                <Loader2Icon className="mr-2 size-4 animate-spin" />
-              ) : null}
-              {t("demoConsume")}
-            </Button>
           </div>
         </CardContent>
       </Card>

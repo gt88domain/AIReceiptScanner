@@ -271,10 +271,20 @@ class NativePaymentsSdk {
    */
   async syncAppUser(appUserId: string | null) {
     if (appUserId) {
-      return this.logIn(appUserId);
+      await this.logIn(appUserId);
+      const currentAppUserId = await this.getAppUserId();
+      if (currentAppUserId !== appUserId) {
+        throw new Error(
+          `RevenueCat identity mismatch: expected "${appUserId}", received "${currentAppUserId ?? "anonymous"}"`,
+        );
+      }
+      return;
     }
 
-    return this.logOut();
+    await this.logOut();
+    if (!(await this.isAnonymous())) {
+      throw new Error("RevenueCat identity mismatch: expected an anonymous user after logout");
+    }
   }
 
   /**

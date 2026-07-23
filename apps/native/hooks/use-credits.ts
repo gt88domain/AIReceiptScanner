@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Purchases from "react-native-purchases";
 import { appConfig } from "@/configs/app-config";
@@ -57,7 +57,6 @@ function isPurchaseCancelledError(cause: unknown) {
 /** Loads account credits and purchases native credit packages through RevenueCat. */
 export function useCredits() {
   const nativePlatform = resolveNativePaymentsPlatform();
-  const queryClient = useQueryClient();
   const { isAuthenticated, isPaymentsReady, isPending: isAuthPending, user } = useAuth();
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -84,14 +83,6 @@ export function useCredits() {
     enabled: appConfig.creditsEnabled && !isAuthPending && isAuthenticated,
     staleTime: 0,
     refetchOnWindowFocus: true,
-  });
-
-  const consumeCredits = useMutation({
-    ...orpc.credits.consume.mutationOptions(),
-    onSuccess: async () => {
-      await balanceQuery.refetch();
-      await queryClient.invalidateQueries({ queryKey: ["credits", "transactions"] });
-    },
   });
 
   const isAvailable =
@@ -185,10 +176,8 @@ export function useCredits() {
     isLoading: balanceQuery.isLoading || packagesQuery.isLoading,
     isPackagesLoading: packagesQuery.isLoading,
     isPurchasing,
-    isConsuming: consumeCredits.isPending,
     isSyncing,
     error,
-    consume: consumeCredits.mutateAsync,
     purchase,
     refetchCredits,
   };

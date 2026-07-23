@@ -22,9 +22,7 @@ export function resolvePaymentProviderKey(
 /**
  * Returns a singleton provider instance for the requested provider key.
  */
-export function getPaymentProvider(
-  providerKey?: ServerPaymentProviderKey,
-): PaymentProvider {
+export function getPaymentProvider(providerKey?: ServerPaymentProviderKey): PaymentProvider {
   const resolvedKey = resolvePaymentProviderKey(providerKey);
 
   const cached = providerCache.get(resolvedKey);

@@ -1,5 +1,6 @@
 import type { RouterClient } from "@orpc/server";
-import { protectedProcedure, publicProcedure } from "../lib/orpc";
+import { publicProcedure } from "../lib/orpc";
+import { adminRouter } from "./admin";
 import { creditsRouter } from "./common/credits";
 import { commonPaymentsRouter } from "./common/payments";
 import { storageRouter } from "./common/storage";
@@ -21,11 +22,8 @@ export const appRouter = {
   // ============ Common APIs (web + native) ============
   healthCheck: publicProcedure.handler(() => "OK"),
   getCurrentUser: publicProcedure.handler(({ context }) => getCurrentUserFromContext(context)),
-  privateData: protectedProcedure.handler(({ context }) => ({
-    message: "This is private",
-    user: context.session?.user,
-  })),
   users: usersRouter,
+  admin: adminRouter,
   storage: storageRouter,
   payments: commonPaymentsRouter,
   credits: creditsRouter,

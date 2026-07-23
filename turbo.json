@@ -25,6 +25,18 @@
     "check-types": {
       "dependsOn": ["^check-types"]
     },
+    "test": {
+      "dependsOn": ["^test"]
+    },
+    "web#check-types": {
+      "dependsOn": ["server#check-types"]
+    },
+    "native#check-types": {
+      "dependsOn": ["server#check-types"]
+    },
+    "test:integration": {
+      "cache": false
+    },
     "dev": {
       "cache": false,
       "persistent": true
@@ -52,6 +64,9 @@
     "db:generate": {
       "cache": false,
       "persistent": true
+    },
+    "db:check": {
+      "cache": false
     },
     "deploy": {
       "dependsOn": ["build"],

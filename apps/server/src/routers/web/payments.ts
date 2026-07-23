@@ -3,7 +3,8 @@ import { ORPCError } from "@orpc/server";
 import { getCheckoutDecisionReasonFromError } from "@repo/app-config/payments/web-policy";
 import { z } from "zod";
 import type { Context } from "@/lib/context";
-import { protectedProcedure } from "@/lib/orpc";
+import { protectedBillingProcedure } from "@/lib/orpc";
+import { createPaymentOperationError } from "@/lib/payment-operation-error";
 import { providerEnum } from "@/payments/public/schemas";
 
 /**
@@ -73,7 +74,7 @@ export const paymentsRouter = {
    * Creates a checkout session to initiate payment for a specific plan and price
    * Returns a URL that redirects the user to the payment provider's checkout page
    */
-  createCheckoutSession: protectedProcedure
+  createCheckoutSession: protectedBillingProcedure
     .input(createCheckoutInputSchema)
     .output(
       z.object({
@@ -101,9 +102,7 @@ export const paymentsRouter = {
             data: { reason },
           });
         }
-        throw new ORPCError("BAD_REQUEST", {
-          message: error instanceof Error ? error.message : "Checkout failed. Please try again.",
-        });
+        throw createPaymentOperationError("CHECKOUT_CREATION_FAILED", error);
       }
     }),
 
@@ -112,7 +111,7 @@ export const paymentsRouter = {
    * Returns a URL that redirects the user to manage their existing subscriptions
    * (cancel, update payment method, view invoices, etc.)
    */
-  createPortalSession: protectedProcedure
+  createPortalSession: protectedBillingProcedure
     .input(createPortalInputSchema)
     .output(
       z.object({
@@ -129,10 +128,7 @@ export const paymentsRouter = {
         });
         return { url: session.url };
       } catch (error) {
-        throw new ORPCError("BAD_REQUEST", {
-          message:
-            error instanceof Error ? error.message : "Portal session failed. Please try again.",
-        });
+        throw createPaymentOperationError("BILLING_PORTAL_CREATION_FAILED", error);
       }
     }),
 
@@ -140,7 +136,7 @@ export const paymentsRouter = {
    * Upgrades an active subscription in-app without redirecting to provider portal.
    * This keeps upgrade-only guardrails and blocks reverse operations.
    */
-  upgradeSubscription: protectedProcedure
+  upgradeSubscription: protectedBillingProcedure
     .input(upgradeSubscriptionInputSchema)
     .output(
       z.object({
@@ -166,9 +162,7 @@ export const paymentsRouter = {
           });
         }
 
-        throw new ORPCError("BAD_REQUEST", {
-          message: error instanceof Error ? error.message : "Upgrade failed. Please try again.",
-        });
+        throw createPaymentOperationError("SUBSCRIPTION_UPGRADE_FAILED", error);
       }
     }),
 };

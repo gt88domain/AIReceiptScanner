@@ -1,70 +1,109 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { ChartAreaInteractive } from "@/components/dashboard/chart-area-interactive";
-import { SalesMetricsCard } from "@/components/dashboard/chart-sales-metrics";
-import { EarningData, useStatisticsCardData } from "@/components/dashboard/data/dashboard";
-import { StatisticsCard } from "@/components/dashboard/statistics-card-02";
-import { UsersTable } from "@/components/dashboard/users-table";
-import { ProductInsightsCard } from "@/components/dashboard/widget-product-insights";
-import { TotalEarningCard } from "@/components/dashboard/widget-total-earning";
-import { Card } from "@/components/ui/card";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { CircleUserRoundIcon, CoinsIcon, CreditCardIcon, ShieldCheckIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useCreditBalanceQuery } from "@/hooks/use-credits";
 import { useTranslations } from "@/i18n";
+import { useBillingStatusQuery } from "@/hooks/use-payments";
+import { webConfig } from "@/configs/web-config";
 
 export const Route = createFileRoute("/_authed/(dashboard)/dashboard")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const tUsersTable = useTranslations("dashboard.usersTable");
-  const tCards = useTranslations("dashboard.cards");
-  const statisticsCardData = useStatisticsCardData();
+  const { user } = Route.useRouteContext();
+  const t = useTranslations("dashboard.home");
+  const tBilling = useTranslations("dashboard.billing");
+  const billingQuery = useBillingStatusQuery({ enabled: webConfig.billingEnabled });
+  const creditBalanceQuery = useCreditBalanceQuery({ enabled: webConfig.creditsEnabled });
+  const billingTier = billingQuery.data?.currentEntitlement.tier ?? "free";
+  const billingSummary =
+    billingTier === "free" ? tBilling("free") : tBilling(`membershipTypes.${billingTier}`);
 
   return (
-    <div className="grid grid-cols-2 gap-6 lg:grid-cols-3">
-      {/* Statistics Cards */}
-      <div className="col-span-full grid gap-6 sm:grid-cols-3 md:max-lg:grid-cols-1">
-        {statisticsCardData.map((card, index) => (
-          <StatisticsCard
-            key={index}
-            icon={card.icon}
-            title={card.title}
-            value={card.value}
-            changePercentage={card.changePercentage}
-          />
-        ))}
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {t("title", { name: user.name ?? "" })}
+        </h1>
+        <p className="mt-2 text-muted-foreground">{t("description")}</p>
       </div>
 
-      <div className="grid gap-6 max-xl:col-span-full lg:max-xl:grid-cols-2">
-        {/* Product Insights Card */}
-        <ProductInsightsCard className="justify-between gap-3 *:data-[slot=card-content]:space-y-5" />
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <Card>
+          <CardHeader className="pb-3">
+            <CircleUserRoundIcon className="size-5" />
+            <CardTitle>{t("profileTitle")}</CardTitle>
+            <CardDescription>{user.email ?? t("profileDescription")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/settings/profile">{t("profileAction")}</Link>
+            </Button>
+          </CardContent>
+        </Card>
 
-        {/* Total Earning Card */}
-        <TotalEarningCard
-          title={tCards("totalEarning")}
-          earning={24650}
-          trend="up"
-          percentage={10}
-          comparisonText={tCards("comparisonText")}
-          earningData={EarningData}
-          className="justify-between gap-5 sm:min-w-0 *:data-[slot=card-content]:space-y-7"
-        />
+        {webConfig.billingEnabled ? (
+          <Card>
+            <CardHeader className="pb-3">
+              <CreditCardIcon className="size-5" />
+              <CardTitle>{t("billingTitle")}</CardTitle>
+              <CardDescription>
+                {billingQuery.isLoading ? <Skeleton className="h-4 w-24" /> : billingSummary}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/settings/billing">{t("billingAction")}</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {webConfig.creditsEnabled ? (
+          <Card>
+            <CardHeader className="pb-3">
+              <CoinsIcon className="size-5" />
+              <CardTitle>{t("creditsTitle")}</CardTitle>
+              <CardDescription>
+                {creditBalanceQuery.isLoading ? (
+                  <Skeleton className="h-4 w-16" />
+                ) : (
+                  t("creditsBalance", { count: creditBalanceQuery.data?.balance ?? 0 })
+                )}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild variant="outline" size="sm">
+                <Link
+                  to={
+                    webConfig.creditPurchasesEnabled ? "/credits/purchase" : "/credits/transactions"
+                  }
+                >
+                  {t("creditsAction")}
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ) : null}
+
+        <Card>
+          <CardHeader className="pb-3">
+            <ShieldCheckIcon className="size-5" />
+            <CardTitle>{t("securityTitle")}</CardTitle>
+            <CardDescription>
+              {user.emailVerified ? t("securityVerified") : t("securityUnverified")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/settings/security">{t("securityAction")}</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
-
-      <SalesMetricsCard className="col-span-full xl:col-span-2 *:data-[slot=card-content]:space-y-6" />
-
-      <Card className="col-span-full w-full py-0">
-        <ChartAreaInteractive />
-      </Card>
-
-      {/* Users Table Example */}
-      <Card className="col-span-full">
-        <div className="p-6">
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold">{tUsersTable("title")}</h3>
-            <p className="text-sm text-muted-foreground">{tUsersTable("description")}</p>
-          </div>
-          <UsersTable />
-        </div>
-      </Card>
     </div>
   );
 }

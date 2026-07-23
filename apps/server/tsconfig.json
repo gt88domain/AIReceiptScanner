@@ -11,7 +11,7 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "outDir": "./dist",
+    "outDir": "./.types",
     "types": ["./worker-configuration.d.ts", "node"],
     "composite": true,
     "jsx": "react-jsx",
