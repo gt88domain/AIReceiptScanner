@@ -51,4 +51,36 @@ describe("administrator RPC authorization", () => {
       stats: { users: expect.any(Number) },
     });
   });
+
+  it("does not promote a paid user to administrator", async () => {
+    const email = "paid@example.test";
+    const client = await signUp(email);
+    const account = await env.DB.prepare("SELECT id FROM user WHERE email = ?").bind(email).first<{
+      id: string;
+    }>();
+    expect(account).not.toBeNull();
+    const now = Date.now();
+    await env.DB.prepare(
+      `INSERT INTO billing_subscription (
+          id, user_id, provider, provider_subscription_id, provider_customer_id,
+          plan_id, price_id, status, cancel_at_period_end, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    )
+      .bind(
+        "paid-user-subscription",
+        account?.id,
+        "stripe",
+        "paid-user-provider-subscription",
+        "paid-user-provider-customer",
+        "pro",
+        "monthly",
+        "active",
+        0,
+        now,
+        now,
+      )
+      .run();
+
+    await expect(client.admin.overview()).rejects.toMatchObject({ code: "FORBIDDEN", status: 403 });
+  });
 });

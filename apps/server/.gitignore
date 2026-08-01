@@ -35,6 +35,7 @@ node_modules/
 !.env.production.example
 .dev.vars
 .prod.vars
+.production-safety.env
 
 # logs
 logs/

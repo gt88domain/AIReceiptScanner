@@ -264,6 +264,8 @@ const appConfig: AppConfig = {
         attachment: 25 * 1024 * 1024,
       },
     },
+    // Add product feature gates here, for example: { "design.generate": { minimumTier: "monthly" } }.
+    featureCapabilities: {},
     // Canonical product-level membership semantics shared by web, native, and server.
     membership: {
       plans: membershipPlans,

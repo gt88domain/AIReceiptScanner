@@ -48,11 +48,11 @@ starts receiving code changes beyond docs.
 
 ## Upstream-Safe Extension Model
 
-Preferred layout for custom modules:
+Preferred layout for domain modules:
 
 ```txt
-apps/server/src/custom/
-apps/web/src/custom/
+apps/server/src/modules/
+apps/web/src/modules/
 packages/site-modules/
 ```
 

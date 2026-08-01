@@ -9,11 +9,11 @@ EasyStarter updates later.
 
 Treat new product work as an extension module first.
 
-Prefer adding code under custom/module-owned directories:
+Prefer the canonical domain-module directories:
 
 ```txt
-apps/server/src/custom/<module>/
-apps/web/src/custom/<module>/
+apps/server/src/modules/<module>/
+apps/web/src/modules/<module>/
 packages/site-modules/<module>/
 ```
 
@@ -79,8 +79,8 @@ public-read
 Recommended locations:
 
 ```txt
-apps/server/src/custom/public-read/
-apps/web/src/custom/public-read/
+apps/server/src/modules/public-read/
+apps/web/src/modules/public-read/
 ```
 
 Suggested first routes:
@@ -175,7 +175,7 @@ an extension module, not a rewrite of EasyStarter core.
 
 Hard rules:
 - Treat new code as an extension module first.
-- Prefer apps/server/src/custom/<module>/, apps/web/src/custom/<module>/, or
+- Prefer apps/server/src/modules/<module>/, apps/web/src/modules/<module>/, or
   packages/site-modules/<module>/.
 - Do not migrate auth, billing, admin, or provider secrets.
 - Do not add a runtime Neon dependency for public pages.

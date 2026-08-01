@@ -93,7 +93,7 @@ The shared layer adds eleven files under one custom module directory. It adds a
 twelfth only after two resources prove that they share the same query helper:
 
 ```txt
-apps/web/src/custom/discovery/listing/
+apps/web/src/modules/discovery/listing/
   listing-types.ts             # protocol types only
   listing-frame.tsx            # header, optional desktop filters, mobile drawer, results slots
   listing-toolbar.tsx          # optional search/count/sort layout slots
@@ -117,7 +117,7 @@ When a real site migrates, add its code next to the shared layer rather than
 inside EasyStarter components:
 
 ```txt
-apps/web/src/custom/discovery/resources/prompts/
+apps/web/src/modules/discovery/resources/prompts/
   search.ts                    # Zod route schema, defaults, normalization
   loader.ts                    # calls typed server API or server function
   facets.tsx                   # Prompt Directory platform/safety/use-case UI
@@ -131,7 +131,7 @@ apps/web/src/routes/_public/(marketing)/discover.tsx
 The same shape works for domains:
 
 ```txt
-apps/web/src/custom/discovery/resources/domains/
+apps/web/src/modules/discovery/resources/domains/
   search.ts
   loader.ts
   facets.tsx
@@ -142,7 +142,7 @@ apps/web/src/custom/discovery/resources/domains/
 Server files are added only when the product's public read model reaches D1:
 
 ```txt
-apps/server/src/custom/discovery/
+apps/server/src/modules/discovery/
   repository.ts                # parameterized D1 reads and indexes' query shapes
   service.ts                   # resource-neutral orchestration only when actually shared
   router.ts                    # public oRPC procedures, if the web requires them
@@ -293,7 +293,7 @@ standard layout contract, not a universal config-driven renderer.
 | `packages/app-config/src/app-config.ts` | disabled default              | medium | one documented default        |
 | `apps/web/src/configs/web-config.ts`    | expose safe web config        | medium | no secrets, no business logic |
 | `apps/web/src/routes/*`                 | first public routes           | medium | route files stay thin         |
-| `apps/server/src/routers/index.ts`      | only if public oRPC is needed | medium | one custom router mount       |
+| `apps/server/src/modules/index.ts`      | only if public oRPC is needed | low    | one module router registration |
 | auth/billing/credits/providers          | never for this work           | high   | do not touch                  |
 
 Every actual core edit needs one dated `CUSTOMIZATIONS.md` entry with files,
@@ -343,8 +343,8 @@ Shared listing code may own only frame/layout, generic state presentation, and
 small stable protocol types. Resource code owns route Zod schemas, D1 queries,
 facet semantics, cards, pagination, SEO, and editorial blocks.
 
-Keep new files under apps/web/src/custom/discovery or
-apps/server/src/custom/discovery. Do not add a package or core edit unless a
+Keep new files under apps/web/src/modules/discovery or
+apps/server/src/modules/discovery. Do not add a package or core edit unless a
 real repeated need requires it. If you modify EasyStarter core, update
 CUSTOMIZATIONS.md before finishing.
 

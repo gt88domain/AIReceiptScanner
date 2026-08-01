@@ -35,6 +35,22 @@
       "bucket_name": "easysaas-bucket",
     },
   ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "JOB_QUEUE",
+        "queue": "tanstack-template-jobs",
+      },
+    ],
+    "consumers": [
+      {
+        "queue": "tanstack-template-jobs",
+        "max_batch_size": 10,
+        "max_batch_timeout": 5,
+        "max_retries": 3,
+      },
+    ],
+  },
   "triggers": {
     "crons": ["*/10 * * * *"],
   },

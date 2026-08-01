@@ -187,7 +187,7 @@ Before committing JSON fixtures:
 Recommended folder:
 
 ```txt
-apps/server/src/custom/public-read/fixtures/
+apps/server/src/modules/public-read/fixtures/
 ```
 
 Recommended files:
@@ -588,8 +588,8 @@ Evaluate these before implementation. Record accepted ones in
 | --- | --- | --- | --- |
 | Add `CUSTOMIZATIONS.md` | Tracks upstream divergence | Another file to maintain | Do now |
 | Add `siteModules` config | Clean optional modules | Touches app config/types | Do when first optional module starts |
-| Add custom router mount | One stable server touch point | Touches core router once | Do before multiple custom APIs |
-| Add nav extension registry | Avoid repeated sidebar edits | Adds small indirection | Do when second custom nav item appears |
+| Use module router registry | One stable server touch point | Registry maintenance | Use for each product API |
+| Add nav extension registry | Avoid repeated sidebar edits | Adds small indirection | Do when second module nav item appears |
 | Add public fixture/seed pattern | Faster real-data page work | Need privacy review | Do for public read migration |
 | Add web boundary check | Prevents D1/secret leaks | Script maintenance | Do after first code slice |
 | Add full RBAC | Stronger admin security | More upstream conflict and scope | Defer |

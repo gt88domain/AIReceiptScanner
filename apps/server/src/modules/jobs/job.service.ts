@@ -1,0 +1,122 @@
+import { and, asc, eq, inArray } from "drizzle-orm";
+import type { Database } from "@/db";
+import { job, jobOutbox, type Job } from "@/db/schema/jobs";
+import { recordJobEvent } from "./job.events";
+import type { JobQueueMessage } from "./job.schema";
+
+export type CreateJobInput = {
+  type: string;
+  ownerId?: string;
+  payload: Record<string, unknown>;
+  maxAttempts?: number;
+  runAfter?: Date;
+};
+
+export function createJobService(db: Database, queue: Queue<JobQueueMessage>) {
+  async function create(input: CreateJobInput) {
+    const now = new Date();
+    const record: Job = {
+      id: crypto.randomUUID(),
+      type: input.type,
+      ownerId: input.ownerId ?? null,
+      status: "pending",
+      payload: input.payload,
+      result: null,
+      error: null,
+      attemptCount: 0,
+      maxAttempts: input.maxAttempts ?? 3,
+      runAfter: input.runAfter ?? now,
+      lockedAt: null,
+      startedAt: null,
+      completedAt: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    const outboxId = crypto.randomUUID();
+
+    await db.batch([
+      db.insert(job).values(record),
+      db.insert(jobOutbox).values({
+        id: outboxId,
+        jobId: record.id,
+        status: "pending",
+        attempts: 0,
+        lastError: null,
+        publishedAt: null,
+        createdAt: now,
+        updatedAt: now,
+      }),
+    ]);
+    await recordJobEvent(db, { jobId: record.id, type: "queued" });
+
+    try {
+      await publishOutboxRecord(outboxId);
+    } catch (error) {
+      // The durable outbox is retried by the scheduled dispatcher.
+      console.error("Failed to publish a newly created job", { jobId: record.id, error });
+    }
+    return record;
+  }
+
+  async function publishOutboxRecord(outboxId: string) {
+    const [outbox] = await db.select().from(jobOutbox).where(eq(jobOutbox.id, outboxId)).limit(1);
+    if (!outbox || outbox.status === "published") return;
+
+    const now = new Date();
+    try {
+      await queue.send({ jobId: outbox.jobId }, { contentType: "json" });
+      await db
+        .update(jobOutbox)
+        .set({
+          status: "published",
+          attempts: outbox.attempts + 1,
+          publishedAt: now,
+          updatedAt: now,
+        })
+        .where(eq(jobOutbox.id, outbox.id));
+    } catch (error) {
+      await db
+        .update(jobOutbox)
+        .set({
+          attempts: outbox.attempts + 1,
+          lastError: error instanceof Error ? error.message : String(error),
+          updatedAt: now,
+        })
+        .where(eq(jobOutbox.id, outbox.id));
+      throw error;
+    }
+  }
+
+  async function flushOutbox(limit = 25) {
+    const pending = await db
+      .select({ id: jobOutbox.id })
+      .from(jobOutbox)
+      .where(eq(jobOutbox.status, "pending"))
+      .orderBy(asc(jobOutbox.createdAt))
+      .limit(limit);
+
+    for (const outbox of pending) {
+      try {
+        await publishOutboxRecord(outbox.id);
+      } catch (error) {
+        console.error("Failed to publish job outbox record", { outboxId: outbox.id, error });
+      }
+    }
+  }
+
+  async function cancel(id: string) {
+    const now = new Date();
+    const result = await db
+      .update(job)
+      .set({ status: "cancelled", completedAt: now, updatedAt: now })
+      .where(and(eq(job.id, id), inArray(job.status, ["pending", "running"])))
+      .returning({ id: job.id, status: job.status });
+    if (result[0]?.status === "cancelled") {
+      await recordJobEvent(db, { jobId: id, type: "cancelled" });
+      return true;
+    }
+    return false;
+  }
+
+  return { cancel, create, flushOutbox };
+}

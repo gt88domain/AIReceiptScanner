@@ -88,8 +88,25 @@ ad hoc string manipulation when practical.
 - Shared UI components live in `apps/web/src/components/ui`; prefer existing
   components before adding new ones.
 - Server API routes are built with Hono and oRPC under `apps/server/src`.
+- New product-domain server code belongs in `apps/server/src/modules/<domain>`.
+  `routers/` mounts public routers and `lib/` contains shared technical
+  infrastructure; neither is a home for product business logic. Follow
+  `apps/server/src/modules/README.md` for layer and import-direction rules.
+- New product-domain web code belongs in `apps/web/src/modules/<domain>`.
+  Keep TanStack route files thin and do not add new domains to the legacy
+  `apps/web/src/custom` directory.
+- Gate product features through `context.capabilities.can(user, capability)`;
+  do not compare plan names in application code. Define the minimum tier in
+  `packages/app-config/src/app-config.ts`.
+- Put retryable background work in `apps/server/src/modules/jobs`. Job handlers
+  must be idempotent because queue delivery is at least once. Use Cloudflare
+  Workflows directly for long-lived, multi-step, or human-approval work.
+- Persist an asset record for each product file and enforce its visibility via
+  `apps/server/src/modules/assets`; do not expose a raw storage key as a public
+  authorization decision.
 - Database schema changes belong in `apps/server/src/db/schema` and use
-  Drizzle migrations.
+  Drizzle migrations. Keep structural migrations, data migrations, seeds,
+  backfills, and repairs separate as defined in `apps/server/src/db/README.md`.
 - Cross-platform code should live in workspace packages only when both web and
   native or server genuinely need it.
 - i18n messages live under `packages/i18n/src/messages`; implementation notes
@@ -152,9 +169,21 @@ separate concepts.
   admin procedures. A `protectedProcedure` alone is not an admin check.
 - Do not let a payment event grant administrator access, and do not let an
   administrator flag synthesize a paid entitlement.
+- Use `requireUser`, `requireAdmin`, `requireCapability`, and
+  `requireEntitlement` from `apps/server/src/auth/guards` for new server
+  authorization checks. Do not create project-specific session/header guards
+  or database-backed roles without an explicit product decision.
 - Authorization or webhook changes require focused tests for ordinary-user
   denial, admin allowlist access, paid-user non-admin denial, and webhook
   idempotency.
+
+## Production Deployment Guard
+
+`pnpm -F server deploy` runs the production safety preflight first. Before a
+production deploy, create `apps/server/.production-safety.env` from its example
+and set the exact Worker, D1, R2, and public URL identities that deployment may
+target. The guard also validates the configured production secrets and live
+payment-provider mode from `apps/server/.env.production`.
 
 ## Skills
 

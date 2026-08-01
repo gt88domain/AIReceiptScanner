@@ -5,6 +5,8 @@ import { createDb } from "../db";
 import { getEmailProvider } from "../emails";
 import { createT, getLocaleFromRequest } from "../i18n";
 import { getPaymentService } from "../payments";
+import { createCapabilityService } from "../modules/capabilities/capability.service";
+import { createJobService } from "../modules/jobs";
 import { getStorageProvider } from "../storage";
 import {
   FRESH_AUTH_SESSION_QUERY,
@@ -43,12 +45,15 @@ export async function createContext({ context }: CreateContextOptions) {
   // Email provider and service
   const emailProvider = getEmailProvider();
   const payments = getPaymentService(db);
+  const capabilities = createCapabilityService(payments);
+  const jobs = createJobService(db, context.env.JOB_QUEUE);
   // Credits share the same database and session context as billing and user APIs.
   const credits = createCreditsService(db, {
     signupGrant: {
       hashSecret: context.env.BETTER_AUTH_SECRET,
       ipAddress: getClientIp(headers) ?? sessionRequest?.ipAddress ?? null,
-      userAgent: normalizeHeaderValue(headers.get("user-agent")) ?? sessionRequest?.userAgent ?? null,
+      userAgent:
+        normalizeHeaderValue(headers.get("user-agent")) ?? sessionRequest?.userAgent ?? null,
     },
   });
 
@@ -63,6 +68,8 @@ export async function createContext({ context }: CreateContextOptions) {
     storage,
     email: emailProvider,
     payments,
+    capabilities,
+    jobs,
     credits,
   };
 }

@@ -54,6 +54,9 @@ import { apiCorsMiddleware, authCorsMiddleware } from "./middlewares/cors";
 import { errorHandler } from "./middlewares/error";
 import { i18nMiddleware } from "./middlewares/i18n";
 import { alertPendingWebhookEvents } from "./payments/application/webhook-observability";
+import { jobHandlers } from "./modules/jobs";
+import { createJobService } from "./modules/jobs/job.service";
+import { consumeJobMessages } from "./modules/jobs/job.worker";
 
 const app = new Hono<{ Bindings: Cloudflare.Env }>();
 // ============================================================================
@@ -356,6 +359,7 @@ export default {
     const db = createDb(env.DB);
     if (controller.cron !== "*/10 * * * *") return;
 
+    await createJobService(db, env.JOB_QUEUE).flushOutbox();
     await alertPendingWebhookEvents(db, env.ADMIN_EMAILS);
 
     const scheduledAt = new Date(controller.scheduledTime);
@@ -363,5 +367,8 @@ export default {
       // Daily maintenance only expires eligible free credits; paid packages never expire.
       await runCreditMaintenance(db);
     }
+  },
+  async queue(batch, env) {
+    await consumeJobMessages(createDb(env.DB), batch, jobHandlers);
   },
 } satisfies ExportedHandler<Cloudflare.Env>;

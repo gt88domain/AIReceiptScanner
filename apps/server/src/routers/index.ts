@@ -1,4 +1,5 @@
 import type { RouterClient } from "@orpc/server";
+import { moduleRouters } from "../modules";
 import { publicProcedure } from "../lib/orpc";
 import { adminRouter } from "./admin";
 import { creditsRouter } from "./common/credits";
@@ -27,6 +28,8 @@ export const appRouter = {
   storage: storageRouter,
   payments: commonPaymentsRouter,
   credits: creditsRouter,
+  // ============ Product domain modules ============
+  ...moduleRouters,
   // ============ Web-specific APIs ============
   web: {
     payments: paymentsRouter,
