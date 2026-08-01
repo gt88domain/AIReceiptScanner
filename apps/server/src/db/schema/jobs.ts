@@ -4,6 +4,7 @@ import { user } from "./auth";
 export const JOB_STATUSES = ["pending", "running", "succeeded", "failed", "cancelled"] as const;
 export const JOB_OUTBOX_STATUSES = ["pending", "published"] as const;
 export const JOB_EVENT_TYPES = ["queued", "started", "succeeded", "failed", "cancelled"] as const;
+export const FAILED_JOB_RESOLUTIONS = ["retried", "ignored", "refunded"] as const;
 
 /** Durable job state. Queue messages contain only this record's id. */
 export const job = sqliteTable(
@@ -67,5 +68,29 @@ export const jobEvent = sqliteTable(
   (table) => [index("job_event_job_created_at_idx").on(table.jobId, table.createdAt)],
 );
 
+/** One durable record for a main-queue message delivered to the dead-letter queue. */
+export const failedJobEvent = sqliteTable(
+  "failed_job_event",
+  {
+    id: text("id").primaryKey(),
+    queueMessageId: text("queue_message_id").notNull(),
+    // No foreign key: retain the incident even if a user-owned job is later removed.
+    jobId: text("job_id").notNull(),
+    jobType: text("job_type").notNull(),
+    payload: text("payload", { mode: "json" }).$type<Record<string, unknown>>().notNull(),
+    error: text("error").notNull(),
+    attempts: integer("attempts").notNull(),
+    failedAt: integer("failed_at", { mode: "timestamp" }).notNull(),
+    resolvedAt: integer("resolved_at", { mode: "timestamp" }),
+    resolvedBy: text("resolved_by"),
+    resolution: text("resolution", { enum: FAILED_JOB_RESOLUTIONS }),
+  },
+  (table) => [
+    uniqueIndex("failed_job_event_queue_message_id_idx").on(table.queueMessageId),
+    index("failed_job_event_unresolved_failed_at_idx").on(table.resolvedAt, table.failedAt),
+  ],
+);
+
 export type Job = typeof job.$inferSelect;
 export type NewJob = typeof job.$inferInsert;
+export type FailedJobEvent = typeof failedJobEvent.$inferSelect;

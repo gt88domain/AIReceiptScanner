@@ -1,3 +1,13 @@
+export const DEFAULT_JOB_TYPES = [
+  "email.send",
+  "ai.generate",
+  "import.run",
+  "asset.process",
+] as const;
+
+/** Built-in suggestions plus product-owned names such as `novel.chapter.generate`. */
+export type JobType = (typeof DEFAULT_JOB_TYPES)[number] | (string & {});
+
 export type JobQueueMessage = { jobId: string };
 
 export type JobHandlerInput = {

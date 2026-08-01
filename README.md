@@ -292,12 +292,11 @@ REVENUECAT_WEBHOOK_SECRET=your_revenuecat_webhook_secret
 ## 🧪 Testing
 
 The template's core auth, billing, webhook, credits, admin, and migration checks
-are required. Run both gates before review (there is no root `test` script):
+are required. Run the root test gate before review:
 
 ```bash
-# Required template gates
-pnpm test:template
-pnpm test:integration
+# Required template gate (runs template and integration checks)
+pnpm test
 
 # Run type checking across the monorepo
 pnpm check-types

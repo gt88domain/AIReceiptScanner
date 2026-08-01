@@ -1,8 +1,9 @@
 import { and, asc, eq, inArray } from "drizzle-orm";
 import type { Database } from "@/db";
-import { job, jobOutbox, type Job } from "@/db/schema/jobs";
+import { failedJobEvent, job, jobOutbox, type Job } from "@/db/schema/jobs";
+import { resolveFailedJobEvent } from "./job.dead-letter";
 import { recordJobEvent } from "./job.events";
-import type { JobQueueMessage } from "./job.schema";
+import type { JobQueueMessage } from "./job.types";
 
 export type CreateJobInput = {
   type: string;
@@ -118,5 +119,51 @@ export function createJobService(db: Database, queue: Queue<JobQueueMessage>) {
     return false;
   }
 
-  return { cancel, create, flushOutbox };
+  async function retryFailed(input: { failedJobEventId: string; resolvedBy: string }) {
+    const [event] = await db
+      .select({ id: failedJobEvent.id, jobId: failedJobEvent.jobId })
+      .from(failedJobEvent)
+      .where(eq(failedJobEvent.id, input.failedJobEventId))
+      .limit(1);
+    if (!event) return false;
+
+    const now = new Date();
+    const updates = await db.batch([
+      db
+        .update(job)
+        .set({
+          status: "pending",
+          error: null,
+          attemptCount: 0,
+          runAfter: now,
+          lockedAt: null,
+          startedAt: null,
+          completedAt: null,
+          updatedAt: now,
+        })
+        .where(and(eq(job.id, event.jobId), eq(job.status, "failed"))),
+      db
+        .update(jobOutbox)
+        .set({ status: "pending", lastError: null, publishedAt: null, updatedAt: now })
+        .where(eq(jobOutbox.jobId, event.jobId)),
+    ]);
+    if (updates[0].meta.changes !== 1) return false;
+
+    const resolved = await resolveFailedJobEvent(db, {
+      id: event.id,
+      resolvedBy: input.resolvedBy,
+      resolution: "retried",
+    });
+    if (!resolved) return false;
+    await recordJobEvent(db, { jobId: event.jobId, type: "queued", detail: "retried from DLQ" });
+    await publishOutboxRecordForJob(event.jobId);
+    return true;
+  }
+
+  async function publishOutboxRecordForJob(jobId: string) {
+    const [outbox] = await db.select().from(jobOutbox).where(eq(jobOutbox.jobId, jobId)).limit(1);
+    if (outbox) await publishOutboxRecord(outbox.id);
+  }
+
+  return { cancel, create, flushOutbox, retryFailed };
 }

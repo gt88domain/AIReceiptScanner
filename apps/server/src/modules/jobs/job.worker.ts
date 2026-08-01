@@ -2,7 +2,7 @@ import { and, eq, lt, or, sql } from "drizzle-orm";
 import type { Database } from "@/db";
 import { job } from "@/db/schema/jobs";
 import { recordJobEvent } from "./job.events";
-import type { JobHandlers, JobQueueMessage } from "./job.schema";
+import type { JobHandlers, JobQueueMessage } from "./job.types";
 import { getRetryDelaySeconds } from "./job.retry";
 
 const JOB_LEASE_MS = 15 * 60 * 1000;
@@ -45,14 +45,12 @@ function isJobQueueMessage(value: unknown): value is JobQueueMessage {
 
 async function processJobMessage(db: Database, message: JobQueueMessage, handlers: JobHandlers) {
   const [existing] = await db.select().from(job).where(eq(job.id, message.jobId)).limit(1);
-  if (
-    !existing ||
-    existing.status === "succeeded" ||
-    existing.status === "failed" ||
-    existing.status === "cancelled"
-  ) {
+  if (!existing || existing.status === "succeeded" || existing.status === "cancelled") {
     return null;
   }
+
+  // A terminal failure remains unacknowledged so Cloudflare moves its message to the DLQ.
+  if (existing.status === "failed") return getRetryDelaySeconds(existing.attemptCount || 1);
 
   const now = new Date();
   if (existing.runAfter > now) {
@@ -98,7 +96,7 @@ async function processJobMessage(db: Database, message: JobQueueMessage, handler
       `No handler for job type: ${existing.type}`,
       true,
     );
-    return null;
+    return getRetryDelaySeconds(attempt);
   }
 
   try {
@@ -153,5 +151,5 @@ async function failJob(
     })
     .where(eq(job.id, id));
   await recordJobEvent(db, { jobId: id, type: "failed", detail: error });
-  return terminal ? null : getRetryDelaySeconds(attempt);
+  return getRetryDelaySeconds(attempt);
 }

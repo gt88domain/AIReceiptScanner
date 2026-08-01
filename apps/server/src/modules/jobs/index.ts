@@ -1,6 +1,4 @@
-import type { JobHandlers } from "./job.schema";
-
-/** Register product job handlers here. Keep each handler in its owning module. */
-export const jobHandlers: JobHandlers = {};
-
 export { createJobService } from "./job.service";
+export { resolveFailedJobEvent } from "./job.dead-letter";
+export { jobRegistry, registerJobHandler } from "./job.registry";
+export type { JobHandler, JobHandlerInput, JobQueueMessage, JobType } from "./job.types";

@@ -54,7 +54,8 @@ import { apiCorsMiddleware, authCorsMiddleware } from "./middlewares/cors";
 import { errorHandler } from "./middlewares/error";
 import { i18nMiddleware } from "./middlewares/i18n";
 import { alertPendingWebhookEvents } from "./payments/application/webhook-observability";
-import { jobHandlers } from "./modules/jobs";
+import { jobRegistry } from "./modules/jobs";
+import { consumeDeadLetterMessages } from "./modules/jobs/job.dead-letter";
 import { createJobService } from "./modules/jobs/job.service";
 import { consumeJobMessages } from "./modules/jobs/job.worker";
 
@@ -369,6 +370,11 @@ export default {
     }
   },
   async queue(batch, env) {
-    await consumeJobMessages(createDb(env.DB), batch, jobHandlers);
+    const db = createDb(env.DB);
+    if (batch.queue === "tanstack-template-jobs-dlq") {
+      await consumeDeadLetterMessages(db, batch);
+      return;
+    }
+    await consumeJobMessages(db, batch, jobRegistry.handlers);
   },
 } satisfies ExportedHandler<Cloudflare.Env>;

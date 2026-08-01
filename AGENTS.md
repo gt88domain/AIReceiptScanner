@@ -141,9 +141,9 @@ The template's core trust and money paths are mandatory test coverage. Keep
 focused automated checks for authentication, administrator authorization,
 billing and entitlement resolution, verified webhook idempotency, credits,
 and migration application. When changing one of those paths, add or update the
-smallest focused test that proves the behavior. `pnpm test:template` and
-`pnpm test:integration` are the default template gate and must both pass before
-review or release.
+smallest focused test that proves the behavior. `pnpm test` is the default
+template gate; it runs both `pnpm test:template` and `pnpm test:integration`
+before review or release.
 
 UI behavior and marketing pages are optional: add tests when their interaction
 or regression risk justifies the maintenance cost. Use `*.test.ts(x)` or

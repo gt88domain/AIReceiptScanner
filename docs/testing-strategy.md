@@ -1,8 +1,11 @@
 # Template testing strategy
 
-The template has two required gates:
+The template has one required command, which runs two gates:
 
 ```bash
+pnpm test
+
+# Individual gates when diagnosing a failure
 pnpm test:template
 pnpm test:integration
 ```
