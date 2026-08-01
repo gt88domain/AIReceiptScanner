@@ -27,10 +27,11 @@ Import that registration file from `apps/server/src/modules/index.ts`; otherwise
 the Worker will not evaluate it at startup and the job will correctly fail into
 the DLQ as an unregistered type.
 
-The registry suggests `email.send`, `ai.generate`, `import.run`, and
-`asset.process`; products use their own namespaced types. Handlers must be
-idempotent because Cloudflare Queues delivers at least once. Store large inputs
-and outputs in R2 and place only references in `payload` or `result`.
+The registry suggests `email.send`, `ai.generate`, `asset.process`,
+`data.import`, and `data.export`; products use their own namespaced types.
+Handlers must be idempotent because Cloudflare Queues delivers at least once.
+Store large inputs and outputs in R2 and place only references in `payload` or
+`result`.
 
 Every call to `context.jobs.create` requires a caller-generated
 `idempotencyKey`. The database stores a canonical `payloadHash` and rejects a
@@ -45,3 +46,18 @@ event `refunded` with `resolveFailedJobEvent`.
 
 Use Cloudflare Workflows directly—not this module—for long-lived, multi-step,
 sleeping, or human-approval processes. Do not add a generic workflow wrapper.
+
+## Operations
+
+The D1 records are the operational source of truth. Monitor the Cloudflare
+Queue backlog/oldest-message age and query unresolved `failed_job_event` rows.
+Assign an on-call owner and alert when either grows beyond the product's stated
+latency objective. The template does not invent an alert provider or a generic
+refund action.
+
+When an event reaches the DLQ, inspect the durable job/error, correct the
+underlying issue, then use the admin retry action. Ignore only with a recorded
+reason. Refund is domain-owned: complete the verified credit/payment refund
+first, then resolve the failed-job event as `refunded`. A cancellation prevents
+later job-state completion, but cannot undo an external provider effect that
+already finished; product handlers must make those effects idempotent.
