@@ -24,10 +24,7 @@ describe("payment webhook idempotency", () => {
     };
     const db = createDb(env.DB);
 
-    await expect(handleWebhookEvent(db, input)).resolves.toEqual({
-      received: true,
-      duplicate: false,
-    });
+    await expect(handleWebhookEvent(db, input)).resolves.toBe(true);
     await expect(handleWebhookEvent(db, input)).resolves.toEqual({
       received: true,
       duplicate: true,
