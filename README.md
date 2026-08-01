@@ -118,6 +118,7 @@ pnpm dev
 - `docs/native-email-verification-with-ngrok.md` — Native email verification setup with ngrok
 - `docs/template-adoption.md` — Buyer-owned identifiers and deployment checklist
 - `docs/testing-strategy.md` — Required core-path test coverage and CI gates
+- `docs/migration/00-audit.md` — Required migration Playbook entry point
 
 ## 🛠️ Available Scripts
 

@@ -112,6 +112,29 @@ ad hoc string manipulation when practical.
 - i18n messages live under `packages/i18n/src/messages`; implementation notes
   are in `docs/i18n-implementation.md`.
 
+## Migration Playbook
+
+For any migration from an existing app, site, database, or provider, follow the
+documents in `docs/migration/` in this exact order:
+
+1. `00-audit.md`
+2. `01-data-owner.md`
+3. `02-domain-model.md`
+4. `03-schema-plan.md`
+5. `04-security-check.md`
+6. `05-cutover.md`
+
+The required engineering sequence is **Audit → Architecture → Schema →
+Migration → Feature**. Do not copy old code, repair pages, or add features
+until the audit, data-owner decision, domain model, schema plan, and security
+check for the migration slice exist and are reviewable. Treat legacy code as
+evidence, not the target architecture.
+
+Structural migrations, data migrations, seeds, backfills, and repairs remain
+separate as defined in `apps/server/src/db/README.md`. Each migration slice must
+have a named owner, source-of-truth decision, validation method, and rollback or
+forward-fix plan before cutover.
+
 ## Testing Guidelines
 
 The template's core trust and money paths are mandatory test coverage. Keep
