@@ -118,6 +118,9 @@ pnpm dev
 - `docs/template-adoption.md` — Buyer-owned identifiers and deployment checklist
 - `docs/testing-strategy.md` — Required core-path test coverage and CI gates
 - `docs/migration/00-audit.md` — Required migration Playbook entry point
+- `docs/adr/README.md` — Durable architecture decisions and their rationale
+- `docs/production-migrations.md` — Structural migration production runbook
+- `docs/rate-limiting.md` — Edge, auth, and product-quota rate-limit policy
 
 ## 🛠️ Available Scripts
 

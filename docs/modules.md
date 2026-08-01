@@ -36,6 +36,20 @@ selling them. Keep it explicit when configured packages remain in the file for l
 Provider dashboards should also disable or remove webhook endpoints for a disabled module. The
 204 fallback deliberately prevents a stale provider configuration from retrying indefinitely.
 
+## Feature verification rule
+
+Every optional module must prove all three boundaries in its focused tests and review:
+
+| Boundary | Required proof |
+| --- | --- |
+| UI | Navigation/actions use the shared resolved feature contract and do not advertise a disabled capability. |
+| Server | oRPC, public HTTP, webhook, and scheduled entry points reject or no-op before provider work or a business write. |
+| Data | Disabling a module neither deletes tables nor skips its ordered migrations; schema removal is a separate, explicit data-retirement decision. |
+
+Feature values are source-controlled product configuration, not a remote experimentation
+system. Do not introduce per-request feature flags, client-only authorization, or a second
+configuration source without an explicit product decision.
+
 ## Schema and migrations
 
 Migrations remain one ordered, immutable application history under

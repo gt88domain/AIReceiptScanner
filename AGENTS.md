@@ -135,6 +135,10 @@ separate as defined in `apps/server/src/db/README.md`. Each migration slice must
 have a named owner, source-of-truth decision, validation method, and rollback or
 forward-fix plan before cutover.
 
+Use `docs/production-migrations.md` for structural D1 rollout. Applied
+migrations are immutable history: recover with a forward fix, compatible traffic
+rollback, or approved repair, never by deleting migration files.
+
 ## Testing Guidelines
 
 The template's core trust and money paths are mandatory test coverage. Keep
@@ -228,6 +232,13 @@ oRPC is the bounded HTTP API on the Server Worker. Web server actions may call
 it but may not own D1 or write business data. Use Jobs/Queues for retryable
 work, Workflows for multi-step or long-lived work, and a dedicated Durable
 Object design for coordinated WebSockets. See `docs/orpc-worker-boundaries.md`.
+
+## Rate Limiting
+
+Follow `docs/rate-limiting.md`. Do not treat a per-isolate map or Workers KV as
+a strict global limiter, and do not add a global Durable Object counter. Choose
+an edge, provider, credit, or subject-sharded application policy only after the
+operation and subject are specified.
 
 ## Skills
 

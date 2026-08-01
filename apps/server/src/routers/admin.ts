@@ -171,16 +171,34 @@ export const adminRouter = {
   replayWebhook: adminProcedure
     .input(z.object({ eventId: z.string().uuid() }))
     .output(z.object({ queued: z.boolean() }))
-    .handler(async ({ context, input }) => ({
-      queued: await replayWebhookEvent(context.db, input.eventId),
-    })),
+    .handler(async ({ context, input }) => {
+      const queued = await replayWebhookEvent(context.db, input.eventId);
+      if (queued) {
+        await recordAdminAuditLog(context.db, {
+          actor: context.session!.user,
+          action: "billing.webhook.replayed",
+          entity: { type: "billing_event", id: input.eventId },
+          after: { resolution: "replayed" },
+        });
+      }
+      return { queued };
+    }),
 
   replayBillingOutboxJob: adminProcedure
     .input(z.object({ jobId: z.string().uuid() }))
     .output(z.object({ queued: z.boolean() }))
-    .handler(async ({ context, input }) => ({
-      queued: await replayBillingOutboxJob(context.db, input.jobId),
-    })),
+    .handler(async ({ context, input }) => {
+      const queued = await replayBillingOutboxJob(context.db, input.jobId);
+      if (queued) {
+        await recordAdminAuditLog(context.db, {
+          actor: context.session!.user,
+          action: "billing.outbox.replayed",
+          entity: { type: "billing_outbox", id: input.jobId },
+          after: { resolution: "replayed" },
+        });
+      }
+      return { queued };
+    }),
   listAuditLog: adminProcedure
     .input(listAuditLogInputSchema)
     .output(z.object({ data: z.array(auditLogSchema), pageCount: z.number(), total: z.number() }))

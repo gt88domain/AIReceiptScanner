@@ -2,6 +2,7 @@ import { env, exports } from "cloudflare:workers";
 import { createApiClient } from "@repo/api-client";
 import type { AppRouterClient } from "@/routers";
 import { createDb } from "@/db";
+import { failedJobEvent, job } from "@/db/schema/jobs";
 import { recordAdminAuditLog } from "@/modules/audit";
 import { describe, expect, it } from "vitest";
 
@@ -58,24 +59,74 @@ describe("administrator RPC authorization", () => {
       before: { status: "draft", apiToken: "do-not-store" },
       after: { status: "published" },
     });
+    const db = createDb(env.DB);
+    const jobId = crypto.randomUUID();
+    const failedJobEventId = crypto.randomUUID();
+    const now = new Date();
+    await db.batch([
+      db.insert(job).values({
+        id: jobId,
+        idempotencyKey: `admin-audit:${jobId}`,
+        type: "ai.generate",
+        ownerId: null,
+        status: "failed",
+        payload: { prompt: "test" },
+        payloadHash: "admin-audit-test",
+        result: null,
+        error: "provider timeout",
+        attemptCount: 3,
+        maxAttempts: 3,
+        runAfter: now,
+        lockedAt: null,
+        startedAt: now,
+        completedAt: now,
+        createdAt: now,
+        updatedAt: now,
+      }),
+      db.insert(failedJobEvent).values({
+        id: failedJobEventId,
+        queueMessageId: crypto.randomUUID(),
+        jobId,
+        jobType: "ai.generate",
+        payload: { prompt: "test" },
+        error: "provider timeout",
+        attempts: 3,
+        failedAt: now,
+        resolvedAt: null,
+        resolvedBy: null,
+        resolution: null,
+      }),
+    ]);
 
     await expect(client.admin.getAccess()).resolves.toEqual({ isAdmin: true });
     await expect(client.admin.overview()).resolves.toMatchObject({
       stats: { users: expect.any(Number) },
     });
-    await expect(client.admin.listAuditLog({ page: 1, perPage: 10 })).resolves.toMatchObject({
-      total: 1,
-      data: [
-        {
+    await expect(client.admin.retryFailedJob({ id: failedJobEventId })).resolves.toEqual({
+      retried: true,
+    });
+    const auditLog = await client.admin.listAuditLog({ page: 1, perPage: 10 });
+    expect(auditLog.total).toBe(2);
+    expect(auditLog.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
           actorEmail: "admin@example.test",
           action: "catalog.domain.updated",
           entityType: "domain",
           entityId: "domain-123",
           before: { status: "draft", apiToken: "[redacted]" },
           after: { status: "published" },
-        },
-      ],
-    });
+        }),
+        expect.objectContaining({
+          actorEmail: "admin@example.test",
+          action: "jobs.failed.retried",
+          entityType: "failed_job_event",
+          entityId: failedJobEventId,
+          before: null,
+          after: { resolution: "retried" },
+        }),
+      ]),
+    );
   });
 
   it("does not promote a paid user to administrator", async () => {
