@@ -3,11 +3,11 @@ import type { Database } from "@/db";
 import { failedJobEvent, job, jobOutbox, type Job } from "@/db/schema/jobs";
 import { resolveFailedJobEvent } from "./job.dead-letter";
 import { recordJobEvent } from "./job.events";
-import type { JobQueueMessage } from "./job.types";
+import type { JobQueueMessage, JobType } from "./job.types";
 
 export type CreateJobInput = {
   idempotencyKey: string;
-  type: string;
+  type: JobType;
   ownerId?: string;
   payload: Record<string, unknown>;
   maxAttempts?: number;
@@ -42,12 +42,16 @@ async function hashJobPayload(payload: Record<string, unknown>) {
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-export function createJobService(db: Database, queue: Queue<JobQueueMessage>) {
+export function createJobService(db: Database, queue: Pick<Queue<JobQueueMessage>, "send">) {
   async function create(input: CreateJobInput) {
     const now = new Date();
     const idempotencyKey = input.idempotencyKey.trim();
     if (!idempotencyKey) throw new Error("Job idempotencyKey is required.");
     const payloadHash = await hashJobPayload(input.payload);
+    const maxAttempts = input.maxAttempts ?? 3;
+    if (!Number.isInteger(maxAttempts) || maxAttempts < 1) {
+      throw new Error("Job maxAttempts must be a positive integer.");
+    }
     const record: Job = {
       id: crypto.randomUUID(),
       idempotencyKey,
@@ -59,7 +63,7 @@ export function createJobService(db: Database, queue: Queue<JobQueueMessage>) {
       result: null,
       error: null,
       attemptCount: 0,
-      maxAttempts: input.maxAttempts ?? 3,
+      maxAttempts,
       runAfter: input.runAfter ?? now,
       lockedAt: null,
       startedAt: null,

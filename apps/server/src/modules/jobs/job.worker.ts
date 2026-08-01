@@ -1,4 +1,4 @@
-import { and, eq, lt, or, sql } from "drizzle-orm";
+import { and, eq, isNull, lt, or, sql } from "drizzle-orm";
 import type { Database } from "@/db";
 import { job } from "@/db/schema/jobs";
 import { recordJobEvent } from "./job.events";
@@ -6,7 +6,7 @@ import type { JobHandlers, JobQueueMessage } from "./job.types";
 import { getRetryDelaySeconds } from "./job.retry";
 
 const JOB_LEASE_MS = 15 * 60 * 1000;
-const MAX_QUEUE_DELAY_SECONDS = 12 * 60 * 60;
+const MAX_QUEUE_DELAY_SECONDS = 24 * 60 * 60;
 
 export async function consumeJobMessages(
   db: Database,
@@ -77,7 +77,10 @@ async function processJobMessage(db: Database, message: JobQueueMessage, handler
         eq(job.id, existing.id),
         or(
           eq(job.status, "pending"),
-          and(eq(job.status, "running"), lt(job.lockedAt, leaseExpiredAt)),
+          and(
+            eq(job.status, "running"),
+            or(isNull(job.lockedAt), lt(job.lockedAt, leaseExpiredAt)),
+          ),
         ),
       ),
     )
@@ -106,7 +109,7 @@ async function processJobMessage(db: Database, message: JobQueueMessage, handler
       payload: existing.payload,
     });
     const completedAt = new Date();
-    await db
+    const completion = await db
       .update(job)
       .set({
         status: "succeeded",
@@ -116,7 +119,10 @@ async function processJobMessage(db: Database, message: JobQueueMessage, handler
         completedAt,
         updatedAt: completedAt,
       })
-      .where(eq(job.id, existing.id));
+      .where(and(eq(job.id, existing.id), eq(job.status, "running")))
+      .run();
+    // Cancellation wins if it happened while an external handler was finishing.
+    if (completion.meta.changes !== 1) return null;
     await recordJobEvent(db, { jobId: existing.id, type: "succeeded" });
     return null;
   } catch (error) {
@@ -140,7 +146,7 @@ async function failJob(
 ) {
   const now = new Date();
   const terminal = forceTerminal || attempt >= maxAttempts;
-  await db
+  const update = await db
     .update(job)
     .set({
       status: terminal ? "failed" : "pending",
@@ -149,7 +155,9 @@ async function failJob(
       completedAt: terminal ? now : null,
       updatedAt: now,
     })
-    .where(eq(job.id, id));
+    .where(and(eq(job.id, id), eq(job.status, "running")))
+    .run();
+  if (update.meta.changes !== 1) return null;
   await recordJobEvent(db, { jobId: id, type: "failed", detail: error });
   return getRetryDelaySeconds(attempt);
 }

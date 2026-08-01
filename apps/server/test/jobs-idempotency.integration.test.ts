@@ -34,4 +34,20 @@ describe("job idempotency", () => {
       jobs.create({ ...input, payload: { prompt: "different chapter" } }),
     ).rejects.toThrow("different input");
   });
+
+  it("rejects an invalid retry budget before persisting a job", async () => {
+    const db = createDb(env.DB);
+    const jobs = createJobService(db, {
+      send: async () => ({ metadata: { metrics: { backlogCount: 0, backlogBytes: 0 } } }),
+    });
+
+    await expect(
+      jobs.create({
+        idempotencyKey: crypto.randomUUID(),
+        type: "data.export",
+        payload: { format: "csv" },
+        maxAttempts: 0,
+      }),
+    ).rejects.toThrow("positive integer");
+  });
 });

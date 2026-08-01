@@ -1,8 +1,9 @@
 export const DEFAULT_JOB_TYPES = [
   "email.send",
   "ai.generate",
-  "import.run",
   "asset.process",
+  "data.import",
+  "data.export",
 ] as const;
 
 /** Built-in suggestions plus product-owned names such as `novel.chapter.generate`. */
