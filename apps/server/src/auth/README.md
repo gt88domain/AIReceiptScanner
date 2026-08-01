@@ -6,14 +6,15 @@ billing records directly in a router:
 ```ts
 await requireUser(context);
 await requireAdmin(context);
-await requireCapability(context, capabilities.adminRead);
+await requireCapability(context, "design.generate");
 await requireEntitlement(context, "yearly");
 ```
 
 - `requireUser` accepts only an active Better Auth session.
 - `requireAdmin` checks the server-only `ADMIN_EMAILS` allowlist.
-- `requireCapability` resolves server-defined capabilities; it does not create
-  database roles or trust client claims.
+- `requireCapability` resolves a configured product capability from verified
+  billing state. Unknown capabilities deny; it does not create database roles
+  or trust client claims.
 - `requireEntitlement` resolves the current tier from webhook-backed billing
   records. It never grants admin access.
 

@@ -4,8 +4,6 @@ import { eq } from "drizzle-orm";
 import { user } from "@/db/schema/auth";
 import { isAdminEmail } from "@/lib/admin";
 import type { Context } from "@/lib/context";
-import type { Capability } from "../capabilities";
-import { hasCapability } from "../permissions";
 
 export type RequestUser = NonNullable<Context["session"]>["user"];
 
@@ -36,10 +34,10 @@ export async function requireAdmin(context: Context): Promise<RequestUser> {
   return requestUser;
 }
 
-/** Requires one server-defined capability. */
-export async function requireCapability(context: Context, capability: Capability) {
+/** Requires a configured product capability resolved from verified billing state. */
+export async function requireCapability(context: Context, capability: string) {
   const requestUser = await requireUser(context);
-  if (!hasCapability(context, capability)) {
+  if (!(await context.capabilities.can({ userId: requestUser.id }, capability))) {
     throw new ORPCError("FORBIDDEN");
   }
   return requestUser;
