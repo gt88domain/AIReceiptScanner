@@ -26,8 +26,6 @@ jobs:
       - run: pnpm check-types
       - run: pnpm --filter native run doctor
       - run: pnpm test:unit
-      - run: pnpm test:template
-      - run: pnpm test:integration
+      - run: pnpm test
       - run: pnpm db:check
-      - run: pnpm --filter server build
-      - run: pnpm --filter web build
+      - run: pnpm build

@@ -127,6 +127,13 @@
       "when": 1784775911518,
       "tag": "0017_credit_ledger_invariants",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1785562684976,
+      "tag": "0018_orange_nomad",
+      "breakpoints": true
     }
   ]
 }

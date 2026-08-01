@@ -1,4 +1,5 @@
 import type { RouterClient } from "@orpc/server";
+import { moduleRouters } from "../modules";
 import { publicProcedure } from "../lib/orpc";
 import { adminRouter } from "./admin";
 import { creditsRouter } from "./common/credits";
@@ -18,15 +19,35 @@ import { paymentsRouter } from "./web/payments";
  *
  * Note: File serving (GET /api/storage/*) uses HTTP for caching/CDN compatibility.
  */
-export const appRouter = {
+const healthCheck = publicProcedure.handler(() => "OK");
+const getCurrentUser = publicProcedure.handler(({ context }) => getCurrentUserFromContext(context));
+
+type AppRouterDefinition = {
+  healthCheck: typeof healthCheck;
+  getCurrentUser: typeof getCurrentUser;
+  users: typeof usersRouter;
+  admin: typeof adminRouter;
+  storage: typeof storageRouter;
+  payments: typeof commonPaymentsRouter;
+  credits: typeof creditsRouter;
+  web: {
+    payments: typeof paymentsRouter;
+    credits: typeof webCreditsRouter;
+  };
+  native: Record<never, never>;
+} & typeof moduleRouters;
+
+export const appRouter: AppRouterDefinition = {
   // ============ Common APIs (web + native) ============
-  healthCheck: publicProcedure.handler(() => "OK"),
-  getCurrentUser: publicProcedure.handler(({ context }) => getCurrentUserFromContext(context)),
+  healthCheck,
+  getCurrentUser,
   users: usersRouter,
   admin: adminRouter,
   storage: storageRouter,
   payments: commonPaymentsRouter,
   credits: creditsRouter,
+  // ============ Product domain modules ============
+  ...moduleRouters,
   // ============ Web-specific APIs ============
   web: {
     payments: paymentsRouter,

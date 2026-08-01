@@ -48,6 +48,11 @@ export type MembershipTier = "free" | "monthly" | "yearly" | "lifetime";
 /** Stable membership presentation variants used by payment UIs. */
 export type MembershipPresentationKind = "monthly" | "yearly" | "lifetime";
 
+/** A product feature gated by a minimum verified membership tier. */
+export type FeatureCapabilityConfig = {
+  minimumTier: MembershipTier;
+};
+
 /** Payment provider price environment used by web/server billing. */
 export type ProviderPriceEnvironment = "test" | "prod";
 
@@ -316,6 +321,8 @@ export type AppCommonConfig = {
     /** Maximum file sizes in bytes mapped by upload purpose. */
     maxFileSizes: Record<StorageUploadPurpose, number>;
   };
+  /** Product feature entitlements keyed by a stable capability name. */
+  featureCapabilities: Record<string, FeatureCapabilityConfig>;
   /** Product-level membership catalog shared by all platforms. */
   membership: MembershipCatalogConfig;
 };

@@ -88,19 +88,68 @@ ad hoc string manipulation when practical.
 - Shared UI components live in `apps/web/src/components/ui`; prefer existing
   components before adding new ones.
 - Server API routes are built with Hono and oRPC under `apps/server/src`.
+- New product-domain server code belongs in `apps/server/src/modules/<domain>`.
+  `routers/` mounts public routers and `lib/` contains shared technical
+  infrastructure; neither is a home for product business logic. Follow
+  `apps/server/src/modules/README.md` for layer and import-direction rules.
+- New product-domain web code belongs in `apps/web/src/modules/<domain>`.
+  Keep TanStack route files thin and do not add new domains to the legacy
+  `apps/web/src/custom` directory.
+- Gate product features through `context.capabilities.can(user, capability)`;
+  do not compare plan names in application code. Define the minimum tier in
+  `packages/app-config/src/app-config.ts`.
+- Put retryable background work in `apps/server/src/modules/jobs`. Job handlers
+  must be idempotent because queue delivery is at least once. Use Cloudflare
+  Workflows directly for long-lived, multi-step, or human-approval work.
+- Persist an asset record for each product file and enforce its visibility via
+  `apps/server/src/modules/assets`; do not expose a raw storage key as a public
+  authorization decision.
 - Database schema changes belong in `apps/server/src/db/schema` and use
-  Drizzle migrations.
+  Drizzle migrations. Keep structural migrations, data migrations, seeds,
+  backfills, and repairs separate as defined in `apps/server/src/db/README.md`.
 - Cross-platform code should live in workspace packages only when both web and
   native or server genuinely need it.
 - i18n messages live under `packages/i18n/src/messages`; implementation notes
   are in `docs/i18n-implementation.md`.
 
+## Migration Playbook
+
+For any migration from an existing app, site, database, or provider, follow the
+documents in `docs/migration/` in this exact order:
+
+1. `00-audit.md`
+2. `01-data-owner.md`
+3. `02-domain-model.md`
+4. `03-schema-plan.md`
+5. `04-security-check.md`
+6. `05-cutover.md`
+
+The required engineering sequence is **Audit → Architecture → Schema →
+Migration → Feature**. Do not copy old code, repair pages, or add features
+until the audit, data-owner decision, domain model, schema plan, and security
+check for the migration slice exist and are reviewable. Treat legacy code as
+evidence, not the target architecture.
+
+Structural migrations, data migrations, seeds, backfills, and repairs remain
+separate as defined in `apps/server/src/db/README.md`. Each migration slice must
+have a named owner, source-of-truth decision, validation method, and rollback or
+forward-fix plan before cutover.
+
 ## Testing Guidelines
 
-Do not add tests unless the user explicitly asks for them. If tests are added,
-use `*.test.ts(x)` or `*.spec.ts(x)` and keep them focused on meaningful
-behavior, edge cases, and error conditions. If a package needs a new test
-runner script, document it in that package's `package.json`.
+The template's core trust and money paths are mandatory test coverage. Keep
+focused automated checks for authentication, administrator authorization,
+billing and entitlement resolution, verified webhook idempotency, credits,
+and migration application. When changing one of those paths, add or update the
+smallest focused test that proves the behavior. `pnpm test` is the default
+template gate; it runs both `pnpm test:template` and `pnpm test:integration`
+before review or release.
+
+UI behavior and marketing pages are optional: add tests when their interaction
+or regression risk justifies the maintenance cost. Use `*.test.ts(x)` or
+`*.spec.ts(x)` and keep tests focused on meaningful behavior, edge cases, and
+error conditions. If a package needs a new test runner script, document it in
+that package's `package.json`.
 
 ## Git And Changes
 
@@ -152,9 +201,22 @@ separate concepts.
   admin procedures. A `protectedProcedure` alone is not an admin check.
 - Do not let a payment event grant administrator access, and do not let an
   administrator flag synthesize a paid entitlement.
+- Use `requireUser`, `requireAdmin`, `requireCapability`, and
+  `requireEntitlement` from `apps/server/src/auth/guards` for new server
+  authorization checks. Do not create project-specific session/header guards
+  or database-backed roles without an explicit product decision.
 - Authorization or webhook changes require focused tests for ordinary-user
   denial, admin allowlist access, paid-user non-admin denial, and webhook
   idempotency.
+
+## Production Deployment Guard
+
+`pnpm -F server deploy` runs the production safety preflight first. Before a
+production deploy, create `apps/server/.production-safety.env` from
+`apps/server/.production-safety.example`
+and set the exact Worker, D1, R2, and public URL identities that deployment may
+target. The guard also validates the configured production secrets and live
+payment-provider mode from `apps/server/.env.production`.
 
 ## Skills
 

@@ -61,6 +61,10 @@ import { i18nMiddleware } from "./middlewares/i18n";
 import { processBillingOutbox } from "./payments/application/billing-outbox";
 import { processPendingWebhookEvents } from "./payments/application/webhook-dispatch";
 import { alertPendingWebhookEvents } from "./payments/application/webhook-observability";
+import { jobRegistry } from "./modules/jobs";
+import { consumeDeadLetterMessages } from "./modules/jobs/job.dead-letter";
+import { createJobService } from "./modules/jobs/job.service";
+import { consumeJobMessages } from "./modules/jobs/job.worker";
 
 const app = new Hono<{ Bindings: Cloudflare.Env }>();
 // ============================================================================
@@ -394,6 +398,8 @@ export default {
       await alertPendingWebhookEvents(db, env.ADMIN_EMAILS);
     }
 
+    await createJobService(db, env.JOB_QUEUE).flushOutbox();
+
     const scheduledAt = new Date(controller.scheduledTime);
     if (
       productFeatures.credits &&
@@ -403,5 +409,13 @@ export default {
       // Daily maintenance only expires eligible free credits; paid packages never expire.
       await runCreditMaintenance(db);
     }
+  },
+  async queue(batch, env) {
+    const db = createDb(env.DB);
+    if (batch.queue === "tanstack-template-jobs-dlq") {
+      await consumeDeadLetterMessages(db, batch);
+      return;
+    }
+    await consumeJobMessages(db, batch, jobRegistry.handlers);
   },
 } satisfies ExportedHandler<Cloudflare.Env>;

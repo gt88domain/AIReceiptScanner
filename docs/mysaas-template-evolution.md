@@ -66,7 +66,8 @@ Examples:
 
 ### Level 2: Optional Module
 
-Lives under custom/module directories.
+Lives under `apps/server/src/modules/<domain>/` and, when needed,
+`apps/web/src/modules/<domain>/`.
 
 Use this when:
 
@@ -89,7 +90,7 @@ fixes a cross-cutting problem.
 
 Examples:
 
-- custom router registration point
+- module router registry
 - nav extension registry
 - `siteModules` config shape
 - template customization ledger
@@ -136,17 +137,17 @@ choose the least invasive location.
 
 ### 3. Server Router Extension Point
 
-Instead of editing the main server router for every module, add one stable
-custom router mount.
+Instead of editing the main server router for every module, register product
+routers in the stable module router registry.
 
 Goal shape:
 
 ```ts
-custom: customRouter
+...moduleRouters
 ```
 
-Then new modules register inside the custom router. Future upstream merges only
-touch one predictable line in the main router.
+Then new modules register inside `apps/server/src/modules/index.ts`. Future
+upstream merges only touch one predictable spread in the main router.
 
 ### 4. Navigation Extension Point
 
@@ -156,7 +157,7 @@ registry.
 Goal:
 
 - EasyStarter keeps its default nav
-- custom modules contribute nav items when enabled
+- domain modules contribute nav items when enabled
 - disabled modules do not appear
 
 ### 5. Web Route Convention
@@ -179,9 +180,9 @@ Small core touch points are acceptable if they are stable and documented.
 
 | Touch point | Risk | How to control it |
 | --- | --- | --- |
-| `apps/server/src/routers/index.ts` | medium | add one custom router mount, avoid per-module edits |
-| web route files | medium | add custom routes in isolated files/folders |
-| dashboard nav config | medium | add custom nav registry once |
+| `apps/server/src/modules/index.ts` | low | register one module router, avoid per-module root-router edits |
+| web route files | medium | add thin routes backed by isolated domain modules |
+| dashboard nav config | medium | add a module nav registry once |
 | app config/types | medium | add `siteModules` once, keep shape small |
 | auth/billing/credits internals | high | avoid unless fixing a real bug |
 | UI primitives | medium-high | avoid broad redesign; compose instead |
@@ -253,7 +254,7 @@ Rules:
 - Core EasyStarter edits are allowed, but each must be small, named, and tracked
   in a customization ledger.
 - Avoid auth, billing, credits internals.
-- Prefer one stable custom router mount and one nav extension point over repeated
+- Prefer one stable module router registry and one nav extension point over repeated
   edits.
 - Every promoted shared module needs one small runnable check.
 
