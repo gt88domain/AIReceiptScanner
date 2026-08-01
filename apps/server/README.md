@@ -30,7 +30,7 @@ cp .production-safety.example .production-safety.env
 # 4. Upload secrets to the configured Worker
 pnpm run secrets:bulk:production
 
-# 5. Validate production resources and deploy
+# 5. Validate both Workers, then deploy
 pnpm run deploy
 ```
 
@@ -112,17 +112,16 @@ migrations, imports, seeds, backfills, and repairs have separate lifecycles.
 
 ## 🚧 Production deployment guard
 
-`pnpm run deploy` stops before upload unless the configured Worker, D1 database,
-R2 bucket, and public URLs match the locally declared production identities.
-It also checks `ADMIN_EMAILS`, `BETTER_AUTH_SECRET`, and secrets for the payment
-providers enabled by app config. Stripe production is identified by a
-`sk_live_` key; this template does not use a separate `STRIPE_MODE` variable.
+`pnpm run deploy` stops before upload unless the Server and Web Worker identities,
+service binding, D1 database, R2 bucket, queues, and public URLs match the local
+production allowlist. It also checks `ADMIN_EMAILS`, `BETTER_AUTH_SECRET`, the
+configured Resend sender, and secrets for providers enabled by app config.
 
 Before the first production deploy:
 
 ```bash
 cp .production-safety.example .production-safety.env
-# Fill the exact production Worker, D1, R2, and URL values.
+# Fill the exact production API/Web Worker, D1, R2, Queue, and URL values.
 pnpm run preflight:production
 ```
 
@@ -144,7 +143,7 @@ See `src/auth/README.md` for the boundary rules.
   retryable work. Before the first deploy, create the configured queue:
 
   ```bash
-  pnpm exec wrangler queues create tanstack-template-jobs
+  pnpm exec wrangler queues create <production-job-queue>
   ```
 
   Use Cloudflare Workflows directly for long-running, multi-step processes.
@@ -183,7 +182,7 @@ See `src/auth/README.md` for the boundary rules.
 | `pnpm run dev:init-d1`             | Initialize local D1 sqlite without starting server          |
 | `pnpm run deploy`                  | Run the production guard, then deploy the configured Worker |
 | `pnpm run preflight:production`    | Validate production resources and required secrets          |
-| `pnpm run deploy:dev`              | Deploy to default worker (`tanstack-template-server`)       |
+| `pnpm run deploy:dev`              | Deploy without the production guard (development only)      |
 | `pnpm run secrets:bulk:production` | Bulk upload production envs from `.env.production`          |
 | `pnpm run db:generate`             | Generate DB migration                                       |
 | `pnpm run db:migrate:local`        | Initialize local D1 if needed, then run migrations          |

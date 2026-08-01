@@ -1,11 +1,11 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "tanstack-template-web",
+  "name": "replace-web-worker",
   "compatibility_date": "2026-07-14",
   "compatibility_flags": ["nodejs_compat"],
   "routes": [
     {
-      "pattern": "demo.aiarticles.com",
+      "pattern": "replace-domain.example",
       "custom_domain": true,
     },
   ],
@@ -16,12 +16,12 @@
   "services": [
     {
       "binding": "API_SERVICE",
-      "service": "tanstack-template-server",
+      "service": "replace-api-worker",
     },
   ],
   "vars": {
-    "VITE_SERVER_URL": "https://api.demo.aiarticles.com",
-    "VITE_APP_URL": "https://demo.aiarticles.com",
+    "VITE_SERVER_URL": "https://api.replace-domain.example",
+    "VITE_APP_URL": "https://replace-domain.example",
   },
   "observability": {
     "logs": {

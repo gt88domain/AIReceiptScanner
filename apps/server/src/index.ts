@@ -412,7 +412,7 @@ export default {
   },
   async queue(batch, env) {
     const db = createDb(env.DB);
-    if (batch.queue === "tanstack-template-jobs-dlq") {
+    if (batch.queue === env.JOB_QUEUE_DLQ_NAME) {
       await consumeDeadLetterMessages(db, batch);
       return;
     }

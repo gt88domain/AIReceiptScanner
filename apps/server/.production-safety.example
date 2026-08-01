@@ -1,10 +1,11 @@
 # Exact production resources this checkout is allowed to deploy to.
 # Copy to .production-safety.env and replace every blank with a real value.
 # Never commit the copied file.
-WORKER_NAME=
-D1_DATABASE_ID=
-R2_BUCKET=
-QUEUE_NAME=
-QUEUE_DLQ_NAME=
-WEBSITE_URL=
-SERVER_URL=
+WORKER_NAME=<production-api-worker-name>
+D1_DATABASE_ID=<production-d1-database-id>
+R2_BUCKET=<production-r2-bucket-name>
+QUEUE_NAME=<production-job-queue-name>
+QUEUE_DLQ_NAME=<production-job-queue-dlq-name>
+WEB_WORKER_NAME=<production-web-worker-name>
+WEBSITE_URL=https://<production-domain>
+SERVER_URL=https://api.<production-domain>

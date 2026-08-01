@@ -1,26 +1,27 @@
 {
-  "name": "your-worker-name",
+  "name": "replace-api-worker",
   "main": "src/index.ts",
   "compatibility_date": "2026-07-14",
   "compatibility_flags": ["nodejs_compat"],
   "routes": [
     {
-      "pattern": "api.your-domain.example",
+      "pattern": "api.replace-domain.example",
       "custom_domain": true,
     },
   ],
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "your-d1-database-name",
+      "database_name": "replace-d1-database",
       "database_id": "00000000-0000-0000-0000-000000000000",
       "migrations_dir": "src/db/migrations",
     },
   ],
   "vars": {
     "NODE_ENV": "production",
-    "WEBSITE_URL": "https://your-domain.example",
-    "SERVER_URL": "https://api.your-domain.example",
+    "WEBSITE_URL": "https://replace-domain.example",
+    "SERVER_URL": "https://api.replace-domain.example",
+    "JOB_QUEUE_DLQ_NAME": "replace-job-queue-dlq",
     // Add OAuth client IDs only after enabling the matching provider in app-config.
     "GITHUB_CLIENT_ID": "",
     "GOOGLE_CLIENT_ID": "",
@@ -32,26 +33,26 @@
   "r2_buckets": [
     {
       "binding": "STORAGE",
-      "bucket_name": "your-r2-bucket-name",
+      "bucket_name": "replace-r2-bucket",
     },
   ],
   "queues": {
     "producers": [
       {
         "binding": "JOB_QUEUE",
-        "queue": "tanstack-template-jobs",
+        "queue": "replace-job-queue",
       },
     ],
     "consumers": [
       {
-        "queue": "tanstack-template-jobs",
+        "queue": "replace-job-queue",
         "max_batch_size": 10,
         "max_batch_timeout": 5,
         "max_retries": 3,
-        "dead_letter_queue": "tanstack-template-jobs-dlq",
+        "dead_letter_queue": "replace-job-queue-dlq",
       },
       {
-        "queue": "tanstack-template-jobs-dlq",
+        "queue": "replace-job-queue-dlq",
         "max_batch_size": 10,
         "max_batch_timeout": 5,
         "max_retries": 10,
