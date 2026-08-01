@@ -1,0 +1,10 @@
+# Exact production resources this checkout is allowed to deploy to.
+# Copy to .production-safety.env and replace every blank with a real value.
+# Never commit the copied file.
+WORKER_NAME=
+D1_DATABASE_ID=
+R2_BUCKET=
+QUEUE_NAME=
+QUEUE_DLQ_NAME=
+WEBSITE_URL=
+SERVER_URL=

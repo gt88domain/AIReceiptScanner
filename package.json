@@ -16,7 +16,7 @@
     "build": "turbo build",
     "check-types": "turbo check-types",
     "test": "pnpm test:template && pnpm test:integration",
-    "test:template": "pnpm --filter @repo/app-config test && pnpm --filter server test:config && pnpm --filter server test:production-safety && pnpm --filter server exec tsx ../../scripts/check-security-headers.ts",
+    "test:template": "pnpm --filter @repo/app-config test && pnpm --filter server test:config && pnpm --filter server test:production-config && pnpm --filter server exec tsx ../../scripts/check-security-headers.ts",
     "test:integration": "turbo test:integration",
     "dev:native": "turbo -F native dev",
     "dev:web": "turbo -F web dev",

@@ -32,6 +32,11 @@ The registry suggests `email.send`, `ai.generate`, `import.run`, and
 idempotent because Cloudflare Queues delivers at least once. Store large inputs
 and outputs in R2 and place only references in `payload` or `result`.
 
+Every call to `context.jobs.create` requires a caller-generated
+`idempotencyKey`. The database stores a canonical `payloadHash` and rejects a
+key reused for different input, so repeated browser submissions return the same
+job instead of creating duplicate AI work or charges.
+
 After three failed main-queue deliveries, Cloudflare moves the message to
 `tanstack-template-jobs-dlq`. Its consumer writes one `failed_job_event` row;
 admins can list, retry, or ignore unresolved events. A refund is intentionally

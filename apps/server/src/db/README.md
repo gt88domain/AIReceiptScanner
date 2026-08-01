@@ -21,3 +21,8 @@ Every committed data operation must identify its source, target tables, safe
 rerun behavior, and verification command. Production data operations need an
 explicit rollout and recovery plan; a successful TypeScript build is not data
 verification.
+
+The `0014-backfill-job-idempotency.sql` operation is required only when an
+existing production database already contains `job` rows before migration 0014.
+Run it after structural migrations and confirm its remaining-row query returns
+zero before deploying code that relies on historical job idempotency.

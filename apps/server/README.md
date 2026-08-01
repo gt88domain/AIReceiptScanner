@@ -25,7 +25,7 @@ cp .env.production.example .env.production
 #    (for this repo: GITHUB_CLIENT_ID / GOOGLE_CLIENT_ID are in wrangler.jsonc vars)
 
 # 3. Declare the exact production resources this checkout may deploy to
-cp .production-safety.env.example .production-safety.env
+cp .production-safety.example .production-safety.env
 
 # 4. Upload secrets to the configured Worker
 pnpm run secrets:bulk:production
@@ -121,7 +121,7 @@ providers enabled by app config. Stripe production is identified by a
 Before the first production deploy:
 
 ```bash
-cp .production-safety.env.example .production-safety.env
+cp .production-safety.example .production-safety.env
 # Fill the exact production Worker, D1, R2, and URL values.
 pnpm run preflight:production
 ```

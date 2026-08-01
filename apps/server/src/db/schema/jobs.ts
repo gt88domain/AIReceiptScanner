@@ -11,10 +11,12 @@ export const job = sqliteTable(
   "job",
   {
     id: text("id").primaryKey(),
+    idempotencyKey: text("idempotency_key").notNull(),
     type: text("type").notNull(),
     ownerId: text("owner_id").references(() => user.id, { onDelete: "cascade" }),
     status: text("status", { enum: JOB_STATUSES }).notNull().default("pending"),
     payload: text("payload", { mode: "json" }).$type<Record<string, unknown>>().notNull(),
+    payloadHash: text("payload_hash").notNull(),
     result: text("result", { mode: "json" }).$type<Record<string, unknown>>(),
     error: text("error"),
     attemptCount: integer("attempt_count").notNull().default(0),
@@ -27,6 +29,7 @@ export const job = sqliteTable(
     updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
   },
   (table) => [
+    uniqueIndex("job_idempotency_key_idx").on(table.idempotencyKey),
     index("job_status_run_after_idx").on(table.status, table.runAfter),
     index("job_owner_created_at_idx").on(table.ownerId, table.createdAt),
   ],

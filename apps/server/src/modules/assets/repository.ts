@@ -32,3 +32,7 @@ export async function findOwnedAsset(db: Database, id: string, ownerId: string) 
     .limit(1);
   return record ?? null;
 }
+
+export async function deleteAssetRecord(db: Database, id: string) {
+  await db.delete(asset).where(eq(asset.id, id));
+}

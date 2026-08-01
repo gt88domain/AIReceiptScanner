@@ -212,7 +212,8 @@ separate concepts.
 ## Production Deployment Guard
 
 `pnpm -F server deploy` runs the production safety preflight first. Before a
-production deploy, create `apps/server/.production-safety.env` from its example
+production deploy, create `apps/server/.production-safety.env` from
+`apps/server/.production-safety.example`
 and set the exact Worker, D1, R2, and public URL identities that deployment may
 target. The guard also validates the configured production secrets and live
 payment-provider mode from `apps/server/.env.production`.

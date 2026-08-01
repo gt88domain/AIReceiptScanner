@@ -151,8 +151,13 @@ async function main() {
   const r2 = asArray(root.r2_buckets, "r2_buckets").find(
     (binding) => binding.binding === "STORAGE",
   );
-  if (!d1 || !r2) {
-    throw new Error("wrangler.jsonc must bind DB (D1) and STORAGE (R2).");
+  const queues = asObject(root.queues, "queues");
+  const jobProducer = asArray(queues.producers, "queues.producers").find(
+    (binding) => binding.binding === "JOB_QUEUE",
+  );
+  const queueConsumers = asArray(queues.consumers, "queues.consumers");
+  if (!d1 || !r2 || !jobProducer) {
+    throw new Error("wrangler.jsonc must bind DB (D1), STORAGE (R2), and JOB_QUEUE.");
   }
 
   const workerName = String(root.name ?? "");
@@ -160,9 +165,15 @@ async function main() {
   const bucketName = String(r2.bucket_name ?? "");
   const websiteUrl = String(vars.WEBSITE_URL ?? "");
   const serverUrl = String(vars.SERVER_URL ?? "");
+  const queueName = String(jobProducer.queue ?? "");
+  const queueConsumer = queueConsumers.find((consumer) => consumer.queue === queueName);
+  const dlqName = String(queueConsumer?.dead_letter_queue ?? "");
   const errors: string[] = [];
 
   if (vars.NODE_ENV !== "production") errors.push("NODE_ENV must be production in wrangler.jsonc.");
+  if (productionEnv.ENVIRONMENT?.trim() !== "production") {
+    errors.push("ENVIRONMENT must be production in .env.production.");
+  }
   if (!/^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}$/i.test(databaseId)) {
     errors.push("DB must use a concrete D1 database_id.");
   }
@@ -170,11 +181,25 @@ async function main() {
   if (!isProductionUrl(websiteUrl)) errors.push("WEBSITE_URL must be a non-local HTTPS URL.");
   if (!isProductionUrl(serverUrl)) errors.push("SERVER_URL must be a non-local HTTPS URL.");
 
-  requireExpected(expectedEnv, "EXPECTED_WORKER_NAME", workerName, errors);
-  requireExpected(expectedEnv, "EXPECTED_D1_DATABASE_ID", databaseId, errors);
-  requireExpected(expectedEnv, "EXPECTED_R2_BUCKET", bucketName, errors);
-  requireExpected(expectedEnv, "EXPECTED_WEBSITE_URL", websiteUrl, errors);
-  requireExpected(expectedEnv, "EXPECTED_SERVER_URL", serverUrl, errors);
+  requireExpected(expectedEnv, "WORKER_NAME", workerName, errors);
+  requireExpected(expectedEnv, "D1_DATABASE_ID", databaseId, errors);
+  requireExpected(expectedEnv, "R2_BUCKET", bucketName, errors);
+  requireExpected(expectedEnv, "QUEUE_NAME", queueName, errors);
+  requireExpected(expectedEnv, "QUEUE_DLQ_NAME", dlqName, errors);
+  requireExpected(expectedEnv, "WEBSITE_URL", websiteUrl, errors);
+  requireExpected(expectedEnv, "SERVER_URL", serverUrl, errors);
+  if (!queueConsumer) errors.push("JOB_QUEUE must have a Worker consumer.");
+  if (!dlqName) errors.push("JOB_QUEUE consumer must configure a dead_letter_queue.");
+  if (!queueConsumers.some((consumer) => consumer.queue === dlqName)) {
+    errors.push("The configured dead_letter_queue must have a Worker consumer.");
+  }
+
+  for (const name of ["WORKER_NAME", "D1_DATABASE_ID", "R2_BUCKET", "QUEUE_NAME"] as const) {
+    const actual = required(productionEnv, name, errors);
+    if (actual && actual !== expectedEnv[name]?.trim()) {
+      errors.push(`${name} in .env.production must match .production-safety.env.`);
+    }
+  }
 
   if (productionEnv.CLOUDFLARE_D1_DATABASE_ID?.trim() !== databaseId) {
     errors.push("CLOUDFLARE_D1_DATABASE_ID must match the DB binding in wrangler.jsonc.");
@@ -201,6 +226,21 @@ function selfCheck() {
   assert.equal(isProductionUrl("https://app.example.com"), true);
   assert.equal(isProductionUrl("http://app.example.com"), false);
   assert.equal(isProductionUrl("https://localhost"), false);
+
+  const expectedErrors: string[] = [];
+  requireExpected({ QUEUE_NAME: "jobs" }, "QUEUE_NAME", "jobs", expectedErrors);
+  requireExpected({ QUEUE_NAME: "jobs" }, "QUEUE_NAME", "other", expectedErrors);
+  assert.deepEqual(expectedErrors, ["QUEUE_NAME does not match wrangler.jsonc."]);
+
+  const missingErrors: string[] = [];
+  required({}, "D1_DATABASE_ID", missingErrors);
+  required({}, "R2_BUCKET", missingErrors);
+  required({}, "QUEUE_NAME", missingErrors);
+  assert.deepEqual(missingErrors, [
+    "Missing D1_DATABASE_ID in .env.production.",
+    "Missing R2_BUCKET in .env.production.",
+    "Missing QUEUE_NAME in .env.production.",
+  ]);
 
   const validErrors: string[] = [];
   validateProviderSecrets(

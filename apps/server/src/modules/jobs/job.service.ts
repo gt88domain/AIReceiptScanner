@@ -6,6 +6,7 @@ import { recordJobEvent } from "./job.events";
 import type { JobQueueMessage } from "./job.types";
 
 export type CreateJobInput = {
+  idempotencyKey: string;
   type: string;
   ownerId?: string;
   payload: Record<string, unknown>;
@@ -13,15 +14,48 @@ export type CreateJobInput = {
   runAfter?: Date;
 };
 
+function stableJson(value: unknown): string {
+  if (value === null || typeof value === "boolean") {
+    return JSON.stringify(value);
+  }
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) throw new Error("Job payload must contain finite numbers.");
+    return JSON.stringify(value);
+  }
+  if (typeof value === "string") return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(",")}]`;
+  if (typeof value === "object") {
+    if (Object.getPrototypeOf(value) !== Object.prototype) {
+      throw new Error("Job payload must contain plain JSON objects.");
+    }
+    return `{${Object.entries(value)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, child]) => `${JSON.stringify(key)}:${stableJson(child)}`)
+      .join(",")}}`;
+  }
+  throw new Error("Job payload must be JSON-serializable.");
+}
+
+async function hashJobPayload(payload: Record<string, unknown>) {
+  const encoded = new TextEncoder().encode(stableJson(payload));
+  const digest = await crypto.subtle.digest("SHA-256", encoded);
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
 export function createJobService(db: Database, queue: Queue<JobQueueMessage>) {
   async function create(input: CreateJobInput) {
     const now = new Date();
+    const idempotencyKey = input.idempotencyKey.trim();
+    if (!idempotencyKey) throw new Error("Job idempotencyKey is required.");
+    const payloadHash = await hashJobPayload(input.payload);
     const record: Job = {
       id: crypto.randomUUID(),
+      idempotencyKey,
       type: input.type,
       ownerId: input.ownerId ?? null,
       status: "pending",
       payload: input.payload,
+      payloadHash,
       result: null,
       error: null,
       attemptCount: 0,
@@ -35,19 +69,36 @@ export function createJobService(db: Database, queue: Queue<JobQueueMessage>) {
     };
     const outboxId = crypto.randomUUID();
 
-    await db.batch([
-      db.insert(job).values(record),
-      db.insert(jobOutbox).values({
-        id: outboxId,
-        jobId: record.id,
-        status: "pending",
-        attempts: 0,
-        lastError: null,
-        publishedAt: null,
-        createdAt: now,
-        updatedAt: now,
-      }),
-    ]);
+    try {
+      await db.batch([
+        db.insert(job).values(record),
+        db.insert(jobOutbox).values({
+          id: outboxId,
+          jobId: record.id,
+          status: "pending",
+          attempts: 0,
+          lastError: null,
+          publishedAt: null,
+          createdAt: now,
+          updatedAt: now,
+        }),
+      ]);
+    } catch (error) {
+      const [existing] = await db
+        .select()
+        .from(job)
+        .where(eq(job.idempotencyKey, idempotencyKey))
+        .limit(1);
+      if (!existing) throw error;
+      if (
+        existing.type !== input.type ||
+        existing.ownerId !== (input.ownerId ?? null) ||
+        existing.payloadHash !== payloadHash
+      ) {
+        throw new Error("Job idempotencyKey was already used with different input.");
+      }
+      return existing;
+    }
     await recordJobEvent(db, { jobId: record.id, type: "queued" });
 
     try {

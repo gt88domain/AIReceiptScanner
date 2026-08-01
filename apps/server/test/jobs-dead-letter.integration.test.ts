@@ -14,10 +14,12 @@ describe("job dead-letter queue", () => {
     await db.batch([
       db.insert(job).values({
         id: jobId,
+        idempotencyKey: `dead-letter:${jobId}`,
         type: "ai.generate",
         ownerId: null,
         status: "failed",
         payload: { prompt: "generate a chapter" },
+        payloadHash: "test-payload-hash",
         result: null,
         error: "provider timeout",
         attemptCount: 3,

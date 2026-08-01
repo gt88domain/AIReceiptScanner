@@ -28,7 +28,7 @@
     "generate-types": "wrangler types",
     "email-preview": "pnpm dlx react-email dev --dir src/emails/templates --port 4000",
     "test:config": "tsx --test src/storage/__tests__/access.test.ts src/modules/audit/audit.service.test.ts src/modules/jobs/job.registry.test.ts src/modules/jobs/job.retry.test.ts",
-    "test:production-safety": "tsx scripts/check-production-safety.ts --self-check",
+    "test:production-config": "tsx scripts/check-production-safety.ts --self-check",
     "test:integration": "tsc --project test/tsconfig.json --noEmit && vitest run --config vitest.config.ts"
   },
   "dependencies": {
