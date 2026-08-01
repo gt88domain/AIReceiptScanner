@@ -12,11 +12,12 @@ publicHoistPattern:
 overrides:
   defu: 6.1.7
   next: 16.2.11
-  brace-expansion@5.0.6: 5.0.7
+  brace-expansion@1.1.16: 1.1.17
+  brace-expansion@5.0.6: 5.0.8
   esbuild@0.18.20: 0.28.1
   esbuild@0.27.4: 0.28.1
   picomatch@2.3.1: 2.3.2
-  postcss@8.4.31: 8.5.12
+  postcss@8.4.31: 8.5.18
   sharp@0.34.5: 0.35.0
   uuid@7.0.3: 11.1.1
   esm-env: "npm:esm-env-runtime@^0.1.1"
@@ -57,7 +58,7 @@ minimumReleaseAgeExclude:
   - expo-constants@56.0.22
   - expo-modules-autolinking@56.0.21
   - expo-modules-core@56.0.22
-  - expo@56.0.17
+  - expo@56.0.18
   - '@expo/metro-runtime@56.0.18'
   - '@expo/ui@56.0.23'
   - expo-dev-client@56.0.24
@@ -65,7 +66,7 @@ minimumReleaseAgeExclude:
   - expo-dev-menu@56.0.21
   - expo-image-picker@56.0.22
   - expo-linking@56.0.16
-  - expo-router@56.2.16
+  - expo-router@56.2.17
   - expo-splash-screen@56.0.14
   - expo-updates@56.0.23
   - expo-web-browser@56.0.6
