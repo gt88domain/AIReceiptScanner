@@ -1,6 +1,7 @@
 export { withLocale } from "./locale";
 
 import { resolveCommonConfig } from "@repo/app-config/config";
+import { env } from "cloudflare:workers";
 import { createResendEmailProvider } from "./providers/resend";
 import type { EmailProvider, EmailProviderKey } from "./types";
 
@@ -29,7 +30,9 @@ export function getEmailProvider(): EmailProvider {
 
   const providers: Record<EmailProviderKey, EmailProvider> = {
     resend: createResendEmailProvider({
-      defaultFrom: `${commonConfig.app.name} <${commonConfig.email.from.localPart}@${commonConfig.email.from.domain}>`,
+      defaultFrom:
+        env.EMAIL_FROM ||
+        `${commonConfig.app.name} <${commonConfig.email.from.localPart}@${commonConfig.email.from.domain}>`,
     }),
   };
 

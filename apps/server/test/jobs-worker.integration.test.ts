@@ -113,7 +113,7 @@ describe("Worker Queue routing", () => {
       })
       .where(eq(job.id, record.id));
 
-    const queue = createQueueBatch("tanstack-template-jobs-dlq", { jobId: record.id });
+    const queue = createQueueBatch(env.JOB_QUEUE_DLQ_NAME, { jobId: record.id });
     await worker.queue(queue.batch, env);
 
     const events = await db

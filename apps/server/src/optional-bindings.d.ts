@@ -7,6 +7,7 @@ declare namespace Cloudflare {
     ALIYUN_OSS_REGION: string;
     CREEM_API_KEY: string;
     CREEM_WEBHOOK_SECRET: string;
+    EMAIL_FROM: string;
     GITHUB_CLIENT_SECRET: string;
     GOOGLE_CLIENT_SECRET: string;
     R2_PUBLIC_URL: string;

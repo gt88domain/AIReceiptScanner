@@ -8,8 +8,8 @@ the outbox publishes only the job id to Cloudflare Queues. The consumer records
 Create both queues before deploying the Worker:
 
 ```bash
-pnpm exec wrangler queues create tanstack-template-jobs
-pnpm exec wrangler queues create tanstack-template-jobs-dlq
+pnpm exec wrangler queues create <production-job-queue>
+pnpm exec wrangler queues create <production-job-queue-dlq>
 ```
 
 Register a handler from the owning product module during Worker startup:
@@ -39,7 +39,7 @@ key reused for different input, so repeated browser submissions return the same
 job instead of creating duplicate AI work or charges.
 
 After three failed main-queue deliveries, Cloudflare moves the message to
-`tanstack-template-jobs-dlq`. Its consumer writes one `failed_job_event` row;
+the configured DLQ. Its consumer writes one `failed_job_event` row;
 admins can list, retry, or ignore unresolved events. A refund is intentionally
 domain-owned: perform the verified credit/payment refund first, then mark the
 event `refunded` with `resolveFailedJobEvent`.

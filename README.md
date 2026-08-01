@@ -138,6 +138,7 @@ pnpm dev
 | `pnpm deploy`        | Deploy web + server to production |
 | `pnpm deploy:web`    | Deploy web app only               |
 | `pnpm deploy:server` | Deploy API server only            |
+| `pnpm verify:production-config` | Validate both production Worker targets |
 
 ### Code Quality
 
@@ -150,6 +151,9 @@ pnpm dev
 | `pnpm check-types` | TypeScript type checking                   |
 | `pnpm clean`       | Clean all node_modules and build artifacts |
 | `pnpm commit`      | Conventional commit with auto-push         |
+
+Production Worker setup and the fail-closed deployment guard are documented in
+[`docs/production-configuration.md`](docs/production-configuration.md).
 
 ### Database Management
 
