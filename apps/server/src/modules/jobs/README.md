@@ -17,8 +17,9 @@ Register a handler from the owning product module during Worker startup:
 ```ts
 import { registerJobHandler } from "@/modules/jobs";
 
-registerJobHandler("novel.chapter.generate", async ({ id, payload }) => {
-  // Make the provider call idempotent using `id`.
+registerJobHandler("novel.chapter.generate", async ({ idempotencyKey, payload }) => {
+  // Give every provider-facing operation a stable, namespaced idempotency key.
+  const providerIdempotencyKey = `${idempotencyKey}:generation`;
   return { revisionId: String(payload.revisionId) };
 });
 ```
@@ -32,6 +33,21 @@ The registry suggests `email.send`, `ai.generate`, `asset.process`,
 Handlers must be idempotent because Cloudflare Queues delivers at least once.
 Store large inputs and outputs in R2 and place only references in `payload` or
 `result`.
+
+## External-effect idempotency contract
+
+`JobHandlerInput.idempotencyKey` is durable and does not change when a Queue
+message is retried. Every provider-facing side effect (AI generation, email,
+payment, webhook, or third-party write) must use a deterministic namespaced
+form such as `${idempotencyKey}:email` as that provider's idempotency key or
+external reference. Do not use the delivery count, a timestamp, or a newly
+generated UUID.
+
+If a provider does not support idempotency keys, the owning domain must persist
+its own provider-operation record with a unique job/effect key and reconcile it
+before retrying. A job's `succeeded` state is recorded after the handler
+returns, so it cannot by itself prevent a provider call that succeeded just
+before a Worker crash.
 
 Every call to `context.jobs.create` requires a caller-generated
 `idempotencyKey`. The database stores a canonical `payloadHash` and rejects a

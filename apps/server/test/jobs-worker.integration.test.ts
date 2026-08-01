@@ -95,6 +95,42 @@ describe("Worker Queue routing", () => {
     }
   });
 
+  it("keeps the provider idempotency key stable across Queue retries", async () => {
+    const db = createDb(env.DB);
+    const jobs = createJobs(db);
+    const idempotencyKey = `provider-effect:${crypto.randomUUID()}`;
+    const record = await jobs.create({
+      idempotencyKey,
+      type: "ai.generate",
+      payload: { prompt: "test" },
+    });
+    const type = `test.queue.provider-effect.${crypto.randomUUID()}`;
+    const providerKeys: string[] = [];
+    let calls = 0;
+    await db.update(job).set({ type }).where(eq(job.id, record.id));
+    jobRegistry.register(type, async ({ idempotencyKey: handlerKey }) => {
+      providerKeys.push(handlerKey);
+      calls += 1;
+      if (calls === 1) throw new Error("provider response lost after success");
+      return { delivered: true };
+    });
+
+    try {
+      const first = createQueueBatch("tanstack-template-jobs", { jobId: record.id });
+      await worker.queue(first.batch, env);
+      const second = createQueueBatch("tanstack-template-jobs", { jobId: record.id });
+      await worker.queue(second.batch, env);
+
+      const [persisted] = await db.select().from(job).where(eq(job.id, record.id));
+      expect(first.getAcknowledgements()).toBe(0);
+      expect(second.getAcknowledgements()).toBe(1);
+      expect(providerKeys).toEqual([idempotencyKey, idempotencyKey]);
+      expect(persisted?.status).toBe("succeeded");
+    } finally {
+      delete jobRegistry.handlers[type];
+    }
+  });
+
   it("routes a dead-letter batch through the Worker entrypoint", async () => {
     const db = createDb(env.DB);
     const jobs = createJobs(db);

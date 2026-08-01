@@ -46,7 +46,7 @@ import { sendContactMessage } from "./handlers/contact";
 import { subscribeNewsletter } from "./handlers/newsletter";
 import { rpcHandler } from "./handlers/rpc";
 import { handleFileServe } from "./handlers/storage";
-import { createAuth } from "./lib/auth";
+import { handleAuthRequest } from "./auth/adapter";
 import { createContext } from "./lib/context";
 import {
   isNativeBillingEnabled,
@@ -173,7 +173,7 @@ app.on(["POST", "GET"], "/api/auth/*", async (c) => {
     method: c.req.raw.method,
     body: c.req.raw.body,
   });
-  const response = await createAuth(c.env.DB).handler(request);
+  const response = await handleAuthRequest(c.env.DB, request);
   return c.newResponse(response.body, response);
 });
 

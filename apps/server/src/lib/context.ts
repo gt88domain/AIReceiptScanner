@@ -8,12 +8,8 @@ import { getPaymentService } from "../payments";
 import { createCapabilityService } from "../modules/capabilities/capability.service";
 import { createJobService } from "../modules/jobs";
 import { getStorageProvider } from "../storage";
-import {
-  FRESH_AUTH_SESSION_QUERY,
-  finalizeSoftDeletedSession,
-  getUserDeletedAt,
-} from "./auth-session-guard";
-import { createAuth } from "./auth";
+import { getAuthSession } from "../auth/adapter";
+import { finalizeSoftDeletedSession, getUserDeletedAt } from "./auth-session-guard";
 
 export type CreateContextOptions = {
   /** Hono request context with Cloudflare bindings. */
@@ -23,12 +19,8 @@ export type CreateContextOptions = {
 /** Creates the per-request server context shared by oRPC procedures. */
 export async function createContext({ context }: CreateContextOptions) {
   const db = createDb(context.env.DB);
-  const auth = createAuth(context.env.DB);
   const headers = new Headers(context.req.raw.headers);
-  const rawSession = await auth.api.getSession({
-    headers,
-    query: FRESH_AUTH_SESSION_QUERY,
-  });
+  const rawSession = await getAuthSession(context.env.DB, headers);
   const deletedAt = rawSession ? await getUserDeletedAt(db, rawSession.user.id) : null;
   const session = finalizeSoftDeletedSession(rawSession, deletedAt);
   const authenticatedUser = session?.user ?? null;
@@ -65,7 +57,6 @@ export async function createContext({ context }: CreateContextOptions) {
     // This is the only deletion-state check for the request. Procedures reuse it.
     authenticatedUser,
     db,
-    auth,
     locale,
     t: createT(locale),
     storage,

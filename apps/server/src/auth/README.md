@@ -1,5 +1,16 @@
 # Server authorization boundary
 
+`auth/adapter.ts` is the sole server-facing authentication adapter. It is the
+only module outside its private provider implementation that may create an auth
+client, read a session, or route `/api/auth/*`. Business modules receive the
+provider-neutral request session through `Context` and use the guards below;
+they must not import `better-auth`, inspect provider cookies, or call provider
+APIs directly.
+
+Changing Better Auth, Clerk, Auth.js, or another provider is therefore an
+adapter migration: preserve the session shape and the guard contracts, then
+replace the provider implementation. It is not a product-module rewrite.
+
 Use the standard guards rather than reading session data, admin secrets, or
 billing records directly in a router:
 

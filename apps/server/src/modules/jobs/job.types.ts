@@ -13,6 +13,11 @@ export type JobQueueMessage = { jobId: string };
 
 export type JobHandlerInput = {
   id: string;
+  /**
+   * Stable across every Queue delivery of this job. Pass a namespaced form of
+   * this value to every external provider that supports idempotency keys.
+   */
+  idempotencyKey: string;
   ownerId: string | null;
   payload: Record<string, unknown>;
 };

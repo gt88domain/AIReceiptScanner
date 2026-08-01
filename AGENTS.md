@@ -205,6 +205,10 @@ separate concepts.
   `requireEntitlement` from `apps/server/src/auth/guards` for new server
   authorization checks. Do not create project-specific session/header guards
   or database-backed roles without an explicit product decision.
+- Only `apps/server/src/auth/adapter.ts` may expose authentication-provider
+  operations to the server. Product modules use `Context.session` and the
+  standard guards; they must not import Better Auth or provider cookie/session
+  APIs directly.
 - Authorization or webhook changes require focused tests for ordinary-user
   denial, admin allowlist access, paid-user non-admin denial, and webhook
   idempotency.
@@ -217,6 +221,13 @@ production deploy, create `apps/server/.production-safety.env` from
 and set the exact Worker, D1, R2, and public URL identities that deployment may
 target. The guard also validates the configured production secrets and live
 payment-provider mode from `apps/server/.env.production`.
+
+## oRPC And Worker Boundaries
+
+oRPC is the bounded HTTP API on the Server Worker. Web server actions may call
+it but may not own D1 or write business data. Use Jobs/Queues for retryable
+work, Workflows for multi-step or long-lived work, and a dedicated Durable
+Object design for coordinated WebSockets. See `docs/orpc-worker-boundaries.md`.
 
 ## Skills
 

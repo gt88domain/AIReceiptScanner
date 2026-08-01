@@ -105,6 +105,7 @@ async function processJobMessage(db: Database, message: JobQueueMessage, handler
   try {
     const result = await handler({
       id: existing.id,
+      idempotencyKey: existing.idempotencyKey,
       ownerId: existing.ownerId,
       payload: existing.payload,
     });

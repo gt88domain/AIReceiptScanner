@@ -17,7 +17,10 @@ async function createUser(label: string) {
   const email = `${label}-${crypto.randomUUID()}@example.test`;
   const response = await exports.default.fetch("https://server.test/api/auth/sign-up/email", {
     body: JSON.stringify({ email, name: "Billable Operation Test", password: "test-password-123" }),
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "cf-connecting-ip": `192.0.2.${crypto.getRandomValues(new Uint8Array(1))[0]}`,
+    },
     method: "POST",
   });
   expect(response.status).toBe(200);
@@ -112,5 +115,28 @@ describe.skipIf(!productFeatures.credits)("billable operations", () => {
       failureReason: "provider timeout",
     });
     expect((await getBalance(db, user)).balance).toBe(before.balance);
+  });
+
+  it("never overspends when independent operations race for the same balance", async () => {
+    const user = await createUser("billable-concurrent");
+    await fund(user);
+    const before = await getBalance(db, user);
+    const input = {
+      user,
+      feature: "image.generate",
+      requestHash: "d".repeat(64),
+      calculatedCost: 15,
+    };
+
+    const outcomes = await Promise.allSettled([
+      beginBillableOperation(db, { ...input, operationId: "operation-concurrent-one" }),
+      beginBillableOperation(db, { ...input, operationId: "operation-concurrent-two" }),
+    ]);
+    const started = outcomes.filter(
+      (outcome) => outcome.status === "fulfilled" && outcome.value.kind === "started",
+    );
+
+    expect(started).toHaveLength(1);
+    expect((await getBalance(db, user)).balance).toBe(before.balance - input.calculatedCost);
   });
 });
