@@ -24,7 +24,9 @@ export default defineConfig({
       miniflare: {
         bindings: {
           ADMIN_EMAILS: "admin@example.test",
-          BETTER_AUTH_SECRET: "test-only-7c8e03a19df24b56a0c4e9b2f6d18a73c5e0b94d2f7a61e83c4b9d05a2f18e76",
+          BETTER_AUTH_SECRET:
+            "test-only-7c8e03a19df24b56a0c4e9b2f6d18a73c5e0b94d2f7a61e83c4b9d05a2f18e76",
+          REVENUECAT_WEBHOOK_SECRET: "test-revenuecat-webhook-secret",
           RESEND_API_KEY: "test-resend-key",
         },
       },

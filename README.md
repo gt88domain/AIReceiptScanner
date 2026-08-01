@@ -117,6 +117,7 @@ pnpm dev
 - `docs/native-local-builds.md` — Building the native app locally
 - `docs/native-email-verification-with-ngrok.md` — Native email verification setup with ngrok
 - `docs/template-adoption.md` — Buyer-owned identifiers and deployment checklist
+- `docs/testing-strategy.md` — Required core-path test coverage and CI gates
 
 ## 🛠️ Available Scripts
 
@@ -289,12 +290,13 @@ REVENUECAT_WEBHOOK_SECRET=your_revenuecat_webhook_secret
 
 ## 🧪 Testing
 
-Tests are colocated per package and run with Vitest (there is no root `test` script):
+The template's core auth, billing, webhook, credits, admin, and migration checks
+are required. Run both gates before review (there is no root `test` script):
 
 ```bash
-# Run package tests
-pnpm -F @repo/shared test       # Shared utilities
-pnpm -F @repo/app-config test   # Payments/credits config
+# Required template gates
+pnpm test:template
+pnpm test:integration
 
 # Run type checking across the monorepo
 pnpm check-types

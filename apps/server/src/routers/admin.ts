@@ -5,6 +5,7 @@ import { user } from "@/db/schema/auth";
 import { billingEvent, billingPurchase, billingSubscription } from "@/db/schema/payments";
 import { isAdminEmail } from "@/lib/admin";
 import { adminProcedure, protectedProcedure } from "@/lib/orpc";
+import { countAdminAuditLogs, listAdminAuditLogs } from "@/modules/audit/audit.repository";
 
 const listUsersInputSchema = z.object({
   page: z.number().min(1).default(1),
@@ -26,6 +27,24 @@ const adminUserSchema = z.object({
   image: z.string().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
+});
+
+const listAuditLogInputSchema = z.object({
+  page: z.number().min(1).default(1),
+  perPage: z.number().min(1).max(100).default(50),
+});
+
+const auditSnapshotSchema = z.record(z.string(), z.unknown()).nullable();
+const auditLogSchema = z.object({
+  id: z.string(),
+  actorId: z.string(),
+  actorEmail: z.string(),
+  action: z.string(),
+  entityType: z.string(),
+  entityId: z.string(),
+  before: auditSnapshotSchema,
+  after: auditSnapshotSchema,
+  createdAt: z.date(),
 });
 
 const overviewSchema = z.object({
@@ -119,69 +138,90 @@ export const adminRouter = {
       return { data: users, pageCount: Math.ceil(total / input.perPage), total };
     }),
 
+  listAuditLog: adminProcedure
+    .input(listAuditLogInputSchema)
+    .output(z.object({ data: z.array(auditLogSchema), pageCount: z.number(), total: z.number() }))
+    .handler(async ({ context, input }) => {
+      const [data, total] = await Promise.all([
+        listAdminAuditLogs(context.db, {
+          limit: input.perPage,
+          offset: (input.page - 1) * input.perPage,
+        }),
+        countAdminAuditLogs(context.db),
+      ]);
+      return { data, pageCount: Math.ceil(total / input.perPage), total };
+    }),
+
   overview: adminProcedure.output(overviewSchema).handler(async ({ context }) => {
     const activeStatuses = [...ACTIVE_SUBSCRIPTION_STATUSES];
-    const [userCount, activeSubscriptionCount, successfulPurchaseCount, pendingWebhookCount, subscriptions, purchases, webhooks] =
-      await Promise.all([
-        context.db.select({ count: count() }).from(user),
-        context.db
-          .select({ count: count() })
-          .from(billingSubscription)
-          .where(inArray(billingSubscription.status, activeStatuses)),
-        context.db
-          .select({ count: count() })
-          .from(billingPurchase)
-          .where(eq(billingPurchase.status, "succeeded")),
-        context.db
-          .select({ count: count() })
-          .from(billingEvent)
-          .where(eq(billingEvent.processingStatus, "pending")),
-        context.db
-          .select({
-            id: billingSubscription.id,
-            email: user.email,
-            provider: billingSubscription.provider,
-            planId: billingSubscription.planId,
-            priceId: billingSubscription.priceId,
-            status: billingSubscription.status,
-            currentPeriodEnd: billingSubscription.currentPeriodEnd,
-            updatedAt: billingSubscription.updatedAt,
-          })
-          .from(billingSubscription)
-          .leftJoin(user, eq(billingSubscription.userId, user.id))
-          .orderBy(desc(billingSubscription.updatedAt))
-          .limit(10),
-        context.db
-          .select({
-            id: billingPurchase.id,
-            email: user.email,
-            provider: billingPurchase.provider,
-            planId: billingPurchase.planId,
-            priceId: billingPurchase.priceId,
-            status: billingPurchase.status,
-            paidAt: billingPurchase.paidAt,
-            updatedAt: billingPurchase.updatedAt,
-          })
-          .from(billingPurchase)
-          .leftJoin(user, eq(billingPurchase.userId, user.id))
-          .orderBy(desc(billingPurchase.updatedAt))
-          .limit(10),
-        context.db
-          .select({
-            id: billingEvent.id,
-            provider: billingEvent.provider,
-            eventType: billingEvent.eventType,
-            processingStatus: billingEvent.processingStatus,
-            processedAt: billingEvent.processedAt,
-            firstReceivedAt: billingEvent.firstReceivedAt,
-            lastAttemptAt: billingEvent.lastAttemptAt,
-            attemptCount: billingEvent.attemptCount,
-            lastError: billingEvent.lastError,
-          })
-          .from(billingEvent)
-          .orderBy(desc(billingEvent.processedAt))
-          .limit(10),
-      ]);
+    const [
+      userCount,
+      activeSubscriptionCount,
+      successfulPurchaseCount,
+      pendingWebhookCount,
+      subscriptions,
+      purchases,
+      webhooks,
+    ] = await Promise.all([
+      context.db.select({ count: count() }).from(user),
+      context.db
+        .select({ count: count() })
+        .from(billingSubscription)
+        .where(inArray(billingSubscription.status, activeStatuses)),
+      context.db
+        .select({ count: count() })
+        .from(billingPurchase)
+        .where(eq(billingPurchase.status, "succeeded")),
+      context.db
+        .select({ count: count() })
+        .from(billingEvent)
+        .where(eq(billingEvent.processingStatus, "pending")),
+      context.db
+        .select({
+          id: billingSubscription.id,
+          email: user.email,
+          provider: billingSubscription.provider,
+          planId: billingSubscription.planId,
+          priceId: billingSubscription.priceId,
+          status: billingSubscription.status,
+          currentPeriodEnd: billingSubscription.currentPeriodEnd,
+          updatedAt: billingSubscription.updatedAt,
+        })
+        .from(billingSubscription)
+        .leftJoin(user, eq(billingSubscription.userId, user.id))
+        .orderBy(desc(billingSubscription.updatedAt))
+        .limit(10),
+      context.db
+        .select({
+          id: billingPurchase.id,
+          email: user.email,
+          provider: billingPurchase.provider,
+          planId: billingPurchase.planId,
+          priceId: billingPurchase.priceId,
+          status: billingPurchase.status,
+          paidAt: billingPurchase.paidAt,
+          updatedAt: billingPurchase.updatedAt,
+        })
+        .from(billingPurchase)
+        .leftJoin(user, eq(billingPurchase.userId, user.id))
+        .orderBy(desc(billingPurchase.updatedAt))
+        .limit(10),
+      context.db
+        .select({
+          id: billingEvent.id,
+          provider: billingEvent.provider,
+          eventType: billingEvent.eventType,
+          processingStatus: billingEvent.processingStatus,
+          processedAt: billingEvent.processedAt,
+          firstReceivedAt: billingEvent.firstReceivedAt,
+          lastAttemptAt: billingEvent.lastAttemptAt,
+          attemptCount: billingEvent.attemptCount,
+          lastError: billingEvent.lastError,
+        })
+        .from(billingEvent)
+        .orderBy(desc(billingEvent.processedAt))
+        .limit(10),
+    ]);
 
     return {
       stats: {

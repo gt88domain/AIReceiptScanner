@@ -1,6 +1,8 @@
 import { env, exports } from "cloudflare:workers";
 import { createApiClient } from "@repo/api-client";
 import type { AppRouterClient } from "@/routers";
+import { createDb } from "@/db";
+import { recordAdminAuditLog } from "@/modules/audit";
 import { describe, expect, it } from "vitest";
 
 function getSessionClient(cookie: string) {
@@ -45,10 +47,34 @@ describe("administrator RPC authorization", () => {
 
   it("permits only the Worker-secret allowlisted email", async () => {
     const client = await signUp("admin@example.test");
+    const actor = await env.DB.prepare("SELECT id FROM user WHERE email = ?")
+      .bind("admin@example.test")
+      .first<{ id: string }>();
+    expect(actor?.id).toBeTruthy();
+    await recordAdminAuditLog(createDb(env.DB), {
+      actor: { id: actor!.id, email: "admin@example.test" },
+      action: "catalog.domain.updated",
+      entity: { type: "domain", id: "domain-123" },
+      before: { status: "draft", apiToken: "do-not-store" },
+      after: { status: "published" },
+    });
 
     await expect(client.admin.getAccess()).resolves.toEqual({ isAdmin: true });
     await expect(client.admin.overview()).resolves.toMatchObject({
       stats: { users: expect.any(Number) },
+    });
+    await expect(client.admin.listAuditLog({ page: 1, perPage: 10 })).resolves.toMatchObject({
+      total: 1,
+      data: [
+        {
+          actorEmail: "admin@example.test",
+          action: "catalog.domain.updated",
+          entityType: "domain",
+          entityId: "domain-123",
+          before: { status: "draft", apiToken: "[redacted]" },
+          after: { status: "published" },
+        },
+      ],
     });
   });
 

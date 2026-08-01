@@ -114,10 +114,19 @@ ad hoc string manipulation when practical.
 
 ## Testing Guidelines
 
-Do not add tests unless the user explicitly asks for them. If tests are added,
-use `*.test.ts(x)` or `*.spec.ts(x)` and keep them focused on meaningful
-behavior, edge cases, and error conditions. If a package needs a new test
-runner script, document it in that package's `package.json`.
+The template's core trust and money paths are mandatory test coverage. Keep
+focused automated checks for authentication, administrator authorization,
+billing and entitlement resolution, verified webhook idempotency, credits,
+and migration application. When changing one of those paths, add or update the
+smallest focused test that proves the behavior. `pnpm test:template` and
+`pnpm test:integration` are the default template gate and must both pass before
+review or release.
+
+UI behavior and marketing pages are optional: add tests when their interaction
+or regression risk justifies the maintenance cost. Use `*.test.ts(x)` or
+`*.spec.ts(x)` and keep tests focused on meaningful behavior, edge cases, and
+error conditions. If a package needs a new test runner script, document it in
+that package's `package.json`.
 
 ## Git And Changes
 
