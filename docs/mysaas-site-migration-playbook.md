@@ -145,8 +145,8 @@ detail.
 Start site-specific. Promote only proven common behavior.
 
 ```txt
-apps/server/src/custom/<site-or-module>/
-apps/web/src/custom/<site-or-module>/
+apps/server/src/modules/<site-or-module>/
+apps/web/src/modules/<site-or-module>/
 apps/web/src/routes/                  # thin TanStack route wiring only
 ```
 

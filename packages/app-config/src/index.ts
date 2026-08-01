@@ -29,6 +29,7 @@ export {
   type CreditWebPackageConfig,
   type CreditWebProviderPriceEnvironmentConfig,
   type EmailProviderKey,
+  type FeatureCapabilityConfig,
   type MembershipCatalogConfig,
   type MembershipPlanConfig,
   type MembershipPresentationKind,

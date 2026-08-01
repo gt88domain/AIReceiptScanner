@@ -361,6 +361,9 @@ importers:
       drizzle-kit:
         specifier: ^0.31.10
         version: 0.31.10
+      jsonc-parser:
+        specifier: ^3.3.1
+        version: 3.3.1
       tsdown:
         specifier: ^0.15.12
         version: 0.15.12(@emnapi/core@1.10.0)(@emnapi/runtime@1.11.2)(typescript@5.9.3)

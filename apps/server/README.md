@@ -24,39 +24,19 @@ cp .env.production.example .env.production
 #    Keep ONLY secret values if the same key already exists in wrangler.jsonc vars
 #    (for this repo: GITHUB_CLIENT_ID / GOOGLE_CLIENT_ID are in wrangler.jsonc vars)
 
-# 3. Upload secrets to the default worker (tanstack-template-server)
+# 3. Declare the exact production resources this checkout may deploy to
+cp .production-safety.example .production-safety.env
+
+# 4. Upload secrets to the configured Worker
 pnpm run secrets:bulk:production
 
-# 4A. Deploy default worker (same worker name)
-pnpm run deploy:dev
-
-# 4B. Deploy env worker (new worker name: tanstack-template-server-production)
-#     Use this only if you intentionally manage a separate production worker
-#     and already configured secrets/bindings for that env worker
+# 5. Validate production resources and deploy
 pnpm run deploy
 ```
 
-### Deployment Modes
-
-This repository currently supports two deployment modes:
-
-1. **Single worker mode (recommended for now)**
-   - Worker name: `tanstack-template-server`
-   - Secret upload: `pnpm run secrets:bulk:production`
-   - Deploy command: `pnpm run deploy:dev`
-
-2. **Environment worker mode**
-   - Worker name: `tanstack-template-server-production` (triggered by `--env production`)
-   - Deploy command: `pnpm run deploy`
-   - You must separately configure secrets and bindings for this worker.
-
 ### Common Errors
 
-1. `There doesn't seem to be a Worker called "tanstack-template-server-production"`
-   - Cause: using `--env production` creates/targets a different worker name.
-   - Fix: use `pnpm run deploy:dev` if you want the original worker.
-
-2. `Binding name 'GITHUB_CLIENT_ID' already in use`
+1. `Binding name 'GITHUB_CLIENT_ID' already in use`
    - Cause: same key exists in both `wrangler.jsonc -> vars` and uploaded secrets.
    - Fix: remove duplicated keys from `.env.production` before `secret bulk`, or remove that key from `wrangler.jsonc vars` and keep it only in secrets.
 
@@ -82,6 +62,7 @@ apps/server/
 │   │   └── session.ts     # Auth session
 │   ├── routers/           # API routes (oRPC)
 │   │   └── index.ts
+│   ├── modules/           # Product domain modules and router registry
 │   ├── lib/               # Core libraries
 │   │   ├── auth.ts        # Better Auth config
 │   │   ├── context.ts     # Request context
@@ -89,7 +70,11 @@ apps/server/
 │   ├── db/                # Database
 │   │   ├── index.ts       # Drizzle client
 │   │   ├── schema/        # Table schemas
-│   │   └── migrations/    # D1 migrations
+│   │   ├── migrations/    # D1 structural migrations
+│   │   ├── data-migrations/ # Versioned data transformations
+│   │   ├── seeds/         # Rebuildable local/demo data
+│   │   ├── backfills/     # Historical field population
+│   │   └── repairs/       # Scoped data incident repairs
 │   └── utils/             # Utilities
 ├── scripts/
 │   └── setup.mjs          # Environment setup
@@ -122,6 +107,51 @@ Local migrations use `drizzle.local.config.ts` and target the local D1
 sqlite file under `.wrangler/state/v3/d1/`. `pnpm run db:migrate:local`
 and `pnpm run db:studio:local` now initialize that sqlite automatically.
 
+See `src/db/README.md` before adding any database operation. Structural
+migrations, imports, seeds, backfills, and repairs have separate lifecycles.
+
+## 🚧 Production deployment guard
+
+`pnpm run deploy` stops before upload unless the configured Worker, D1 database,
+R2 bucket, and public URLs match the locally declared production identities.
+It also checks `ADMIN_EMAILS`, `BETTER_AUTH_SECRET`, and secrets for the payment
+providers enabled by app config. Stripe production is identified by a
+`sk_live_` key; this template does not use a separate `STRIPE_MODE` variable.
+
+Before the first production deploy:
+
+```bash
+cp .production-safety.example .production-safety.env
+# Fill the exact production Worker, D1, R2, and URL values.
+pnpm run preflight:production
+```
+
+The safety file is ignored by Git. Keep `.env.production` for secrets and
+Cloudflare migration credentials; do not commit either file.
+
+## 🔒 Authorization guards
+
+Use `src/auth/guards` for new server authorization instead of inspecting
+session, `ADMIN_EMAILS`, or billing records in routers. It provides
+`requireUser`, `requireAdmin`, `requireCapability`, and `requireEntitlement`.
+See `src/auth/README.md` for the boundary rules.
+
+## ⚙️ Product foundations
+
+- `src/modules/capabilities` maps named product features to minimum verified
+  membership tiers. Add feature requirements in `packages/app-config/src/app-config.ts`.
+- `src/modules/jobs` uses D1 state plus a Cloudflare Queue outbox for short,
+  retryable work. Before the first deploy, create the configured queue:
+
+  ```bash
+  pnpm exec wrangler queues create tanstack-template-jobs
+  ```
+
+  Use Cloudflare Workflows directly for long-running, multi-step processes.
+
+- `src/modules/assets` stores ownership and visibility metadata for objects in
+  R2 or another storage provider.
+
 ## 🔐 Environment Variables
 
 | Variable                    | Description                          | Where                                   |
@@ -146,21 +176,24 @@ and `pnpm run db:studio:local` now initialize that sqlite automatically.
 
 ## 📝 Available Scripts
 
-| Script                             | Description                                           |
-| ---------------------------------- | ----------------------------------------------------- |
-| `pnpm run setup`                   | One-click environment setup                           |
-| `pnpm run dev`                     | Start local dev server (port 3001)                    |
-| `pnpm run dev:init-d1`             | Initialize local D1 sqlite without starting server    |
-| `pnpm run deploy`                  | Deploy to env worker (`--env production`)             |
-| `pnpm run deploy:dev`              | Deploy to default worker (`tanstack-template-server`) |
-| `pnpm run secrets:bulk:production` | Bulk upload production envs from `.env.production`    |
-| `pnpm run db:generate`             | Generate DB migration                                 |
-| `pnpm run db:migrate:local`        | Initialize local D1 if needed, then run migrations    |
-| `pnpm run db:studio:local`         | Initialize local D1 if needed, then open studio       |
-| `pnpm run db:push`                 | Push schema to D1                                     |
-| `pnpm run db:studio`               | Open Drizzle Studio                                   |
-| `pnpm run generate-types`          | Generate Cloudflare types                             |
+| Script                             | Description                                                 |
+| ---------------------------------- | ----------------------------------------------------------- |
+| `pnpm run setup`                   | One-click environment setup                                 |
+| `pnpm run dev`                     | Start local dev server (port 3001)                          |
+| `pnpm run dev:init-d1`             | Initialize local D1 sqlite without starting server          |
+| `pnpm run deploy`                  | Run the production guard, then deploy the configured Worker |
+| `pnpm run preflight:production`    | Validate production resources and required secrets          |
+| `pnpm run deploy:dev`              | Deploy to default worker (`tanstack-template-server`)       |
+| `pnpm run secrets:bulk:production` | Bulk upload production envs from `.env.production`          |
+| `pnpm run db:generate`             | Generate DB migration                                       |
+| `pnpm run db:migrate:local`        | Initialize local D1 if needed, then run migrations          |
+| `pnpm run db:studio:local`         | Initialize local D1 if needed, then open studio             |
+| `pnpm run db:push`                 | Push schema to D1                                           |
+| `pnpm run db:studio`               | Open Drizzle Studio                                         |
+| `pnpm run generate-types`          | Generate Cloudflare types                                   |
 
 ## 📚 Related Docs
 
+- `src/modules/README.md` — Product-domain module ownership and router registration
+- `src/db/README.md` — Schema, data migration, seed, backfill, and repair rules
 - `../../docs/native-email-verification-with-ngrok.md` — Test native email verification with a public HTTPS tunnel

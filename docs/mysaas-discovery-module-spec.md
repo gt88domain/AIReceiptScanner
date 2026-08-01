@@ -23,11 +23,11 @@ EasyStarter already provides the base SaaS layer:
 Discovery should not replace those. Discovery adds a resource graph and public
 browse/search pages.
 
-Preferred custom layout:
+Preferred domain-module layout:
 
 ```txt
-apps/server/src/custom/discovery/
-apps/web/src/custom/discovery/
+apps/server/src/modules/discovery/
+apps/web/src/modules/discovery/
 packages/site-modules/discovery/
 ```
 
@@ -401,11 +401,11 @@ tables.
 Suggested ownership:
 
 ```txt
-apps/server/src/custom/discovery/schema.ts
-apps/server/src/custom/discovery/router.ts
-apps/server/src/custom/discovery/service.ts
-apps/server/src/custom/discovery/repository.ts
-apps/web/src/custom/discovery/
+apps/server/src/modules/discovery/schema.ts
+apps/server/src/modules/discovery/router.ts
+apps/server/src/modules/discovery/service.ts
+apps/server/src/modules/discovery/repository.ts
+apps/web/src/modules/discovery/
 packages/site-modules/discovery/
 ```
 
@@ -535,7 +535,7 @@ site without forking EasyStarter core.
 
 Hard constraints:
 - Keep EasyStarter close to upstream.
-- Put module code under custom/module directories where possible.
+- Put module code under the canonical `modules/<domain>` directories.
 - Touch only small registration/config/nav files in EasyStarter core.
 - Routes must be top-level: /discover, /category/:slug, /tag/:slug,
   /collection/:slug, /best/:slug or /rank/:slug, and /:type/:slug.
