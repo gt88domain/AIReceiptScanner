@@ -4,10 +4,30 @@
 /apps/server/src/credits/ @gt88domain
 /apps/server/src/payments/ @gt88domain
 /apps/server/src/modules/jobs/ @gt88domain
+/apps/server/src/modules/assets/ @gt88domain
+/apps/server/src/modules/audit/ @gt88domain
 /apps/server/src/db/ @gt88domain
+/apps/server/src/storage/ @gt88domain
+/apps/server/scripts/ @gt88domain
 /.github/ @gt88domain
+/scripts/ @gt88domain
 /docs/adr/ @gt88domain
+/docs/upstream/ @gt88domain
+/docs/architecture-boundaries.md @gt88domain
+/docs/template-governance.md @gt88domain
+/docs/upstream-sync.md @gt88domain
+/template-kit/ @gt88domain
 /template-version.json @gt88domain
+/release-please-config.json @gt88domain
+/.release-please-manifest.json @gt88domain
+/CHANGELOG.md @gt88domain
+/GOVERNANCE.md @gt88domain
+/AGENTS.md @gt88domain
+/CLAUDE.md @gt88domain
+/SECURITY.md @gt88domain
+/CONTRIBUTING.md @gt88domain
+/package.json @gt88domain
+/pnpm-lock.yaml @gt88domain
 
 # Product areas may be reassigned by a downstream product repository.
 /apps/web/src/modules/ @gt88domain
