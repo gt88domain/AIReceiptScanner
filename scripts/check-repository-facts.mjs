@@ -43,6 +43,23 @@ for (const name of [...defaultApplications, ...optionalApplications]) {
   if (!applicationNames.includes(name)) errors.push(`Unknown application classification: ${name}.`);
 }
 
+const boundaryRules = facts.governance?.boundaryRules;
+if (!Array.isArray(boundaryRules) || boundaryRules.length === 0) {
+  errors.push("Governance must define at least one architecture boundary rule.");
+} else {
+  for (const rule of boundaryRules) {
+    if (!rule.id || !Array.isArray(rule.directories) || !Array.isArray(rule.forbiddenImportPatterns)) {
+      errors.push("Each architecture boundary rule needs an id, directories, and import patterns.");
+      continue;
+    }
+    for (const directory of rule.directories) {
+      await access(path.join(root, directory)).catch(() =>
+        errors.push(`Boundary rule ${rule.id} references a missing directory: ${directory}.`),
+      );
+    }
+  }
+}
+
 for (const name of optionalApplications) {
   if (defaultApplications.includes(name)) errors.push(`${name} cannot be both default and optional.`);
   const directory = facts.applications[name];

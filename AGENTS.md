@@ -109,6 +109,10 @@ ad hoc string manipulation when practical.
   backfills, and repairs separate as defined in `apps/server/src/db/README.md`.
 - Cross-platform code should live in workspace packages only when both web and
   mobile or server genuinely need it. Core packages must not import mobile code.
+- `template-kit/repository-facts.json` is the single machine-readable source
+  for repository facts and enforced import boundaries. Run
+  `pnpm check:boundaries` after changing an ownership boundary; do not add a
+  second hard-coded rule set in documentation or CI.
 - i18n messages live under `packages/i18n/src/messages`; implementation notes
   are in `docs/i18n-implementation.md`.
 

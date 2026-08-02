@@ -18,7 +18,7 @@ the API Worker remains the sole business-data owner.
 | Application/core | auth, payments, credits, jobs, assets, storage | database/provider adapters |
 | Provider | D1, R2, Queue, payment-provider integrations | platform SDKs only |
 
-## Non-negotiable rules
+## Enforced import rules
 
 - `apps/web` does not receive a business D1 binding, execute SQL, or create
   business migrations.
@@ -28,6 +28,12 @@ the API Worker remains the sole business-data owner.
 - Product UI does not import server database implementation details.
 - Product server modules use established core services and guards; they do not
   invent product-specific auth, billing, or credit ledgers.
+- The optional mobile capability does not import web UI.
+
+The machine-readable source of truth is
+[`template-kit/repository-facts.json`](../template-kit/repository-facts.json).
+`pnpm check:boundaries` reads its `governance.boundaryRules` directly; this
+document deliberately explains those rules rather than duplicating them.
 
 ## Examples
 
@@ -40,6 +46,6 @@ read D1 directly.
 Forbidden: `packages/shared` imports `react-native-purchases` or
 `cloudflare:workers`.
 
-The automated check is intentionally narrow. It catches these import classes;
-code review and CODEOWNERS decide whether a proposed new core contract belongs
-in the template.
+The automated check blocks the listed import directions. It cannot infer every
+semantic concern (for example, whether a new generic contract is warranted),
+so that decision remains part of the focused-PR process.

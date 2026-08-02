@@ -2,6 +2,10 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
 const sourceFile = /\.(?:[cm]?[jt]sx?)$/;
+const root = process.cwd();
+const facts = JSON.parse(
+  await readFile(path.join(root, "template-kit/repository-facts.json"), "utf8"),
+);
 
 async function findSourceFiles(directory) {
   const entries = await readdir(directory, { withFileTypes: true }).catch(() => []);
@@ -15,30 +19,29 @@ async function findSourceFiles(directory) {
   return files.flat();
 }
 
-async function checkDirectory(label, directory, patterns) {
+async function checkDirectory(rule, directory) {
   const violations = [];
+  const patterns = rule.forbiddenImportPatterns.map((pattern) => new RegExp(pattern));
   for (const file of await findSourceFiles(directory)) {
     const source = await readFile(file, "utf8");
     for (const pattern of patterns) {
-      if (pattern.test(source)) violations.push(`${label}: ${path.relative(process.cwd(), file)}`);
+      if (pattern.test(source)) {
+        violations.push(`${rule.id}: ${path.relative(root, file)}`);
+        break;
+      }
     }
   }
   return violations;
 }
 
-const violations = [
-  ...(await checkDirectory("shared package imports a platform/provider", "packages/shared", [
-    /from\s+["'](?:react-native|expo(?:\/[^"']*)?|react-native-purchases|stripe|cloudflare:workers)["']/,
-  ])),
-  ...(await checkDirectory("product UI imports server database internals", "apps/web/src/modules", [
-    /from\s+["'](?:@server\/db|@\/db|.*apps\/server\/src\/db)["']/,
-    /from\s+["']drizzle-orm(?:\/[^"']*)?["']/,
-  ])),
-  ...(await checkDirectory("product code imports server database internals", "products", [
-    /from\s+["'](?:@server\/db|@\/db|.*apps\/server\/src\/db)["']/,
-    /from\s+["']drizzle-orm(?:\/[^"']*)?["']/,
-  ])),
-];
+const rules = facts.governance?.boundaryRules ?? [];
+const violations = (
+  await Promise.all(
+    rules.flatMap((rule) =>
+      rule.directories.map((directory) => checkDirectory(rule, path.join(root, directory))),
+    ),
+  )
+).flat();
 
 if (violations.length > 0) {
   throw new Error(`Architecture boundary violations:\n${violations.join("\n")}`);

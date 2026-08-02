@@ -34,7 +34,8 @@ contracts, but do not change core semantics or embed product conditions in core.
 3. Give each core or public-contract change a focused PR, tests, and an ADR
    when it is a durable architectural decision.
 4. Run `pnpm docs:facts-check`, `pnpm check:boundaries`, and the normal
-   verification commands before review.
+   verification commands before review. Repository facts and mechanically
+   enforced import rules are defined only in `template-kit/repository-facts.json`.
 
 See [template governance](docs/template-governance.md) for versioning and
 [upstream sync](docs/upstream-sync.md) for the current downstream update flow.
