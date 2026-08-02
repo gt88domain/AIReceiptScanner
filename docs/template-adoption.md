@@ -49,7 +49,9 @@ terms in the privacy policy and terms pages.
    `template` remote described in [upstream sync](./upstream-sync.md).
 2. Choose source-controlled capabilities in `packages/app-config`: auth is
    core; enable Billing, Credits, Storage, Jobs, and native/mobile support only
-   when the product needs them. See [platform modules](./modules.md).
+   when the product needs them. Mobile additionally requires
+   `common.features.mobile: true`; this activates only its Server integrations,
+   not Expo dependencies in the root workspace. See [platform modules](./modules.md).
 3. Create business domains in `apps/server/src/modules/<domain>` and
    `apps/web/src/modules/<domain>`; do not customize core modules for the first
    product feature.

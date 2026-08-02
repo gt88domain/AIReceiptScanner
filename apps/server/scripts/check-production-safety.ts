@@ -53,8 +53,9 @@ function value(object: JsonObject, name: string) {
 
 function configuredPaymentProviders() {
   const providers = new Set<string>();
+  const common = resolveCommonConfig();
   const web = resolveWebCommonConfig();
-  const native = resolveNativeCommonConfig();
+  const native = common.features.mobile === true ? resolveNativeCommonConfig() : undefined;
 
   if (web.payments?.enabled) {
     providers.add(web.payments.provider);
@@ -71,8 +72,8 @@ function configuredPaymentProviders() {
       }
     }
   }
-  if (native.payments?.enabled) providers.add(native.payments.provider);
-  if (native.credits.enabled) {
+  if (native?.payments?.enabled) providers.add(native.payments.provider);
+  if (native?.credits.enabled) {
     for (const creditPackage of native.credits.packages) {
       if (creditPackage.status === "archived") continue;
       for (const product of Object.values(creditPackage.native)) {

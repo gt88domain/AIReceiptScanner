@@ -168,6 +168,8 @@ const appConfig: AppConfig = {
     features: {
       admin: true,
       jobs: true,
+      // Mobile is opt-in: Web-only products do not activate its server integrations.
+      mobile: false,
     },
     // Public app metadata used in UI, links, and platform setup.
     app: {

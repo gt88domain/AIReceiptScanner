@@ -246,6 +246,8 @@ export type AppCommonConfig = {
     admin?: boolean;
     /** Enables scheduled maintenance, webhook retries, and billing outbox processing. */
     jobs?: boolean;
+    /** Enables optional mobile runtime integrations on the API Worker. */
+    mobile?: boolean;
   };
   /** Generic app metadata. */
   app: {

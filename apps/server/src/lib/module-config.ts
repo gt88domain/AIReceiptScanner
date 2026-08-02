@@ -1,5 +1,4 @@
 import {
-  resolveNativeCommonConfig,
   resolveProductFeatures,
   resolveWebCommonConfig,
   validateFeatureDependencies,
@@ -32,7 +31,7 @@ export function isServerFeatureEnabled(feature: ServerFeature) {
 }
 
 export function isNativeBillingEnabled() {
-  return productFeatures.native.billing;
+  return productFeatures.mobile && productFeatures.native.billing;
 }
 
 function requireValue(env: ServerRuntimeEnv, name: keyof ServerRuntimeEnv, missing: string[]) {
@@ -60,12 +59,6 @@ function validateWebBillingEnvironment(env: ServerRuntimeEnv, missing: string[])
   }
 }
 
-function validateNativeBillingEnvironment(env: ServerRuntimeEnv, missing: string[]) {
-  if (resolveNativeCommonConfig().payments?.provider === "revenuecat") {
-    requireValue(env, "REVENUECAT_WEBHOOK_SECRET", missing);
-  }
-}
-
 /**
  * Validates only secrets and bindings needed by enabled server modules.
  *
@@ -88,8 +81,8 @@ export function validateServerModuleEnvironment(
     validateWebBillingEnvironment(env, missing);
   }
 
-  if (features.native.billing) {
-    validateNativeBillingEnvironment(env, missing);
+  if (features.mobile && features.native.billing) {
+    requireValue(env, "REVENUECAT_WEBHOOK_SECRET", missing);
   }
 
   if (features.storage && options.requireStorageBinding && !env.STORAGE) {

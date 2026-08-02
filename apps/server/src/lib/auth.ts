@@ -1,5 +1,5 @@
 import { env } from "cloudflare:workers";
-import { resolveCommonConfig, resolveNativeCommonConfig } from "@repo/app-config";
+import { resolveCommonConfig } from "@repo/app-config";
 import { joinUrl, parseHostname, resolveCrossSubdomainCookieDomain } from "@repo/shared";
 import { type BetterAuthOptions, betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
@@ -16,7 +16,7 @@ import { sendResetPasswordEmailFromRequest, sendVerificationEmailFromRequest } f
 import type { Locale } from "@repo/i18n";
 
 const commonConfig = resolveCommonConfig();
-const nativeConfig = resolveNativeCommonConfig();
+const mobileEnabled = commonConfig.features.mobile === true;
 
 /**
  * Map our locale to better-auth-localization locale
@@ -106,10 +106,10 @@ export function createAuth(d1: D1Database) {
     },
     trustedOrigins: [
       env.WEBSITE_URL || "",
-      nativeConfig.app.nativeScheme + "://",
+      ...(mobileEnabled ? [commonConfig.app.nativeScheme + "://"] : []),
 
       // Development mode - Expo's exp:// scheme with local IP ranges
-      ...(runtimeNodeEnv === "development"
+      ...(mobileEnabled && runtimeNodeEnv === "development"
         ? [
             "exp://", // Trust all Expo URLs (prefix matching)
             "exp://**", // Trust all Expo URLs (wildcard matching)
@@ -200,7 +200,7 @@ export function createAuth(d1: D1Database) {
       },
     },
     plugins: [
-      createExpoAuthPlugin(),
+      ...(mobileEnabled ? [createExpoAuthPlugin()] : []),
       localization({
         defaultLocale: "default",
         getLocale: (request) => {

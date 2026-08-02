@@ -21,6 +21,7 @@ describe("enabled server modules", () => {
   it("can validate an explicit paid feature matrix", () => {
     const paidFeatures = createProductFeatures({
       jobs: true,
+      mobile: true,
       native: { billing: true, credits: true, creditPurchases: true },
       web: { billing: true, credits: true, creditPurchases: true },
     });

@@ -13,6 +13,7 @@ export type ProductFeatures = {
   credits: boolean;
   storage: boolean;
   jobs: boolean;
+  mobile: boolean;
   web: {
     billing: boolean;
     credits: boolean;
@@ -29,6 +30,7 @@ export type ProductFeatures = {
 export type ProductFeatureInput = {
   admin?: boolean;
   jobs?: boolean;
+  mobile?: boolean;
   storage?: boolean;
   web: {
     billing: boolean;
@@ -52,15 +54,19 @@ function isCreditPurchasesEnabled(config: {
 
 /** Creates a public, provider-secret-free contract for production or feature-matrix tests. */
 export function createProductFeatures(input: ProductFeatureInput): ProductFeatures {
+  const mobile = input.mobile ?? false;
+  const native = mobile ? input.native : { billing: false, credits: false, creditPurchases: false };
+
   return {
     auth: true,
     admin: input.admin ?? true,
-    billing: input.web.billing || input.native.billing,
-    credits: input.web.credits || input.native.credits,
+    billing: input.web.billing || native.billing,
+    credits: input.web.credits || native.credits,
     storage: input.storage ?? false,
     jobs: input.jobs ?? true,
+    mobile,
     web: input.web,
-    native: input.native,
+    native,
   };
 }
 
@@ -68,16 +74,18 @@ export function createProductFeatures(input: ProductFeatureInput): ProductFeatur
 export function resolveProductFeatures(): ProductFeatures {
   const commonConfig = resolveCommonConfig();
   const webConfig = resolveWebCommonConfig();
-  const nativeConfig = resolveNativeCommonConfig();
+  const mobile = commonConfig.features.mobile === true;
+  const nativeConfig = mobile ? resolveNativeCommonConfig() : undefined;
   const webBilling = webConfig.payments?.enabled === true;
-  const nativeBilling = nativeConfig.payments?.enabled === true;
+  const nativeBilling = nativeConfig?.payments?.enabled === true;
   const webCredits = webConfig.credits.enabled === true;
-  const nativeCredits = nativeConfig.credits.enabled === true;
+  const nativeCredits = nativeConfig?.credits.enabled === true;
 
   return createProductFeatures({
     admin: commonConfig.features.admin ?? true,
     storage: commonConfig.storage.enabled === true,
     jobs: commonConfig.features.jobs ?? true,
+    mobile,
     web: {
       billing: webBilling,
       credits: webCredits,
@@ -86,7 +94,7 @@ export function resolveProductFeatures(): ProductFeatures {
     native: {
       billing: nativeBilling,
       credits: nativeCredits,
-      creditPurchases: isCreditPurchasesEnabled(nativeConfig.credits),
+      creditPurchases: nativeConfig ? isCreditPurchasesEnabled(nativeConfig.credits) : false,
     },
   });
 }

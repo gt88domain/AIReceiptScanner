@@ -19,8 +19,9 @@ the source of truth.
 | Capability | Source of truth | Dependency |
 | --- | --- | --- |
 | Admin | `common.features.admin` | Auth is core and always enabled |
+| Mobile runtime | `common.features.mobile` | Enables the Server's Expo auth, mobile deep links, and native payment checks |
 | Web Billing | `web.payments.enabled` | `common.features.jobs` |
-| Native Billing | `native.payments.enabled` | `common.features.jobs` |
+| Native Billing | `common.features.mobile` + `native.payments.enabled` | `common.features.jobs` |
 | Credits | `web.credits.enabled` / `native.credits.enabled` | None for grants and usage |
 | Credit purchases | platform `credits.purchasesEnabled` | Billing on the same platform |
 | Storage | `common.storage.enabled` | Public-content policy may be anonymous; private attachments require product auth rules |

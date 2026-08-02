@@ -16,6 +16,7 @@ describe("product features", () => {
       credits: expect.any(Boolean),
       storage: expect.any(Boolean),
       jobs: expect.any(Boolean),
+      mobile: false,
       web: {
         billing: expect.any(Boolean),
         credits: expect.any(Boolean),
@@ -56,6 +57,35 @@ describe("product features", () => {
       credits: true,
       jobs: false,
       web: { creditPurchases: false },
+    });
+  });
+
+  it("does not activate native capabilities until mobile is enabled", () => {
+    const features = createProductFeatures({
+      web: { billing: false, credits: false, creditPurchases: false },
+      native: { billing: true, credits: true, creditPurchases: true },
+    });
+
+    expect(features).toMatchObject({
+      mobile: false,
+      billing: false,
+      credits: false,
+      native: { billing: false, credits: false, creditPurchases: false },
+    });
+  });
+
+  it("activates native capabilities only with the mobile flag", () => {
+    const features = createProductFeatures({
+      mobile: true,
+      web: { billing: false, credits: false, creditPurchases: false },
+      native: { billing: true, credits: true, creditPurchases: true },
+    });
+
+    expect(features).toMatchObject({
+      mobile: true,
+      billing: true,
+      credits: true,
+      native: { billing: true, credits: true, creditPurchases: true },
     });
   });
 
