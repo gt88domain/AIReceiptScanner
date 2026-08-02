@@ -50,3 +50,16 @@ architecture or contract change. Release Please creates the release PR, updates
 `CHANGELOG.md` and `template-version.json`, then creates the immutable tag.
 Every architectural change records its reason in an ADR and uses a Conventional
 Commit so the release level is explicit.
+
+## Merge gate
+
+For this single-maintainer template, every ready (non-Draft) PR is squash merged
+automatically only after `Quality` (`static`, `test`, and `build`), OSV, and—when
+the changed paths require it—the optional Mobile check have succeeded on its
+current head commit. Draft PRs are never merged automatically.
+
+Release Please PRs use the identical gate. GitHub does not emit a
+`pull_request` event for a PR created with `GITHUB_TOKEN`, so the release
+workflow explicitly dispatches Quality and OSV (and Mobile when relevant).
+The merge workflow then identifies the PR by its checked commit rather than
+trusting the event type.

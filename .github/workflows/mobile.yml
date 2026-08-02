@@ -20,6 +20,7 @@ on:
       - "packages/app-config/**"
       - "packages/i18n/**"
       - "packages/shared/**"
+  workflow_dispatch:
 
 permissions:
   contents: read
