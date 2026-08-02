@@ -3,6 +3,15 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [0.3.1](https://github.com/gt88domain/easystarter-template/compare/v0.3.0...v0.3.1) (2026-08-02)
+
+
+### Bug Fixes
+
+* **ci:** dispatch release after automatic merge ([#20](https://github.com/gt88domain/easystarter-template/issues/20)) ([36b1bf1](https://github.com/gt88domain/easystarter-template/commit/36b1bf1bcc8a278cf91675a001e79eb9700af47f))
+* **ci:** gate release PRs before auto merge ([#19](https://github.com/gt88domain/easystarter-template/issues/19)) ([4c4723c](https://github.com/gt88domain/easystarter-template/commit/4c4723c537a1a8859f305478d2299d0fc946dcdd))
+* **ci:** merge verified release PR in quality gate ([#22](https://github.com/gt88domain/easystarter-template/issues/22)) ([b0ba922](https://github.com/gt88domain/easystarter-template/commit/b0ba922a49a4c616233f1bfab9903b70e0e1a7e7))
+
 ## [0.3.0](https://github.com/gt88domain/easystarter-template/compare/v0.2.0...v0.3.0) (2026-08-02)
 
 
