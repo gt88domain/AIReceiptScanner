@@ -2,6 +2,10 @@ import { HIDE_METADATA } from "better-auth";
 import { APIError, createAuthEndpoint, createAuthMiddleware } from "better-auth/api";
 import * as z from "zod";
 
+// Keep this synchronized with the exact Better Auth versions asserted by
+// scripts/check-expo-auth-compatibility.mjs.
+export const EXPO_AUTH_PLUGIN_COMPAT_VERSION = "1.6.23";
+
 const expoAuthorizationProxy = createAuthEndpoint(
   "/expo-authorization-proxy",
   {
@@ -58,7 +62,7 @@ const expoAuthorizationProxy = createAuthEndpoint(
 export function createExpoAuthPlugin() {
   return {
     id: "expo",
-    version: "1.6.23",
+    version: EXPO_AUTH_PLUGIN_COMPAT_VERSION,
     init: () => ({
       options: {
         trustedOrigins: String(process.env.NODE_ENV) === "development" ? ["exp://"] : [],
