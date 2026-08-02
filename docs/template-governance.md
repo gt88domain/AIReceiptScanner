@@ -46,5 +46,7 @@ rules and [upstream sync](./upstream-sync.md) for downstream update workflow.
 
 `template-version.json` uses semantic versions. Bump PATCH for compatible bug
 fixes, MINOR for a new optional capability, and MAJOR for a breaking
-architecture or contract change. Every architectural change records its reason
-in an ADR and bumps this version in the same PR.
+architecture or contract change. Release Please creates the release PR, updates
+`CHANGELOG.md` and `template-version.json`, then creates the immutable tag.
+Every architectural change records its reason in an ADR and uses a Conventional
+Commit so the release level is explicit.
