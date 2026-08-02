@@ -4,7 +4,7 @@ TanStack Template is a TypeScript monorepo built with Turborepo and pnpm workspa
 
 - `apps/web`: React 19 + TanStack Start web app, Vite dev server on port 3000.
 - `apps/server`: Hono + Cloudflare Workers API server, Wrangler dev server on port 3001.
-- `apps/native`: Expo + React Native app using Expo Router.
+- `optional/mobile`: opt-in Expo + React Native app using Expo Router.
 - `packages/api-client`: shared type-safe API client.
 - `packages/app-config`: shared app, payments, credits, and storage configuration.
 - `packages/i18n`: shared messages and i18n helpers.
@@ -20,12 +20,12 @@ oRPC routers in `apps/server/src/routers`.
 - `pnpm dev`: run all apps through Turbo.
 - `pnpm dev:web`: run the web app.
 - `pnpm dev:server`: run the API server.
-- `pnpm dev:native`: run Expo.
+- `pnpm mobile:dev`: run the opt-in Expo app after installing its workspace.
 - `pnpm dev:web+server`: run web and server together.
 - `pnpm build`: build all packages/apps that define `build`.
 - `pnpm check-types`: run Turbo type checks for workspaces that define `check-types`.
-- `pnpm lint` / `pnpm lint:fix`: run or fix OXC lint checks for web, server, and native.
-- `pnpm fmt` / `pnpm fmt:check`: run or check OXC formatting for web, server, and native.
+- `pnpm lint` / `pnpm lint:fix`: run or fix OXC lint checks for core web, server, and packages.
+- `pnpm fmt` / `pnpm fmt:check`: run or check OXC formatting for core web, server, and packages.
 
 Database and deployment commands:
 
@@ -108,7 +108,7 @@ ad hoc string manipulation when practical.
   Drizzle migrations. Keep structural migrations, data migrations, seeds,
   backfills, and repairs separate as defined in `apps/server/src/db/README.md`.
 - Cross-platform code should live in workspace packages only when both web and
-  native or server genuinely need it.
+  mobile or server genuinely need it. Core packages must not import mobile code.
 - i18n messages live under `packages/i18n/src/messages`; implementation notes
   are in `docs/i18n-implementation.md`.
 

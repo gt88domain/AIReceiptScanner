@@ -1,6 +1,6 @@
 # oRPC and Cloudflare Worker boundaries
 
-oRPC is the typed HTTP API between the Web Worker/native clients and the API
+oRPC is the typed HTTP API between the Web Worker/optional mobile clients and the API
 Worker. It is not a second business-runtime or a replacement for Queue,
 Workflow, R2, or Durable Objects.
 

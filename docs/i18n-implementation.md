@@ -327,14 +327,14 @@ export async function sendVerificationEmail({
 ### Dependencies
 
 ```bash
-cd apps/native
+cd optional/mobile
 pnpm add i18next react-i18next @react-native-async-storage/async-storage
 ```
 
 ### File Structure
 
 ```
-apps/native/src/i18n/
+optional/mobile/i18n/
 ├── index.ts           # i18next initialization
 └── languageDetector.ts # Language detector
 
@@ -347,7 +347,7 @@ packages/i18n/src/messages/native/
 ### Core Implementation
 
 ```typescript
-// apps/native/src/i18n/index.ts
+// optional/mobile/i18n/index.ts
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -432,7 +432,7 @@ export function getCurrentLocale(): Locale {
 ### Provider Setup
 
 ```typescript
-// apps/native/app/_layout.tsx
+// optional/mobile/app/_layout.tsx
 import '../src/i18n' // Initialize i18n
 
 export default function RootLayout() {
@@ -465,7 +465,7 @@ function MyScreen() {
 ### Language Switcher Component
 
 ```typescript
-// apps/native/src/components/LocaleSwitcher.tsx
+// optional/mobile/components/LocaleSwitcher.tsx
 import { useTranslation } from 'react-i18next'
 import { View, Text, TouchableOpacity } from 'react-native'
 import { changeLanguage, supportedLocales, type Locale } from '../i18n'
@@ -592,7 +592,7 @@ Examples:
 ### Native
 
 - [ ] Install dependencies `i18next react-i18next @react-native-async-storage/async-storage`
-- [ ] Create `apps/native/src/i18n/index.ts`
+- [ ] Create `optional/mobile/i18n/index.ts`
 - [ ] Create `packages/i18n/src/messages/native/en.json`
 - [ ] Create `packages/i18n/src/messages/native/zh.json`
 - [ ] Initialize i18n in `_layout.tsx`

@@ -31,17 +31,10 @@
     "web#check-types": {
       "dependsOn": ["server#check-types"]
     },
-    "native#check-types": {
-      "dependsOn": ["server#check-types"]
-    },
     "test:integration": {
       "cache": false
     },
     "dev": {
-      "cache": false,
-      "persistent": true
-    },
-    "dev:ios-device": {
       "cache": false,
       "persistent": true
     },

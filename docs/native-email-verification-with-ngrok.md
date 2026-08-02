@@ -103,7 +103,7 @@ Keep `WEBSITE_URL` as-is unless you also need to expose the web app.
 
 ## 4. Update the native app API URL
 
-Edit `apps/native/.env.local` and update `EXPO_PUBLIC_SERVER_API_URL`:
+Edit `optional/mobile/.env.local` and update `EXPO_PUBLIC_SERVER_API_URL`:
 
 ```env
 EXPO_PUBLIC_SERVER_API_URL=https://abc123.ngrok-free.app
@@ -124,7 +124,7 @@ Choose one of the following options.
 Use a native iOS build:
 
 ```bash
-cd apps/native
+cd optional/mobile
 npx expo run:ios
 ```
 
@@ -139,21 +139,21 @@ easystarter-native:///callback
 Use Expo Go only if you want to test general app flows:
 
 ```bash
-cd apps/native
+cd optional/mobile
 pnpm dev
 ```
 
 or:
 
 ```bash
-cd apps/native
+cd optional/mobile
 npx expo start --lan
 ```
 
 If local network discovery is unstable, try:
 
 ```bash
-cd apps/native
+cd optional/mobile
 npx expo start --tunnel
 ```
 
@@ -172,14 +172,14 @@ pnpm dev:server
 And restart either:
 
 ```bash
-cd apps/native
+cd optional/mobile
 npx expo run:ios
 ```
 
 or:
 
 ```bash
-cd apps/native
+cd optional/mobile
 pnpm dev
 ```
 
@@ -218,7 +218,7 @@ Check the following:
 
 Check the following:
 
-- `apps/native/.env.local` contains the ngrok HTTPS URL
+- `optional/mobile/.env.local` contains the ngrok HTTPS URL
 - you restarted Expo after editing the env file
 - the app bundle was rebuilt with the updated environment variable
 
@@ -245,18 +245,18 @@ Check the following:
 Free ngrok domains often change when you restart the tunnel. When that happens, update both files again:
 
 - `apps/server/.dev.vars`
-- `apps/native/.env.local`
+- `optional/mobile/.env.local`
 
 Then restart both processes.
 
 ## Files involved
 
 - `apps/server/.dev.vars`
-- `apps/native/.env.local`
+- `optional/mobile/.env.local`
 - `apps/server/src/lib/auth.ts`
-- `apps/native/lib/auth/auth.client.ts`
-- `apps/native/configs/app-config.ts`
-- `apps/native/app.json`
+- `optional/mobile/lib/auth/auth.client.ts`
+- `optional/mobile/configs/app-config.ts`
+- `optional/mobile/app.json`
 
 ## Summary
 

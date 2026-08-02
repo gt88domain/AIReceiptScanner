@@ -4,13 +4,13 @@
     "strict": true,
     "paths": {
       "@/*": ["./*"],
-      "@server/*": ["../server/src/*"]
+      "@server/*": ["../../apps/server/src/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"],
   "references": [
     {
-      "path": "../server"
+      "path": "../../apps/server"
     }
   ]
 }

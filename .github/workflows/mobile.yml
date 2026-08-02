@@ -1,0 +1,43 @@
+name: Mobile
+
+on:
+  pull_request:
+    paths:
+      - "optional/mobile/**"
+      - "optional/pnpm-workspace.yaml"
+      - "optional/pnpm-lock.yaml"
+      - "packages/api-client/**"
+      - "packages/app-config/**"
+      - "packages/i18n/**"
+      - "packages/shared/**"
+  push:
+    branches: [main]
+    paths:
+      - "optional/mobile/**"
+      - "optional/pnpm-workspace.yaml"
+      - "optional/pnpm-lock.yaml"
+      - "packages/api-client/**"
+      - "packages/app-config/**"
+      - "packages/i18n/**"
+      - "packages/shared/**"
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.13.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: optional/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --dir optional install --frozen-lockfile
+      - run: pnpm --filter server check-types
+      - run: pnpm mobile:check

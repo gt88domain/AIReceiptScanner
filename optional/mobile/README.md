@@ -13,7 +13,7 @@ React Native + Expo app for TanStack Template.
 2. Start the Expo dev server
 
    ```bash
-   cd apps/native
+   cd optional/mobile
    pnpm dev
    ```
 
@@ -38,14 +38,14 @@ Use Expo Go for:
 Start it with:
 
 ```bash
-cd apps/native
+cd optional/mobile
 pnpm dev
 ```
 
 If LAN discovery is unstable, try:
 
 ```bash
-cd apps/native
+cd optional/mobile
 npx expo start --tunnel
 ```
 
@@ -62,7 +62,7 @@ Use `npx expo run:ios` when you need native app behavior, especially for:
 Run it with:
 
 ```bash
-cd apps/native
+cd optional/mobile
 npx expo run:ios
 ```
 
@@ -101,7 +101,7 @@ If you need to test:
 use:
 
 ```bash
-cd apps/native
+cd optional/mobile
 npx expo run:ios
 ```
 
@@ -111,8 +111,8 @@ instead of Expo Go.
 
 The native app reads its API base URL from:
 
-- `apps/native/.env.development.local`
-- `apps/native/.env.production`
+- `optional/mobile/.env.development.local`
+- `optional/mobile/.env.production`
 
 Example:
 

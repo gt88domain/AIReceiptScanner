@@ -15,11 +15,12 @@ tanstack-template/
 ├── apps/
 │   ├── web/           # フロントエンド（React + TanStack Start）
 │   ├── server/        # バックエンド（Hono + Cloudflare Workers）
-│   ├── native/        # モバイル（React Native + Expo）
 ├── packages/
 │   ├── i18n/          # 共有国際化
 │   ├── api-client/    # 型安全な API クライアント
 │   └── storage-config/ # ストレージ設定
+├── optional/
+│   └── mobile/        # 任意のモバイル（React Native + Expo）
 └── docs/              # ドキュメント
 ```
 
@@ -65,13 +66,15 @@ apps/server/src/
 └── lib/           # 共有ユーティリティ
 ```
 
-### Native (`apps/native/`)
+### Mobile (`optional/mobile/`)
 
 以下の技術で構築されたモバイルアプリ：
 
 - **React Native** - クロスプラットフォームモバイル
 - **Expo** - 開発プラットフォーム
 - **Expo Router** - ファイルベースのルーティング
+
+コア workspace はこのアプリをインストール・実行しません。モバイルが必要な製品だけが任意 workspace をインストールします。
 
 ## パッケージ
 

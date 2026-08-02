@@ -1,5 +1,4 @@
 import { env } from "cloudflare:workers";
-import { expo } from "@better-auth/expo";
 import { resolveCommonConfig, resolveNativeCommonConfig } from "@repo/app-config";
 import { joinUrl, parseHostname, resolveCrossSubdomainCookieDomain } from "@repo/shared";
 import { type BetterAuthOptions, betterAuth } from "better-auth";
@@ -10,6 +9,7 @@ import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { createT, getLocaleFromHeaders, getLocaleFromRequest } from "@/i18n";
 import { getAppleProviderConfig } from "@/lib/apple-auth";
+import { createExpoAuthPlugin } from "@/auth/expo-plugin";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import * as schema from "../db/schema/auth";
 import { sendResetPasswordEmailFromRequest, sendVerificationEmailFromRequest } from "../emails";
@@ -200,7 +200,7 @@ export function createAuth(d1: D1Database) {
       },
     },
     plugins: [
-      expo(),
+      createExpoAuthPlugin(),
       localization({
         defaultLocale: "default",
         getLocale: (request) => {

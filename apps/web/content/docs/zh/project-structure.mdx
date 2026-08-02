@@ -15,11 +15,12 @@ tanstack-template/
 ├── apps/
 │   ├── web/           # 前端（React + TanStack Start）
 │   ├── server/        # 后端（Hono + Cloudflare Workers）
-│   ├── native/        # 移动端（React Native + Expo）
 ├── packages/
 │   ├── i18n/          # 共享国际化
 │   ├── api-client/    # 类型安全 API 客户端
 │   └── storage-config/ # 存储配置
+├── optional/
+│   └── mobile/        # 可选移动端（React Native + Expo）
 └── docs/              # 文档
 ```
 
@@ -65,13 +66,15 @@ apps/server/src/
 └── lib/           # 共享工具
 ```
 
-### Native (`apps/native/`)
+### Mobile (`optional/mobile/`)
 
 使用以下技术构建的移动应用：
 
 - **React Native** - 跨平台移动开发
 - **Expo** - 开发平台
 - **Expo Router** - 基于文件的路由
+
+核心工作区不会安装或运行此应用；仅当产品需要移动端时才安装可选工作区。
 
 ## 包
 

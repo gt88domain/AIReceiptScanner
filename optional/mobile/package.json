@@ -1,5 +1,5 @@
 {
-  "name": "native",
+  "name": "mobile",
   "version": "1.0.0",
   "private": true,
   "main": "expo-router/entry",
@@ -33,6 +33,7 @@
     "fmt:check": "oxfmt --check",
     "check-types": "tsc --noEmit",
     "doctor": "expo-doctor",
+    "check": "pnpm run check-types && pnpm run lint",
     "upgrade-expo": "pnpm exec expo install --fix && pnpm dlx expo-doctor"
   },
   "dependencies": {

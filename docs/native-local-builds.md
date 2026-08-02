@@ -13,8 +13,8 @@ Use this workflow when you want to:
 
 This repository already contains committed native projects:
 
-- `apps/native/ios`
-- `apps/native/android`
+- `optional/mobile/ios`
+- `optional/mobile/android`
 
 That means you can build directly with Xcode and Gradle.
 
@@ -35,10 +35,10 @@ Use EAS when:
 
 ## Prerequisites
 
-Install dependencies from the repo root:
+Install the optional mobile workspace first:
 
 ```bash
-pnpm install
+pnpm --dir optional install
 ```
 
 For iOS local builds, you also need:
@@ -57,8 +57,8 @@ For Android local builds, you also need:
 
 The native app expects Expo public environment variables in:
 
-- `apps/native/.env.local`
-- `apps/native/.env.production`
+- `optional/mobile/.env.local`
+- `optional/mobile/.env.production`
 
 Example:
 
@@ -81,7 +81,7 @@ Important:
 These commands are useful for development builds installed directly on a simulator or device:
 
 ```bash
-cd apps/native
+cd optional/mobile
 npx expo run:ios
 npx expo run:android
 ```
@@ -95,7 +95,7 @@ For distributable release outputs, use Xcode archive or Gradle release tasks.
 From the native Android project:
 
 ```bash
-cd apps/native/android
+cd optional/mobile/android
 ```
 
 ### Build a Release APK
@@ -107,7 +107,7 @@ cd apps/native/android
 Output:
 
 ```text
-apps/native/android/app/build/outputs/apk/release/app-release.apk
+optional/mobile/android/app/build/outputs/apk/release/app-release.apk
 ```
 
 ### Build a Release AAB
@@ -119,7 +119,7 @@ apps/native/android/app/build/outputs/apk/release/app-release.apk
 Output:
 
 ```text
-apps/native/android/app/build/outputs/bundle/release/app-release.aab
+optional/mobile/android/app/build/outputs/bundle/release/app-release.aab
 ```
 
 ### Signing Note
@@ -130,7 +130,7 @@ That is acceptable for local verification, but not for Play Store distribution.
 
 Before shipping Android publicly, replace the debug signing config in:
 
-- `apps/native/android/app/build.gradle`
+- `optional/mobile/android/app/build.gradle`
 
 with your own release keystore configuration.
 
@@ -138,11 +138,11 @@ with your own release keystore configuration.
 
 The iOS project workspace is:
 
-- `apps/native/ios/EasyStarterNative.xcworkspace`
+- `optional/mobile/ios/EasyStarterNative.xcworkspace`
 
 ### Recommended: Build with Xcode
 
-1. Open `apps/native/ios/EasyStarterNative.xcworkspace` in Xcode.
+1. Open `optional/mobile/ios/EasyStarterNative.xcworkspace` in Xcode.
 2. Select the `EasyStarterNative` scheme.
 3. Select `Any iOS Device (arm64)` for a release archive.
 4. Run `Product > Archive`.
@@ -153,7 +153,7 @@ This is the easiest way to produce a signed local iOS build.
 ### Build an Archive with CLI
 
 ```bash
-cd apps/native/ios
+cd optional/mobile/ios
 
 xcodebuild \
   -workspace EasyStarterNative.xcworkspace \
@@ -167,7 +167,7 @@ xcodebuild \
 Output:
 
 ```text
-apps/native/ios/build/EasyStarterNative.xcarchive
+optional/mobile/ios/build/EasyStarterNative.xcarchive
 ```
 
 After the archive is created, export it with Xcode Organizer or `xcodebuild -exportArchive` if you already have an `ExportOptions.plist`.
@@ -177,7 +177,7 @@ After the archive is created, export it with Xcode Organizer or `xcodebuild -exp
 If native dependencies change, reinstall pods:
 
 ```bash
-cd apps/native/ios
+cd optional/mobile/ios
 pod install
 ```
 
@@ -209,7 +209,7 @@ If no newer OTA update has been downloaded, the embedded build-time bundle is th
 
 ## Recommended Local Release Flow
 
-1. Update `apps/native/.env.local` or `apps/native/.env.production`.
+1. Update `optional/mobile/.env.local` or `optional/mobile/.env.production`.
 2. Rebuild the app from scratch.
 3. For Android, run `assembleRelease` or `bundleRelease`.
 4. For iOS, archive with Xcode or `xcodebuild`.

@@ -28,8 +28,8 @@ auth, payments, credits, jobs, storage, database, shared packages, or CI.
 | **Database**     | Cloudflare D1 (SQLite) + Drizzle ORM                  |
 | **API**          | oRPC (end-to-end type-safe)                           |
 | **Auth**         | Better Auth (Email/Password, GitHub, Google, Apple) |
-| **Payments**     | Stripe + Creem (web), RevenueCat (native), credits system |
-| **Mobile**       | React Native + Expo                                   |
+| **Payments**     | Stripe + Creem (web), optional RevenueCat mobile payments, credits system |
+| **Mobile**       | Optional React Native + Expo capability               |
 | **Email**        | Resend + React Email templates                        |
 | **i18n**         | use-intl (English/Chinese/Japanese)                   |
 | **Monorepo**     | Turborepo + pnpm workspaces                           |
@@ -65,7 +65,7 @@ auth, payments, credits, jobs, storage, database, shared packages, or CI.
 
 - Multi-tier pricing system
 - Web payments via Stripe and Creem
-- Native in-app purchases via RevenueCat
+- Optional native in-app purchases via RevenueCat
 - Built-in credits system (grants, balances, orders)
 - User management dashboard
 - Settings and profile pages
@@ -83,7 +83,6 @@ pnpm install
 # 2. Set up environment files (copy from examples and configure)
 #    apps/web/.env.development.example    → apps/web/.env.development
 #    apps/server/.dev.vars.example        → apps/server/.dev.vars
-#    apps/native/.env.development.local.example → apps/native/.env.development.local
 # Configure your database, auth providers, payments, etc.
 
 # 3. Initialize local D1 and apply versioned migrations
@@ -107,13 +106,14 @@ pnpm dev
 ├── apps/
 │   ├── web/         # Frontend (React + TanStack Start)
 │   ├── server/      # Backend API (Hono + Cloudflare Workers)
-│   ├── native/      # Mobile app (React Native + Expo)
 ├── packages/
 │   ├── app-config/  # Unified cross-platform business config
 │   ├── api-client/  # Type-safe API client
 │   ├── i18n/        # Shared internationalization
 │   ├── shared/      # Shared utilities and types
 │   └── ...
+├── optional/
+│   └── mobile/      # Opt-in React Native + Expo app
 └── docs/            # Documentation
 ```
 
@@ -131,6 +131,7 @@ pnpm dev
 - `docs/adr/README.md` — Durable architecture decisions and their rationale
 - `docs/production-migrations.md` — Structural migration production runbook
 - `docs/rate-limiting.md` — Edge, auth, and product-quota rate-limit policy
+- `docs/migration/mobile-package-refactor.md` — Mobile package isolation migration record
 
 ## 🛠️ Available Scripts
 
@@ -141,7 +142,8 @@ pnpm dev
 | `pnpm dev`        | Start all apps in development mode |
 | `pnpm dev:web`    | Start web app only                 |
 | `pnpm dev:server` | Start API server only              |
-| `pnpm dev:native` | Start mobile app                   |
+| `pnpm mobile:dev` | Start the optional mobile app      |
+| `pnpm mobile:check` | Type-check and lint optional mobile |
 
 ### Build & Deploy
 
@@ -268,7 +270,7 @@ FROM_EMAIL=noreply@yourdomain.com
 
 ### Payments Setup
 
-Web checkout supports Stripe and Creem; native uses RevenueCat:
+Web checkout supports Stripe and Creem; an enabled mobile app uses RevenueCat:
 
 ```bash
 # Stripe (web)
@@ -279,7 +281,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 CREEM_API_KEY=your_creem_api_key
 CREEM_WEBHOOK_SECRET=your_creem_webhook_secret
 
-# RevenueCat (native)
+# RevenueCat (optional mobile)
 REVENUECAT_WEBHOOK_SECRET=your_revenuecat_webhook_secret
 ```
 

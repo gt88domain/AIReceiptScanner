@@ -29,6 +29,28 @@ for (const script of facts.requiredRootScripts) {
   if (!packageJson.scripts?.[script]) errors.push(`Root package.json is missing script: ${script}.`);
 }
 
+for (const script of facts.optionalRootScripts ?? []) {
+  if (!packageJson.scripts?.[script]) errors.push(`Root package.json is missing optional script: ${script}.`);
+}
+
+const applicationNames = Object.entries(facts.applications)
+  .filter(([, directory]) => typeof directory === "string")
+  .map(([name]) => name);
+const defaultApplications = facts.applications.default ?? [];
+const optionalApplications = facts.applications.optional ?? [];
+
+for (const name of [...defaultApplications, ...optionalApplications]) {
+  if (!applicationNames.includes(name)) errors.push(`Unknown application classification: ${name}.`);
+}
+
+for (const name of optionalApplications) {
+  if (defaultApplications.includes(name)) errors.push(`${name} cannot be both default and optional.`);
+  const directory = facts.applications[name];
+  if (typeof directory === "string" && packageJson.workspaces?.includes(directory)) {
+    errors.push(`${name} is optional but remains in the root workspace.`);
+  }
+}
+
 if (!qualityWorkflow.includes(`branches: [${facts.defaultBranch}]`)) {
   errors.push(`Quality workflow must target the ${facts.defaultBranch} branch.`);
 }

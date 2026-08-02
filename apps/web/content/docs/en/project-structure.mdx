@@ -15,11 +15,12 @@ tanstack-template/
 ├── apps/
 │   ├── web/           # Frontend (React + TanStack Start)
 │   ├── server/        # Backend (Hono + Cloudflare Workers)
-│   ├── native/        # Mobile (React Native + Expo)
 ├── packages/
 │   ├── i18n/          # Shared internationalization
 │   ├── api-client/    # Type-safe API client
 │   └── storage-config/ # Storage configuration
+├── optional/
+│   └── mobile/        # Opt-in mobile (React Native + Expo)
 └── docs/              # Documentation
 ```
 
@@ -65,13 +66,16 @@ apps/server/src/
 └── lib/           # Shared utilities
 ```
 
-### Native (`apps/native/`)
+### Mobile (`optional/mobile/`)
 
 Mobile app built with:
 
 - **React Native** - Cross-platform mobile
 - **Expo** - Development platform
 - **Expo Router** - File-based routing
+
+The core workspace does not install or run this app. Install its optional
+workspace only when the product needs mobile support.
 
 ## Packages
 

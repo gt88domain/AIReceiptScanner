@@ -18,10 +18,10 @@ Review and replace the following groups together:
 
 | Buyer-owned value | Locations to update |
 | --- | --- |
-| Web and API domains | `apps/web/wrangler.jsonc`, `apps/server/wrangler.jsonc`, `apps/native/eas.json` |
+| Web and API domains | `apps/web/wrangler.jsonc`, `apps/server/wrangler.jsonc`, `optional/mobile/eas.json` |
 | Product name, support email, website and app links | `packages/app-config/src/app-config.ts` |
 | Cloudflare Worker, D1, R2, and service-binding names | both `wrangler.jsonc` files |
-| Native bundle identifier and deep-link scheme | `apps/native/app.json`, `packages/app-config/src/app-config.ts` |
+| Native bundle identifier and deep-link scheme | `optional/mobile/app.json`, `packages/app-config/src/app-config.ts` |
 | Stripe, Creem, Waffo, and RevenueCat product IDs | `packages/app-config/src/app-config.ts` |
 | Transactional-email sender and production secrets | `apps/server/.env.production.example` and Worker secrets |
 
