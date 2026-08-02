@@ -81,3 +81,5 @@ If it finds none, it opens one `main-provenance-warning` issue for that commit.
 It is an alert and never rewrites history. It detects accidental direct pushes,
 but cannot protect against someone who already has permission to push to `main`
 or modify workflows; write access remains restricted to template maintainers.
+Automated merges explicitly dispatch the same audit because GitHub suppresses a
+`push` workflow triggered by `GITHUB_TOKEN`.
