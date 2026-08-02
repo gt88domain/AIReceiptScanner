@@ -6,6 +6,32 @@ import * as z from "zod";
 // scripts/check-expo-auth-compatibility.mjs.
 export const EXPO_AUTH_PLUGIN_COMPAT_VERSION = "1.6.23";
 
+export function forwardExpoCallbackCookie(context: {
+  responseHeaders?: Headers;
+  isTrustedOrigin: (origin: string) => boolean;
+  setHeader: (name: string, value: string) => void;
+}) {
+  const headers = context.responseHeaders;
+  const location = headers?.get("location");
+  if (!location || location.includes("/oauth-proxy-callback")) return;
+
+  let redirectURL: URL;
+  try {
+    redirectURL = new URL(location);
+  } catch {
+    return;
+  }
+
+  if (redirectURL.protocol === "http:" || redirectURL.protocol === "https:") return;
+  if (!context.isTrustedOrigin(location)) return;
+
+  const cookie = headers?.get("set-cookie");
+  if (!cookie) return;
+
+  redirectURL.searchParams.set("cookie", cookie);
+  context.setHeader("location", redirectURL.toString());
+}
+
 const expoAuthorizationProxy = createAuthEndpoint(
   "/expo-authorization-proxy",
   {
@@ -95,25 +121,11 @@ export function createExpoAuthPlugin() {
             );
           },
           handler: createAuthMiddleware(async (context) => {
-            const headers = context.context.responseHeaders;
-            const location = headers?.get("location");
-            if (!location || location.includes("/oauth-proxy-callback")) return;
-
-            let redirectURL: URL;
-            try {
-              redirectURL = new URL(location);
-            } catch {
-              return;
-            }
-
-            if (redirectURL.protocol === "http:" || redirectURL.protocol === "https:") return;
-            if (!context.context.isTrustedOrigin(location)) return;
-
-            const cookie = headers?.get("set-cookie");
-            if (!cookie) return;
-
-            redirectURL.searchParams.set("cookie", cookie);
-            context.setHeader("location", redirectURL.toString());
+            forwardExpoCallbackCookie({
+              responseHeaders: context.context.responseHeaders,
+              isTrustedOrigin: context.context.isTrustedOrigin,
+              setHeader: context.setHeader,
+            });
           }),
         },
       ],

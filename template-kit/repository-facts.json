@@ -20,6 +20,22 @@
   },
   "governance": {
     "productRoots": ["apps/server/src/modules", "apps/web/src/modules"],
+    "platformModuleRoots": [
+      "apps/server/src/modules/jobs",
+      "apps/server/src/modules/assets",
+      "apps/server/src/modules/audit"
+    ],
+    "declaredOverlaps": [
+      {
+        "parent": "apps/server/src/modules",
+        "children": [
+          "apps/server/src/modules/jobs",
+          "apps/server/src/modules/assets",
+          "apps/server/src/modules/audit"
+        ],
+        "ownership": "platform"
+      }
+    ],
     "coreRoots": [
       "packages",
       "apps/server/src/auth",
@@ -59,8 +75,13 @@
         "id": "server-product-no-provider-sdk",
         "description": "Product server modules use core adapters and standard guards rather than provider SDKs.",
         "directories": ["apps/server/src/modules"],
+        "excludeDirectories": [
+          "apps/server/src/modules/jobs",
+          "apps/server/src/modules/assets",
+          "apps/server/src/modules/audit"
+        ],
         "forbiddenImportPatterns": [
-          "(?:from\\s+|import\\s*\\()[\\\"'](?:better-auth(?:/[^\\\"']*)?|stripe|resend)[\\\"']"
+          "(?:from\\s+|import\\s*\\()[\\\"'](?:better-auth(?:/[^\\\"']*)?|stripe|resend|cloudflare:workers|react-native-purchases|@aws-sdk/[^\\\"']*)[\\\"']"
         ]
       },
       {
@@ -84,7 +105,8 @@
           "apps/server/src/lib"
         ],
         "forbiddenImportPatterns": [
-          "(?:from\\s+|import\\s*\\()[\\\"'](?:products|(?:\\.\\./)+products)/"
+          "(?:from\\s+|import\\s*\\()[\\\"'](?:products|(?:\\.\\./)+products)/",
+          "(?:from\\s+|import\\s*\\()[\\\"']@/modules/(?!jobs(?:/|[\\\"'])|assets(?:/|[\\\"'])|audit(?:/|[\\\"']))"
         ]
       }
     ]

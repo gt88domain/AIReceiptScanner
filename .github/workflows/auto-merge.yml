@@ -1,0 +1,40 @@
+name: Auto merge verified PR
+
+on:
+  workflow_run:
+    workflows: ["Quality", "Dependency vulnerability scan", "Mobile"]
+    types: [completed]
+
+permissions:
+  checks: read
+  contents: write
+  pull-requests: write
+
+jobs:
+  merge:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.workflow_run.pull_requests[0];
+            if (!pr) return;
+            const { data: pull } = await github.rest.pulls.get({ ...context.repo, pull_number: pr.number });
+            if (pull.draft || pull.state !== "open") return;
+
+            const { data } = await github.rest.checks.listForRef({
+              ...context.repo,
+              ref: pull.head.sha,
+              per_page: 100,
+            });
+            const checks = new Map(data.check_runs.map((check) => [check.name, check]));
+            const required = ["static", "test", "build", "osv"];
+            if (!required.every((name) => checks.get(name)?.conclusion === "success")) return;
+            if (checks.has("check") && checks.get("check").conclusion !== "success") return;
+
+            await github.rest.pulls.merge({
+              ...context.repo,
+              pull_number: pull.number,
+              merge_method: "squash",
+            });

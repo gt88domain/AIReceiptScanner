@@ -7,12 +7,15 @@ const facts = JSON.parse(
   await readFile(path.join(root, "template-kit/repository-facts.json"), "utf8"),
 );
 
-async function findSourceFiles(directory) {
+async function findSourceFiles(directory, excludedDirectories = []) {
   const entries = await readdir(directory, { withFileTypes: true }).catch(() => []);
   const files = await Promise.all(
     entries.map(async (entry) => {
       const entryPath = path.join(directory, entry.name);
-      if (entry.isDirectory()) return findSourceFiles(entryPath);
+      if (excludedDirectories.some((excluded) => entryPath === excluded || entryPath.startsWith(`${excluded}/`))) {
+        return [];
+      }
+      if (entry.isDirectory()) return findSourceFiles(entryPath, excludedDirectories);
       return sourceFile.test(entry.name) ? [entryPath] : [];
     }),
   );
@@ -22,7 +25,8 @@ async function findSourceFiles(directory) {
 async function checkDirectory(rule, directory) {
   const violations = [];
   const patterns = rule.forbiddenImportPatterns.map((pattern) => new RegExp(pattern));
-  for (const file of await findSourceFiles(directory)) {
+  const excludedDirectories = (rule.excludeDirectories ?? []).map((excluded) => path.join(root, excluded));
+  for (const file of await findSourceFiles(directory, excludedDirectories)) {
     const source = await readFile(file, "utf8");
     for (const pattern of patterns) {
       if (pattern.test(source)) {

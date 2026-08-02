@@ -19,19 +19,15 @@ release notes have been evaluated.
 ## Downstream manifest
 
 Copy `template-kit/downstream-manifest.example.json` and
-`template-kit/downstream-manifest.schema.json` to `.template/` in the product
-repository, naming the former `manifest.json`. Set the exact release tag and
-commit, then list every intentional local change. Keep the file with the
-product so an AI or maintainer can distinguish product work from upstream
-divergence during a later sync.
+`template-kit/downstream-manifest.schema.json` to `.template/`, naming the
+former `source.json`. Copy `template-kit/modification.schema.json` and create
+one `.template/modifications/MOD-xxxx.json` file for each protected Core or
+Platform deviation. Set the exact release tag and commit in source.json. The
+CI check rejects protected changes without exactly one active record.
 
-The allowed ownership values are:
-
-- `product`: a business domain under the documented module roots; preserve it.
-- `core-contract`: a deliberate deviation from an upstream contract; reconcile
-  it with each upstream release.
-- `deployment`: buyer-owned identifiers or infrastructure settings; preserve
-  them while applying the upstream safety contract.
+Modification classes are `upstream-candidate`, `product-specific`, and
+`temporary-workaround`. The latter requires a removal condition and deadline;
+the first requires an upstream issue or PR reference.
 
 Resolve conflicts by keeping product behavior in product modules and accepting
 template fixes in core modules. A conflict in auth, migrations, billing,

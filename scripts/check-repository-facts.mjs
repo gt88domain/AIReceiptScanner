@@ -8,6 +8,7 @@ const workspace = await readFile(path.join(root, "pnpm-workspace.yaml"), "utf8")
 const serverWrangler = await readFile(path.join(root, "apps/server/wrangler.jsonc"), "utf8");
 const webWrangler = await readFile(path.join(root, "apps/web/wrangler.jsonc"), "utf8");
 const qualityWorkflow = await readFile(path.join(root, ".github/workflows/quality.yml"), "utf8");
+const codeowners = await readFile(path.join(root, ".github/CODEOWNERS"), "utf8");
 const errors = [];
 
 if (packageJson.packageManager !== facts.packageManager) {
@@ -57,6 +58,33 @@ if (!Array.isArray(boundaryRules) || boundaryRules.length === 0) {
         errors.push(`Boundary rule ${rule.id} references a missing directory: ${directory}.`),
       );
     }
+  }
+}
+
+const coreRoots = facts.governance?.coreRoots ?? [];
+const platformRoots = facts.governance?.platformModuleRoots ?? [];
+const productRoots = facts.governance?.productRoots ?? [];
+const declaredOverlaps = facts.governance?.declaredOverlaps ?? [];
+const overlaps = (left, right) => left === right || left.startsWith(`${right}/`) || right.startsWith(`${left}/`);
+for (const [leftName, leftRoots, rightName, rightRoots] of [
+  ["core", coreRoots, "platform", platformRoots],
+  ["core", coreRoots, "product", productRoots],
+]) {
+  for (const left of leftRoots) {
+    for (const right of rightRoots) {
+      if (overlaps(left, right)) errors.push(`${leftName} root ${left} overlaps ${rightName} root ${right}.`);
+    }
+  }
+}
+for (const platformRoot of platformRoots) {
+  const declaration = declaredOverlaps.find(
+    (overlap) => overlap.ownership === "platform" && overlap.children?.includes(platformRoot),
+  );
+  if (!declaration || !productRoots.some((productRoot) => overlaps(platformRoot, productRoot))) {
+    errors.push(`Platform root ${platformRoot} needs a declared product-root override.`);
+  }
+  if (!codeowners.includes(`/${platformRoot}/ @gt88domain`)) {
+    errors.push(`CODEOWNERS is missing the platform root ${platformRoot}.`);
   }
 }
 

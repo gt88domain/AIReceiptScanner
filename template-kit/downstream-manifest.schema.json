@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "EasyStarter downstream adoption manifest",
   "type": "object",
-  "required": ["template", "upstream", "adoptedAt", "modifications"],
+  "required": ["template", "upstream", "adoptedAt"],
   "properties": {
     "template": { "const": "easystarter-template" },
     "upstream": {
@@ -14,19 +14,6 @@
         "commit": { "type": "string", "minLength": 7 }
       }
     },
-    "adoptedAt": { "type": "string", "format": "date" },
-    "modifications": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["path", "ownership", "reason", "upstreamStrategy"],
-        "properties": {
-          "path": { "type": "string", "minLength": 1 },
-          "ownership": { "enum": ["product", "core-contract", "deployment"] },
-          "reason": { "type": "string", "minLength": 1 },
-          "upstreamStrategy": { "enum": ["preserve", "reconcile", "replace"] }
-        }
-      }
-    }
+    "adoptedAt": { "type": "string", "format": "date" }
   }
 }

@@ -16,3 +16,13 @@ auditable.
 Core abstractions are added only when multiple products need the same contract.
 Do not create a dynamic plugin system, runtime code discovery, or arbitrary
 provider initialization in a product module.
+
+## Contract requirements
+
+Job handlers are registered, idempotent, and retry/DLQ-safe. Provider adapters
+own SDK initialization, normalize failures, and document webhook idempotency.
+Admin contributions use standard guards and audit logging. Auth lifecycle work
+belongs in the adapter/guard boundary, never a product feature. Capability
+contributions declare a stable capability name and enforce it on the server.
+Each extension PR states compatibility, ordering, failure behavior, and focused
+test evidence.

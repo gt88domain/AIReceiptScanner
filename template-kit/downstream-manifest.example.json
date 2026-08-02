@@ -3,16 +3,8 @@
   "template": "easystarter-template",
   "upstream": {
     "repository": "https://github.com/gt88domain/easystarter-template",
-    "release": "v0.1.0",
+  "release": "v0.2.0",
     "commit": "replace-with-the-release-commit"
   },
-  "adoptedAt": "YYYY-MM-DD",
-  "modifications": [
-    {
-      "path": "apps/server/src/modules/catalog",
-      "ownership": "product",
-      "reason": "Product catalog domain",
-      "upstreamStrategy": "preserve"
-    }
-  ]
+  "adoptedAt": "YYYY-MM-DD"
 }
