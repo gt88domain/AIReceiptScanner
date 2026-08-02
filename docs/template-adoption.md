@@ -42,3 +42,17 @@ records and a retryable process for deleting user-owned storage objects.
 This is an application behavior and a legal policy; it cannot be satisfied by adding a standalone
 `/policy` page. Once the buyer's legal copy is approved, reflect the chosen retention and deletion
 terms in the privacy policy and terms pages.
+
+## New SaaS project workflow
+
+1. Create a repository from the template and keep this repository as the
+   `template` remote described in [upstream sync](./upstream-sync.md).
+2. Choose source-controlled capabilities in `packages/app-config`: auth is
+   core; enable Billing, Credits, Storage, Jobs, and native/mobile support only
+   when the product needs them. See [platform modules](./modules.md).
+3. Create business domains in `apps/server/src/modules/<domain>` and
+   `apps/web/src/modules/<domain>`; do not customize core modules for the first
+   product feature.
+4. Before deployment, run `pnpm install --frozen-lockfile`, `pnpm lint`,
+   `pnpm check-types`, `pnpm test`, and `pnpm build`, then complete the
+   production configuration preflight.

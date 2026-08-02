@@ -30,15 +30,15 @@ oRPC routers in `apps/server/src/routers`.
 Database and deployment commands:
 
 - `pnpm db:generate`: generate Drizzle migrations.
-- `pnpm db:push`: push schema changes.
 - `pnpm db:migrate`: run configured migrations.
 - `pnpm db:migrate:local`: run local D1 migrations.
 - `pnpm db:studio` / `pnpm db:studio:local`: open Drizzle Studio.
 - `pnpm deploy`: deploy server and web.
 - `pnpm deploy:server` / `pnpm deploy:web`: deploy one side.
 
-There is no root `test` script. Some packages define local Vitest scripts, such
-as `pnpm -F @repo/shared test` and `pnpm -F @repo/app-config test`.
+`pnpm test` is the default template gate. It runs template and integration
+checks; packages may also define focused Vitest commands such as
+`pnpm -F @repo/shared test` and `pnpm -F @repo/app-config test`.
 
 ## TypeScript Verification
 
@@ -156,6 +156,10 @@ error conditions. If a package needs a new test runner script, document it in
 that package's `package.json`.
 
 ## Git And Changes
+
+Before changing upstream core, read `GOVERNANCE.md`,
+`docs/architecture-boundaries.md`, and the current audit. Identify the
+ownership class and use a dedicated PR; do not add product behavior to core.
 
 The worktree may already contain user changes. Never revert or overwrite changes
 you did not make unless the user explicitly asks. Ignore unrelated dirty files.

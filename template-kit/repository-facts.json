@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "packageManager": "pnpm@11.13.0",
+  "defaultBranch": "main",
+  "workspacePatterns": ["apps/*", "packages/*"],
+  "applications": {
+    "web": "apps/web",
+    "server": "apps/server",
+    "native": "apps/native",
+    "default": ["web", "server", "native"],
+    "optional": []
+  },
+  "requiredRootScripts": ["lint", "fmt:check", "check-types", "test", "build", "db:check"],
+  "runtime": {
+    "api": "Cloudflare Workers",
+    "businessDataOwner": "apps/server",
+    "database": "Cloudflare D1",
+    "webApiBinding": "API_SERVICE"
+  },
+  "guidanceFiles": ["AGENTS.md", "CLAUDE.md"],
+  "requiredGuidance": ["pnpm test", "GOVERNANCE.md"]
+}

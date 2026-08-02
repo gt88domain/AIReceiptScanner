@@ -4,6 +4,11 @@ EasyStarter keeps modules as source-controlled capabilities, not runtime plugins
 hide its UI, reject its API, and skip its background work, but disabling it never deletes tables
 or rolls back production data.
 
+Auth is core and always enabled. Billing, Credits, Storage, Jobs, and
+native/mobile capabilities are optional only through their existing
+`packages/app-config` fields; do not introduce a parallel `modules` object or
+remote feature-flag system for them.
+
 ## Capability contract
 
 The single feature contract is derived by

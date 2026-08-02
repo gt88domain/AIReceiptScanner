@@ -89,12 +89,18 @@ pnpm clean              # Clean node_modules and build artifacts
 
 ### Testing
 
-There is no root `test` script. Tests are colocated per package and run with Vitest:
+`pnpm test` is the default template verification gate. Focused package tests
+remain available when working on a narrow area:
 
 ```bash
+pnpm test                         # Template and integration checks
 pnpm -F @repo/shared test       # Shared utilities tests
 pnpm -F @repo/app-config test   # Payments/credits config tests
 ```
+
+Before modifying upstream core, read `GOVERNANCE.md` and
+`docs/architecture-boundaries.md`. Product behavior belongs in a product
+module, not in core infrastructure.
 
 ### Server Utilities
 

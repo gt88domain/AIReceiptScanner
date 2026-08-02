@@ -1,0 +1,17 @@
+name: Breaking change
+description: Propose an intentional upstream contract change.
+title: "feat!: "
+labels: [breaking-change]
+body:
+  - type: textarea
+    id: change
+    attributes:
+      label: Contract change
+    validations:
+      required: true
+  - type: textarea
+    id: upgrade
+    attributes:
+      label: Downstream upgrade and rollback plan
+    validations:
+      required: true

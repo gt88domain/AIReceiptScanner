@@ -1,13 +1,23 @@
 # TanStack Template
 
-A modern full-stack TypeScript template for building SaaS applications with zero configuration required.
+A modern full-stack TypeScript template for building SaaS applications with a
+fast local start and explicit production adoption.
 
 ## ✨ Key Principles
 
-- **Zero Configuration**: Get started immediately without complex setup
+- **Explicit Production Adoption**: Example configuration for local work and
+  buyer-owned Worker, D1, R2, Queue, domain, and secret configuration for production
 - **Subsecond Performance**: Optimized for speed and responsiveness
 - **Maximum Type Safety**: End-to-end type safety across all layers
 - **AI-Friendly**: Clean, consistent code patterns for AI assistance
+
+## Template Philosophy
+
+This repository is a foundation for multiple products, not a product itself.
+Core infrastructure changes must be reusable, stable, reviewed, and versioned;
+business features belong in downstream product modules. Read
+[`docs/template-governance.md`](docs/template-governance.md) before changing
+auth, payments, credits, jobs, storage, database, shared packages, or CI.
 
 ## 🚀 Tech Stack
 
