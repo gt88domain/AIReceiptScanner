@@ -61,3 +61,51 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm db:check
       - run: pnpm build
+
+  # Release Please creates its PR with GITHUB_TOKEN, which suppresses the
+  # pull_request and workflow_run chain. The dispatched Quality run is the
+  # trusted final gate for that one generated branch.
+  merge-dispatched-release:
+    needs: [static, test, build]
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      checks: read
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: associated } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              ...context.repo,
+              commit_sha: context.sha,
+            });
+            const pr = associated.find((candidate) =>
+              candidate.state === "open" && candidate.head.ref.startsWith("release-please--"),
+            );
+            if (!pr) return;
+
+            const { data: pull } = await github.rest.pulls.get({ ...context.repo, pull_number: pr.number });
+            if (pull.draft || pull.state !== "open" || pull.head.sha !== context.sha) return;
+            const { data } = await github.rest.checks.listForRef({
+              ...context.repo,
+              ref: context.sha,
+              per_page: 100,
+            });
+            const checks = new Map(data.check_runs.map((check) => [check.name, check]));
+            const required = ["static", "test", "build", "osv"];
+            if (!required.every((name) => checks.get(name)?.conclusion === "success")) return;
+            if (checks.has("check") && checks.get("check").conclusion !== "success") return;
+
+            await github.rest.pulls.merge({
+              ...context.repo,
+              pull_number: pull.number,
+              merge_method: "squash",
+            });
+            await github.rest.actions.createWorkflowDispatch({
+              ...context.repo,
+              workflow_id: "release-please.yml",
+              ref: "main",
+            });

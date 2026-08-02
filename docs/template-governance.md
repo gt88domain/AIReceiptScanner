@@ -61,7 +61,8 @@ current head commit. Draft PRs are never merged automatically.
 Release Please PRs use the identical gate. GitHub does not emit a
 `pull_request` event for a PR created with `GITHUB_TOKEN`, so the release
 workflow explicitly dispatches Quality and OSV (and Mobile when relevant).
-The merge workflow then identifies the PR by its checked commit rather than
-trusting the event type. Because a `GITHUB_TOKEN` merge also does not produce a
-new `push` workflow run, the merge workflow explicitly dispatches Release
-Please after every successful squash merge.
+For the generated release branch, the dispatched Quality workflow performs the
+same final OSV/Mobile check and squash merge itself; GitHub suppresses the
+following `workflow_run` event from that token chain. Because a `GITHUB_TOKEN`
+merge also does not produce a new `push` workflow run, each successful merge
+explicitly dispatches Release Please.
