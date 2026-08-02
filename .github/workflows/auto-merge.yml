@@ -30,6 +30,34 @@ jobs:
             if (!pr) return;
             const { data: pull } = await github.rest.pulls.get({ ...context.repo, pull_number: pr.number });
             if (pull.draft || pull.state !== "open") return;
+            if (pull.head.repo?.full_name !== `${context.repo.owner}/${context.repo.repo}`) return;
+
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              ...context.repo,
+              pull_number: pull.number,
+              per_page: 100,
+            });
+            const filenames = files.map(({ filename }) => filename);
+            const needsMobile = filenames.some((filename) =>
+              filename.startsWith("optional/mobile/") ||
+              filename === "optional/pnpm-workspace.yaml" ||
+              filename === "optional/pnpm-lock.yaml" ||
+              ["packages/api-client/", "packages/app-config/", "packages/i18n/", "packages/shared/"].some((path) => filename.startsWith(path)),
+            );
+            const releaseFiles = new Set(["CHANGELOG.md", ".release-please-manifest.json", "template-version.json"]);
+            const isGeneratedRelease = pull.head.ref.startsWith("release-please--");
+            if (isGeneratedRelease && !filenames.every((filename) => releaseFiles.has(filename))) return;
+
+            const sensitivePaths = [
+              ".github/", "scripts/", "template-kit/", "package.json", "pnpm-lock.yaml",
+              "apps/server/src/auth/", "apps/server/src/payments/", "apps/server/src/credits/",
+              "apps/server/src/db/", "apps/server/scripts/", "release-please-config.json",
+            ];
+            const touchesSensitivePath = filenames.some((filename) => sensitivePaths.some((path) =>
+              path.endsWith("/") ? filename.startsWith(path) : filename === path,
+            ));
+            const labels = new Set(pull.labels.map(({ name }) => name));
+            if (!isGeneratedRelease && touchesSensitivePath && !labels.has("maintainer-approved")) return;
 
             const { data } = await github.rest.checks.listForRef({
               ...context.repo,
@@ -39,7 +67,7 @@ jobs:
             const checks = new Map(data.check_runs.map((check) => [check.name, check]));
             const required = ["static", "test", "build", "osv"];
             if (!required.every((name) => checks.get(name)?.conclusion === "success")) return;
-            if (checks.has("check") && checks.get("check").conclusion !== "success") return;
+            if (needsMobile && checks.get("check")?.conclusion !== "success") return;
 
             await github.rest.pulls.merge({
               ...context.repo,

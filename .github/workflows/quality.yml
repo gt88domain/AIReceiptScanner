@@ -89,15 +89,36 @@ jobs:
 
             const { data: pull } = await github.rest.pulls.get({ ...context.repo, pull_number: pr.number });
             if (pull.draft || pull.state !== "open" || pull.head.sha !== context.sha) return;
-            const { data } = await github.rest.checks.listForRef({
+            if (pull.head.repo?.full_name !== `${context.repo.owner}/${context.repo.repo}`) return;
+            const files = await github.paginate(github.rest.pulls.listFiles, {
               ...context.repo,
-              ref: context.sha,
+              pull_number: pull.number,
               per_page: 100,
             });
-            const checks = new Map(data.check_runs.map((check) => [check.name, check]));
+            const filenames = files.map(({ filename }) => filename);
+            const releaseFiles = new Set(["CHANGELOG.md", ".release-please-manifest.json", "template-version.json"]);
+            if (!filenames.every((filename) => releaseFiles.has(filename))) return;
+            const needsMobile = filenames.some((filename) =>
+              filename.startsWith("optional/mobile/") ||
+              filename === "optional/pnpm-workspace.yaml" ||
+              filename === "optional/pnpm-lock.yaml" ||
+              ["packages/api-client/", "packages/app-config/", "packages/i18n/", "packages/shared/"].some((path) => filename.startsWith(path)),
+            );
             const required = ["static", "test", "build", "osv"];
-            if (!required.every((name) => checks.get(name)?.conclusion === "success")) return;
-            if (checks.has("check") && checks.get("check").conclusion !== "success") return;
+            let ready = false;
+            for (let attempt = 0; attempt < 12; attempt += 1) {
+              const { data } = await github.rest.checks.listForRef({
+                ...context.repo,
+                ref: context.sha,
+                per_page: 100,
+              });
+              const checks = new Map(data.check_runs.map((check) => [check.name, check]));
+              ready = required.every((name) => checks.get(name)?.conclusion === "success")
+                && (!needsMobile || checks.get("check")?.conclusion === "success");
+              if (ready) break;
+              await new Promise((resolve) => setTimeout(resolve, 5_000));
+            }
+            if (!ready) return;
 
             await github.rest.pulls.merge({
               ...context.repo,

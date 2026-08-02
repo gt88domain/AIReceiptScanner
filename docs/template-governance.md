@@ -58,6 +58,13 @@ automatically only after `Quality` (`static`, `test`, and `build`), OSV, and—w
 the changed paths require it—the optional Mobile check have succeeded on its
 current head commit. Draft PRs are never merged automatically.
 
+Fork PRs never merge automatically. Changes to CI, scripts, template tooling,
+dependency manifests, or server auth, payments, credits, database, and server
+scripts additionally require the `maintainer-approved` label. Generated Release
+Please PRs are the narrow exception: they must originate in this repository and
+may change only `CHANGELOG.md`, `.release-please-manifest.json`, and
+`template-version.json`.
+
 Release Please PRs use the identical gate. GitHub does not emit a
 `pull_request` event for a PR created with `GITHUB_TOKEN`, so the release
 workflow explicitly dispatches Quality and OSV (and Mobile when relevant).
