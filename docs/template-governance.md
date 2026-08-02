@@ -73,3 +73,11 @@ same final OSV/Mobile check and squash merge itself; GitHub suppresses the
 following `workflow_run` event from that token chain. Because a `GITHUB_TOKEN`
 merge also does not produce a new `push` workflow run, each successful merge
 explicitly dispatches Release Please.
+
+## Main provenance audit
+
+`Main provenance audit` checks every `main` push for an associated merged PR.
+If it finds none, it opens one `main-provenance-warning` issue for that commit.
+It is an alert and never rewrites history. It detects accidental direct pushes,
+but cannot protect against someone who already has permission to push to `main`
+or modify workflows; write access remains restricted to template maintainers.

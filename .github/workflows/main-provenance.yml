@@ -1,0 +1,57 @@
+name: Main provenance audit
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: "Optional main commit SHA to audit"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const sha = context.payload.inputs?.sha || context.sha;
+            const { data: pulls } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              ...context.repo,
+              commit_sha: sha,
+            });
+            if (pulls.some((pull) => pull.merged_at)) return;
+
+            const shortSha = sha.slice(0, 7);
+            const title = `warning: unprovenanced main push ${shortSha}`;
+            const { data: issues } = await github.rest.issues.listForRepo({
+              ...context.repo,
+              state: "open",
+              labels: "main-provenance-warning",
+              per_page: 100,
+            });
+            if (issues.some((issue) => issue.title === title)) return;
+
+            const { data: commit } = await github.rest.repos.getCommit({
+              ...context.repo,
+              ref: sha,
+            });
+            await github.rest.issues.create({
+              ...context.repo,
+              title,
+              labels: ["main-provenance-warning"],
+              body: [
+                `Main received \`${sha}\` without an associated merged pull request.`,
+                "",
+                `Commit message: ${commit.commit.message}`,
+                "",
+                "This is an alert only. Inspect the push, then resolve the issue or document the accepted exception. It does not roll back history.",
+              ].join("\n"),
+            });
