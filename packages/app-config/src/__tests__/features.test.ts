@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   createProductFeatures,
+  featureDependencyRules,
   resolveProductFeatures,
   validateFeatureDependencies,
 } from "../features";
+import { createProductProfile, productProfiles } from "../product-profiles";
 
 describe("product features", () => {
   it("derives a public capability contract without exposing provider secrets", () => {
@@ -31,6 +33,20 @@ describe("product features", () => {
     expect(JSON.stringify(features)).not.toContain("SECRET");
   });
 
+  it("preserves the v0.4.0 direct appConfig defaults", () => {
+    expect(resolveProductFeatures()).toEqual({
+      auth: true,
+      admin: true,
+      jobs: true,
+      storage: false,
+      mobile: false,
+      billing: true,
+      credits: true,
+      web: { billing: true, credits: true, creditPurchases: true },
+      native: { billing: false, credits: false, creditPurchases: false },
+    });
+  });
+
   it("rejects credit purchases without billing on the same platform", () => {
     const features = createProductFeatures({
       web: { billing: true, credits: true, creditPurchases: true },
@@ -42,7 +58,7 @@ describe("product features", () => {
         ...features,
         web: { ...features.web, billing: false, creditPurchases: true },
       }),
-    ).toThrow("Web credit purchases require web billing");
+    ).toThrow("[features:WEB_CREDIT_PURCHASES_REQUIRE_BILLING]");
   });
 
   it("supports grants-only credits while billing is disabled", () => {
@@ -96,7 +112,7 @@ describe("product features", () => {
     });
 
     expect(() => validateFeatureDependencies(features)).toThrow(
-      "Web credit purchases require web credits",
+      "[features:WEB_CREDIT_PURCHASES_REQUIRE_CREDITS]",
     );
     expect(() =>
       validateFeatureDependencies({
@@ -104,6 +120,46 @@ describe("product features", () => {
         web: { ...features.web, credits: true, creditPurchases: false },
         jobs: false,
       }),
-    ).toThrow("Billing requires jobs");
+    ).toThrow("[features:BILLING_REQUIRES_JOBS]");
+  });
+
+  it("rejects explicit native runtime features without mobile", () => {
+    const features = createProductFeatures({
+      mobile: true,
+      web: { billing: false, credits: false, creditPurchases: false },
+      native: { billing: true, credits: false, creditPurchases: false },
+    });
+
+    expect(() => validateFeatureDependencies({ ...features, mobile: false })).toThrow(
+      `[features:${featureDependencyRules.NATIVE_BILLING_REQUIRES_MOBILE.code}]`,
+    );
+  });
+
+  it("provides validated, additive product profiles", () => {
+    expect(productProfiles["full-saas"].features).toMatchObject({
+      jobs: true,
+      storage: true,
+      web: { billing: true, credits: true, creditPurchases: true },
+      mobile: false,
+    });
+    expect(createProductProfile("account-app", { storage: false })).toMatchObject({
+      admin: true,
+      jobs: true,
+      storage: false,
+      billing: false,
+      credits: false,
+    });
+    expect(createProductProfile("directory")).toMatchObject({
+      jobs: true,
+      storage: false,
+      billing: false,
+      credits: false,
+    });
+  });
+
+  it("does not let a profile override bypass dependency validation", () => {
+    expect(() => createProductProfile("full-saas", { jobs: false })).toThrow(
+      "[features:BILLING_REQUIRES_JOBS]",
+    );
   });
 });

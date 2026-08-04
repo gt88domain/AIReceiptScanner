@@ -6,8 +6,10 @@ code silently into product-specific branches.
 
 ```bash
 git remote add template https://github.com/gt88domain/easystarter-template.git
-git fetch template
-git merge v0.1.0
+git fetch template --tags
+git checkout -b chore/adopt-easystarter-vX.Y.Z
+pnpm template:upgrade-check --from vX.Y.Z --to vA.B.C
+git merge --no-ff vA.B.C
 ```
 
 Use a merge for normal product updates because it preserves the product's own
@@ -34,6 +36,14 @@ template fixes in core modules. A conflict in auth, migrations, billing,
 credits, jobs, storage, or shared packages is an upstream-contract review, not
 a place to paste product logic.
 
+`pnpm template:upgrade-check` is read-only. It reports upstream changes,
+protected-path overlap, and database risk without fetching, merging, changing
+the manifest, or running migrations. It blocks migration-history changes on
+both sides. Review that report before merging a released tag; EasyStarter never
+updates downstream repositories automatically.
+
 After each sync, run `pnpm install --frozen-lockfile`, `pnpm lint`,
 `pnpm check-types`, `pnpm test`, and `pnpm build`. Update the manifest's
-release and commit only after these checks pass.
+release and commit only after these checks pass. Open a Draft PR for the
+adoption, resolve and review its conflicts, then merge it without treating the
+template update as a production deployment.

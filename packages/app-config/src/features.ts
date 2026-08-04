@@ -44,6 +44,64 @@ export type ProductFeatureInput = {
   };
 };
 
+/** Stable error codes for unsupported product capability combinations. */
+export const FEATURE_DEPENDENCY_ERROR_CODES = [
+  "BILLING_REQUIRES_JOBS",
+  "WEB_CREDIT_PURCHASES_REQUIRE_CREDITS",
+  "WEB_CREDIT_PURCHASES_REQUIRE_BILLING",
+  "NATIVE_CREDIT_PURCHASES_REQUIRE_CREDITS",
+  "NATIVE_CREDIT_PURCHASES_REQUIRE_BILLING",
+  "NATIVE_BILLING_REQUIRES_MOBILE",
+  "NATIVE_CREDITS_REQUIRE_MOBILE",
+  "NATIVE_CREDIT_PURCHASES_REQUIRE_MOBILE",
+] as const;
+
+export type FeatureDependencyErrorCode = (typeof FEATURE_DEPENDENCY_ERROR_CODES)[number];
+
+export type FeatureDependencyRule = {
+  code: FeatureDependencyErrorCode;
+  message: string;
+};
+
+/**
+ * The single machine-readable dependency matrix used by config, profiles, and
+ * production validation. Keep this provider- and secret-free.
+ */
+export const featureDependencyRules = {
+  BILLING_REQUIRES_JOBS: {
+    code: "BILLING_REQUIRES_JOBS",
+    message: "Billing requires Jobs for webhook recovery and outbox delivery.",
+  },
+  WEB_CREDIT_PURCHASES_REQUIRE_CREDITS: {
+    code: "WEB_CREDIT_PURCHASES_REQUIRE_CREDITS",
+    message: "Web credit purchases require web Credits.",
+  },
+  WEB_CREDIT_PURCHASES_REQUIRE_BILLING: {
+    code: "WEB_CREDIT_PURCHASES_REQUIRE_BILLING",
+    message: "Web credit purchases require web Billing.",
+  },
+  NATIVE_CREDIT_PURCHASES_REQUIRE_CREDITS: {
+    code: "NATIVE_CREDIT_PURCHASES_REQUIRE_CREDITS",
+    message: "Native credit purchases require native Credits.",
+  },
+  NATIVE_CREDIT_PURCHASES_REQUIRE_BILLING: {
+    code: "NATIVE_CREDIT_PURCHASES_REQUIRE_BILLING",
+    message: "Native credit purchases require native Billing.",
+  },
+  NATIVE_BILLING_REQUIRES_MOBILE: {
+    code: "NATIVE_BILLING_REQUIRES_MOBILE",
+    message: "Native Billing requires Mobile.",
+  },
+  NATIVE_CREDITS_REQUIRE_MOBILE: {
+    code: "NATIVE_CREDITS_REQUIRE_MOBILE",
+    message: "Native Credits require Mobile.",
+  },
+  NATIVE_CREDIT_PURCHASES_REQUIRE_MOBILE: {
+    code: "NATIVE_CREDIT_PURCHASES_REQUIRE_MOBILE",
+    message: "Native credit purchases require Mobile.",
+  },
+} as const satisfies Record<FeatureDependencyErrorCode, FeatureDependencyRule>;
+
 function isCreditPurchasesEnabled(config: {
   enabled?: boolean;
   purchasesEnabled?: boolean;
@@ -100,25 +158,42 @@ export function resolveProductFeatures(): ProductFeatures {
 }
 
 /** Rejects only impossible module combinations before a server starts handling work. */
-export function validateFeatureDependencies(features = resolveProductFeatures()) {
+function featureDependencyError(rule: FeatureDependencyRule): Error {
+  return new Error(`[features:${rule.code}] ${rule.message}`);
+}
+
+/** Rejects unsupported combinations before a server starts handling work. */
+export function validateFeatureDependencies(features = resolveProductFeatures()): ProductFeatures {
+  if (!features.mobile && features.native.billing) {
+    throw featureDependencyError(featureDependencyRules.NATIVE_BILLING_REQUIRES_MOBILE);
+  }
+
+  if (!features.mobile && features.native.credits) {
+    throw featureDependencyError(featureDependencyRules.NATIVE_CREDITS_REQUIRE_MOBILE);
+  }
+
+  if (!features.mobile && features.native.creditPurchases) {
+    throw featureDependencyError(featureDependencyRules.NATIVE_CREDIT_PURCHASES_REQUIRE_MOBILE);
+  }
+
   if (features.web.creditPurchases && !features.web.credits) {
-    throw new Error("[features] Web credit purchases require web credits.");
+    throw featureDependencyError(featureDependencyRules.WEB_CREDIT_PURCHASES_REQUIRE_CREDITS);
   }
 
   if (features.native.creditPurchases && !features.native.credits) {
-    throw new Error("[features] Native credit purchases require native credits.");
+    throw featureDependencyError(featureDependencyRules.NATIVE_CREDIT_PURCHASES_REQUIRE_CREDITS);
   }
 
   if (features.web.creditPurchases && !features.web.billing) {
-    throw new Error("[features] Web credit purchases require web billing.");
+    throw featureDependencyError(featureDependencyRules.WEB_CREDIT_PURCHASES_REQUIRE_BILLING);
   }
 
   if (features.native.creditPurchases && !features.native.billing) {
-    throw new Error("[features] Native credit purchases require native billing.");
+    throw featureDependencyError(featureDependencyRules.NATIVE_CREDIT_PURCHASES_REQUIRE_BILLING);
   }
 
   if (features.billing && !features.jobs) {
-    throw new Error("[features] Billing requires jobs for webhook recovery and outbox delivery.");
+    throw featureDependencyError(featureDependencyRules.BILLING_REQUIRES_JOBS);
   }
 
   return features;

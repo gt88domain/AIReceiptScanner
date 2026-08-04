@@ -10,7 +10,7 @@
     "default": ["web", "server"],
     "optional": ["mobile"]
   },
-  "requiredRootScripts": ["lint", "fmt:check", "check-types", "test", "build", "db:check"],
+  "requiredRootScripts": ["lint", "fmt:check", "check-types", "test", "build", "db:check", "profiles:check"],
   "optionalRootScripts": ["mobile:dev", "mobile:check"],
   "runtime": {
     "api": "Cloudflare Workers",

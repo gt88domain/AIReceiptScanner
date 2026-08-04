@@ -5,11 +5,21 @@ export {
 } from "./app-config";
 
 export {
+  FEATURE_DEPENDENCY_ERROR_CODES,
   createProductFeatures,
+  featureDependencyRules,
   resolveProductFeatures,
   validateFeatureDependencies,
 } from "./features";
-export type { ProductFeatureInput, ProductFeatures } from "./features";
+export type {
+  FeatureDependencyErrorCode,
+  FeatureDependencyRule,
+  ProductFeatureInput,
+  ProductFeatures,
+} from "./features";
+
+export { createProductProfile, productProfiles } from "./product-profiles";
+export type { ProductFeatureOverrides, ProductProfile, ProductProfileId } from "./product-profiles";
 
 export {
   type AppCommonConfig,

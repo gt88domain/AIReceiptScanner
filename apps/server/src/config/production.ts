@@ -1,4 +1,20 @@
+import {
+  resolveProductFeatures,
+  validateFeatureDependencies,
+  type ProductFeatures,
+} from "@repo/app-config";
+
 export type EnvValues = Record<string, string | undefined>;
+
+export type ValidationMessage = {
+  code: string;
+  message: string;
+};
+
+export type ProductionValidationResult = {
+  errors: ValidationMessage[];
+  warnings: ValidationMessage[];
+};
 
 export type ProductionConfigInput = {
   productionEnv: EnvValues;
@@ -7,9 +23,12 @@ export type ProductionConfigInput = {
     workerName: string;
     route: string;
     databaseId: string;
-    bucketName: string;
-    queueName: string;
-    dlqName: string;
+    bucketName?: string;
+    queueName?: string;
+    dlqName?: string;
+    hasJobQueueConsumer?: boolean;
+    hasDeadLetterQueueConsumer?: boolean;
+    hasCron?: boolean;
     websiteUrl: string;
     serverUrl: string;
     nodeEnv: string;
@@ -25,6 +44,7 @@ export type ProductionConfigInput = {
     buildServerUrl: string;
   };
   requirements: {
+    features?: ProductFeatures;
     paymentProviders: Iterable<string>;
     emailEnabled: boolean;
     oauth: { github: boolean; google: boolean; apple: boolean };
@@ -36,18 +56,27 @@ const PLACEHOLDER_VALUE = /(?:^|[-_.])(?:your|replace|placeholder|template)(?:$|
 const PLACEHOLDER_HOSTNAME = /(^|\.)(?:example\.com|localhost|local|invalid)$|\.example$/i;
 const ZERO_D1_ID = "00000000-0000-0000-0000-000000000000";
 
-function required(values: EnvValues, name: string, errors: string[]) {
+function add(messages: ValidationMessage[], code: string, message: string) {
+  messages.push({ code, message });
+}
+
+function required(values: EnvValues, name: string, errors: ValidationMessage[]) {
   const value = values[name]?.trim();
-  if (!value) errors.push(`Missing ${name} in .env.production.`);
+  if (!value) add(errors, "MISSING_ENV_VALUE", `Missing ${name} in .env.production.`);
   return value;
 }
 
-function requireExpected(values: EnvValues, name: string, actual: string, errors: string[]) {
+function requireExpected(
+  values: EnvValues,
+  name: string,
+  actual: string,
+  errors: ValidationMessage[],
+) {
   const expected = values[name]?.trim();
   if (!expected) {
-    errors.push(`Missing ${name} in .production-safety.env.`);
+    add(errors, "MISSING_EXPECTED_VALUE", `Missing ${name} in .production-safety.env.`);
   } else if (expected !== actual) {
-    errors.push(`${name} does not match wrangler.jsonc.`);
+    add(errors, "EXPECTED_VALUE_MISMATCH", `${name} does not match wrangler.jsonc.`);
   }
 }
 
@@ -72,30 +101,46 @@ function getHostname(value: string) {
   }
 }
 
-function requireConcreteResource(name: string, value: string, errors: string[]) {
-  if (isPlaceholderValue(value) || value === ZERO_D1_ID) {
-    errors.push(`${name} must use a concrete production identity.`);
+function requireConcreteResource(
+  name: string,
+  value: string | undefined,
+  errors: ValidationMessage[],
+) {
+  if (!value || isPlaceholderValue(value) || value === ZERO_D1_ID) {
+    add(errors, "INVALID_RESOURCE_IDENTITY", `${name} must use a concrete production identity.`);
   }
 }
 
-function validateProviderSecrets(values: EnvValues, providers: Iterable<string>, errors: string[]) {
+function validateProviderSecrets(
+  values: EnvValues,
+  providers: Iterable<string>,
+  errors: ValidationMessage[],
+) {
   for (const provider of providers) {
     switch (provider) {
       case "stripe": {
         const key = required(values, "STRIPE_SECRET_KEY", errors);
         if (key && !key.startsWith("sk_live_")) {
-          errors.push("STRIPE_SECRET_KEY must be a live key for production.");
+          add(
+            errors,
+            "INVALID_STRIPE_SECRET_KEY",
+            "STRIPE_SECRET_KEY must be a live key for production.",
+          );
         }
         const webhookSecret = required(values, "STRIPE_WEBHOOK_SECRET", errors);
         if (webhookSecret && !webhookSecret.startsWith("whsec_")) {
-          errors.push("STRIPE_WEBHOOK_SECRET must start with whsec_.");
+          add(
+            errors,
+            "INVALID_STRIPE_WEBHOOK_SECRET",
+            "STRIPE_WEBHOOK_SECRET must start with whsec_.",
+          );
         }
         break;
       }
       case "creem": {
         const key = required(values, "CREEM_API_KEY", errors);
         if (key && !key.startsWith("creem_live_")) {
-          errors.push("CREEM_API_KEY must be a live key for production.");
+          add(errors, "INVALID_CREEM_API_KEY", "CREEM_API_KEY must be a live key for production.");
         }
         required(values, "CREEM_WEBHOOK_SECRET", errors);
         break;
@@ -104,41 +149,101 @@ function validateProviderSecrets(values: EnvValues, providers: Iterable<string>,
         required(values, "WAFFO_MERCHANT_ID", errors);
         required(values, "WAFFO_PRIVATE_KEY", errors);
         if (values.WAFFO_ENVIRONMENT?.trim() !== "prod") {
-          errors.push("WAFFO_ENVIRONMENT must be prod when Waffo is enabled.");
+          add(
+            errors,
+            "INVALID_WAFFO_ENVIRONMENT",
+            "WAFFO_ENVIRONMENT must be prod when Waffo is enabled.",
+          );
         }
         break;
       case "revenuecat":
         required(values, "REVENUECAT_WEBHOOK_SECRET", errors);
         break;
       default:
-        errors.push(`Unsupported configured payment provider: ${provider}.`);
+        add(
+          errors,
+          "UNSUPPORTED_PAYMENT_PROVIDER",
+          `Unsupported configured payment provider: ${provider}.`,
+        );
     }
   }
 }
 
-/** Validates the deploy target and enabled integration configuration before production deploys. */
-export function validateProductionConfig(input: ProductionConfigInput) {
-  const { expectedEnv, productionEnv, requirements, server, web } = input;
-  const errors: string[] = [];
+function validateFeatureContract(features: ProductFeatures, errors: ValidationMessage[]) {
+  try {
+    validateFeatureDependencies(features);
+  } catch (error) {
+    add(
+      errors,
+      "INVALID_FEATURE_COMBINATION",
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+}
 
-  if (server.nodeEnv !== "production")
-    errors.push("NODE_ENV must be production in server wrangler.jsonc.");
+/** Validates enabled capabilities and reports non-blocking stale configuration separately. */
+export function validateProductionConfigResult(
+  input: ProductionConfigInput,
+): ProductionValidationResult {
+  const { expectedEnv, productionEnv, requirements, server, web } = input;
+  const errors: ValidationMessage[] = [];
+  const warnings: ValidationMessage[] = [];
+  const features = requirements.features ?? resolveProductFeatures();
+  validateFeatureContract(features, errors);
+
+  if (server.nodeEnv !== "production") {
+    add(errors, "INVALID_NODE_ENV", "NODE_ENV must be production in server wrangler.jsonc.");
+  }
   if (productionEnv.ENVIRONMENT?.trim() !== "production") {
-    errors.push("ENVIRONMENT must be production in .env.production.");
+    add(errors, "INVALID_ENVIRONMENT", "ENVIRONMENT must be production in .env.production.");
   }
 
   if (!/^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}$/i.test(server.databaseId)) {
-    errors.push("DB must use a concrete D1 database_id.");
+    add(errors, "INVALID_D1_DATABASE_ID", "DB must use a concrete D1 database_id.");
   }
   for (const [name, value] of [
     ["WORKER_NAME", server.workerName],
     ["D1_DATABASE_ID", server.databaseId],
-    ["R2_BUCKET", server.bucketName],
-    ["QUEUE_NAME", server.queueName],
-    ["QUEUE_DLQ_NAME", server.dlqName],
     ["WEB_WORKER_NAME", web.workerName],
   ] as const) {
     requireConcreteResource(name, value, errors);
+  }
+
+  if (features.storage) {
+    requireConcreteResource("R2_BUCKET", server.bucketName, errors);
+  } else if (server.bucketName) {
+    add(
+      warnings,
+      "DISABLED_STORAGE_BINDING",
+      "Storage is disabled but an R2 binding is still declared.",
+    );
+  }
+
+  if (features.jobs) {
+    requireConcreteResource("QUEUE_NAME", server.queueName, errors);
+    requireConcreteResource("QUEUE_DLQ_NAME", server.dlqName, errors);
+    if (!server.hasJobQueueConsumer) {
+      add(errors, "MISSING_QUEUE_CONSUMER", "Enabled Jobs require a Queue consumer.");
+    }
+    if (!server.hasDeadLetterQueueConsumer) {
+      add(errors, "MISSING_DLQ_CONSUMER", "Enabled Jobs require a DLQ consumer.");
+    }
+    if (!server.hasCron) {
+      add(errors, "MISSING_CRON", "Enabled Jobs require a Cron trigger.");
+    }
+  } else if (server.queueName || server.dlqName) {
+    add(
+      warnings,
+      "DISABLED_JOBS_BINDING",
+      "Jobs are disabled but Queue bindings are still declared.",
+    );
+  }
+  if (!features.jobs) {
+    add(
+      errors,
+      "UNSUPPORTED_JOBS_DISABLED_PROFILE",
+      "Jobs=false is not a supported production profile in v0.4.1 because the Worker still exports Queue and scheduled handlers.",
+    );
   }
 
   for (const [name, value] of [
@@ -147,59 +252,110 @@ export function validateProductionConfig(input: ProductionConfigInput) {
     ["Web VITE_APP_URL", web.websiteUrl],
     ["Web VITE_SERVER_URL", web.serverUrl],
   ] as const) {
-    if (!isProductionUrl(value)) errors.push(`${name} must be a non-placeholder HTTPS URL.`);
+    if (!isProductionUrl(value)) {
+      add(errors, "INVALID_PRODUCTION_URL", `${name} must be a non-placeholder HTTPS URL.`);
+    }
   }
 
   for (const [name, actual] of [
     ["WORKER_NAME", server.workerName],
     ["D1_DATABASE_ID", server.databaseId],
-    ["R2_BUCKET", server.bucketName],
-    ["QUEUE_NAME", server.queueName],
-    ["QUEUE_DLQ_NAME", server.dlqName],
     ["WEB_WORKER_NAME", web.workerName],
     ["WEBSITE_URL", server.websiteUrl],
     ["SERVER_URL", server.serverUrl],
   ] as const) {
     requireExpected(expectedEnv, name, actual, errors);
   }
+  if (features.storage) requireExpected(expectedEnv, "R2_BUCKET", server.bucketName ?? "", errors);
+  if (features.jobs) {
+    requireExpected(expectedEnv, "QUEUE_NAME", server.queueName ?? "", errors);
+    requireExpected(expectedEnv, "QUEUE_DLQ_NAME", server.dlqName ?? "", errors);
+  }
 
   if (web.apiServiceName !== server.workerName) {
-    errors.push("Web API_SERVICE must target the configured Server Worker.");
+    add(
+      errors,
+      "API_SERVICE_MISMATCH",
+      "Web API_SERVICE must target the configured Server Worker.",
+    );
   }
   if (server.route !== getHostname(server.serverUrl)) {
-    errors.push("Server custom route must match SERVER_URL.");
+    add(errors, "SERVER_ROUTE_MISMATCH", "Server custom route must match SERVER_URL.");
   }
   if (web.websiteUrl !== server.websiteUrl || web.serverUrl !== server.serverUrl) {
-    errors.push("Web public URLs must match the Server Worker URLs.");
+    add(errors, "PUBLIC_URL_MISMATCH", "Web public URLs must match the Server Worker URLs.");
   }
   if (web.route !== getHostname(web.websiteUrl)) {
-    errors.push("Web custom route must match VITE_APP_URL.");
+    add(errors, "WEB_ROUTE_MISMATCH", "Web custom route must match VITE_APP_URL.");
   }
   if (web.buildWebsiteUrl !== web.websiteUrl || web.buildServerUrl !== web.serverUrl) {
-    errors.push("Web .env.production URLs must match web wrangler.jsonc.");
+    add(
+      errors,
+      "WEB_BUILD_URL_MISMATCH",
+      "Web .env.production URLs must match web wrangler.jsonc.",
+    );
   }
   if (!isProductionUrl(`https://${web.route}`)) {
-    errors.push("Web route must use a non-placeholder production domain.");
+    add(errors, "INVALID_WEB_ROUTE", "Web route must use a non-placeholder production domain.");
   }
 
-  for (const name of ["WORKER_NAME", "D1_DATABASE_ID", "R2_BUCKET", "QUEUE_NAME"] as const) {
+  for (const name of ["WORKER_NAME", "D1_DATABASE_ID"] as const) {
     const actual = required(productionEnv, name, errors);
     if (actual && actual !== expectedEnv[name]?.trim()) {
-      errors.push(`${name} in .env.production must match .production-safety.env.`);
+      add(
+        errors,
+        "PRODUCTION_ENV_MISMATCH",
+        `${name} in .env.production must match .production-safety.env.`,
+      );
+    }
+  }
+  if (features.storage) {
+    const actual = required(productionEnv, "R2_BUCKET", errors);
+    if (actual && actual !== expectedEnv.R2_BUCKET?.trim()) {
+      add(
+        errors,
+        "PRODUCTION_ENV_MISMATCH",
+        "R2_BUCKET in .env.production must match .production-safety.env.",
+      );
+    }
+  }
+  if (features.jobs) {
+    for (const name of ["QUEUE_NAME", "QUEUE_DLQ_NAME"] as const) {
+      const actual = required(productionEnv, name, errors);
+      if (actual && actual !== expectedEnv[name]?.trim()) {
+        add(
+          errors,
+          "PRODUCTION_ENV_MISMATCH",
+          `${name} in .env.production must match .production-safety.env.`,
+        );
+      }
     }
   }
 
   if (productionEnv.CLOUDFLARE_D1_DATABASE_ID?.trim() !== server.databaseId) {
-    errors.push("CLOUDFLARE_D1_DATABASE_ID must match the DB binding in server wrangler.jsonc.");
+    add(
+      errors,
+      "D1_BINDING_MISMATCH",
+      "CLOUDFLARE_D1_DATABASE_ID must match the DB binding in server wrangler.jsonc.",
+    );
   }
 
-  const adminEmails = required(productionEnv, "ADMIN_EMAILS", errors);
-  if (adminEmails && adminEmails.split(",").some((email) => !/^\S+@\S+\.\S+$/.test(email.trim()))) {
-    errors.push("ADMIN_EMAILS must contain comma-separated email addresses.");
+  if (features.admin) {
+    const adminEmails = required(productionEnv, "ADMIN_EMAILS", errors);
+    if (
+      adminEmails &&
+      adminEmails.split(",").some((email) => !/^\S+@\S+\.\S+$/.test(email.trim()))
+    ) {
+      add(
+        errors,
+        "INVALID_ADMIN_EMAILS",
+        "ADMIN_EMAILS must contain comma-separated email addresses.",
+      );
+    }
   }
   const authSecret = required(productionEnv, "BETTER_AUTH_SECRET", errors);
   if (authSecret && authSecret.length < 32) {
-    errors.push("BETTER_AUTH_SECRET must be at least 32 characters.");
+    add(errors, "SHORT_AUTH_SECRET", "BETTER_AUTH_SECRET must be at least 32 characters.");
   }
 
   if (requirements.emailEnabled) {
@@ -207,7 +363,11 @@ export function validateProductionConfig(input: ProductionConfigInput) {
     const emailFrom = required(productionEnv, "EMAIL_FROM", errors);
     const email = emailFrom?.match(/^[^<>\s]+@([^<>\s]+)$/);
     if (!email || PLACEHOLDER_HOSTNAME.test(email[1]) || isPlaceholderValue(emailFrom ?? "")) {
-      errors.push("EMAIL_FROM must use a non-placeholder production sender domain.");
+      add(
+        errors,
+        "INVALID_EMAIL_FROM",
+        "EMAIL_FROM must use a non-placeholder production sender domain.",
+      );
     }
   }
 
@@ -233,24 +393,54 @@ export function validateProductionConfig(input: ProductionConfigInput) {
   ] as const) {
     if (!enabled) continue;
     if (isPlaceholderValue(value)) {
-      errors.push(`${clientId} must be configured when its OAuth provider is enabled.`);
+      add(
+        errors,
+        "MISSING_OAUTH_CLIENT",
+        `${clientId} must be configured when its OAuth provider is enabled.`,
+      );
     }
     if (secret !== clientId) required(productionEnv, secret, errors);
   }
 
-  validateProviderSecrets(productionEnv, requirements.paymentProviders, errors);
-  for (const price of requirements.productionPriceIds) {
-    if (
-      isPlaceholderValue(price.production) ||
-      /(?:^|[_-])test(?:$|[_-])/i.test(price.production)
-    ) {
-      errors.push(`${price.label} must use a non-test production price ID.`);
-    } else if (price.production === price.test) {
-      errors.push(`${price.label} production price ID must differ from its test price ID.`);
+  const paymentProviders = features.billing ? requirements.paymentProviders : [];
+  if (!features.billing && [...requirements.paymentProviders].length > 0) {
+    add(
+      warnings,
+      "DISABLED_BILLING_CONFIGURATION",
+      "Billing is disabled but payment provider configuration remains.",
+    );
+  }
+  validateProviderSecrets(productionEnv, paymentProviders, errors);
+  if (features.web.billing) {
+    for (const price of requirements.productionPriceIds) {
+      if (
+        isPlaceholderValue(price.production) ||
+        /(?:^|[_-])test(?:$|[_-])/i.test(price.production)
+      ) {
+        add(
+          errors,
+          "INVALID_PRODUCTION_PRICE",
+          `${price.label} must use a non-test production price ID.`,
+        );
+      } else if (price.production === price.test) {
+        add(
+          errors,
+          "SAME_TEST_AND_PRODUCTION_PRICE",
+          `${price.label} production price ID must differ from its test price ID.`,
+        );
+      }
     }
   }
 
-  return errors;
+  return { errors, warnings };
 }
 
-export const productionConfigTestUtils = { isProductionUrl, validateProviderSecrets };
+/** Compatibility wrapper for callers that only handle blocking errors. */
+export function validateProductionConfig(input: ProductionConfigInput): string[] {
+  return validateProductionConfigResult(input).errors.map(({ message }) => message);
+}
+
+export const productionConfigTestUtils = {
+  isProductionUrl,
+  validateProviderSecrets,
+};

@@ -1,0 +1,13 @@
+{
+  "profile": "account-app",
+  "expectedFeatures": {
+    "admin": true,
+    "jobs": true,
+    "storage": true,
+    "mobile": false,
+    "web": { "billing": false, "credits": false, "creditPurchases": false },
+    "native": { "billing": false, "credits": false, "creditPurchases": false }
+  },
+  "requiredResources": ["D1", "R2", "Queue", "DLQ", "Cron"],
+  "forbiddenResources": ["Stripe", "Creem", "Waffo", "RevenueCat"]
+}

@@ -1,0 +1,11 @@
+{
+  "source": "resolveProductFeatures() without a profile",
+  "expectedFeatures": {
+    "admin": true,
+    "jobs": true,
+    "storage": false,
+    "mobile": false,
+    "web": { "billing": true, "credits": true, "creditPurchases": true },
+    "native": { "billing": false, "credits": false, "creditPurchases": false }
+  }
+}

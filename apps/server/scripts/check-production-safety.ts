@@ -5,11 +5,14 @@ import { fileURLToPath } from "node:url";
 import { parse as parseEnv } from "dotenv";
 import { parse as parseJsonc } from "jsonc-parser";
 import {
+  createProductFeatures,
   resolveCommonConfig,
   resolveNativeCommonConfig,
+  resolveProductFeatures,
   resolveWebCommonConfig,
+  validateFeatureDependencies,
 } from "@repo/app-config";
-import { validateProductionConfig, type EnvValues } from "../src/config/production";
+import { validateProductionConfigResult, type EnvValues } from "../src/config/production";
 
 type JsonObject = Record<string, unknown>;
 
@@ -47,17 +50,24 @@ function asArray(value: unknown, label: string): JsonObject[] {
   return value.map((item) => asObject(item, label));
 }
 
+function asOptionalArray(value: unknown, label: string): JsonObject[] {
+  return value === undefined ? [] : asArray(value, label);
+}
+
+function asOptionalObject(value: unknown, label: string): JsonObject {
+  return value === undefined ? {} : asObject(value, label);
+}
+
 function value(object: JsonObject, name: string) {
   return String(object[name] ?? "");
 }
 
-function configuredPaymentProviders() {
+function configuredPaymentProviders(features = resolveProductFeatures()) {
   const providers = new Set<string>();
-  const common = resolveCommonConfig();
   const web = resolveWebCommonConfig();
-  const native = common.features.mobile === true ? resolveNativeCommonConfig() : undefined;
+  const native = features.mobile ? resolveNativeCommonConfig() : undefined;
 
-  if (web.payments?.enabled) {
+  if (features.web.billing && web.payments?.enabled) {
     providers.add(web.payments.provider);
     for (const plan of web.payments.plans) {
       for (const price of plan.prices ?? []) {
@@ -65,15 +75,15 @@ function configuredPaymentProviders() {
       }
     }
   }
-  if (web.credits.enabled) {
+  if (features.web.creditPurchases && web.credits.enabled) {
     for (const creditPackage of web.credits.packages) {
       if (creditPackage.status !== "archived" && creditPackage.web) {
         providers.add(creditPackage.web.provider);
       }
     }
   }
-  if (native?.payments?.enabled) providers.add(native.payments.provider);
-  if (native?.credits.enabled) {
+  if (features.native.billing && native?.payments?.enabled) providers.add(native.payments.provider);
+  if (features.native.creditPurchases && native?.credits.enabled) {
     for (const creditPackage of native.credits.packages) {
       if (creditPackage.status === "archived") continue;
       for (const product of Object.values(creditPackage.native)) {
@@ -84,9 +94,11 @@ function configuredPaymentProviders() {
   return providers;
 }
 
-function configuredProductionPriceIds() {
+function configuredProductionPriceIds(features = resolveProductFeatures()) {
   const prices: Array<{ label: string; production: string; test: string }> = [];
   const web = resolveWebCommonConfig();
+
+  if (!features.web.billing) return prices;
 
   for (const plan of web.payments?.plans ?? []) {
     if (plan.status === "archived") continue;
@@ -100,7 +112,7 @@ function configuredProductionPriceIds() {
       }
     }
   }
-  for (const creditPackage of web.credits.packages) {
+  for (const creditPackage of features.web.creditPurchases ? web.credits.packages : []) {
     if (creditPackage.status !== "archived" && creditPackage.web?.provider === "stripe") {
       prices.push({
         label: `Stripe credits ${creditPackage.id}`,
@@ -126,14 +138,14 @@ async function loadProductionConfig(
   const d1 = asArray(serverConfig.d1_databases, "server d1_databases").find(
     (binding) => binding.binding === "DB",
   );
-  const r2 = asArray(serverConfig.r2_buckets, "server r2_buckets").find(
+  const r2 = asOptionalArray(serverConfig.r2_buckets, "server r2_buckets").find(
     (binding) => binding.binding === "STORAGE",
   );
-  const queues = asObject(serverConfig.queues, "server queues");
-  const producer = asArray(queues.producers, "server queues.producers").find(
+  const queues = asOptionalObject(serverConfig.queues, "server queues");
+  const producer = asOptionalArray(queues.producers, "server queues.producers").find(
     (binding) => binding.binding === "JOB_QUEUE",
   );
-  const consumers = asArray(queues.consumers, "server queues.consumers");
+  const consumers = asOptionalArray(queues.consumers, "server queues.consumers");
   const services = asArray(webConfig.services, "web services");
   const apiService = services.find((service) => service.binding === "API_SERVICE");
   const serverRoute = asArray(serverConfig.routes, "server routes").find(
@@ -142,21 +154,18 @@ async function loadProductionConfig(
   const route = asArray(webConfig.routes, "web routes").find(
     (entry) => entry.custom_domain === true,
   );
-  if (!d1 || !r2 || !producer || !apiService || !serverRoute || !route) {
-    throw new Error(
-      "Missing required DB, STORAGE, JOB_QUEUE, API_SERVICE, or custom-domain binding.",
-    );
+  if (!d1 || !apiService || !serverRoute || !route) {
+    throw new Error("Missing required DB, API_SERVICE, or custom-domain binding.");
   }
 
-  const queueName = value(producer, "queue");
-  const consumer = consumers.find((entry) => entry.queue === queueName);
-  if (!consumer) throw new Error("JOB_QUEUE must have a Worker consumer.");
-  const dlqName = value(consumer, "dead_letter_queue");
-  if (!consumers.some((entry) => entry.queue === dlqName)) {
-    throw new Error("JOB_QUEUE dead_letter_queue must have a Worker consumer.");
-  }
+  const queueName = producer ? value(producer, "queue") : undefined;
+  const consumer = queueName ? consumers.find((entry) => entry.queue === queueName) : undefined;
+  const dlqName = consumer ? value(consumer, "dead_letter_queue") : undefined;
+  const triggers = asOptionalObject(serverConfig.triggers, "server triggers");
+  const hasCron = asOptionalArray(triggers.crons, "server triggers.crons").length > 0;
 
   const common = resolveCommonConfig();
+  const features = validateFeatureDependencies(resolveProductFeatures());
   return {
     productionEnv,
     expectedEnv,
@@ -164,9 +173,14 @@ async function loadProductionConfig(
       workerName: value(serverConfig, "name"),
       route: value(serverRoute, "pattern"),
       databaseId: value(d1, "database_id"),
-      bucketName: value(r2, "bucket_name"),
+      bucketName: r2 ? value(r2, "bucket_name") : undefined,
       queueName,
       dlqName,
+      hasJobQueueConsumer: Boolean(consumer),
+      hasDeadLetterQueueConsumer: Boolean(
+        dlqName && consumers.some((entry) => entry.queue === dlqName),
+      ),
+      hasCron,
       websiteUrl: value(serverVars, "WEBSITE_URL"),
       serverUrl: value(serverVars, "SERVER_URL"),
       nodeEnv: value(serverVars, "NODE_ENV"),
@@ -186,14 +200,15 @@ async function loadProductionConfig(
       buildServerUrl: webProductionEnv.VITE_SERVER_URL?.trim() ?? "",
     },
     requirements: {
-      paymentProviders: configuredPaymentProviders(),
+      features,
+      paymentProviders: configuredPaymentProviders(features),
       emailEnabled: common.email.provider === "resend",
       oauth: {
         github: common.auth.methods.githubEnabled === true,
         google: common.auth.methods.googleEnabled === true,
         apple: common.auth.methods.appleEnabled === true,
       },
-      productionPriceIds: configuredProductionPriceIds(),
+      productionPriceIds: configuredProductionPriceIds(features),
     },
   };
 }
@@ -203,9 +218,16 @@ async function main() {
   const expectedEnv = await readRequiredEnv(resolve(serverDir, ".production-safety.env"));
   const webProductionEnv = await readRequiredEnv(resolve(rootDir, "apps/web/.env.production"));
   const input = await loadProductionConfig(productionEnv, expectedEnv, webProductionEnv);
-  const errors = validateProductionConfig(input);
-  if (errors.length > 0) {
-    throw new Error(`Production safety preflight failed:\n- ${errors.join("\n- ")}`);
+  const result = validateProductionConfigResult(input);
+  if (result.warnings.length > 0) {
+    console.warn(
+      `Production safety warnings:\n- ${result.warnings.map(({ message }) => message).join("\n- ")}`,
+    );
+  }
+  if (result.errors.length > 0) {
+    throw new Error(
+      `Production safety preflight failed:\n- ${result.errors.map(({ message }) => message).join("\n- ")}`,
+    );
   }
   console.log(`Production safety preflight passed for ${input.server.workerName}.`);
 }
@@ -218,6 +240,7 @@ function selfCheck() {
       D1_DATABASE_ID: "12345678-1234-1234-1234-123456789abc",
       R2_BUCKET: "acme-assets",
       QUEUE_NAME: "acme-jobs",
+      QUEUE_DLQ_NAME: "acme-jobs-dlq",
       CLOUDFLARE_D1_DATABASE_ID: "12345678-1234-1234-1234-123456789abc",
       BETTER_AUTH_SECRET: "a".repeat(32),
       ADMIN_EMAILS: "admin@acme.test",
@@ -243,6 +266,9 @@ function selfCheck() {
       bucketName: "acme-assets",
       queueName: "acme-jobs",
       dlqName: "acme-jobs-dlq",
+      hasJobQueueConsumer: true,
+      hasDeadLetterQueueConsumer: true,
+      hasCron: true,
       websiteUrl: "https://app.acme.test",
       serverUrl: "https://api.acme.test",
       nodeEnv: "production",
@@ -258,6 +284,13 @@ function selfCheck() {
       buildServerUrl: "https://api.acme.test",
     },
     requirements: {
+      features: createProductFeatures({
+        admin: true,
+        jobs: true,
+        storage: true,
+        web: { billing: true, credits: true, creditPurchases: true },
+        native: { billing: false, credits: false, creditPurchases: false },
+      }),
       paymentProviders: new Set(["stripe"]),
       emailEnabled: true,
       oauth: { github: false, google: false, apple: false },
@@ -267,62 +300,126 @@ function selfCheck() {
     },
   };
 
-  assert.deepEqual(validateProductionConfig(validInput), []);
+  const errors = (input: typeof validInput) =>
+    validateProductionConfigResult(input).errors.map(({ message }) => message);
+
+  assert.deepEqual(errors(validInput), []);
   assert.match(
-    validateProductionConfig({
+    errors({
       ...validInput,
       productionEnv: { ...validInput.productionEnv, BETTER_AUTH_SECRET: "" },
     }).join("\n"),
     /Missing BETTER_AUTH_SECRET/,
   );
   assert.match(
-    validateProductionConfig({
+    errors({
       ...validInput,
       productionEnv: { ...validInput.productionEnv, R2_BUCKET: "" },
     }).join("\n"),
     /Missing R2_BUCKET/,
   );
   assert.match(
-    validateProductionConfig({
+    errors({
       ...validInput,
       server: { ...validInput.server, databaseId: "00000000-0000-0000-0000-000000000000" },
     }).join("\n"),
     /D1_DATABASE_ID must use a concrete production identity/,
   );
   assert.match(
-    validateProductionConfig({
+    errors({
       ...validInput,
       server: { ...validInput.server, websiteUrl: "http://app.acme.test" },
     }).join("\n"),
     /WEBSITE_URL must be a non-placeholder HTTPS URL/,
   );
   assert.match(
-    validateProductionConfig({
+    errors({
       ...validInput,
       server: { ...validInput.server, websiteUrl: "https://example.com" },
     }).join("\n"),
     /WEBSITE_URL must be a non-placeholder HTTPS URL/,
   );
   assert.match(
-    validateProductionConfig({
+    errors({
       ...validInput,
       productionEnv: { ...validInput.productionEnv, STRIPE_SECRET_KEY: "sk_test_test" },
     }).join("\n"),
     /STRIPE_SECRET_KEY must be a live key/,
   );
   assert.match(
-    validateProductionConfig({
+    errors({
       ...validInput,
       productionEnv: { ...validInput.productionEnv, EMAIL_FROM: "noreply@example.com" },
     }).join("\n"),
     /EMAIL_FROM must use a non-placeholder production sender domain/,
   );
   assert.match(
-    validateProductionConfig({
+    errors({
       ...validInput,
       server: { ...validInput.server, workerName: "your-worker-name" },
     }).join("\n"),
     /WORKER_NAME must use a concrete production identity/,
+  );
+
+  const directoryInput = {
+    ...validInput,
+    productionEnv: {
+      ...validInput.productionEnv,
+      ADMIN_EMAILS: undefined,
+      R2_BUCKET: undefined,
+      STRIPE_SECRET_KEY: undefined,
+      STRIPE_WEBHOOK_SECRET: undefined,
+    },
+    expectedEnv: {
+      ...validInput.expectedEnv,
+      R2_BUCKET: undefined,
+    },
+    server: { ...validInput.server, bucketName: undefined },
+    requirements: {
+      ...validInput.requirements,
+      features: createProductFeatures({
+        admin: false,
+        jobs: true,
+        storage: false,
+        web: { billing: false, credits: false, creditPurchases: false },
+        native: { billing: false, credits: false, creditPurchases: false },
+      }),
+      paymentProviders: new Set<string>(),
+      productionPriceIds: [],
+    },
+  };
+  assert.deepEqual(errors(directoryInput), []);
+  assert.match(
+    errors({
+      ...directoryInput,
+      requirements: {
+        ...directoryInput.requirements,
+        features: createProductFeatures({
+          admin: false,
+          jobs: true,
+          storage: true,
+          web: { billing: false, credits: false, creditPurchases: false },
+          native: { billing: false, credits: false, creditPurchases: false },
+        }),
+      },
+    }).join("\n"),
+    /R2_BUCKET/,
+  );
+  assert.match(
+    errors({
+      ...directoryInput,
+      requirements: {
+        ...directoryInput.requirements,
+        features: createProductFeatures({
+          admin: false,
+          jobs: false,
+          storage: false,
+          web: { billing: false, credits: false, creditPurchases: false },
+          native: { billing: false, credits: false, creditPurchases: false },
+        }),
+      },
+    }).join("\n"),
+    /Jobs=false is not a supported production profile/,
   );
 }
 

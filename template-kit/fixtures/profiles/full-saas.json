@@ -1,0 +1,13 @@
+{
+  "profile": "full-saas",
+  "expectedFeatures": {
+    "admin": true,
+    "jobs": true,
+    "storage": true,
+    "mobile": false,
+    "web": { "billing": true, "credits": true, "creditPurchases": true },
+    "native": { "billing": false, "credits": false, "creditPurchases": false }
+  },
+  "requiredResources": ["D1", "R2", "Queue", "DLQ", "Cron"],
+  "forbiddenResources": ["RevenueCat"]
+}

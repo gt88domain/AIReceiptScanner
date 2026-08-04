@@ -1,0 +1,24 @@
+{
+  "name": "replace-account-app-api-worker",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "routes": [{ "pattern": "api.replace-domain.example", "custom_domain": true }],
+  "d1_databases": [{ "binding": "DB", "database_name": "replace-account-app-d1", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "src/db/migrations" }],
+  "r2_buckets": [{ "binding": "STORAGE", "bucket_name": "replace-account-app-r2" }],
+  "queues": {
+    "producers": [{ "binding": "JOB_QUEUE", "queue": "replace-account-app-jobs" }],
+    "consumers": [
+      { "queue": "replace-account-app-jobs", "max_batch_size": 10, "max_batch_timeout": 5, "max_retries": 3, "dead_letter_queue": "replace-account-app-jobs-dlq" },
+      { "queue": "replace-account-app-jobs-dlq", "max_batch_size": 10, "max_batch_timeout": 5, "max_retries": 10 }
+    ]
+  },
+  "triggers": { "crons": ["*/10 * * * *"] },
+  "vars": {
+    "NODE_ENV": "production",
+    "WEBSITE_URL": "https://replace-domain.example",
+    "SERVER_URL": "https://api.replace-domain.example",
+    "JOB_QUEUE_DLQ_NAME": "replace-account-app-jobs-dlq"
+  },
+  "observability": { "logs": { "enabled": true, "invocation_logs": true }, "traces": { "enabled": false } }
+}
