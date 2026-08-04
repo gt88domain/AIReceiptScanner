@@ -1,0 +1,11 @@
+{
+  "name": "replace-directory-lite-web-worker",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-14",
+  "routes": [{ "pattern": "replace-directory-lite.example", "custom_domain": true }],
+  "services": [{ "binding": "API_SERVICE", "service": "replace-directory-lite-api-worker" }],
+  "vars": {
+    "VITE_APP_URL": "https://replace-directory-lite.example",
+    "VITE_SERVER_URL": "https://api.replace-directory-lite.example"
+  }
+}

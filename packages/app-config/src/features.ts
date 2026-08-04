@@ -26,6 +26,9 @@ export type ProductFeatures = {
   };
 };
 
+/** Cloudflare resources required by a resolved product capability contract. */
+export type ProductResource = "D1" | "R2" | "Queue" | "DLQ" | "Cron";
+
 /** Test-friendly capability inputs with no provider or environment information. */
 export type ProductFeatureInput = {
   admin?: boolean;
@@ -197,4 +200,15 @@ export function validateFeatureDependencies(features = resolveProductFeatures())
   }
 
   return features;
+}
+
+/**
+ * Computes required infrastructure from the single feature contract. This is
+ * intentionally descriptive: callers must never create or mutate resources.
+ */
+export function resolveRequiredResources(features: ProductFeatures): readonly ProductResource[] {
+  const resources: ProductResource[] = ["D1"];
+  if (features.storage) resources.push("R2");
+  if (features.jobs) resources.push("Queue", "DLQ", "Cron");
+  return resources;
 }

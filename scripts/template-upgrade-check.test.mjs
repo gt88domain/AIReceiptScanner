@@ -72,8 +72,8 @@ async function fixture(kind) {
   return directory;
 }
 
-function run(directory) {
-  return spawnSync(process.execPath, [script, "--from", "v0.4.0", "--to", "v0.4.1", "--json"], {
+function run(directory, extraArgs = []) {
+  return spawnSync(process.execPath, [script, "--from", "v0.4.0", "--to", "v0.4.1", "--json", ...extraArgs], {
     cwd: directory,
     encoding: "utf8",
   });
@@ -108,4 +108,19 @@ test("prints help without requiring a downstream manifest", () => {
   const result = spawnSync(process.execPath, [script, "--help"], { encoding: "utf8" });
   assert.equal(result.status, 0);
   assert.match(result.stdout, /Read-only downstream upgrade assessment/);
+});
+
+test("suggests no-Jobs configuration removal without writing the worktree", async () => {
+  const directory = await fixture("docs");
+  const before = git(directory, "status", "--porcelain");
+  const result = run(directory, ["--profile", "directory-lite"]);
+  assert.equal(result.status, 0);
+  assert.equal(git(directory, "status", "--porcelain"), before);
+  assert.deepEqual(JSON.parse(result.stdout).suggestedConfigurationChanges, [
+    "Remove Queue producer binding.",
+    "Remove Queue consumers.",
+    "Remove DLQ consumer.",
+    "Remove Cron trigger.",
+    "Remove JOB_QUEUE_DLQ_NAME.",
+  ]);
 });

@@ -1,11 +1,12 @@
 import {
   createProductFeatures,
+  resolveRequiredResources,
   validateFeatureDependencies,
   type ProductFeatureInput,
   type ProductFeatures,
 } from "./features";
 
-export type ProductProfileId = "full-saas" | "account-app" | "directory";
+export type ProductProfileId = "full-saas" | "account-app" | "directory" | "directory-lite";
 
 type PlatformFeatureOverrides = Partial<ProductFeatureInput["web"]>;
 
@@ -22,7 +23,7 @@ export type ProductProfile = {
   label: string;
   description: string;
   features: ProductFeatures;
-  expectedResources: readonly ("D1" | "R2" | "Queue" | "DLQ" | "Cron")[];
+  expectedResources: ReturnType<typeof resolveRequiredResources>;
 };
 
 const noNativeFeatures = { billing: false, credits: false, creditPurchases: false } as const;
@@ -44,7 +45,16 @@ export const productProfiles: Record<ProductProfileId, ProductProfile> = {
       web: { billing: true, credits: true, creditPurchases: true },
       native: noNativeFeatures,
     }),
-    expectedResources: ["D1", "R2", "Queue", "DLQ", "Cron"],
+    expectedResources: resolveRequiredResources(
+      createProductFeatures({
+        admin: true,
+        jobs: true,
+        storage: true,
+        mobile: false,
+        web: { billing: true, credits: true, creditPurchases: true },
+        native: noNativeFeatures,
+      }),
+    ),
   },
   "account-app": {
     id: "account-app",
@@ -58,7 +68,16 @@ export const productProfiles: Record<ProductProfileId, ProductProfile> = {
       web: { billing: false, credits: false, creditPurchases: false },
       native: noNativeFeatures,
     }),
-    expectedResources: ["D1", "R2", "Queue", "DLQ", "Cron"],
+    expectedResources: resolveRequiredResources(
+      createProductFeatures({
+        admin: true,
+        jobs: true,
+        storage: true,
+        mobile: false,
+        web: { billing: false, credits: false, creditPurchases: false },
+        native: noNativeFeatures,
+      }),
+    ),
   },
   directory: {
     id: "directory",
@@ -72,7 +91,39 @@ export const productProfiles: Record<ProductProfileId, ProductProfile> = {
       web: { billing: false, credits: false, creditPurchases: false },
       native: noNativeFeatures,
     }),
-    expectedResources: ["D1", "Queue", "DLQ", "Cron"],
+    expectedResources: resolveRequiredResources(
+      createProductFeatures({
+        admin: true,
+        jobs: true,
+        storage: false,
+        mobile: false,
+        web: { billing: false, credits: false, creditPurchases: false },
+        native: noNativeFeatures,
+      }),
+    ),
+  },
+  "directory-lite": {
+    id: "directory-lite",
+    label: "Directory Lite",
+    description: "Directory or content platform with Admin, without Jobs, Storage, or billing.",
+    features: createProductFeatures({
+      admin: true,
+      jobs: false,
+      storage: false,
+      mobile: false,
+      web: { billing: false, credits: false, creditPurchases: false },
+      native: noNativeFeatures,
+    }),
+    expectedResources: resolveRequiredResources(
+      createProductFeatures({
+        admin: true,
+        jobs: false,
+        storage: false,
+        mobile: false,
+        web: { billing: false, credits: false, creditPurchases: false },
+        native: noNativeFeatures,
+      }),
+    ),
   },
 };
 

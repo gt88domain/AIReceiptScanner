@@ -21,11 +21,17 @@ without Billing remain valid; Storage, Admin, and Jobs may be used separately.
 | `full-saas` | AI SaaS, subscriptions, Credits, uploads | D1, R2, Queue, DLQ, Cron |
 | `account-app` | accounts, saved/private content, uploads | D1, R2, Queue, DLQ, Cron |
 | `directory` | directory, content, SEO, administration | D1, Queue, DLQ, Cron |
+| `directory-lite` | directory or content with Admin and no async work | D1 |
 
-All three official profiles keep Jobs enabled in v0.4.1. Jobs are not
-physically unregistered by a Profile: conditional router/context/Worker
-composition is deliberately outside this release. Consequently, production
-preflight explicitly rejects `jobs: false` until that runtime work is complete.
+`directory` intentionally remains Jobs-on for imports and maintenance.
+`directory-lite` is the supported Jobs-off profile: it does not require a
+Queue, DLQ, Cron trigger, Jobs SQL, or a Job Service. The Worker exports only
+`fetch` in that mode, and Jobs Admin operations fail closed without reading a
+Jobs table. Existing job tables are not removed or migrated.
+
+The resource list is derived from the feature contract: every profile requires
+D1; Storage adds R2; Jobs adds Queue, DLQ, and Cron. Profiles publish that
+derived list as metadata but never create resources.
 
 Each profile has server and web examples in
 [`template-kit/profiles`](../template-kit/profiles). They contain only
@@ -39,8 +45,9 @@ Run the repository-only structural check with:
 pnpm profiles:check
 ```
 
-Production safety validation evaluates only enabled features. For example,
-disabled Billing does not require payment-provider secrets, disabled Storage
-does not require R2, disabled Mobile does not require RevenueCat, and disabled
-Admin does not require `ADMIN_EMAILS`. It still requires the core D1, Worker,
-URL, API service, and Better Auth configuration.
+Production safety validation evaluates only enabled features. Disabled Jobs does
+not require Queue, DLQ, Cron, `JOB_QUEUE`, or `JOB_QUEUE_DLQ_NAME`; stale Jobs
+bindings produce a warning. Disabled Billing does not require payment-provider
+secrets, disabled Storage does not require R2, disabled Mobile does not require
+RevenueCat, and disabled Admin does not require `ADMIN_EMAILS`. It still
+requires the core D1, Worker, URL, API service, and Better Auth configuration.

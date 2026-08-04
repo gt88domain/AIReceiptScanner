@@ -62,7 +62,7 @@ export const Route = createFileRoute("/_public/(marketing)/blog/category/$slug")
 const serverLoader = createServerFn({
   method: "GET",
 })
-  .inputValidator((data: { slug: string; locale: Locale }) => data)
+  .validator((data: { slug: string; locale: Locale }) => data)
   .handler(async ({ data: { slug, locale } }): Promise<CategoryLoaderData | null> => {
     const {
       authorSource,

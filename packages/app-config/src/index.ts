@@ -11,6 +11,7 @@ export {
   createProductFeatures,
   featureDependencyRules,
   resolveProductFeatures,
+  resolveRequiredResources,
   validateFeatureDependencies,
 } from "./features";
 export type {
@@ -18,6 +19,7 @@ export type {
   FeatureDependencyRule,
   ProductFeatureInput,
   ProductFeatures,
+  ProductResource,
 } from "./features";
 
 export { createProductProfile, productProfiles } from "./product-profiles";

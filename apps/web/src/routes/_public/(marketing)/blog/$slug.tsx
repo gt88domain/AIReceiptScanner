@@ -88,7 +88,7 @@ export const Route = createFileRoute("/_public/(marketing)/blog/$slug")({
 const serverLoader = createServerFn({
   method: "GET",
 })
-  .inputValidator((data: { slug: string; locale: Locale }) => data)
+  .validator((data: { slug: string; locale: Locale }) => data)
   .handler(async ({ data: { slug, locale } }): Promise<DetailLoaderData> => {
     const {
       authorSource,

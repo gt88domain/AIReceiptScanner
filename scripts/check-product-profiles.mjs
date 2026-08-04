@@ -5,7 +5,7 @@ import { dirname, join } from "node:path";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const profilesRoot = join(root, "template-kit", "profiles");
 const fixturesRoot = join(root, "template-kit", "fixtures", "profiles");
-const profileIds = ["full-saas", "account-app", "directory"];
+const profileIds = ["full-saas", "account-app", "directory", "directory-lite"];
 const zeroD1Id = "00000000-0000-0000-0000-000000000000";
 
 function fail(message) {
@@ -99,8 +99,17 @@ for (const id of profileIds) {
   ) {
     fail(`${id} profile metadata and fixture disagree.`);
   }
-  if (profile.features.jobs !== true || !profile.expectedResources.includes("Queue")) {
-    fail(`${id} must keep Jobs infrastructure in v0.4.1.`);
+  const derivedResources = ["D1"];
+  if (profile.features.storage) derivedResources.push("R2");
+  if (profile.features.jobs) derivedResources.push("Queue", "DLQ", "Cron");
+  if (JSON.stringify(profile.expectedResources) !== JSON.stringify(derivedResources)) {
+    fail(`${id} expected resources must be derived from features.`);
+  }
+  if (id === "directory" && profile.features.jobs !== true) {
+    fail("directory must keep Jobs infrastructure.");
+  }
+  if (id === "directory-lite" && JSON.stringify(profile.expectedResources) !== JSON.stringify(["D1"])) {
+    fail("directory-lite must require only D1.");
   }
   validateServerExample(profile, server);
   validateWebExample(profile, web);

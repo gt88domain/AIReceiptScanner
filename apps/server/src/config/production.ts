@@ -1,5 +1,6 @@
 import {
   resolveProductFeatures,
+  resolveRequiredResources,
   validateFeatureDependencies,
   type ProductFeatures,
 } from "@repo/app-config";
@@ -189,6 +190,7 @@ export function validateProductionConfigResult(
   const errors: ValidationMessage[] = [];
   const warnings: ValidationMessage[] = [];
   const features = requirements.features ?? resolveProductFeatures();
+  const requiredResources = new Set(resolveRequiredResources(features));
   validateFeatureContract(features, errors);
 
   if (server.nodeEnv !== "production") {
@@ -209,7 +211,7 @@ export function validateProductionConfigResult(
     requireConcreteResource(name, value, errors);
   }
 
-  if (features.storage) {
+  if (requiredResources.has("R2")) {
     requireConcreteResource("R2_BUCKET", server.bucketName, errors);
   } else if (server.bucketName) {
     add(
@@ -219,7 +221,7 @@ export function validateProductionConfigResult(
     );
   }
 
-  if (features.jobs) {
+  if (requiredResources.has("Queue")) {
     requireConcreteResource("QUEUE_NAME", server.queueName, errors);
     requireConcreteResource("QUEUE_DLQ_NAME", server.dlqName, errors);
     if (!server.hasJobQueueConsumer) {
@@ -231,18 +233,17 @@ export function validateProductionConfigResult(
     if (!server.hasCron) {
       add(errors, "MISSING_CRON", "Enabled Jobs require a Cron trigger.");
     }
-  } else if (server.queueName || server.dlqName) {
+  } else if (
+    server.queueName ||
+    server.dlqName ||
+    server.hasJobQueueConsumer ||
+    server.hasDeadLetterQueueConsumer ||
+    server.hasCron
+  ) {
     add(
       warnings,
       "DISABLED_JOBS_BINDING",
-      "Jobs are disabled but Queue bindings are still declared.",
-    );
-  }
-  if (!features.jobs) {
-    add(
-      errors,
-      "UNSUPPORTED_JOBS_DISABLED_PROFILE",
-      "Jobs=false is not a supported production profile in v0.4.1 because the Worker still exports Queue and scheduled handlers.",
+      "Jobs are disabled but Queue, DLQ, or Cron resources remain configured.",
     );
   }
 
@@ -266,8 +267,9 @@ export function validateProductionConfigResult(
   ] as const) {
     requireExpected(expectedEnv, name, actual, errors);
   }
-  if (features.storage) requireExpected(expectedEnv, "R2_BUCKET", server.bucketName ?? "", errors);
-  if (features.jobs) {
+  if (requiredResources.has("R2"))
+    requireExpected(expectedEnv, "R2_BUCKET", server.bucketName ?? "", errors);
+  if (requiredResources.has("Queue")) {
     requireExpected(expectedEnv, "QUEUE_NAME", server.queueName ?? "", errors);
     requireExpected(expectedEnv, "QUEUE_DLQ_NAME", server.dlqName ?? "", errors);
   }
@@ -309,7 +311,7 @@ export function validateProductionConfigResult(
       );
     }
   }
-  if (features.storage) {
+  if (requiredResources.has("R2")) {
     const actual = required(productionEnv, "R2_BUCKET", errors);
     if (actual && actual !== expectedEnv.R2_BUCKET?.trim()) {
       add(
@@ -319,7 +321,7 @@ export function validateProductionConfigResult(
       );
     }
   }
-  if (features.jobs) {
+  if (requiredResources.has("Queue")) {
     for (const name of ["QUEUE_NAME", "QUEUE_DLQ_NAME"] as const) {
       const actual = required(productionEnv, name, errors);
       if (actual && actual !== expectedEnv[name]?.trim()) {

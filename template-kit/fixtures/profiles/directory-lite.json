@@ -1,0 +1,13 @@
+{
+  "profile": "directory-lite",
+  "expectedFeatures": {
+    "admin": true,
+    "jobs": false,
+    "storage": false,
+    "mobile": false,
+    "web": { "billing": false, "credits": false, "creditPurchases": false },
+    "native": { "billing": false, "credits": false, "creditPurchases": false }
+  },
+  "requiredResources": ["D1"],
+  "forbiddenResources": ["R2", "Queue", "DLQ", "Cron", "Stripe", "Creem", "Waffo", "RevenueCat"]
+}

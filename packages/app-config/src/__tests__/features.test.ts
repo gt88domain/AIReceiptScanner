@@ -3,6 +3,7 @@ import {
   createProductFeatures,
   featureDependencyRules,
   resolveProductFeatures,
+  resolveRequiredResources,
   validateFeatureDependencies,
 } from "../features";
 import { createProductProfile, productProfiles } from "../product-profiles";
@@ -155,6 +156,31 @@ describe("product features", () => {
       billing: false,
       credits: false,
     });
+    expect(createProductProfile("directory-lite")).toMatchObject({
+      admin: true,
+      jobs: false,
+      storage: false,
+      billing: false,
+      credits: false,
+    });
+    expect(productProfiles["directory-lite"].expectedResources).toEqual(["D1"]);
+  });
+
+  it("derives required resources from feature changes", () => {
+    const base = createProductFeatures({
+      jobs: false,
+      storage: false,
+      web: { billing: false, credits: false, creditPurchases: false },
+      native: { billing: false, credits: false, creditPurchases: false },
+    });
+    expect(resolveRequiredResources(base)).toEqual(["D1"]);
+    expect(resolveRequiredResources({ ...base, jobs: true, storage: true })).toEqual([
+      "D1",
+      "R2",
+      "Queue",
+      "DLQ",
+      "Cron",
+    ]);
   });
 
   it("does not let a profile override bypass dependency validation", () => {

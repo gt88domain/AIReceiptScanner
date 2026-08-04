@@ -405,7 +405,7 @@ function selfCheck() {
     }).join("\n"),
     /R2_BUCKET/,
   );
-  assert.match(
+  assert.deepEqual(
     errors({
       ...directoryInput,
       requirements: {
@@ -418,9 +418,56 @@ function selfCheck() {
           native: { billing: false, credits: false, creditPurchases: false },
         }),
       },
-    }).join("\n"),
-    /Jobs=false is not a supported production profile/,
+    }),
+    [],
   );
+  const noJobsResourcesInput = {
+    ...directoryInput,
+    productionEnv: {
+      ...directoryInput.productionEnv,
+      QUEUE_NAME: undefined,
+      QUEUE_DLQ_NAME: undefined,
+    },
+    expectedEnv: {
+      ...directoryInput.expectedEnv,
+      QUEUE_NAME: undefined,
+      QUEUE_DLQ_NAME: undefined,
+    },
+    server: {
+      ...directoryInput.server,
+      queueName: undefined,
+      dlqName: undefined,
+      hasJobQueueConsumer: false,
+      hasDeadLetterQueueConsumer: false,
+      hasCron: false,
+    },
+    requirements: {
+      ...directoryInput.requirements,
+      features: createProductFeatures({
+        admin: false,
+        jobs: false,
+        storage: false,
+        web: { billing: false, credits: false, creditPurchases: false },
+        native: { billing: false, credits: false, creditPurchases: false },
+      }),
+    },
+  };
+  assert.deepEqual(errors(noJobsResourcesInput), []);
+  const residualJobsResult = validateProductionConfigResult({
+    ...directoryInput,
+    requirements: {
+      ...directoryInput.requirements,
+      features: createProductFeatures({
+        admin: false,
+        jobs: false,
+        storage: false,
+        web: { billing: false, credits: false, creditPurchases: false },
+        native: { billing: false, credits: false, creditPurchases: false },
+      }),
+    },
+  });
+  assert.deepEqual(residualJobsResult.errors, []);
+  assert.ok(residualJobsResult.warnings.some(({ code }) => code === "DISABLED_JOBS_BINDING"));
 }
 
 if (process.argv.includes("--self-check")) {

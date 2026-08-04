@@ -1,4 +1,5 @@
 import type { Context as HonoContext } from "hono";
+import { type ProductFeatures } from "@repo/app-config";
 import { getClientIp, normalizeHeaderValue } from "@repo/shared";
 import { createCreditsService } from "../credits";
 import { createDb } from "../db";
@@ -10,14 +11,17 @@ import { createJobService } from "../modules/jobs";
 import { getStorageProvider } from "../storage";
 import { getAuthSession } from "../auth/adapter";
 import { finalizeSoftDeletedSession, getUserDeletedAt } from "./auth-session-guard";
+import { resolveJobQueue } from "./jobs-binding";
 
 export type CreateContextOptions = {
   /** Hono request context with Cloudflare bindings. */
   context: HonoContext<{ Bindings: Cloudflare.Env }>;
+  /** Resolved once by the Worker, so every request uses the same module contract. */
+  features: ProductFeatures;
 };
 
 /** Creates the per-request server context shared by oRPC procedures. */
-export async function createContext({ context }: CreateContextOptions) {
+export async function createContext({ context, features }: CreateContextOptions) {
   const db = createDb(context.env.DB);
   const headers = new Headers(context.req.raw.headers);
   const rawSession = await getAuthSession(context.env.DB, headers);
@@ -39,7 +43,8 @@ export async function createContext({ context }: CreateContextOptions) {
   const emailProvider = getEmailProvider();
   const payments = getPaymentService(db);
   const capabilities = createCapabilityService(payments);
-  const jobs = createJobService(db, context.env.JOB_QUEUE);
+  const queue = resolveJobQueue(features, context.env);
+  const jobs = queue ? createJobService(db, queue) : undefined;
   // Credits share the same database and session context as billing and user APIs.
   const credits = createCreditsService(db, {
     signupGrant: {

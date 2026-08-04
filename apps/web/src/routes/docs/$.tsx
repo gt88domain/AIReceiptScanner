@@ -70,7 +70,7 @@ export const Route = createFileRoute("/docs/$")({
 const serverLoader = createServerFn({
   method: "GET",
 })
-  .inputValidator((data: { slugs: string[]; lang: Locale }) => data)
+  .validator((data: { slugs: string[]; lang: Locale }) => data)
   .handler(async ({ data: { slugs, lang } }): Promise<DocsLoaderData> => {
     const page = source.getPage(slugs, lang);
     if (!page) throw notFound();

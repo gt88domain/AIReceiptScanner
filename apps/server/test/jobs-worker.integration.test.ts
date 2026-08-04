@@ -34,6 +34,11 @@ function createJobs(db: ReturnType<typeof createDb>) {
   });
 }
 
+function requireQueueHandler() {
+  if (!worker.queue) throw new Error("Default Jobs-on Worker must export queue.");
+  return worker.queue;
+}
+
 describe("Worker Queue routing", () => {
   it("runs a registered handler through the Worker queue entrypoint", async () => {
     const db = createDb(env.DB);
@@ -49,7 +54,7 @@ describe("Worker Queue routing", () => {
 
     try {
       const queue = createQueueBatch("tanstack-template-jobs", { jobId: record.id });
-      await worker.queue(queue.batch, env);
+      await requireQueueHandler()(queue.batch, env);
 
       const [persisted] = await db.select().from(job).where(eq(job.id, record.id));
       expect(queue.getAcknowledgements()).toBe(1);
@@ -80,7 +85,7 @@ describe("Worker Queue routing", () => {
 
     try {
       const queue = createQueueBatch("tanstack-template-jobs", { jobId: record.id });
-      await worker.queue(queue.batch, env);
+      await requireQueueHandler()(queue.batch, env);
 
       const [persisted] = await db.select().from(job).where(eq(job.id, record.id));
       const events = await db
@@ -117,9 +122,9 @@ describe("Worker Queue routing", () => {
 
     try {
       const first = createQueueBatch("tanstack-template-jobs", { jobId: record.id });
-      await worker.queue(first.batch, env);
+      await requireQueueHandler()(first.batch, env);
       const second = createQueueBatch("tanstack-template-jobs", { jobId: record.id });
-      await worker.queue(second.batch, env);
+      await requireQueueHandler()(second.batch, env);
 
       const [persisted] = await db.select().from(job).where(eq(job.id, record.id));
       expect(first.getAcknowledgements()).toBe(0);
@@ -150,7 +155,7 @@ describe("Worker Queue routing", () => {
       .where(eq(job.id, record.id));
 
     const queue = createQueueBatch(env.JOB_QUEUE_DLQ_NAME, { jobId: record.id });
-    await worker.queue(queue.batch, env);
+    await requireQueueHandler()(queue.batch, env);
 
     const events = await db
       .select()

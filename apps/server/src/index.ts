@@ -48,6 +48,7 @@ import { rpcHandler } from "./handlers/rpc";
 import { handleFileServe } from "./handlers/storage";
 import { handleAuthRequest } from "./auth/adapter";
 import { createContext } from "./lib/context";
+import { buildWorkerHandler } from "./lib/worker-handler";
 import {
   isNativeBillingEnabled,
   isServerFeatureEnabled,
@@ -189,7 +190,7 @@ app.post("/api/webhooks/stripe", async (c) => {
     return disabledWebhookResponse(c, "stripe");
   }
 
-  const context = await createContext({ context: c });
+  const context = await createContext({ context: c, features: productFeatures });
   const rawBody = await c.req.text();
   const signature = c.req.header("stripe-signature");
 
@@ -214,7 +215,7 @@ app.post("/api/webhooks/creem", async (c) => {
     return disabledWebhookResponse(c, "creem");
   }
 
-  const context = await createContext({ context: c });
+  const context = await createContext({ context: c, features: productFeatures });
   const rawBody = await c.req.text();
   const signature = c.req.header("creem-signature");
 
@@ -239,7 +240,7 @@ app.post("/api/webhooks/waffo", async (c) => {
     return disabledWebhookResponse(c, "waffo");
   }
 
-  const context = await createContext({ context: c });
+  const context = await createContext({ context: c, features: productFeatures });
   const rawBody = await c.req.text();
   const signature = c.req.header("x-waffo-signature");
 
@@ -265,7 +266,7 @@ app.post("/api/webhooks/revenuecat", async (c) => {
     return disabledWebhookResponse(c, "revenuecat");
   }
 
-  const context = await createContext({ context: c });
+  const context = await createContext({ context: c, features: productFeatures });
   const rawBody = await c.req.text();
   const signature = c.req.header("authorization");
 
@@ -291,7 +292,7 @@ app.post("/api/webhooks/revenuecat", async (c) => {
  * checks, and auth callbacks do not pay for a session lookup and service setup.
  */
 app.use("/rpc/*", async (c, next) => {
-  const context = await createContext({ context: c });
+  const context = await createContext({ context: c, features: productFeatures });
   const rpcResult = await rpcHandler.handle(c.req.raw, {
     prefix: "/rpc",
     context,
@@ -314,7 +315,7 @@ app.use("/rpc/*", async (c, next) => {
 app.get("/api/storage/*", handleFileServe);
 
 app.use("/api/*", async (c, next) => {
-  const context = await createContext({ context: c });
+  const context = await createContext({ context: c, features: productFeatures });
   const apiResult = await apiHandler.handle(c.req.raw, {
     prefix: "/api",
     context,
@@ -376,46 +377,57 @@ app.get("/session", (c) => {
   });
 });
 
-export default {
-  fetch(request, env, ctx) {
-    if (env.NODE_ENV === "production") {
-      validateServerModuleEnvironment(env, { requireStorageBinding: true });
-    }
-    return app.fetch(request, env, ctx);
-  },
-  async scheduled(controller, env) {
-    if (!productFeatures.jobs) {
-      console.info(JSON.stringify({ event: "scheduled_ignored", reason: "jobs_disabled" }));
-      return;
-    }
+const fetchHandler: ExportedHandler<Cloudflare.Env>["fetch"] = (request, env, ctx) => {
+  if (env.NODE_ENV === "production") {
+    validateServerModuleEnvironment(env, { requireStorageBinding: true });
+  }
+  return app.fetch(request, env, ctx);
+};
 
-    if (controller.cron !== "*/10 * * * *") return;
+const scheduledHandler = async (controller: ScheduledController, env: Cloudflare.Env) => {
+  if (controller.cron !== "*/10 * * * *") return;
 
-    const db = createDb(env.DB);
-    if (productFeatures.billing) {
-      await processPendingWebhookEvents(db);
-      await processBillingOutbox(db);
-      await alertPendingWebhookEvents(db, env.ADMIN_EMAILS);
-    }
+  const db = createDb(env.DB);
+  if (productFeatures.billing) {
+    await processPendingWebhookEvents(db);
+    await processBillingOutbox(db);
+    await alertPendingWebhookEvents(db, env.ADMIN_EMAILS);
+  }
 
-    await createJobService(db, env.JOB_QUEUE).flushOutbox();
+  await createJobService(db, requireJobQueue(env)).flushOutbox();
 
-    const scheduledAt = new Date(controller.scheduledTime);
-    if (
-      productFeatures.credits &&
-      scheduledAt.getUTCHours() === 16 &&
-      scheduledAt.getUTCMinutes() === 10
-    ) {
-      // Daily maintenance only expires eligible free credits; paid packages never expire.
-      await runCreditMaintenance(db);
-    }
-  },
-  async queue(batch, env) {
-    const db = createDb(env.DB);
-    if (batch.queue === env.JOB_QUEUE_DLQ_NAME) {
-      await consumeDeadLetterMessages(db, batch);
-      return;
-    }
-    await consumeJobMessages(db, batch, jobRegistry.handlers);
-  },
-} satisfies ExportedHandler<Cloudflare.Env>;
+  const scheduledAt = new Date(controller.scheduledTime);
+  if (
+    productFeatures.credits &&
+    scheduledAt.getUTCHours() === 16 &&
+    scheduledAt.getUTCMinutes() === 10
+  ) {
+    await runCreditMaintenance(db);
+  }
+};
+
+const queueHandler = async (batch: MessageBatch, env: Cloudflare.Env) => {
+  const db = createDb(env.DB);
+  if (batch.queue === requireJobQueueDlqName(env)) {
+    await consumeDeadLetterMessages(db, batch);
+    return;
+  }
+  await consumeJobMessages(db, batch, jobRegistry.handlers);
+};
+
+function requireJobQueue(env: Pick<Cloudflare.Env, "JOB_QUEUE">): Queue {
+  if (!env.JOB_QUEUE) throw new Error("Jobs are enabled but JOB_QUEUE is not configured.");
+  return env.JOB_QUEUE;
+}
+
+function requireJobQueueDlqName(env: Pick<Cloudflare.Env, "JOB_QUEUE_DLQ_NAME">) {
+  if (!env.JOB_QUEUE_DLQ_NAME)
+    throw new Error("Jobs are enabled but JOB_QUEUE_DLQ_NAME is not configured.");
+  return env.JOB_QUEUE_DLQ_NAME;
+}
+
+export default buildWorkerHandler(productFeatures, {
+  fetch: fetchHandler,
+  scheduled: scheduledHandler,
+  queue: queueHandler,
+}) satisfies ExportedHandler<Cloudflare.Env>;

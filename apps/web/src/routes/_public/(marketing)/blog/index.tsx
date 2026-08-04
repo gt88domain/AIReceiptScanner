@@ -61,7 +61,7 @@ export const Route = createFileRoute("/_public/(marketing)/blog/")({
 const serverLoader = createServerFn({
   method: "GET",
 })
-  .inputValidator((data: { locale: Locale }) => data)
+  .validator((data: { locale: Locale }) => data)
   .handler(async ({ data: { locale } }): Promise<BlogListLoaderData> => {
     const { authorSource, categorySource, getPublishedBlogPages, sortBlogPagesByDateDesc } =
       await import("@/lib/blog-source");

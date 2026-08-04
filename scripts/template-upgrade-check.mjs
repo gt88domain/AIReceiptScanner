@@ -21,7 +21,7 @@ const highRiskRoots = [
 ];
 
 function usage() {
-  console.log(`Usage: pnpm template:upgrade-check [--from vX.Y.Z] [--to vX.Y.Z] [--remote template] [--json] [--verbose]
+  console.log(`Usage: pnpm template:upgrade-check [--from vX.Y.Z] [--to vX.Y.Z] [--remote template] [--profile profile-id] [--json] [--verbose]
 
 Read-only downstream upgrade assessment. It never fetches, merges, rebases, writes manifests, runs migrations, or changes the working tree.`);
 }
@@ -192,6 +192,10 @@ function renderText(report) {
         : ["  - none"]),
     );
   }
+  if (report.suggestedConfigurationChanges.length > 0) {
+    lines.push("", "Suggested configuration changes:", ...report.suggestedConfigurationChanges.map((item) => `  - ${item}`));
+  }
+  lines.push("", "No files or Cloudflare resources were modified. No SQL was executed.");
   return lines.join("\n");
 }
 
@@ -241,6 +245,16 @@ async function main() {
           sourceModifiedPaths.some((modified) => overlaps(file, modified))),
     );
     const assessed = riskFor({ upstreamChanged, downstreamChanged, overlap, sourceModifiedPaths });
+    const profileId = option("--profile");
+    const suggestedConfigurationChanges = profileId === "directory-lite"
+      ? [
+          "Remove Queue producer binding.",
+          "Remove Queue consumers.",
+          "Remove DLQ consumer.",
+          "Remove Cron trigger.",
+          "Remove JOB_QUEUE_DLQ_NAME.",
+        ]
+      : [];
     report = {
       current: { version: fromVersion, commit: fromCommit },
       target: { version: toVersion, commit: targetCommit },
@@ -255,6 +269,7 @@ async function main() {
       migrationRisk: assessed.migrationRisk,
       risk: assessed.level,
       reason: assessed.reason,
+      suggestedConfigurationChanges,
       workingTreeDirty: before.length > 0,
     };
   } catch (error) {

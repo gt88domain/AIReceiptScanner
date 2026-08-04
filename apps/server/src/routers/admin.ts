@@ -10,11 +10,7 @@ import { replayBillingOutboxJob } from "@/payments/application/billing-outbox";
 import { replayWebhookEvent } from "@/payments/application/webhook-observability";
 import { countAdminAuditLogs, listAdminAuditLogs } from "@/modules/audit/audit.repository";
 import { recordAdminAuditLog } from "@/modules/audit";
-import {
-  countFailedJobEvents,
-  listFailedJobEvents,
-  resolveFailedJobEvent,
-} from "@/modules/jobs/job.dead-letter";
+import { adminJobsRouter } from "./admin/jobs";
 
 const listUsersInputSchema = z.object({
   page: z.number().min(1).default(1),
@@ -55,22 +51,6 @@ const auditLogSchema = z.object({
   after: auditSnapshotSchema,
   createdAt: z.date(),
 });
-
-const failedJobEventSchema = z.object({
-  id: z.string(),
-  queueMessageId: z.string(),
-  jobId: z.string(),
-  jobType: z.string(),
-  payload: z.record(z.string(), z.unknown()),
-  error: z.string(),
-  attempts: z.number(),
-  failedAt: z.date(),
-  resolvedAt: z.date().nullable(),
-  resolvedBy: z.string().nullable(),
-  resolution: z.enum(["retried", "ignored", "refunded"]).nullable(),
-});
-
-const failedJobEventActionSchema = z.object({ id: z.string().min(1) });
 
 const overviewSchema = z.object({
   stats: z.object({
@@ -120,6 +100,7 @@ const overviewSchema = z.object({
 
 /** Read-only operational data. Payment entitlements remain webhook-owned. */
 export const adminRouter = {
+  ...adminJobsRouter,
   getAccess: protectedProcedure.handler(({ context }) => ({
     isAdmin:
       isServerFeatureEnabled("admin") &&
@@ -211,63 +192,6 @@ export const adminRouter = {
         countAdminAuditLogs(context.db),
       ]);
       return { data, pageCount: Math.ceil(total / input.perPage), total };
-    }),
-
-  listFailedJobs: adminProcedure
-    .input(listAuditLogInputSchema)
-    .output(
-      z.object({ data: z.array(failedJobEventSchema), pageCount: z.number(), total: z.number() }),
-    )
-    .handler(async ({ context, input }) => {
-      const [data, total] = await Promise.all([
-        listFailedJobEvents(context.db, {
-          limit: input.perPage,
-          offset: (input.page - 1) * input.perPage,
-        }),
-        countFailedJobEvents(context.db),
-      ]);
-      return { data, pageCount: Math.ceil(total / input.perPage), total };
-    }),
-
-  retryFailedJob: adminProcedure
-    .input(failedJobEventActionSchema)
-    .output(z.object({ retried: z.boolean() }))
-    .handler(async ({ context, input }) => {
-      const actor = context.session!.user;
-      const retried = await context.jobs.retryFailed({
-        failedJobEventId: input.id,
-        resolvedBy: actor.id,
-      });
-      if (retried) {
-        await recordAdminAuditLog(context.db, {
-          actor,
-          action: "jobs.failed.retried",
-          entity: { type: "failed_job_event", id: input.id },
-          after: { resolution: "retried" },
-        });
-      }
-      return { retried };
-    }),
-
-  ignoreFailedJob: adminProcedure
-    .input(failedJobEventActionSchema)
-    .output(z.object({ ignored: z.boolean() }))
-    .handler(async ({ context, input }) => {
-      const actor = context.session!.user;
-      const ignored = await resolveFailedJobEvent(context.db, {
-        id: input.id,
-        resolvedBy: actor.id,
-        resolution: "ignored",
-      });
-      if (ignored) {
-        await recordAdminAuditLog(context.db, {
-          actor,
-          action: "jobs.failed.ignored",
-          entity: { type: "failed_job_event", id: input.id },
-          after: { resolution: "ignored" },
-        });
-      }
-      return { ignored: Boolean(ignored) };
     }),
 
   overview: adminProcedure.output(overviewSchema).handler(async ({ context }) => {
