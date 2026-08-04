@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { webConfig } from "@/configs/web-config";
-import { themePresets } from "./theme-presets";
 import type { ThemePresetKey } from "./theme-presets";
 
 export const USER_THEMES = {
@@ -27,7 +26,6 @@ export const UserThemeSchema = z
 export const AppThemeSchema = z.enum(["light", "dark"]).catch("light");
 export const PresetSchema = z
   .string()
-  .refine((k) => k in themePresets, { message: "Invalid preset" })
   .transform((k) => k as ThemePresetKey)
   .catch(THEME_CONFIG.defaults.preset);
 

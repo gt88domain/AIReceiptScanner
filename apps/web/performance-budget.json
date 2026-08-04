@@ -1,0 +1,16 @@
+{
+  "commonEntryGzipBytes": 213000,
+  "globalCssGzipBytes": 27300,
+  "forbiddenInitialRequestTokens": [
+    "search-default",
+    "orama-static",
+    "admin-",
+    "billing-",
+    "purchase-",
+    "transactions-",
+    "landing-composer",
+    "theme-presets",
+    "theme-fonts",
+    ".lazy-"
+  ]
+}

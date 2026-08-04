@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { USER_THEMES } from "@/configs/theme-config";
-import type { ThemePresetKey } from "@/configs/theme-presets";
+import type { ThemePreset, ThemePresetKey } from "@/configs/theme-presets";
 import { cn } from "@/lib/utils";
 
 type ThemeSwitchProps = {
@@ -21,13 +21,12 @@ type ThemeSwitchProps = {
 };
 
 export function ThemeSwitch({ onActionComplete }: ThemeSwitchProps = {}) {
-  const { userTheme, preset, presets, setTheme, setPreset } = useTheme();
+  const { userTheme, preset, setTheme, setPreset } = useTheme();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
+  const [presets, setPresets] = useState<Record<ThemePresetKey, ThemePreset> | null>(null);
   const previewColorKeys = ["primary", "secondary", "accent", "background"] as const;
-  const presetEntries = Object.entries(presets) as Array<
-    [ThemePresetKey, (typeof presets)[ThemePresetKey]]
-  >;
+  const presetEntries = Object.entries(presets ?? {}) as Array<[ThemePresetKey, ThemePreset]>;
 
   const filteredPresets = presetEntries.filter(([_, { label }]) =>
     label.toLowerCase().includes(search.toLowerCase()),
@@ -39,6 +38,15 @@ export function ThemeSwitch({ onActionComplete }: ThemeSwitchProps = {}) {
     window.requestAnimationFrame(() => {
       onActionComplete();
     });
+  };
+
+  const loadThemeCatalog = async () => {
+    if (presets) return;
+    const [{ themePresets }] = await Promise.all([
+      import("@/configs/theme-presets"),
+      import("@/styles/theme-fonts.css"),
+    ]);
+    setPresets(themePresets);
   };
 
   return (
@@ -66,11 +74,17 @@ export function ThemeSwitch({ onActionComplete }: ThemeSwitchProps = {}) {
 
         <DropdownMenuSeparator />
 
-        <Sheet open={open} onOpenChange={setOpen}>
+        <Sheet
+          open={open}
+          onOpenChange={(nextOpen) => {
+            setOpen(nextOpen);
+            if (nextOpen) void loadThemeCatalog();
+          }}
+        >
           <SheetTrigger asChild>
             <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
               <Palette className="mr-2 h-4 w-4" />
-              Theme: {presets[preset]?.label}
+              Theme: {presets?.[preset]?.label ?? "Theme"}
             </DropdownMenuItem>
           </SheetTrigger>
           <SheetContent side="right" className="flex flex-col">
@@ -88,13 +102,14 @@ export function ThemeSwitch({ onActionComplete }: ThemeSwitchProps = {}) {
             </div>
             <ScrollArea className="flex-1 overflow-hidden px-4">
               <div className="space-y-1 pb-4">
+                {!presets && <p className="text-muted-foreground text-sm">Loading themes…</p>}
                 {filteredPresets.map(([key, { label, styles }]) => (
                   <Button
                     type="button"
                     variant="ghost"
                     key={key}
                     onClick={() => {
-                      setPreset(key);
+                      setPreset(key, styles);
                       setSearch("");
                       notifyActionComplete();
                     }}

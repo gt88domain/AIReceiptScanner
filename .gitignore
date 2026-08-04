@@ -1,5 +1,6 @@
 node_modules
 apps/*/dist
+artifacts/performance/
 /.expo/
 .DS_Store
 .turbo

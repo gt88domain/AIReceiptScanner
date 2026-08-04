@@ -7,7 +7,6 @@ import { DefaultCatchBoundary } from "@/components/feedback/default-catch-bounda
 import { NavigationProgress } from "@/components/layout/navigation-progress";
 import { webConfig } from "@/configs/web-config";
 import { getCurrentLocale } from "@/i18n";
-import { getGoogleAnalyticsScripts } from "@/lib/analytics/google-analytics";
 import type { OrpcUtils } from "@/utils/orpc";
 import appCss from "../styles/index.css?url";
 
@@ -51,7 +50,6 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
         href: "/favicon-32x32.ico",
       },
     ],
-    scripts: getGoogleAnalyticsScripts(),
   }),
   component: RootDocument,
   errorComponent: DefaultCatchBoundary,

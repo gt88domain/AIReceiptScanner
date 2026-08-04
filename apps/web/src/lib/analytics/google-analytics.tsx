@@ -5,35 +5,34 @@ type GoogleAnalyticsEventParams = Record<string, unknown>;
 declare global {
   interface Window {
     dataLayer?: unknown[];
-    gtag?: (command: "event", eventName: string, eventParams?: GoogleAnalyticsEventParams) => void;
+    gtag?: (command: string, eventName: unknown, eventParams?: GoogleAnalyticsEventParams) => void;
+    googleAnalyticsLoading?: Promise<void>;
   }
 }
 
-/**
- * Builds the GA4 script tags used by the TanStack Start root document.
- *
- * @returns Script descriptors for GA4 initialization, or an empty list when GA is not configured.
- */
-export function getGoogleAnalyticsScripts() {
-  if (!gaMeasurementId) {
-    return [];
+/** Load configured analytics after hydration rather than from the document head. */
+export function loadGoogleAnalytics(): Promise<void> {
+  if (!gaMeasurementId || typeof window === "undefined" || window.gtag) {
+    return Promise.resolve();
   }
+  if (window.googleAnalyticsLoading) return window.googleAnalyticsLoading;
 
-  return [
-    {
-      src: `https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`,
-      async: true,
-    },
-    {
-      children: `
-window.dataLayer = window.dataLayer || [];
-function gtag(){window.dataLayer.push(arguments);}
-window.gtag = gtag;
-gtag('js', new Date());
-gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });
-			`.trim(),
-    },
-  ];
+  window.dataLayer = window.dataLayer ?? [];
+  window.gtag = (command, eventName, eventParams) => {
+    window.dataLayer?.push([command, eventName, eventParams]);
+  };
+  window.gtag("js", new Date().toISOString());
+  window.gtag("config", gaMeasurementId, { send_page_view: false });
+
+  window.googleAnalyticsLoading = new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`;
+    script.addEventListener("load", () => resolve(), { once: true });
+    script.addEventListener("error", () => resolve(), { once: true });
+    document.head.append(script);
+  });
+  return window.googleAnalyticsLoading;
 }
 
 /**

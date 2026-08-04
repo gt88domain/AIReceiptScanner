@@ -61,6 +61,13 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm db:check
       - run: pnpm build
+      - run: pnpm perf:budget
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: web-performance-report
+          path: artifacts/performance/
+          if-no-files-found: warn
 
   # Release Please creates its PR with GITHUB_TOKEN, which suppresses the
   # pull_request and workflow_run chain. The dispatched Quality run is the

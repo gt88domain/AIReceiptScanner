@@ -1,5 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { AuthenticatedLayout } from "@/components/dashboard/authed-layout";
+import { AuthenticatedQueryCacheGuard } from "@/components/providers/authenticated-query-cache-guard";
 import { getCurrentUser } from "@/lib/auth/auth-server";
 
 export const Route = createFileRoute("/_authed/(dashboard)")({
@@ -10,5 +11,10 @@ export const Route = createFileRoute("/_authed/(dashboard)")({
     }
     return { user };
   },
-  component: AuthenticatedLayout,
+  component: () => (
+    <>
+      <AuthenticatedQueryCacheGuard />
+      <AuthenticatedLayout />
+    </>
+  ),
 });

@@ -2,6 +2,7 @@ import { ScriptOnce } from "@tanstack/react-router";
 import { createClientOnlyFn, createIsomorphicFn } from "@tanstack/react-start";
 import { createContext, type ReactNode, use, useEffect, useState } from "react";
 import { webConfig } from "@/configs/web-config";
+import { defaultThemePreset } from "@/configs/default-theme";
 import {
   type AppTheme,
   PresetSchema,
@@ -10,7 +11,7 @@ import {
   type UserTheme,
   UserThemeSchema,
 } from "@/configs/theme-config";
-import { themePresets, type ThemePresetKey } from "@/configs/theme-presets";
+import type { ThemePreset, ThemePresetKey } from "@/configs/theme-presets";
 
 const getStoredUserTheme = createIsomorphicFn()
   .server((): UserTheme => "system")
@@ -32,14 +33,11 @@ const getSystemTheme = createIsomorphicFn()
     (): AppTheme => (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"),
   );
 
-const applyTheme = createClientOnlyFn((presetKey: ThemePresetKey, mode: AppTheme) => {
-  const preset = themePresets[presetKey];
-  if (!preset) return;
-
-  const styles = preset.styles[mode];
+const applyTheme = createClientOnlyFn((styles: ThemePreset["styles"], mode: AppTheme) => {
+  const themeStyles = styles[mode];
   const root = document.documentElement;
 
-  Object.entries(styles).forEach(([key, value]) => {
+  Object.entries(themeStyles).forEach(([key, value]) => {
     root.style.setProperty(`--${key}`, value);
   });
 });
@@ -62,9 +60,8 @@ type ThemeContextProps = {
   userTheme: UserTheme;
   appTheme: AppTheme;
   preset: ThemePresetKey;
-  presets: typeof themePresets;
   setTheme: (theme: UserTheme) => void;
-  setPreset: (preset: ThemePresetKey) => void;
+  setPreset: (preset: ThemePresetKey, styles: ThemePreset["styles"]) => void;
 };
 
 const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
@@ -73,26 +70,35 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // Keep the hydration render deterministic. Persisted preferences are applied after React hydrates.
   const [userTheme, setUserTheme] = useState<UserTheme>(THEME_CONFIG.defaults.userTheme);
   const [preset, setPresetState] = useState<ThemePresetKey>(webConfig.defaultThemePresetKey);
+  const [presetStyles, setPresetStyles] = useState<ThemePreset["styles"]>(
+    defaultThemePreset.styles,
+  );
   const appTheme = userTheme === "system" ? getSystemTheme() : userTheme;
 
   useEffect(() => {
     setUserTheme(getStoredUserTheme());
-    setPresetState(getStoredPreset());
+    const storedPreset = getStoredPreset();
+    const storedStyles = localStorage.getItem(THEME_CONFIG.storageKeys.presetStyles);
+    if (storedStyles) {
+      try {
+        const parsed = JSON.parse(storedStyles) as ThemePreset["styles"];
+        if (parsed.light && parsed.dark) setPresetStyles(parsed);
+      } catch {
+        // Invalid local storage falls back to the default preset styles.
+      }
+    }
+    setPresetState(storedPreset);
   }, []);
 
   // Apply theme on mount and changes
   useEffect(() => {
     const mode = applyMode(userTheme);
-    applyTheme(preset, mode);
+    applyTheme(presetStyles, mode);
     // Ensure preset styles are saved for FOUC prevention
-    const presetData = themePresets[preset];
-    if (presetData && !localStorage.getItem(THEME_CONFIG.storageKeys.presetStyles)) {
-      localStorage.setItem(
-        THEME_CONFIG.storageKeys.presetStyles,
-        JSON.stringify(presetData.styles),
-      );
+    if (!localStorage.getItem(THEME_CONFIG.storageKeys.presetStyles)) {
+      localStorage.setItem(THEME_CONFIG.storageKeys.presetStyles, JSON.stringify(presetStyles));
     }
-  }, [userTheme, preset]);
+  }, [presetStyles, userTheme]);
 
   // Listen for system theme changes
   useEffect(() => {
@@ -101,11 +107,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handler = () => {
       const mode = applyMode("system");
-      applyTheme(preset, mode);
+      applyTheme(presetStyles, mode);
     };
     mediaQuery.addEventListener("change", handler);
     return () => mediaQuery.removeEventListener("change", handler);
-  }, [userTheme, preset]);
+  }, [presetStyles, userTheme]);
 
   const setTheme = (newTheme: UserTheme) => {
     const validated = UserThemeSchema.parse(newTheme);
@@ -113,18 +119,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(THEME_CONFIG.storageKeys.userTheme, validated);
   };
 
-  const setPreset = (newPreset: ThemePresetKey) => {
+  const setPreset = (newPreset: ThemePresetKey, styles: ThemePreset["styles"]) => {
     const validated = PresetSchema.parse(newPreset);
     setPresetState(validated);
+    setPresetStyles(styles);
     localStorage.setItem(THEME_CONFIG.storageKeys.preset, validated);
-    // Save preset styles for FOUC prevention on page reload
-    const presetData = themePresets[validated];
-    if (presetData) {
-      localStorage.setItem(
-        THEME_CONFIG.storageKeys.presetStyles,
-        JSON.stringify(presetData.styles),
-      );
-    }
+    localStorage.setItem(THEME_CONFIG.storageKeys.presetStyles, JSON.stringify(styles));
   };
 
   return (
@@ -133,7 +133,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         userTheme,
         appTheme,
         preset,
-        presets: themePresets,
         setTheme,
         setPreset,
       }}

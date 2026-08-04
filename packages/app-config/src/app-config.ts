@@ -1,4 +1,5 @@
 import { deepMerge } from "@repo/shared";
+import { publicRuntimeConfig } from "./public-runtime";
 import type {
   AppCommonConfig,
   AppConfig,
@@ -166,7 +167,7 @@ const appConfig: AppConfig = {
   // Shared defaults inherited by web and native unless a platform overrides them.
   common: {
     features: {
-      admin: true,
+      admin: publicRuntimeConfig.features.admin,
       jobs: true,
       // Mobile is opt-in: Web-only products do not activate its server integrations.
       mobile: false,
@@ -174,11 +175,11 @@ const appConfig: AppConfig = {
     // Public app metadata used in UI, links, and platform setup.
     app: {
       // Product display name.
-      name: "TanStack Template",
+      name: publicRuntimeConfig.appName,
       // Deep-link scheme used by the native app.
       nativeScheme: "com.aiarticles.template",
       // Public support contact.
-      supportEmail: "support@demo.aiarticles.com",
+      supportEmail: publicRuntimeConfig.supportEmail,
       // Official marketing or product website.
       websiteUrl: "https://demo.aiarticles.com",
       // Public social profile URL.
@@ -191,28 +192,28 @@ const appConfig: AppConfig = {
       // Login method UI entry points.
       methods: {
         // Controls email/password auth UI entry points.
-        emailPasswordEnabled: true,
+        emailPasswordEnabled: publicRuntimeConfig.auth.methods.emailPassword,
         // Controls email OTP auth UI entry points.
-        emailOtpEnabled: false,
+        emailOtpEnabled: publicRuntimeConfig.auth.methods.emailOtp,
         // Controls GitHub sign-in UI entry points.
-        githubEnabled: false,
+        githubEnabled: publicRuntimeConfig.auth.methods.github,
         // Controls Google sign-in UI entry points.
-        googleEnabled: false,
+        googleEnabled: publicRuntimeConfig.auth.methods.google,
         // Controls Apple sign-in UI entry points.
-        appleEnabled: false,
+        appleEnabled: publicRuntimeConfig.auth.methods.apple,
       },
       // One-time code settings shared by auth flows.
       otp: {
         // Email one-time sign-in code settings.
         email: {
           // Number of digits in one-time sign-in codes.
-          otpLength: 6,
+          otpLength: publicRuntimeConfig.auth.emailOtp.otpLength,
           // Verification code lifetime in seconds.
-          expiresInSeconds: 300,
+          expiresInSeconds: publicRuntimeConfig.auth.emailOtp.expiresInSeconds,
           // Maximum failed verification attempts per issued code.huo
-          allowedAttempts: 3,
+          allowedAttempts: publicRuntimeConfig.auth.emailOtp.allowedAttempts,
           // Client-side resend cooldown in seconds.
-          resendCooldownSeconds: 60,
+          resendCooldownSeconds: publicRuntimeConfig.auth.emailOtp.resendCooldownSeconds,
         },
       },
     },
@@ -229,7 +230,7 @@ const appConfig: AppConfig = {
     // File upload and public asset storage settings.
     storage: {
       // Disabled by default: the template does not expose an upload feature.
-      enabled: false,
+      enabled: publicRuntimeConfig.features.storage,
       // Provider used for file storage.
       provider: "r2",
       // Public API path used to serve stored files.
@@ -261,9 +262,9 @@ const appConfig: AppConfig = {
     // Web credit system settings and purchasable web packages.
     credits: {
       // Controls whether web credit routes and sidebar entries are visible.
-      enabled: true,
+      enabled: publicRuntimeConfig.features.credits,
       // Allows web checkout for credit packages. Disable to keep grants/usage without sales.
-      purchasesEnabled: true,
+      purchasesEnabled: publicRuntimeConfig.features.creditPurchases,
       // Optional free credit grant for new web users.
       signupGrant: creditSignupGrant,
       // Credit packages available through web checkout.
@@ -272,20 +273,20 @@ const appConfig: AppConfig = {
     // Route paths used by web auth, billing, and payment return flows.
     routes: {
       // Sign-in page path.
-      authSignIn: "/auth/sign-in",
+      authSignIn: publicRuntimeConfig.routes.authSignIn,
       // Password reset page path.
-      authResetPassword: "/auth/reset-password",
+      authResetPassword: publicRuntimeConfig.routes.authResetPassword,
       // Route shown after successful checkout.
-      billingSuccess: "/billing/success",
+      billingSuccess: publicRuntimeConfig.routes.billingSuccess,
       // Route shown after canceled checkout.
-      billingCancel: "/billing/cancel",
+      billingCancel: publicRuntimeConfig.routes.billingCancel,
       // Route returned to after billing portal actions.
-      billingReturn: "/settings/billing",
+      billingReturn: publicRuntimeConfig.routes.billingReturn,
     },
     // Web subscription and lifetime payment settings.
     payments: {
       // Enables web billing runtime paths.
-      enabled: true,
+      enabled: publicRuntimeConfig.features.billing,
       // Default payment provider for web billing.
       provider: "stripe",
       // Web provider price IDs are split by environment to avoid using test IDs in production.

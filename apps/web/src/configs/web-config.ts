@@ -1,20 +1,12 @@
-import { resolveProductFeatures, resolveWebCommonConfig } from "@repo/app-config";
+import { resolvePublicRuntimeConfig } from "@repo/app-config/public-runtime";
 import { trimTrailingSlash } from "@repo/shared";
 import { getCurrentLocale } from "@/i18n";
 import { defaultLocale } from "@/i18n/config";
 import type { LandingPageComponentKey } from "./landing-page-component/landing-page-component-registry";
-import type { ThemePresetKey } from "./theme-presets";
-import { themePresets } from "./theme-presets";
 import type { WebConfig, AuthUrls, BillingUrls } from "./types";
 
-const commonConfig = resolveWebCommonConfig();
-const productFeatures = resolveProductFeatures();
-const webRoutes = commonConfig.routes;
-
-const fallbackThemePresetKey = "clean-slate" as const satisfies ThemePresetKey;
-
-const defaultThemePresetKey =
-  (Object.keys(themePresets)[0] as ThemePresetKey | undefined) ?? fallbackThemePresetKey;
+const publicRuntime = resolvePublicRuntimeConfig();
+const webRoutes = publicRuntime.routes;
 
 const defaultLandingPageComponents = [
   "hero-section-23",
@@ -48,27 +40,27 @@ function getLocalizedBaseUrl(): string {
 }
 
 export const webConfig: WebConfig = {
-  AppName: commonConfig.app.name,
+  AppName: publicRuntime.appName,
   AppUrl: resolveAppUrl(),
-  supportEmail: commonConfig.app.supportEmail,
-  adminEnabled: productFeatures.admin,
-  billingEnabled: productFeatures.web.billing,
-  creditsEnabled: productFeatures.web.credits,
-  creditPurchasesEnabled: productFeatures.web.creditPurchases,
-  storageEnabled: productFeatures.storage,
+  supportEmail: publicRuntime.supportEmail,
+  adminEnabled: publicRuntime.features.admin,
+  billingEnabled: publicRuntime.features.billing,
+  creditsEnabled: publicRuntime.features.credits,
+  creditPurchasesEnabled: publicRuntime.features.creditPurchases,
+  storageEnabled: publicRuntime.features.storage,
   auth: {
     methods: {
-      emailPasswordEnabled: commonConfig.auth.methods.emailPasswordEnabled ?? false,
-      emailOtpEnabled: commonConfig.auth.methods.emailOtpEnabled ?? false,
-      githubEnabled: commonConfig.auth.methods.githubEnabled ?? false,
-      googleEnabled: commonConfig.auth.methods.googleEnabled ?? false,
-      appleEnabled: commonConfig.auth.methods.appleEnabled ?? false,
+      emailPasswordEnabled: publicRuntime.auth.methods.emailPassword,
+      emailOtpEnabled: publicRuntime.auth.methods.emailOtp,
+      githubEnabled: publicRuntime.auth.methods.github,
+      googleEnabled: publicRuntime.auth.methods.google,
+      appleEnabled: publicRuntime.auth.methods.apple,
     },
     otp: {
-      email: commonConfig.auth.otp.email,
+      email: publicRuntime.auth.emailOtp,
     },
   },
-  defaultThemePresetKey,
+  defaultThemePresetKey: publicRuntime.defaultThemePresetKey,
   defaultLandingPageComponents,
 };
 

@@ -3,6 +3,8 @@ export {
   resolveNativeCommonConfig,
   resolveWebCommonConfig,
 } from "./app-config";
+export { publicRuntimeConfig, resolvePublicRuntimeConfig } from "./public-runtime";
+export type { PublicRuntimeConfig } from "./public-runtime";
 
 export {
   FEATURE_DEPENDENCY_ERROR_CODES,

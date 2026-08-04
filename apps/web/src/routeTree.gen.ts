@@ -92,7 +92,7 @@ const DocsSplatRoute = DocsSplatRouteImport.update({
   id: '/docs/$',
   path: '/docs/$',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/docs/$.lazy').then((d) => d.Route))
 const authAuthUnauthedRouteRoute = authAuthUnauthedRouteRouteImport.update({
   id: '/_unauthed',
   getParentRoute: () => authAuthRouteRoute,
