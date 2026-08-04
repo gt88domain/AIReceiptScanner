@@ -3,6 +3,13 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [0.4.3](https://github.com/gt88domain/easystarter-template/compare/v0.4.2...v0.4.3) (2026-08-04)
+
+
+### Bug Fixes
+
+* **jobs:** support no-queue product profiles ([#34](https://github.com/gt88domain/easystarter-template/issues/34)) ([14a69ff](https://github.com/gt88domain/easystarter-template/commit/14a69ffa9203bdb83234c3b44c64ed4776b85e16))
+
 ## [0.4.2](https://github.com/gt88domain/easystarter-template/compare/v0.4.1...v0.4.2) (2026-08-04)
 
 
