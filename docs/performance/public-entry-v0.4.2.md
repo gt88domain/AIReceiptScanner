@@ -9,7 +9,7 @@ Base: `v0.4.1` (`c3ce2a28a22989d1ffb42ae6a8631b738625eecd`). Measurements use a 
 | Global CSS raw | 266,920 B | 171,331 B | -35.8% |
 | Global CSS gzip | 53,490 B | 25,976 B | -51.4% |
 
-`pnpm perf:bundle` rebuilds and writes bundle reports. `pnpm perf:homepage` writes the production entry's static request graph. `pnpm perf:budget` is the CI gate; it uses fixed limits in `apps/web/performance-budget.json` and rejects optional Docs, Search, Admin, Billing, Credits, Composer, alternate-theme, and lazy Docs assets in that graph.
+The table is historical context, not a current performance baseline. `pnpm perf:bundle` rebuilds and writes bundle reports. `pnpm perf:homepage` writes the production entry's static request graph. `pnpm perf:budget` is the CI gate; it uses fixed limits in `apps/web/performance-budget.json`, rejects optional Docs, Search, Admin, Billing, Credits, Composer, alternate-theme, and lazy Docs assets in that graph, and writes `artifacts/performance/baseline.json`. The successful Quality run's `web-performance-baseline` artifact is the only current measurement record.
 
 The local browser runtime available during this change did not permit localhost network capture, so timing/HAR data is intentionally non-blocking and is not fabricated. The deterministic entry graph remains the release gate.
 

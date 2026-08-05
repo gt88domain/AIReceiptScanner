@@ -55,8 +55,10 @@ Each profile build receives `EASYSTARTER_PROFILE_BUILD` only at bundle time,
 writes output to a system temporary directory, prints its descriptor checksum,
 and cleans that directory after completion. The matrix builds the Server with
 workspace configuration bundled, builds Web with the same profile feature gates,
-and enforces the unchanged public-entry gzip budgets. It does not deploy, create
-Cloudflare resources, change a profile file, or modify `product-config.ts`.
+and enforces the unchanged public-entry gzip budgets. It then runs Wrangler
+`deploy --dry-run` against each profile's Server and Web example, using the
+compiled temporary Worker output. It does not deploy, create Cloudflare
+resources, change a profile file, or modify `product-config.ts`.
 
 Production safety validation evaluates only enabled features. Disabled Jobs does
 not require Queue, DLQ, Cron, `JOB_QUEUE`, or `JOB_QUEUE_DLQ_NAME`; stale Jobs

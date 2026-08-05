@@ -20,7 +20,8 @@ function run(args, env) {
     execFileSync("pnpm", args, { cwd: root, env, stdio: "pipe" });
   } catch (error) {
     const output = [error.stdout, error.stderr]
-      .filter((value) => typeof value === "string" && value.length > 0)
+      .map((value) => (value ? String(value) : ""))
+      .filter((value) => value.length > 0)
       .join("\n");
     throw new Error(`pnpm ${args.join(" ")} failed.\n${output}`);
   }
@@ -100,6 +101,42 @@ try {
       throw new Error(`${profileId} server build left the profile configuration external.`);
     }
     run(["--filter", "web", "exec", "vite", "build", "--outDir", webOutput], environment);
+    run(
+      [
+        "--filter",
+        "server",
+        "exec",
+        "wrangler",
+        "deploy",
+        join(root, "apps/server/src/index.ts"),
+        "--dry-run",
+        "--tsconfig",
+        join(root, "apps/server/tsconfig.json"),
+        "--define",
+        `__EASYSTARTER_PROFILE_BUILD__:${JSON.stringify(profileId)}`,
+        "--config",
+        join(root, "template-kit/profiles", profileId, "wrangler.server.example.jsonc"),
+      ],
+      environment,
+    );
+    run(
+      [
+        "--filter",
+        "web",
+        "exec",
+        "wrangler",
+        "deploy",
+        join(webOutput, "server/index.js"),
+        "--assets",
+        join(webOutput, "client"),
+        "--dry-run",
+        "--tsconfig",
+        join(root, "apps/web/tsconfig.json"),
+        "--config",
+        join(root, "template-kit/profiles", profileId, "wrangler.web.example.jsonc"),
+      ],
+      environment,
+    );
 
     const performance = await readAssetStats(join(webOutput, "client", "assets"));
     if (performance.commonEntryGzipBytes > budget.commonEntryGzipBytes) {
@@ -113,7 +150,7 @@ try {
         `${profileId} has forbidden initial assets: ${performance.forbiddenAssets.join(", ")}.`,
       );
     }
-    results.push({ profileId, checksum: profile.checksum, performance });
+    results.push({ profileId, checksum: profile.checksum, performance, wranglerDryRun: true });
   }
 } finally {
   await rm(temporaryRoot, { force: true, recursive: true });

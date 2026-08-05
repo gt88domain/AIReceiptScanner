@@ -55,12 +55,24 @@ function descriptor(
 
 /** Creates the canonical build input for an official profile without changing product configuration. */
 export function createProfileBuildDescriptor(profileId: ProductProfileId): ProfileBuildDescriptor {
-  return descriptor(profileId, createPlatformComposition(createProductProfile(profileId)));
+  return descriptor(
+    profileId,
+    createPlatformComposition({
+      features: createProductProfile(profileId),
+      featureCapabilities: resolveCommonConfig().featureCapabilities,
+    }),
+  );
 }
 
 /** Creates the canonical descriptor for the repository's configured default product. */
 export function createDefaultProductDescriptor(): ProfileBuildDescriptor {
   // Resolve all common config before exposing a descriptor, so invalid default config still fails closed.
   resolveCommonConfig();
-  return descriptor("default-product", createPlatformComposition(resolveProductFeatures()));
+  return descriptor(
+    "default-product",
+    createPlatformComposition({
+      features: resolveProductFeatures(),
+      featureCapabilities: resolveCommonConfig().featureCapabilities,
+    }),
+  );
 }

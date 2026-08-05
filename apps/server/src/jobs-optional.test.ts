@@ -38,7 +38,10 @@ test("jobs-off Worker omits Queue and scheduled handlers", () => {
 });
 
 test("directory-lite Worker exports fetch only", () => {
-  const features = createPlatformComposition(productProfiles["directory-lite"].features).features;
+  const features = createPlatformComposition({
+    features: productProfiles["directory-lite"].features,
+    featureCapabilities: {},
+  }).features;
   const worker = buildWorkerHandler(features, handlers);
   assert.equal(Object.hasOwn(worker, "fetch"), true);
   assert.equal(Object.hasOwn(worker, "queue"), false);

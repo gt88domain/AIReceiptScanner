@@ -36,7 +36,11 @@ export {
 } from "./profile-build-descriptor";
 export type { ProfileBuildDescriptor } from "./profile-build-descriptor";
 
-export { createPlatformComposition, resolvePlatformComposition } from "./platform-composition";
+export {
+  createPlatformComposition,
+  resolvePlatformComposition,
+  type PlatformCompositionInput,
+} from "./platform-composition";
 export type { PlatformComposition } from "./platform-composition";
 
 export {

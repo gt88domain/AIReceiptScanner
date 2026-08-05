@@ -11,7 +11,7 @@ not change runtime behavior.
 
 | Area | Verified state |
 | --- | --- |
-| Package manager | pnpm `11.13.0`, pinned by root `packageManager` |
+| Package manager | pnpm `11.13.1`, pinned by root `packageManager` |
 | Workspaces | `apps/*` and `packages/*`; native is currently a first-class workspace at `apps/native` |
 | Default applications | Web Worker (`apps/web`) and API Worker (`apps/server`), but root Turbo commands also include native |
 | Web | React 19, TanStack Start, Vite, Tailwind |
@@ -37,7 +37,7 @@ Other verified root commands include `lint`, `fmt:check`, `check-types`,
 `build`, `db:check`, `db:migrate:local`, `deploy`, and `module:check`.
 
 The current `Quality` workflow has one required-looking job named `verify`.
-It checks out the repository, installs pnpm 11.13.0, uses frozen-lockfile
+It checks out the repository, installs pnpm 11.13.1, uses frozen-lockfile
 installation, and runs lint, format, types, native doctor, unit/template and
 integration tests, Drizzle validation, and build. The separate `Dependency
 vulnerability scan` workflow provides job `osv` on pull requests and a weekly

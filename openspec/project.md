@@ -8,7 +8,7 @@ Drizzle schema and migrations live under `apps/server/src/db`.
 `optional/mobile` is an opt-in Expo workspace, not a default dependency of a
 Web-only product. It has separate `pnpm mobile:*` commands and its own lockfile.
 
-The package manager is pnpm 11.13.0 and the default branch is `main`. Root
+The package manager is pnpm 11.13.1 and the default branch is `main`. Root
 verification is `pnpm fmt:check`, `pnpm lint`, `pnpm check-types`, `pnpm test`,
 and `pnpm build`.
 

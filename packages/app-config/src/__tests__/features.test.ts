@@ -11,6 +11,7 @@ import { resolveCommonConfig } from "../app-config";
 import { createProductProfile, productProfiles } from "../product-profiles";
 import { resolveConfiguredPaymentProviders } from "../payment-providers";
 import { createProfileBuildDescriptor } from "../profile-build-descriptor";
+import { createPlatformComposition } from "../platform-composition";
 
 describe("product features", () => {
   it("derives a public capability contract without exposing provider secrets", () => {
@@ -79,6 +80,27 @@ describe("product features", () => {
       jobs: false,
       web: { creditPurchases: false },
     });
+  });
+
+  it("derives composition from explicit capabilities without reading app configuration", () => {
+    const features = createProductFeatures({
+      jobs: false,
+      web: { billing: false, credits: false, creditPurchases: false },
+      native: { billing: false, credits: false, creditPurchases: false },
+    });
+
+    expect(
+      createPlatformComposition({
+        features,
+        featureCapabilities: { "report.export": { minimumTier: "free" } },
+      }).modules.billing,
+    ).toBe(false);
+    expect(() =>
+      createPlatformComposition({
+        features,
+        featureCapabilities: { "report.export": { minimumTier: "monthly" } },
+      }),
+    ).toThrow("[composition:PAID_CAPABILITY_REQUIRES_BILLING]");
   });
 
   it("does not activate native capabilities until mobile is enabled", () => {

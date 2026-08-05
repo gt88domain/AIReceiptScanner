@@ -24,7 +24,10 @@ const disabledEmail: ResolvedEmailConfig = {
 };
 
 function runtimeConfig(profile: keyof typeof productProfiles): ServerRuntimeConfig {
-  const composition = createPlatformComposition(productProfiles[profile].features);
+  const composition = createPlatformComposition({
+    features: productProfiles[profile].features,
+    featureCapabilities: {},
+  });
   return {
     composition,
     features: composition.features,

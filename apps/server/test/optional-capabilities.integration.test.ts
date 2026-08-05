@@ -32,7 +32,7 @@ const storageOffFeatures = createProductFeatures({
   native: { billing: false, credits: false, creditPurchases: false },
 });
 const storageOffRuntime: ServerRuntimeConfig = {
-  composition: createPlatformComposition(storageOffFeatures),
+  composition: createPlatformComposition({ features: storageOffFeatures, featureCapabilities: {} }),
   features: storageOffFeatures,
   storage: { enabled: false, provider: "r2", publicPath: "/api/storage" },
   email: disabledEmail,

@@ -2,9 +2,12 @@
 
 `PlatformComposition` is the one runtime contract for a Worker build. A
 `ProfileBuildDescriptor` adds its official profile ID, required resources,
-configured payment providers, and deterministic checksum. `pnpm profiles:build`
-uses that descriptor for every Server and Web profile build without changing
-the product configuration or leaving build files in the worktree.
+configured payment providers, and deterministic checksum. Its pure constructor
+accepts `{ features, featureCapabilities }`; only the resolver reads product
+configuration. `pnpm profiles:build` uses that descriptor for every Server and
+Web profile build, then performs Wrangler `deploy --dry-run` for both Workers
+without changing product configuration, deploying, or leaving build files in
+the worktree.
 
 The stable `platformContractRouter` is a compatibility contract for the default
 Web client. It is deliberately broader than a profile runtime. The Server uses

@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 const repositoryRoot = resolve(import.meta.dirname, "..");
@@ -25,5 +25,23 @@ if (homepage.forbiddenInitialRequests.length > 0) {
   failures.push(`Forbidden homepage assets: ${homepage.forbiddenInitialRequests.join(", ")}.`);
 }
 if (failures.length > 0) throw new Error(failures.join("\n"));
+
+await writeFile(
+  resolve(repositoryRoot, "artifacts/performance/baseline.json"),
+  `${JSON.stringify(
+    {
+      schemaVersion: 1,
+      budget,
+      measured: {
+        commonEntryGzipBytes: bundle.commonEntry.gzipBytes,
+        globalCssGzipBytes: bundle.globalCss.gzipBytes,
+        forbiddenInitialRequests: homepage.forbiddenInitialRequests,
+      },
+      result: "pass",
+    },
+    null,
+    2,
+  )}\n`,
+);
 
 console.log("Web performance budget passes.");

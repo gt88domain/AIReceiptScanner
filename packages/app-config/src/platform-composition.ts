@@ -9,6 +9,12 @@ import { resolveCommonConfig } from "./app-config";
 import { createProductProfile } from "./product-profiles";
 import { productProfileDefinitions, type ProductProfileId } from "./profile-definitions";
 import { resolveProfileBuildId } from "./profile-build-env";
+import type { FeatureCapabilityConfig } from "./types";
+
+export type PlatformCompositionInput = Readonly<{
+  features: ProductFeatures;
+  featureCapabilities: Readonly<Record<string, FeatureCapabilityConfig>>;
+}>;
 
 /**
  * The one derived module contract shared by the API Worker, public web runtime,
@@ -38,10 +44,13 @@ export type PlatformComposition = Readonly<{
 }>;
 
 /** Derives every platform registration decision from one validated feature contract. */
-export function createPlatformComposition(features: ProductFeatures): PlatformComposition {
+export function createPlatformComposition({
+  features,
+  featureCapabilities,
+}: PlatformCompositionInput): PlatformComposition {
   const resolved = validateFeatureDependencies(features);
   if (!resolved.billing) {
-    const paidCapability = Object.entries(resolveCommonConfig().featureCapabilities).find(
+    const paidCapability = Object.entries(featureCapabilities).find(
       ([, requirement]) => requirement.minimumTier !== "free",
     );
     if (paidCapability) {
@@ -76,10 +85,16 @@ export function createPlatformComposition(features: ProductFeatures): PlatformCo
 
 /** Resolves the immutable composition used by the default product Worker. */
 export function resolvePlatformComposition(): PlatformComposition {
+  const featureCapabilities = resolveCommonConfig().featureCapabilities;
   const profileId = resolveProfileBuildId();
-  if (!profileId) return createPlatformComposition(resolveProductFeatures());
+  if (!profileId) {
+    return createPlatformComposition({ features: resolveProductFeatures(), featureCapabilities });
+  }
   if (!(profileId in productProfileDefinitions)) {
     throw new Error(`[composition:UNKNOWN_PROFILE] ${profileId} is not an official profile.`);
   }
-  return createPlatformComposition(createProductProfile(profileId as ProductProfileId));
+  return createPlatformComposition({
+    features: createProductProfile(profileId as ProductProfileId),
+    featureCapabilities,
+  });
 }

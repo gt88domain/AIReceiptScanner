@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:
-          version: 11.13.0
+          version: 11.13.1
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -38,7 +38,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:
-          version: 11.13.0
+          version: 11.13.1
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -53,7 +53,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:
-          version: 11.13.0
+          version: 11.13.1
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -64,11 +64,11 @@ jobs:
       - run: pnpm profiles:build
       - run: pnpm perf:budget
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: success()
         with:
-          name: web-performance-report
+          name: web-performance-baseline
           path: artifacts/performance/
-          if-no-files-found: warn
+          if-no-files-found: error
 
   # Release Please creates its PR with GITHUB_TOKEN, which suppresses the
   # pull_request and workflow_run chain. The dispatched Quality run is the
