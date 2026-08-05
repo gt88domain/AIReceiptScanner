@@ -1,5 +1,6 @@
 import { render } from "@react-email/render";
 import { type CreateEmailOptions, Resend } from "resend";
+import { logSafeError } from "../../lib/safe-error";
 import type { EmailService, SendEmailParams } from "../types";
 
 /**
@@ -36,8 +37,8 @@ export function createResendEmailProvider({
       const { error } = await client.emails.send(payload);
 
       if (error) {
-        console.error("Failed to send email via Resend:", error);
-        throw new Error(error.message);
+        logSafeError("Resend email delivery failed", error);
+        throw new Error("Email delivery failed");
       }
     },
     async subscribeNewsletter(email) {
@@ -45,9 +46,9 @@ export function createResendEmailProvider({
       if (existing.error && existing.error.statusCode !== 404) {
         throw new Error("Newsletter contact lookup failed");
       }
-      const result = existing.data
-        ? await client.contacts.update({ email, unsubscribed: false })
-        : await client.contacts.create({ email, unsubscribed: false });
+      // Existing contacts may have opted out; public signup must never override that consent.
+      if (existing.data) return;
+      const result = await client.contacts.create({ email, unsubscribed: false });
       if (result.error) throw new Error("Newsletter contact update failed");
     },
   };

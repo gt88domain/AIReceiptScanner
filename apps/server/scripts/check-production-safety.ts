@@ -166,6 +166,7 @@ async function loadProductionConfig(
       apiServiceName: value(apiService, "service"),
       websiteUrl: value(webVars, "VITE_APP_URL"),
       serverUrl: value(webVars, "VITE_SERVER_URL"),
+      turnstileSiteKey: value(webVars, "VITE_TURNSTILE_SITE_KEY"),
       buildWebsiteUrl: webProductionEnv.VITE_APP_URL?.trim() ?? "",
       buildServerUrl: webProductionEnv.VITE_SERVER_URL?.trim() ?? "",
     },
@@ -243,6 +244,7 @@ function selfCheck() {
       serverUrl: "https://api.acme.test",
       buildWebsiteUrl: "https://app.acme.test",
       buildServerUrl: "https://api.acme.test",
+      turnstileSiteKey: "",
     },
     requirements: {
       features: createProductFeatures({
@@ -265,6 +267,30 @@ function selfCheck() {
     validateProductionConfigResult(input).errors.map(({ message }) => message);
 
   assert.deepEqual(errors(validInput), []);
+  assert.match(
+    validateProductionConfigResult({
+      ...validInput,
+      web: { ...validInput.web, turnstileSiteKey: "site-key" },
+    })
+      .errors.map(({ code }) => code)
+      .join("\n"),
+    /PARTIAL_TURNSTILE_CONFIGURATION/,
+  );
+  assert.match(
+    validateProductionConfigResult({
+      ...validInput,
+      productionEnv: { ...validInput.productionEnv, TURNSTILE_SECRET_KEY: "secret" },
+    })
+      .errors.map(({ code }) => code)
+      .join("\n"),
+    /PARTIAL_TURNSTILE_CONFIGURATION/,
+  );
+  assert.match(
+    validateProductionConfigResult(validInput)
+      .warnings.map(({ code }) => code)
+      .join("\n"),
+    /PUBLIC_FORM_PROTECTION_DISABLED/,
+  );
   assert.match(
     errors({
       ...validInput,

@@ -1,12 +1,21 @@
 import { ORPCError, os } from "@orpc/server";
 import { requireAdmin as requireAdminGuard, requireUser } from "@/auth/guards";
 import type { Context } from "./context";
+import { createSafeOrpcError } from "./safe-error";
 
 type ServerFeature = "admin" | "billing" | "credits" | "storage";
 
 export const o = os.$context<Context>();
 
-export const publicProcedure = o;
+const safeErrorMiddleware = o.middleware(async ({ next }) => {
+  try {
+    return await next();
+  } catch (error) {
+    throw createSafeOrpcError(error);
+  }
+});
+
+export const publicProcedure = o.use(safeErrorMiddleware);
 
 const requireAuth = o.middleware(async ({ context, next }) => {
   await requireUser(context);

@@ -98,6 +98,7 @@ jobs:
             const { data: pull } = await github.rest.pulls.get({ ...context.repo, pull_number: pr.number });
             if (pull.draft || pull.state !== "open" || pull.head.sha !== context.sha) return;
             if (pull.head.repo?.full_name !== `${context.repo.owner}/${context.repo.repo}`) return;
+            const verifiedHeadSha = pull.head.sha;
             const files = await github.paginate(github.rest.pulls.listFiles, {
               ...context.repo,
               pull_number: pull.number,
@@ -117,7 +118,7 @@ jobs:
             for (let attempt = 0; attempt < 12; attempt += 1) {
               const { data } = await github.rest.checks.listForRef({
                 ...context.repo,
-                ref: context.sha,
+                ref: verifiedHeadSha,
                 per_page: 100,
               });
               const checks = new Map(data.check_runs.map((check) => [check.name, check]));
@@ -128,10 +129,14 @@ jobs:
             }
             if (!ready) return;
 
+            const { data: latestPull } = await github.rest.pulls.get({ ...context.repo, pull_number: pull.number });
+            if (latestPull.head.sha !== verifiedHeadSha) return;
+
             await github.rest.pulls.merge({
               ...context.repo,
               pull_number: pull.number,
               merge_method: "squash",
+              sha: verifiedHeadSha,
             });
             await github.rest.actions.createWorkflowDispatch({
               ...context.repo,

@@ -22,6 +22,7 @@
   "vars": {
     "VITE_SERVER_URL": "https://api.replace-domain.example",
     "VITE_APP_URL": "https://replace-domain.example",
+    "VITE_TURNSTILE_SITE_KEY": "",
   },
   "observability": {
     "logs": {

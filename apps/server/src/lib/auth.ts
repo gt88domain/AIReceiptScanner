@@ -18,6 +18,7 @@ import {
 } from "../emails";
 import type { Locale } from "@repo/i18n";
 import { resolveOriginConfig, type ServerRuntimeConfig } from "./runtime-config";
+import { logSafeError } from "./safe-error";
 
 const commonConfig = resolveCommonConfig();
 
@@ -157,9 +158,12 @@ export function createAuth(
             resetUrl: url,
           });
         } catch (error) {
-          const message =
-            error instanceof Error ? error.message : "Failed to send reset password email";
-          throw new APIError("BAD_REQUEST", { message });
+          const traceId = logSafeError("Password reset email delivery failed", error);
+          throw new APIError("INTERNAL_SERVER_ERROR", {
+            code: "EMAIL_DELIVERY_FAILED",
+            message: "Email service is temporarily unavailable.",
+            traceId,
+          });
         }
       },
     },
@@ -177,9 +181,12 @@ export function createAuth(
             verificationUrl: url,
           });
         } catch (error) {
-          const message =
-            error instanceof Error ? error.message : "Failed to send verification email";
-          throw new APIError("BAD_REQUEST", { message });
+          const traceId = logSafeError("Verification email delivery failed", error);
+          throw new APIError("INTERNAL_SERVER_ERROR", {
+            code: "EMAIL_DELIVERY_FAILED",
+            message: "Email service is temporarily unavailable.",
+            traceId,
+          });
         }
       },
     },

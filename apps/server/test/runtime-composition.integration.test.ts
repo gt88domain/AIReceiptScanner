@@ -31,7 +31,12 @@ function runtimeConfig(profile: keyof typeof productProfiles): ServerRuntimeConf
   return {
     composition,
     features: composition.features,
-    storage: { enabled: composition.modules.storage, provider: "r2", publicPath: "/api/storage" },
+    storage: {
+      enabled: composition.modules.storage,
+      provider: "r2",
+      publicPath: "/api/storage",
+      maxFileSizes: { avatar: 5 * 1024 * 1024 },
+    },
     email: disabledEmail,
   };
 }

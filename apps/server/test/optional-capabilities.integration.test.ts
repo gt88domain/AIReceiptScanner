@@ -34,7 +34,12 @@ const storageOffFeatures = createProductFeatures({
 const storageOffRuntime: ServerRuntimeConfig = {
   composition: createPlatformComposition({ features: storageOffFeatures, featureCapabilities: {} }),
   features: storageOffFeatures,
-  storage: { enabled: false, provider: "r2", publicPath: "/api/storage" },
+  storage: {
+    enabled: false,
+    provider: "r2",
+    publicPath: "/api/storage",
+    maxFileSizes: { avatar: 5 * 1024 * 1024 },
+  },
   email: disabledEmail,
 };
 

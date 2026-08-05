@@ -10,11 +10,20 @@ export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
     select: (state) => state.id === rootRouteId,
   });
 
-  console.error("DefaultCatchBoundary Error:", error);
+  if (import.meta.env.DEV) console.error("DefaultCatchBoundary Error:", error);
 
   return (
     <div className="min-w-0 flex-1 p-4 flex flex-col items-center justify-center gap-6">
-      <ErrorComponent error={error} />
+      {import.meta.env.DEV ? (
+        <ErrorComponent error={error} />
+      ) : (
+        <div className="max-w-md space-y-2 text-center">
+          <h1 className="text-xl font-semibold">Something went wrong</h1>
+          <p className="text-sm text-muted-foreground">
+            Please try again or return to a safe page.
+          </p>
+        </div>
+      )}
       <div className="flex gap-2 items-center flex-wrap">
         <Button
           onClick={() => {

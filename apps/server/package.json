@@ -23,7 +23,7 @@
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "preflight:production": "tsx scripts/check-production-safety.ts",
+    "preflight:production": "tsx scripts/check-production-safety.ts && node ../../scripts/check-production-identity.mjs",
     "deploy": "pnpm run preflight:production && wrangler deploy",
     "deploy:dev": "wrangler deploy",
     "secrets:bulk:production": "wrangler secret bulk .dev.vars.production",
@@ -31,7 +31,7 @@
     "generate-types": "wrangler types",
     "email-preview": "pnpm dlx react-email dev --dir src/emails/templates --port 4000",
     "test:config": "tsx --test src/auth/guards/guards.test.ts src/auth/expo-plugin.test.ts src/storage/__tests__/access.test.ts src/modules/audit/audit.service.test.ts src/modules/jobs/job.registry.test.ts src/modules/jobs/job.retry.test.ts src/jobs-optional.test.ts",
-    "test:production-config": "tsx scripts/check-production-safety.ts --self-check",
+    "test:production-config": "tsx scripts/check-production-safety.ts --self-check && node ../../scripts/check-production-identity.mjs --self-check",
     "test:integration": "tsc --project test/tsconfig.json --noEmit && vitest run --config vitest.config.ts"
   },
   "dependencies": {

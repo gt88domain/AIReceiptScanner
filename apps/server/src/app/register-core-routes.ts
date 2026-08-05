@@ -1,4 +1,6 @@
+import { resolveCommonConfig } from "@repo/app-config";
 import { secureHeaders } from "hono/secure-headers";
+import templateVersion from "../../../../template-version.json";
 import { createAuthSessionMiddleware } from "../middlewares/auth";
 import { apiCorsMiddleware } from "../middlewares/cors";
 import { errorHandler } from "../middlewares/error";
@@ -8,6 +10,7 @@ import type { ServerApp } from "./types";
 
 /** Registers shared HTTP safety, health, session, and API CORS surfaces only. */
 export function registerCoreRoutes(app: ServerApp, runtimeConfig: ServerRuntimeConfig) {
+  const appName = resolveCommonConfig().app.name;
   app.onError(errorHandler);
   app.use(secureHeaders({ crossOriginResourcePolicy: false }));
   app.use(async (c, next) => {
@@ -32,8 +35,10 @@ export function registerCoreRoutes(app: ServerApp, runtimeConfig: ServerRuntimeC
   app.get("/", (c) =>
     c.json({
       status: "ok",
-      service: "tanstack-template API",
-      version: "1.0.0",
+      service: appName,
+      version: templateVersion.version,
+      templateVersion: templateVersion.version,
+      environment: c.env.NODE_ENV,
       timestamp: new Date().toISOString(),
     }),
   );

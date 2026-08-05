@@ -2,6 +2,7 @@ import { env, exports } from "cloudflare:workers";
 import { createApiClient } from "@repo/api-client";
 import type { AppRouterClient } from "@/routers";
 import { describe, expect, it } from "vitest";
+import templateVersion from "../../../template-version.json";
 
 const client = createApiClient<AppRouterClient>({
   baseUrl: "https://server.test",
@@ -50,7 +51,8 @@ describe("server Worker", () => {
     expect(response.headers.get("X-Frame-Options")).toBeTruthy();
     await expect(response.json()).resolves.toMatchObject({
       status: "ok",
-      service: "tanstack-template API",
+      service: "TanStack Template",
+      version: templateVersion.version,
     });
   });
 
@@ -68,6 +70,25 @@ describe("server Worker", () => {
       code: "UNAUTHORIZED",
       status: 401,
     });
+  });
+
+  it("keeps small RPC requests working while rejecting oversized RPC and OpenAPI payloads", async () => {
+    await expect(client.healthCheck()).resolves.toBe("OK");
+    const oversizedBody = JSON.stringify({ data: "x".repeat(1024 * 1024) });
+
+    for (const path of ["/rpc/healthCheck", "/api/healthCheck"]) {
+      const response = await exports.default.fetch(`https://server.test${path}`, {
+        body: oversizedBody,
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+      });
+
+      expect(response.status).toBe(413);
+      await expect(response.json()).resolves.toEqual({
+        error: "Payload too large",
+        code: "PAYLOAD_TOO_LARGE",
+      });
+    }
   });
 
   it("enforces Better Auth's shared sign-in limit", async () => {

@@ -16,6 +16,7 @@ declare namespace Cloudflare {
     REVENUECAT_WEBHOOK_SECRET: string;
     STRIPE_SECRET_KEY: string;
     STRIPE_WEBHOOK_SECRET: string;
+    TURNSTILE_SECRET_KEY: string;
     WAFFO_ENVIRONMENT: string;
     WAFFO_MERCHANT_ID: string;
     WAFFO_PRIVATE_KEY: string;

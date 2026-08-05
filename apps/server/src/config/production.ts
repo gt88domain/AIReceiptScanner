@@ -44,6 +44,7 @@ export type ProductionConfigInput = {
     serverUrl: string;
     buildWebsiteUrl: string;
     buildServerUrl: string;
+    turnstileSiteKey: string;
   };
   requirements: {
     features?: ProductFeatures;
@@ -332,6 +333,25 @@ export function validateProductionConfigResult(
       warnings,
       "DISABLED_EMAIL_CONFIGURATION",
       "Email is disabled but Resend configuration remains.",
+    );
+  }
+
+  const publicFormsEnabled =
+    requirements.email.enabled &&
+    (requirements.email.capabilities.contactForm || requirements.email.capabilities.newsletter);
+  const hasTurnstileSiteKey = Boolean(web.turnstileSiteKey.trim());
+  const hasTurnstileSecret = Boolean(productionEnv.TURNSTILE_SECRET_KEY?.trim());
+  if (hasTurnstileSiteKey !== hasTurnstileSecret) {
+    add(
+      errors,
+      "PARTIAL_TURNSTILE_CONFIGURATION",
+      "VITE_TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY must be configured together.",
+    );
+  } else if (publicFormsEnabled && !hasTurnstileSiteKey) {
+    add(
+      warnings,
+      "PUBLIC_FORM_PROTECTION_DISABLED",
+      "Public forms have no Turnstile protection. Configure Cloudflare WAF rate limiting in production.",
     );
   }
 

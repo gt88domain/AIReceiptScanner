@@ -1,12 +1,14 @@
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute } from "@tanstack/react-router";
 import { Loader2Icon, MailIcon } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Turnstile, turnstileEnabled } from "@/components/security/turnstile";
 import { webConfig } from "@/configs/web-config";
 import { getCurrentLocale, getMessages, useTranslations } from "@/i18n";
 import { cn } from "@/lib/utils";
@@ -29,22 +31,32 @@ export const Route = createFileRoute("/_public/(marketing)/contact")({
 
 function ContactPage() {
   const t = useTranslations("contact");
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileResetNonce, setTurnstileResetNonce] = useState(0);
   if (!webConfig.contactFormEnabled) return null;
   const form = useForm({
     defaultValues: { email: "", message: "", name: "", website: "" },
     onSubmit: async ({ value }) => {
+      if (turnstileEnabled && !turnstileToken) {
+        toast.error(t("error"));
+        return;
+      }
       const response = await fetch("/api/contact", {
-        body: JSON.stringify(value),
+        body: JSON.stringify({ ...value, turnstileToken }),
         headers: { "Content-Type": "application/json" },
         method: "POST",
       });
       const payload = (await response.json()) as { error?: string; sent?: boolean };
       if (!response.ok || !payload.sent) {
+        setTurnstileToken("");
+        setTurnstileResetNonce((nonce) => nonce + 1);
         toast.error(response.status === 429 ? t("rateLimited") : t("error"));
         return;
       }
 
       form.reset();
+      setTurnstileToken("");
+      setTurnstileResetNonce((nonce) => nonce + 1);
       toast.success(t("success"));
     },
     validators: {
@@ -167,11 +179,21 @@ function ContactPage() {
                     />
                   )}
                 />
+                <Turnstile
+                  action="contact"
+                  onError={() => setTurnstileToken("")}
+                  onToken={setTurnstileToken}
+                  resetNonce={turnstileResetNonce}
+                />
                 <form.Subscribe>
                   {(state) => (
                     <Button
                       className="w-full"
-                      disabled={!state.canSubmit || state.isSubmitting}
+                      disabled={
+                        !state.canSubmit ||
+                        state.isSubmitting ||
+                        (turnstileEnabled && !turnstileToken)
+                      }
                       type="submit"
                     >
                       {state.isSubmitting ? <Loader2Icon className="size-4 animate-spin" /> : null}

@@ -1,29 +1,39 @@
 export class Resend {
-  static contactEmails: string[] = [];
+  static contactsByEmail = new Map<string, { unsubscribed: boolean }>();
+  static updates = 0;
 
   static reset() {
-    Resend.contactEmails = [];
+    Resend.contactsByEmail.clear();
+    Resend.updates = 0;
+  }
+
+  static setContact(email: string, unsubscribed: boolean) {
+    Resend.contactsByEmail.set(email, { unsubscribed });
+  }
+
+  static getContact(email: string) {
+    return Resend.contactsByEmail.get(email);
   }
 
   readonly contacts = {
-    create: async ({ email }: { email: string }) => {
-      Resend.contactEmails.push(email);
+    create: async ({ email, unsubscribed }: { email: string; unsubscribed: boolean }) => {
+      Resend.contactsByEmail.set(email, { unsubscribed });
       return {
-        data: { id: `contact-${Resend.contactEmails.length}`, object: "contact" as const },
+        data: { id: `contact-${Resend.contactsByEmail.size}`, object: "contact" as const },
         error: null,
         headers: null,
       };
     },
     get: async ({ email }: { email: string }) => {
-      const exists = Resend.contactEmails.includes(email);
-      return exists
+      const contact = Resend.contactsByEmail.get(email);
+      return contact
         ? {
             data: {
-              id: `contact-${Resend.contactEmails.indexOf(email) + 1}`,
+              id: `contact-${[...Resend.contactsByEmail.keys()].indexOf(email) + 1}`,
               email,
               first_name: null,
               last_name: null,
-              unsubscribed: false,
+              unsubscribed: contact.unsubscribed,
               created_at: "2026-07-16T00:00:00.000Z",
             },
             error: null,
@@ -35,14 +45,18 @@ export class Resend {
             headers: null,
           };
     },
-    update: async ({ email }: { email: string }) => ({
-      data: {
-        id: `contact-${Resend.contactEmails.indexOf(email) + 1}`,
-        object: "contact" as const,
-      },
-      error: null,
-      headers: null,
-    }),
+    update: async ({ email, unsubscribed }: { email: string; unsubscribed: boolean }) => {
+      Resend.updates += 1;
+      Resend.contactsByEmail.set(email, { unsubscribed });
+      return {
+        data: {
+          id: `contact-${[...Resend.contactsByEmail.keys()].indexOf(email) + 1}`,
+          object: "contact" as const,
+        },
+        error: null,
+        headers: null,
+      };
+    },
   };
 
   readonly emails = {
