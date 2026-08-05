@@ -1,4 +1,4 @@
-import { and, asc, eq, gt, gte, isNull, or, sql } from "drizzle-orm";
+import { and, eq, gt, gte, isNull, or, sql } from "drizzle-orm";
 import type { Database } from "@/db";
 import { creditTransaction } from "@/db/schema/credits";
 import {
@@ -14,6 +14,7 @@ import {
 } from "./internal";
 import { getBalance } from "./read";
 import { ensureSignupGrant } from "./signup-grant";
+import { listSpendableCreditLots } from "./spendable-balance";
 import type {
   ConsumeCreditsInput,
   CreditServiceContext,
@@ -138,22 +139,12 @@ export async function consumeCredits(
     }
 
     const now = new Date();
-    const grantRows = await db
-      .select()
-      .from(creditTransaction)
-      .where(
-        and(
-          eq(creditTransaction.userId, input.user.userId),
-          gt(creditTransaction.remainingAmount, 0),
-          or(isNull(creditTransaction.expiresAt), gt(creditTransaction.expiresAt, now)),
-        ),
-      )
-      .orderBy(
-        asc(isNull(creditTransaction.expiresAt)),
-        asc(creditTransaction.expiresAt),
-        asc(creditTransaction.createdAt),
-      )
-      .limit(CREDIT_CONSUMPTION_GRANT_LIMIT);
+    const grantRows = await listSpendableCreditLots(
+      db,
+      input.user.userId,
+      now,
+      CREDIT_CONSUMPTION_GRANT_LIMIT,
+    );
     const grants = grantRows;
     const available = grants.reduce((sum, item) => sum + item.remainingAmount, 0);
     if (available < input.amount) {

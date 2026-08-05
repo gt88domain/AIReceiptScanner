@@ -2,6 +2,7 @@ import { env } from "cloudflare:workers";
 import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 import type { Context } from "@/lib/context";
+import { requireCreditsService } from "@/lib/credits-access";
 import { webCreditPurchaseProcedure } from "@/lib/orpc";
 import { createPaymentOperationError } from "@/lib/payment-operation-error";
 
@@ -46,7 +47,7 @@ export const webCreditsRouter = {
     .handler(async ({ context, input }) => {
       const user = resolveCreditUser(context);
       try {
-        const session = await context.credits.createCheckoutSession({
+        const session = await requireCreditsService(context).createCheckoutSession({
           user,
           packageId: input.packageId,
           returnUrl: input.returnUrl,

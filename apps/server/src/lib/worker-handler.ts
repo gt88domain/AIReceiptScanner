@@ -15,8 +15,11 @@ type OptionalJobWorkerHandlers = {
 /** Builds the exact Worker surface permitted by the resolved feature contract. */
 export function buildWorkerHandler(
   features: ProductFeatures,
-  handlers: JobWorkerHandlers,
+  handlers: OptionalJobWorkerHandlers,
 ): OptionalJobWorkerHandlers {
   if (!features.jobs) return { fetch: handlers.fetch };
-  return handlers;
+  if (!handlers.scheduled || !handlers.queue) {
+    throw new Error("Jobs are enabled but Worker handlers are not registered.");
+  }
+  return { fetch: handlers.fetch, scheduled: handlers.scheduled, queue: handlers.queue };
 }

@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { createProductFeatures, type ResolvedEmailConfig } from "@repo/app-config";
+import {
+  createPlatformComposition,
+  createProductFeatures,
+  type ResolvedEmailConfig,
+} from "@repo/app-config";
 import { ORPCError } from "@orpc/server";
 import { createApp } from "@/app/create-app";
 import { createEmailService } from "@/emails";
@@ -28,6 +32,7 @@ const storageOffFeatures = createProductFeatures({
   native: { billing: false, credits: false, creditPurchases: false },
 });
 const storageOffRuntime: ServerRuntimeConfig = {
+  composition: createPlatformComposition(storageOffFeatures),
   features: storageOffFeatures,
   storage: { enabled: false, provider: "r2", publicPath: "/api/storage" },
   email: disabledEmail,

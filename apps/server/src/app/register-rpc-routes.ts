@@ -1,11 +1,16 @@
-import { apiHandler } from "../handlers/api";
-import { rpcHandler } from "../handlers/rpc";
+import { createApiHandler } from "../handlers/api";
+import { createRpcHandler } from "../handlers/rpc";
 import { createContext } from "../lib/context";
 import type { ServerRuntimeConfig } from "../lib/runtime-config";
+import { buildRuntimeAppRouter } from "../routers/runtime-router";
 import type { ServerApp } from "./types";
 
-/** Mounts the stable oRPC/OpenAPI surface with the same immutable runtime contract per request. */
+/** Mounts the physically composed Worker API surface with the same contract per request. */
 export function registerRpcRoutes(app: ServerApp, runtimeConfig: ServerRuntimeConfig) {
+  const router = buildRuntimeAppRouter(runtimeConfig.composition);
+  const rpcHandler = createRpcHandler(router);
+  const apiHandler = createApiHandler(router);
+
   app.use("/rpc/*", async (c, next) => {
     const context = await createContext({ context: c, runtimeConfig });
     const result = await rpcHandler.handle(c.req.raw, { prefix: "/rpc", context });

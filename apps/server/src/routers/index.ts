@@ -9,20 +9,10 @@ import { getCurrentUserFromContext, usersRouter } from "./common/users";
 import { webCreditsRouter } from "./web/credits";
 import { paymentsRouter } from "./web/payments";
 
-/**
- * App Router - Platform-organized API routes
- *
- * Structure:
- * - Root level: Common APIs (shared by web + native)
- * - web: Web-specific APIs
- * - native: Native-specific APIs
- *
- * Note: File serving (GET /api/storage/*) uses HTTP for caching/CDN compatibility.
- */
 const healthCheck = publicProcedure.handler(() => "OK");
 const getCurrentUser = publicProcedure.handler(({ context }) => getCurrentUserFromContext(context));
 
-type AppRouterDefinition = {
+type PlatformContractRouter = {
   healthCheck: typeof healthCheck;
   getCurrentUser: typeof getCurrentUser;
   users: typeof usersRouter;
@@ -30,15 +20,12 @@ type AppRouterDefinition = {
   storage: typeof storageRouter;
   payments: typeof commonPaymentsRouter;
   credits: typeof creditsRouter;
-  web: {
-    payments: typeof paymentsRouter;
-    credits: typeof webCreditsRouter;
-  };
+  web: { payments: typeof paymentsRouter; credits: typeof webCreditsRouter };
   native: Record<never, never>;
 } & typeof moduleRouters;
 
-export const appRouter: AppRouterDefinition = {
-  // ============ Common APIs (web + native) ============
+/** Stable platform API contract for the default web client; not a runtime registration promise. */
+export const platformContractRouter: PlatformContractRouter = {
   healthCheck,
   getCurrentUser,
   users: usersRouter,
@@ -46,22 +33,13 @@ export const appRouter: AppRouterDefinition = {
   storage: storageRouter,
   payments: commonPaymentsRouter,
   credits: creditsRouter,
-  // ============ Product domain modules ============
   ...moduleRouters,
-  // ============ Web-specific APIs ============
-  web: {
-    payments: paymentsRouter,
-    credits: webCreditsRouter,
-  },
-
-  // ============ Native-specific APIs ============
-  native: {
-    // Example: push notifications, device registration
-    // pushNotification: pushNotificationRouter,
-  },
+  web: { payments: paymentsRouter, credits: webCreditsRouter },
+  native: {},
 };
 
-/** Server-side oRPC router type. */
-export type AppRouter = typeof appRouter;
-/** Client type generated from the oRPC router. */
-export type AppRouterClient = RouterClient<typeof appRouter>;
+/** Compatibility name retained for existing server and downstream imports. */
+export const appRouter = platformContractRouter;
+export type AppRouter = typeof platformContractRouter;
+export type PlatformClientContract = RouterClient<typeof platformContractRouter>;
+export type AppRouterClient = PlatformClientContract;

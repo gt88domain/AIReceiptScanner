@@ -5,7 +5,11 @@ import { createDb } from "../db";
 import { createEmailService } from "../emails";
 import { createT, getLocaleFromRequest } from "../i18n";
 import { getPaymentService } from "../payments";
-import { createCapabilityService } from "../modules/capabilities/capability.service";
+import {
+  createCapabilityService,
+  createFreeEntitlementReader,
+  createPaymentEntitlementReader,
+} from "../modules/capabilities/capability.service";
 import { createJobService } from "../modules/jobs";
 import { getAuthSession } from "../auth/adapter";
 import { finalizeSoftDeletedSession, getUserDeletedAt } from "./auth-session-guard";
@@ -45,19 +49,23 @@ export async function createContext({ context, runtimeConfig }: CreateContextOpt
   const email = runtimeConfig.email.enabled
     ? createEmailService(runtimeConfig.email, context.env)
     : undefined;
-  const payments = getPaymentService(db);
-  const capabilities = createCapabilityService(payments);
+  const payments = runtimeConfig.composition.modules.billing ? getPaymentService(db) : undefined;
+  const entitlements = payments
+    ? createPaymentEntitlementReader(payments)
+    : createFreeEntitlementReader();
+  const capabilities = createCapabilityService(entitlements);
   const queue = resolveJobQueue(runtimeConfig.features, context.env);
   const jobs = queue ? createJobService(db, queue) : undefined;
-  // Credits share the same database and session context as billing and user APIs.
-  const credits = createCreditsService(db, {
-    signupGrant: {
-      hashSecret: context.env.BETTER_AUTH_SECRET,
-      ipAddress: getClientIp(headers) ?? sessionRequest?.ipAddress ?? null,
-      userAgent:
-        normalizeHeaderValue(headers.get("user-agent")) ?? sessionRequest?.userAgent ?? null,
-    },
-  });
+  const credits = runtimeConfig.composition.modules.credits
+    ? createCreditsService(db, {
+        signupGrant: {
+          hashSecret: context.env.BETTER_AUTH_SECRET,
+          ipAddress: getClientIp(headers) ?? sessionRequest?.ipAddress ?? null,
+          userAgent:
+            normalizeHeaderValue(headers.get("user-agent")) ?? sessionRequest?.userAgent ?? null,
+        },
+      })
+    : undefined;
 
   return {
     // Server-only Worker bindings. Never return this object from an RPC procedure.
@@ -72,6 +80,7 @@ export async function createContext({ context, runtimeConfig }: CreateContextOpt
     storage,
     email,
     payments,
+    entitlements,
     capabilities,
     jobs,
     credits,

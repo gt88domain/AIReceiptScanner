@@ -1,6 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { z } from "zod";
 import { AdminDashboard } from "@/components/dashboard/admin/admin-dashboard";
+import { webConfig } from "@/configs/web-config";
 import { getAdminAccess } from "@/lib/auth/auth-server";
 
 const searchSchema = z.object({
@@ -12,6 +13,9 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/_authed/(dashboard)/admin")({
   beforeLoad: async () => {
+    if (!webConfig.adminEnabled) {
+      throw redirect({ to: "/dashboard" });
+    }
     const { isAdmin } = await getAdminAccess();
     if (!isAdmin) {
       throw redirect({ to: "/dashboard" });

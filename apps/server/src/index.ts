@@ -6,7 +6,9 @@ import { createJobWorkerHandlers } from "./worker/create-worker-handlers";
 
 const runtimeConfig = resolveServerRuntimeConfig();
 const app = createApp({ runtimeConfig });
-const jobs = createJobWorkerHandlers(runtimeConfig);
+const jobs = runtimeConfig.composition.modules.jobs
+  ? createJobWorkerHandlers(runtimeConfig)
+  : undefined;
 
 export default buildWorkerHandler(runtimeConfig.features, {
   fetch: createFetchHandler(app, runtimeConfig),

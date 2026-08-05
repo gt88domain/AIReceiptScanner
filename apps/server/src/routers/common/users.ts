@@ -112,8 +112,10 @@ export const usersRouter = {
         });
       }
 
-      const billingStatus = await context.payments.getBillingStatus({ userId });
-      if (billingStatus.hasActiveSubscription) {
+      const billingStatus = context.payments
+        ? await context.payments.getBillingStatus({ userId })
+        : null;
+      if (billingStatus?.hasActiveSubscription) {
         throw new ORPCError("BAD_REQUEST", {
           message: context.t("errors.activeSubscriptionDeletion"),
         });

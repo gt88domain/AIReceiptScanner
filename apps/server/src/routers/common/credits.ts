@@ -9,6 +9,7 @@ import {
   listCreditTransactionsOutputSchema,
 } from "@/credits/public/schemas";
 import type { Context } from "@/lib/context";
+import { requireCreditsService } from "@/lib/credits-access";
 import { creditsProcedure, protectedCreditsProcedure } from "@/lib/orpc";
 
 /** Resolves the authenticated user for protected credit endpoints. */
@@ -44,11 +45,11 @@ export const creditsRouter = {
   listPackages: creditsProcedure
     .input(listPackagesInputSchema)
     .output(z.array(creditPackageSchema))
-    .handler(({ context, input }) => context.credits.listPackages(input)),
+    .handler(({ context, input }) => requireCreditsService(context).listPackages(input)),
 
   getBalance: protectedCreditsProcedure.output(creditBalanceSchema).handler(({ context }) => {
     const user = resolveCreditUser(context);
-    return context.credits.getBalance(user);
+    return requireCreditsService(context).getBalance(user);
   }),
 
   listTransactions: protectedCreditsProcedure
@@ -56,7 +57,7 @@ export const creditsRouter = {
     .output(listCreditTransactionsOutputSchema)
     .handler(({ context, input }) => {
       const user = resolveCreditUser(context);
-      return context.credits.listTransactions({ user, ...input });
+      return requireCreditsService(context).listTransactions({ user, ...input });
     }),
 
   listOrders: protectedCreditsProcedure
@@ -64,6 +65,6 @@ export const creditsRouter = {
     .output(listCreditOrdersOutputSchema)
     .handler(({ context, input }) => {
       const user = resolveCreditUser(context);
-      return context.credits.listOrders({ user, ...input });
+      return requireCreditsService(context).listOrders({ user, ...input });
     }),
 };

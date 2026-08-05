@@ -1,9 +1,11 @@
-import { publicRuntimeConfig } from "./public-runtime";
+import { resolvePublicRuntimeConfig } from "./public-runtime";
 import type { AppCommonConfig } from "./types";
+
+const publicRuntime = resolvePublicRuntimeConfig();
 
 /** Browser-safe product Storage policy. Provider bindings remain server-only. */
 export const productStorageConfig = {
-  enabled: publicRuntimeConfig.features.storage,
+  enabled: publicRuntime.features.storage,
   provider: "r2",
   publicPath: "/api/storage",
   keyPrefixes: { avatar: "avatars" },

@@ -1,7 +1,7 @@
 import { env, exports } from "cloudflare:workers";
 import { and, eq, gt } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { beginBillableOperation, expireCredits, grantCredits } from "@/credits";
+import { beginBillableOperation, expireCredits, getBalance, grantCredits } from "@/credits";
 import { createDb } from "@/db";
 import { productFeatures } from "@/lib/module-config";
 import { creditTransaction } from "@/db/schema/credits";
@@ -93,5 +93,21 @@ describe.skipIf(!productFeatures.credits)("credit batch limits", () => {
         and(eq(creditTransaction.userId, user.userId), gt(creditTransaction.remainingAmount, 0)),
       );
     expect(remaining?.remainingAmount).toBe(1);
+  });
+
+  it("does not treat expired lots as spendable before scheduled maintenance runs", async () => {
+    const user = await createUser("credit-effective-expiration");
+    await grantOneCreditPerRow(user, 1, new Date(Date.now() - 1_000));
+
+    await expect(getBalance(db, user)).resolves.toMatchObject({ balance: 0 });
+    await expect(
+      beginBillableOperation(db, {
+        user,
+        feature: "image.generate",
+        operationId: crypto.randomUUID(),
+        requestHash: "b".repeat(64),
+        calculatedCost: 1,
+      }),
+    ).rejects.toThrow("Insufficient credits");
   });
 });

@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises";
+import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -22,6 +23,15 @@ async function readJson(path) {
 
 function hasBinding(entries, binding) {
   return Array.isArray(entries) && entries.some((entry) => entry?.binding === binding);
+}
+
+function buildDescriptor(profileId) {
+  const output = execFileSync(
+    "pnpm",
+    ["exec", "tsx", "scripts/profile-build-report.ts", profileId],
+    { cwd: root, encoding: "utf8" },
+  );
+  return JSON.parse(output);
 }
 
 function validateServerExample(profile, server) {
@@ -86,6 +96,15 @@ for (const id of profileIds) {
     readJson(join(directory, "wrangler.web.example.jsonc")),
     readJson(join(fixturesRoot, `${id}.json`)),
   ]);
+  const descriptor = buildDescriptor(id);
+  const profileFeatures = {
+    admin: descriptor.composition.features.admin,
+    jobs: descriptor.composition.features.jobs,
+    storage: descriptor.composition.features.storage,
+    mobile: descriptor.composition.features.mobile,
+    web: descriptor.composition.features.web,
+    native: descriptor.composition.features.native,
+  };
 
   if (profile.id !== id || !profile.features || !Array.isArray(profile.expectedResources)) {
     fail(`${id} profile metadata is incomplete.`);
@@ -99,16 +118,19 @@ for (const id of profileIds) {
   ) {
     fail(`${id} profile metadata and fixture disagree.`);
   }
-  const derivedResources = ["D1"];
-  if (profile.features.storage) derivedResources.push("R2");
-  if (profile.features.jobs) derivedResources.push("Queue", "DLQ", "Cron");
-  if (JSON.stringify(profile.expectedResources) !== JSON.stringify(derivedResources)) {
-    fail(`${id} expected resources must be derived from features.`);
+  if (
+    JSON.stringify(profile.features) !== JSON.stringify(profileFeatures) ||
+    JSON.stringify(profile.expectedResources) !== JSON.stringify(descriptor.requiredResources)
+  ) {
+    fail(`${id} profile metadata must match the canonical build descriptor.`);
   }
   if (id === "directory" && profile.features.jobs !== true) {
     fail("directory must keep Jobs infrastructure.");
   }
-  if (id === "directory-lite" && JSON.stringify(profile.expectedResources) !== JSON.stringify(["D1"])) {
+  if (
+    id === "directory-lite" &&
+    JSON.stringify(profile.expectedResources) !== JSON.stringify(["D1"])
+  ) {
     fail("directory-lite must require only D1.");
   }
   validateServerExample(profile, server);

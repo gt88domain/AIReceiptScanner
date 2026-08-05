@@ -45,6 +45,19 @@ Run the repository-only structural check with:
 pnpm profiles:check
 ```
 
+Run production build proof for all four profiles with:
+
+```bash
+pnpm profiles:build
+```
+
+Each profile build receives `EASYSTARTER_PROFILE_BUILD` only at bundle time,
+writes output to a system temporary directory, prints its descriptor checksum,
+and cleans that directory after completion. The matrix builds the Server with
+workspace configuration bundled, builds Web with the same profile feature gates,
+and enforces the unchanged public-entry gzip budgets. It does not deploy, create
+Cloudflare resources, change a profile file, or modify `product-config.ts`.
+
 Production safety validation evaluates only enabled features. Disabled Jobs does
 not require Queue, DLQ, Cron, `JOB_QUEUE`, or `JOB_QUEUE_DLQ_NAME`; stale Jobs
 bindings produce a warning. Disabled Billing does not require payment-provider

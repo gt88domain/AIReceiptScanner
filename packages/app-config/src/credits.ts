@@ -1,4 +1,5 @@
 import { resolveNativeCommonConfig, resolveWebCommonConfig } from "./app-config";
+import { resolveProductFeatures } from "./features";
 import type {
   CreditGrantConfig,
   CreditNativePackageConfig,
@@ -322,9 +323,10 @@ export function normalizeCreditsConfig(
   };
 }
 
+const productFeatures = resolveProductFeatures();
 const resolvedCreditsConfig = mergeCreditsConfigs([
   resolveWebCommonConfig().credits,
-  resolveNativeCommonConfig().credits,
+  ...(productFeatures.mobile ? [resolveNativeCommonConfig().credits] : []),
 ]);
 
 /** Runtime credit configuration resolved from common app-config. */

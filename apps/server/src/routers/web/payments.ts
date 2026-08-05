@@ -3,6 +3,7 @@ import { ORPCError } from "@orpc/server";
 import { getCheckoutDecisionReasonFromError } from "@repo/app-config/payments/web-policy";
 import { z } from "zod";
 import type { Context } from "@/lib/context";
+import { requirePaymentService } from "@/lib/payment-access";
 import { protectedBillingProcedure } from "@/lib/orpc";
 import { createPaymentOperationError } from "@/lib/payment-operation-error";
 import { providerEnum } from "@/payments/public/schemas";
@@ -84,7 +85,7 @@ export const paymentsRouter = {
     .handler(async ({ context, input }) => {
       const user = resolveBillingUser(context);
       try {
-        const session = await context.payments.createCheckoutSession({
+        const session = await requirePaymentService(context).createCheckoutSession({
           user,
           planId: input.planId,
           priceId: input.priceId,
@@ -121,7 +122,7 @@ export const paymentsRouter = {
     .handler(async ({ context, input }) => {
       const user = resolveBillingUser(context);
       try {
-        const session = await context.payments.createPortalSession({
+        const session = await requirePaymentService(context).createPortalSession({
           user,
           returnUrl: input.returnUrl,
           provider: input.provider,
@@ -146,7 +147,7 @@ export const paymentsRouter = {
     .handler(async ({ context, input }) => {
       const user = resolveBillingUser(context);
       try {
-        await context.payments.upgradeSubscription({
+        await requirePaymentService(context).upgradeSubscription({
           user,
           planId: input.planId,
           priceId: input.priceId,

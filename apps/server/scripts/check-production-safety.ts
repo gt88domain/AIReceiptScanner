@@ -6,12 +6,10 @@ import { parse as parseEnv } from "dotenv";
 import { parse as parseJsonc } from "jsonc-parser";
 import {
   createProductFeatures,
+  createDefaultProductDescriptor,
   resolveEmailConfig,
   resolveCommonConfig,
-  resolveNativeCommonConfig,
-  resolveProductFeatures,
   resolveWebCommonConfig,
-  validateFeatureDependencies,
 } from "@repo/app-config";
 import { validateProductionConfigResult, type EnvValues } from "../src/config/production";
 
@@ -63,39 +61,9 @@ function value(object: JsonObject, name: string) {
   return String(object[name] ?? "");
 }
 
-function configuredPaymentProviders(features = resolveProductFeatures()) {
-  const providers = new Set<string>();
-  const web = resolveWebCommonConfig();
-  const native = features.mobile ? resolveNativeCommonConfig() : undefined;
-
-  if (features.web.billing && web.payments?.enabled) {
-    providers.add(web.payments.provider);
-    for (const plan of web.payments.plans) {
-      for (const price of plan.prices ?? []) {
-        if (price.status !== "archived") providers.add(price.provider);
-      }
-    }
-  }
-  if (features.web.creditPurchases && web.credits.enabled) {
-    for (const creditPackage of web.credits.packages) {
-      if (creditPackage.status !== "archived" && creditPackage.web) {
-        providers.add(creditPackage.web.provider);
-      }
-    }
-  }
-  if (features.native.billing && native?.payments?.enabled) providers.add(native.payments.provider);
-  if (features.native.creditPurchases && native?.credits.enabled) {
-    for (const creditPackage of native.credits.packages) {
-      if (creditPackage.status === "archived") continue;
-      for (const product of Object.values(creditPackage.native)) {
-        if (product) providers.add(product.provider);
-      }
-    }
-  }
-  return providers;
-}
-
-function configuredProductionPriceIds(features = resolveProductFeatures()) {
+function configuredProductionPriceIds(
+  features: ReturnType<typeof createDefaultProductDescriptor>["composition"]["features"],
+) {
   const prices: Array<{ label: string; production: string; test: string }> = [];
   const web = resolveWebCommonConfig();
 
@@ -166,7 +134,8 @@ async function loadProductionConfig(
   const hasCron = asOptionalArray(triggers.crons, "server triggers.crons").length > 0;
 
   const common = resolveCommonConfig();
-  const features = validateFeatureDependencies(resolveProductFeatures());
+  const descriptor = createDefaultProductDescriptor();
+  const features = descriptor.composition.features;
   return {
     productionEnv,
     expectedEnv,
@@ -202,7 +171,7 @@ async function loadProductionConfig(
     },
     requirements: {
       features,
-      paymentProviders: configuredPaymentProviders(features),
+      paymentProviders: descriptor.configuredPaymentProviders,
       email: resolveEmailConfig(common),
       oauth: {
         github: common.auth.methods.githubEnabled === true,

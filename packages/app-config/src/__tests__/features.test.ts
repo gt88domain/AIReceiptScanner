@@ -9,6 +9,8 @@ import {
 import { resolveEmailConfig } from "../email-config";
 import { resolveCommonConfig } from "../app-config";
 import { createProductProfile, productProfiles } from "../product-profiles";
+import { resolveConfiguredPaymentProviders } from "../payment-providers";
+import { createProfileBuildDescriptor } from "../profile-build-descriptor";
 
 describe("product features", () => {
   it("derives a public capability contract without exposing provider secrets", () => {
@@ -189,6 +191,61 @@ describe("product features", () => {
     expect(() => createProductProfile("full-saas", { jobs: false })).toThrow(
       "[features:BILLING_REQUIRES_JOBS]",
     );
+  });
+
+  it("creates one serializable descriptor for each official profile", () => {
+    const fullSaas = createProfileBuildDescriptor("full-saas");
+    const directoryLite = createProfileBuildDescriptor("directory-lite");
+
+    expect(fullSaas).toMatchObject({
+      profileId: "full-saas",
+      requiredResources: ["D1", "R2", "Queue", "DLQ", "Cron"],
+      composition: { modules: { billing: true, credits: true, storage: true, jobs: true } },
+    });
+    expect(directoryLite).toMatchObject({
+      profileId: "directory-lite",
+      requiredResources: ["D1"],
+      composition: { modules: { billing: false, credits: false, storage: false, jobs: false } },
+    });
+    expect(directoryLite.checksum).toMatch(/^[0-9a-f]{8}$/);
+    expect(JSON.parse(JSON.stringify(directoryLite))).toMatchObject({
+      profileId: "directory-lite",
+      checksum: directoryLite.checksum,
+    });
+  });
+
+  it("derives providers only from enabled, active platform capabilities", () => {
+    const features = createProductFeatures({
+      mobile: false,
+      web: { billing: true, credits: true, creditPurchases: true },
+      native: { billing: true, credits: true, creditPurchases: true },
+    });
+    expect(
+      resolveConfiguredPaymentProviders({
+        features,
+        webPayments: { enabled: true, provider: "stripe", plans: [] },
+        webCredits: {
+          enabled: true,
+          purchasesEnabled: true,
+          packages: [
+            {
+              id: "archived",
+              amount: 1,
+              status: "archived",
+              web: {
+                provider: "creem",
+                test: { providerPriceId: "test" },
+                prod: { providerPriceId: "prod" },
+                currency: "usd",
+                amountCents: 100,
+              },
+            },
+          ],
+        },
+        nativePayments: { enabled: true, provider: "revenuecat" },
+        nativeCredits: { enabled: true, packages: [] },
+      }),
+    ).toEqual(["stripe"]);
   });
 
   it("fails closed for invalid optional email capability combinations", () => {

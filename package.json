@@ -23,6 +23,7 @@
     "template:check-modifications": "node scripts/check-template-modifications.mjs",
     "template:audit-modifications": "node scripts/check-template-modifications.mjs",
     "profiles:check": "node scripts/check-product-profiles.mjs",
+    "profiles:build": "node scripts/build-profile-matrix.mjs",
     "check:wrangler-types": "node scripts/check-wrangler-types.mjs",
     "perf:bundle": "pnpm --filter web build && node scripts/analyze-web-bundle.mjs",
     "perf:homepage": "node scripts/measure-homepage-assets.mjs",

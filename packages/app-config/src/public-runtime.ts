@@ -1,3 +1,6 @@
+import { productProfileDefinitions } from "./profile-definitions";
+import { resolveProfileBuildId } from "./profile-build-env";
+
 /**
  * Browser-safe configuration used by public routes and the base client runtime.
  * Keep catalogs, provider price IDs, and native-only settings out of this entry.
@@ -39,8 +42,26 @@ export const publicRuntimeConfig = {
   },
 } as const;
 
-export type PublicRuntimeConfig = typeof publicRuntimeConfig;
+export type PublicRuntimeConfig = Omit<typeof publicRuntimeConfig, "features"> & {
+  features: { [Key in keyof typeof publicRuntimeConfig.features]: boolean };
+};
 
 export function resolvePublicRuntimeConfig(): PublicRuntimeConfig {
-  return publicRuntimeConfig;
+  const profileId = resolveProfileBuildId();
+  if (!profileId) return publicRuntimeConfig;
+  if (!(profileId in productProfileDefinitions)) {
+    throw new Error(`[public-runtime:UNKNOWN_PROFILE] ${profileId} is not an official profile.`);
+  }
+  const profile = productProfileDefinitions[profileId as keyof typeof productProfileDefinitions];
+  return {
+    ...publicRuntimeConfig,
+    features: {
+      ...publicRuntimeConfig.features,
+      admin: profile.admin,
+      billing: profile.web.billing,
+      credits: profile.web.credits,
+      creditPurchases: profile.web.creditPurchases,
+      storage: profile.storage,
+    },
+  };
 }

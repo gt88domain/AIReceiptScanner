@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createProductFeatures } from "@repo/app-config";
+import {
+  createPlatformComposition,
+  createProductFeatures,
+  productProfiles,
+} from "@repo/app-config";
 import { ORPCError } from "@orpc/server";
 import { requireJobsService } from "./lib/jobs-access";
 import { resolveJobQueue } from "./lib/jobs-binding";
@@ -28,6 +32,14 @@ const jobsOn = createProductFeatures({
 
 test("jobs-off Worker omits Queue and scheduled handlers", () => {
   const worker = buildWorkerHandler(jobsOff, handlers);
+  assert.equal(Object.hasOwn(worker, "fetch"), true);
+  assert.equal(Object.hasOwn(worker, "queue"), false);
+  assert.equal(Object.hasOwn(worker, "scheduled"), false);
+});
+
+test("directory-lite Worker exports fetch only", () => {
+  const features = createPlatformComposition(productProfiles["directory-lite"].features).features;
+  const worker = buildWorkerHandler(features, handlers);
   assert.equal(Object.hasOwn(worker, "fetch"), true);
   assert.equal(Object.hasOwn(worker, "queue"), false);
   assert.equal(Object.hasOwn(worker, "scheduled"), false);

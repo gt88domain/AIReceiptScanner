@@ -1,12 +1,12 @@
 import {
+  resolvePlatformComposition,
   resolveEmailConfig,
   resolveStorageConfig,
+  type PlatformComposition,
   type ProductFeatures,
   type ResolvedEmailConfig,
   type ResolvedStorageConfig,
 } from "@repo/app-config";
-import { productFeatures } from "./module-config";
-
 export type ResolvedOriginConfig = Readonly<{
   webRuntimeOrigin: string;
   webCanonicalOrigin: string;
@@ -16,6 +16,7 @@ export type ResolvedOriginConfig = Readonly<{
 }>;
 
 export type ServerRuntimeConfig = Readonly<{
+  composition: PlatformComposition;
   features: ProductFeatures;
   storage: ResolvedStorageConfig;
   email: ResolvedEmailConfig;
@@ -23,7 +24,8 @@ export type ServerRuntimeConfig = Readonly<{
 
 /** Resolves immutable product capability contracts once for this Worker isolate. */
 export function resolveServerRuntimeConfig(): ServerRuntimeConfig {
-  const features = productFeatures;
+  const composition = resolvePlatformComposition();
+  const features = composition.features;
   const storage = resolveStorageConfig();
   const email = resolveEmailConfig();
   if (features.storage !== storage.enabled) {
@@ -31,7 +33,7 @@ export function resolveServerRuntimeConfig(): ServerRuntimeConfig {
       "[runtime:STORAGE_CONFIG_MISMATCH] Storage feature and storage config disagree.",
     );
   }
-  return Object.freeze({ features, storage, email });
+  return Object.freeze({ composition, features, storage, email });
 }
 
 /** Resolves request-independent origin semantics from the current Worker binding set. */

@@ -46,8 +46,7 @@ export async function requireCapability(context: Context, capability: string) {
 /** Requires the webhook-backed membership entitlement tier or higher. */
 export async function requireEntitlement(context: Context, minimumTier: MembershipTier) {
   const requestUser = await requireUser(context);
-  const billingStatus = await context.payments.getBillingStatus({ userId: requestUser.id });
-  const entitlement = billingStatus.currentEntitlement;
+  const entitlement = await context.entitlements.getEntitlement({ userId: requestUser.id });
   if (MEMBERSHIP_TIER_RANK[entitlement.tier] < MEMBERSHIP_TIER_RANK[minimumTier]) {
     throw new ORPCError("FORBIDDEN");
   }

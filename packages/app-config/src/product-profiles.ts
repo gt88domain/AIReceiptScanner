@@ -5,8 +5,9 @@ import {
   type ProductFeatureInput,
   type ProductFeatures,
 } from "./features";
+import { productProfileDefinitions, type ProductProfileId } from "./profile-definitions";
 
-export type ProductProfileId = "full-saas" | "account-app" | "directory" | "directory-lite";
+export type { ProductProfileId } from "./profile-definitions";
 
 type PlatformFeatureOverrides = Partial<ProductFeatureInput["web"]>;
 
@@ -25,8 +26,6 @@ export type ProductProfile = {
   features: ProductFeatures;
   expectedResources: ReturnType<typeof resolveRequiredResources>;
 };
-
-const noNativeFeatures = { billing: false, credits: false, creditPurchases: false } as const;
 
 function defineProductProfile(
   id: ProductProfileId,
@@ -53,53 +52,25 @@ export const productProfiles: Record<ProductProfileId, ProductProfile> = {
     "full-saas",
     "Full SaaS",
     "Billing, Credits, Storage, and Jobs for a subscription or AI SaaS.",
-    {
-      admin: true,
-      jobs: true,
-      storage: true,
-      mobile: false,
-      web: { billing: true, credits: true, creditPurchases: true },
-      native: noNativeFeatures,
-    },
+    productProfileDefinitions["full-saas"],
   ),
   "account-app": defineProductProfile(
     "account-app",
     "Account App",
     "Accounts, private content, Storage, Admin, and Jobs without commercial billing.",
-    {
-      admin: true,
-      jobs: true,
-      storage: true,
-      mobile: false,
-      web: { billing: false, credits: false, creditPurchases: false },
-      native: noNativeFeatures,
-    },
+    productProfileDefinitions["account-app"],
   ),
   directory: defineProductProfile(
     "directory",
     "Directory",
     "Directory or content platform with Admin and Jobs, without Storage or billing.",
-    {
-      admin: true,
-      jobs: true,
-      storage: false,
-      mobile: false,
-      web: { billing: false, credits: false, creditPurchases: false },
-      native: noNativeFeatures,
-    },
+    productProfileDefinitions.directory,
   ),
   "directory-lite": defineProductProfile(
     "directory-lite",
     "Directory Lite",
     "Directory or content platform with Admin, without Jobs, Storage, or billing.",
-    {
-      admin: true,
-      jobs: false,
-      storage: false,
-      mobile: false,
-      web: { billing: false, credits: false, creditPurchases: false },
-      native: noNativeFeatures,
-    },
+    productProfileDefinitions["directory-lite"],
   ),
 };
 

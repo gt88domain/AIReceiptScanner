@@ -1,14 +1,22 @@
 # Server platform composition
 
-The Server Worker is assembled statically in `apps/server/src/app/create-app.ts`.
-`index.ts` resolves one immutable runtime contract, creates the Hono app, and
-builds the Worker surface. It does not contain business routes or provider code.
+`PlatformComposition` is the one runtime contract for a Worker build. A
+`ProfileBuildDescriptor` adds its official profile ID, required resources,
+configured payment providers, and deterministic checksum. `pnpm profiles:build`
+uses that descriptor for every Server and Web profile build without changing
+the product configuration or leaving build files in the worktree.
+
+The stable `platformContractRouter` is a compatibility contract for the default
+Web client. It is deliberately broader than a profile runtime. The Server uses
+`buildRuntimeAppRouter(composition)`, which physically omits disabled namespaces
+before the RPC and OpenAPI handlers are created. Exact per-profile Web clients
+and route trees are deferred to v0.5.
 
 - Core owns health, session, safety middleware, CORS, i18n, and RPC transport.
 - Auth owns Better Auth HTTP and the verified-email page.
 - Email owns newsletter and contact HTTP endpoints.
 - Storage owns the public storage HTTP endpoint.
-- Billing owns payment webhook registration; physical Billing omission is deferred to v0.4.5.
+- Billing webhooks exist only when Billing is enabled and only for configured providers.
 - Product domain routers remain in `apps/server/src/modules` and are mounted through the static oRPC module extension point.
 
 Registrars are explicit imports, not plugin discovery. A product adds a domain
@@ -16,5 +24,6 @@ module; it does not edit `createApp()` unless it is changing an upstream platfor
 surface.
 
 `createContext({ context, runtimeConfig })` receives the same immutable runtime
-contract used by route registration. Jobs, Storage, and Email services are only
-created when their capability is enabled.
+contract used by route registration. Jobs, Storage, Email, Payments, and Credits
+services are created only when their capability is enabled. Billing-off uses a
+free entitlement reader; it is not a fake payment provider.

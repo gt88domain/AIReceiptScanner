@@ -91,6 +91,9 @@ export default defineConfig(({ mode }) => {
         JSON.stringify(resolveBuildEnvValue(key, [process.env, env, wranglerVars]) ?? ""),
       ]),
   );
+  clientBuildEnv.__EASYSTARTER_PROFILE_BUILD__ = JSON.stringify(
+    process.env.EASYSTARTER_PROFILE_BUILD ?? "",
+  );
   const sitemapHost = resolveBuildEnvValue("VITE_APP_URL", [
     process.env,
     env,

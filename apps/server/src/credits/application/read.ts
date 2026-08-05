@@ -9,6 +9,7 @@ import { creditAccount, creditOrder, creditTransaction } from "@/db/schema/credi
 import { toPublicCreditOrder } from "./orders";
 import { EXPIRING_WINDOW_DAYS, addDays, assertCreditsEnabled } from "./internal";
 import { ensureSignupGrant } from "./signup-grant";
+import { getSpendableBalance } from "./spendable-balance";
 import type {
   CreditServiceContext,
   CreditUser,
@@ -105,7 +106,8 @@ export async function getBalance(
 
   return {
     userId: input.userId,
-    balance: account?.balance ?? 0,
+    // The account carries chargeback debt; live lots remove only unexpired spendable value.
+    balance: Math.min(account?.balance ?? 0, await getSpendableBalance(db, input.userId, now)),
     totalGranted: account?.totalGranted ?? 0,
     totalConsumed: account?.totalConsumed ?? 0,
     totalExpired: account?.totalExpired ?? 0,

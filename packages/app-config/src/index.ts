@@ -31,6 +31,21 @@ export { createProductProfile, productProfiles } from "./product-profiles";
 export type { ProductFeatureOverrides, ProductProfile, ProductProfileId } from "./product-profiles";
 
 export {
+  createDefaultProductDescriptor,
+  createProfileBuildDescriptor,
+} from "./profile-build-descriptor";
+export type { ProfileBuildDescriptor } from "./profile-build-descriptor";
+
+export { createPlatformComposition, resolvePlatformComposition } from "./platform-composition";
+export type { PlatformComposition } from "./platform-composition";
+
+export {
+  resolveConfiguredPaymentProviders,
+  resolveCurrentConfiguredPaymentProviders,
+} from "./payment-providers";
+export type { ConfiguredPaymentProvidersInput } from "./payment-providers";
+
+export {
   type AppCommonConfig,
   type AppConfig,
   type AppCreditsConfig,
