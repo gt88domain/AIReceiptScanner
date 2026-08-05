@@ -3,6 +3,13 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [0.4.6](https://github.com/gt88domain/easystarter-template/compare/v0.4.5...v0.4.6) (2026-08-05)
+
+
+### Bug Fixes
+
+* **verification:** harden profile release checks ([#40](https://github.com/gt88domain/easystarter-template/issues/40)) ([98010ae](https://github.com/gt88domain/easystarter-template/commit/98010ae2832ddae44d21e2c2ebe82f84a2f90acd))
+
 ## [0.4.5](https://github.com/gt88domain/easystarter-template/compare/v0.4.4...v0.4.5) (2026-08-05)
 
 
