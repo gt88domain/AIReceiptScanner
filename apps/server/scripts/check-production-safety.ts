@@ -6,6 +6,7 @@ import { parse as parseEnv } from "dotenv";
 import { parse as parseJsonc } from "jsonc-parser";
 import {
   createProductFeatures,
+  resolveEmailConfig,
   resolveCommonConfig,
   resolveNativeCommonConfig,
   resolveProductFeatures,
@@ -202,7 +203,7 @@ async function loadProductionConfig(
     requirements: {
       features,
       paymentProviders: configuredPaymentProviders(features),
-      emailEnabled: common.email.provider === "resend",
+      email: resolveEmailConfig(common),
       oauth: {
         github: common.auth.methods.githubEnabled === true,
         google: common.auth.methods.googleEnabled === true,
@@ -236,28 +237,19 @@ function selfCheck() {
   const validInput = {
     productionEnv: {
       ENVIRONMENT: "production",
-      WORKER_NAME: "acme-api",
-      D1_DATABASE_ID: "12345678-1234-1234-1234-123456789abc",
-      R2_BUCKET: "acme-assets",
-      QUEUE_NAME: "acme-jobs",
-      QUEUE_DLQ_NAME: "acme-jobs-dlq",
-      CLOUDFLARE_D1_DATABASE_ID: "12345678-1234-1234-1234-123456789abc",
       BETTER_AUTH_SECRET: "a".repeat(32),
       ADMIN_EMAILS: "admin@acme.test",
       RESEND_API_KEY: "re_test",
       EMAIL_FROM: "noreply@acme.test",
+      CONTACT_RECIPIENT: "support@acme.test",
       STRIPE_SECRET_KEY: "sk_live_test",
       STRIPE_WEBHOOK_SECRET: "whsec_test",
     },
     expectedEnv: {
-      WORKER_NAME: "acme-api",
-      D1_DATABASE_ID: "12345678-1234-1234-1234-123456789abc",
-      R2_BUCKET: "acme-assets",
-      QUEUE_NAME: "acme-jobs",
-      QUEUE_DLQ_NAME: "acme-jobs-dlq",
-      WEB_WORKER_NAME: "acme-web",
-      WEBSITE_URL: "https://app.acme.test",
-      SERVER_URL: "https://api.acme.test",
+      EXPECTED_SERVER_WORKER: "acme-api",
+      EXPECTED_WEB_WORKER: "acme-web",
+      EXPECTED_WEB_HOST: "app.acme.test",
+      EXPECTED_API_HOST: "api.acme.test",
     },
     server: {
       workerName: "acme-api",
@@ -292,7 +284,7 @@ function selfCheck() {
         native: { billing: false, credits: false, creditPurchases: false },
       }),
       paymentProviders: new Set(["stripe"]),
-      emailEnabled: true,
+      email: resolveEmailConfig(),
       oauth: { github: false, google: false, apple: false },
       productionPriceIds: [
         { label: "Stripe plan pro/monthly", production: "price_live", test: "price_test" },
@@ -314,9 +306,9 @@ function selfCheck() {
   assert.match(
     errors({
       ...validInput,
-      productionEnv: { ...validInput.productionEnv, R2_BUCKET: "" },
+      server: { ...validInput.server, bucketName: "" },
     }).join("\n"),
-    /Missing R2_BUCKET/,
+    /R2_BUCKET must use a concrete production identity/,
   );
   assert.match(
     errors({
@@ -366,14 +358,10 @@ function selfCheck() {
     productionEnv: {
       ...validInput.productionEnv,
       ADMIN_EMAILS: undefined,
-      R2_BUCKET: undefined,
       STRIPE_SECRET_KEY: undefined,
       STRIPE_WEBHOOK_SECRET: undefined,
     },
-    expectedEnv: {
-      ...validInput.expectedEnv,
-      R2_BUCKET: undefined,
-    },
+    expectedEnv: validInput.expectedEnv,
     server: { ...validInput.server, bucketName: undefined },
     requirements: {
       ...validInput.requirements,

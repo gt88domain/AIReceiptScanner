@@ -2,7 +2,8 @@ import { defaultLocale, type Locale } from "@repo/i18n";
 import { createT } from "@/i18n";
 import { resolveCommonConfig } from "@repo/app-config/config";
 import SignUpVerifyEmail from "../templates/sign-up-verify-email";
-import { sendEmail, withLocale } from "./send-email";
+import type { EmailService } from "../types";
+import { withLocale } from "../locale";
 
 function resolveEmailVerificationLink(verificationUrl: string): string {
   const url = new URL(verificationUrl);
@@ -15,21 +16,24 @@ function resolveEmailVerificationLink(verificationUrl: string): string {
   return url.toString();
 }
 
-export async function sendVerificationEmail({
-  to,
-  name,
-  verificationUrl,
-  locale = defaultLocale,
-}: {
-  to: string;
-  name: string;
-  verificationUrl: string;
-  locale?: Locale;
-}) {
+export async function sendVerificationEmail(
+  emailService: EmailService,
+  {
+    to,
+    name,
+    verificationUrl,
+    locale = defaultLocale,
+  }: {
+    to: string;
+    name: string;
+    verificationUrl: string;
+    locale?: Locale;
+  },
+) {
   const t = createT(locale);
   const appName = resolveCommonConfig().app.name;
 
-  await sendEmail({
+  await emailService.send({
     to,
     subject: t("email.verification.subject", { appName }),
     template: SignUpVerifyEmail({
@@ -41,6 +45,8 @@ export async function sendVerificationEmail({
   });
 }
 
-export function sendVerificationEmailFromRequest(request?: Request) {
-  return withLocale(request, sendVerificationEmail);
+export function sendVerificationEmailFromRequest(emailService: EmailService, request?: Request) {
+  return withLocale<{ to: string; name: string; verificationUrl: string }>(request, (params) =>
+    sendVerificationEmail(emailService, params),
+  );
 }

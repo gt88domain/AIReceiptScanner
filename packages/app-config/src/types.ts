@@ -1,7 +1,7 @@
 import type { DeepPartial } from "@repo/shared";
 
 /** Supported email providers available in app configuration. */
-export const SUPPORTED_EMAIL_PROVIDERS = ["resend"] as const;
+export const SUPPORTED_EMAIL_PROVIDERS = ["none", "resend"] as const;
 
 /** Supported web payment providers available in app configuration. */
 export const SUPPORTED_WEB_PAYMENT_PROVIDERS = ["stripe", "creem", "waffo"] as const;
@@ -20,6 +20,16 @@ export const SUPPORTED_STORAGE_PROVIDERS = ["r2", "aliyun-oss"] as const;
 
 /** Union type of all supported email provider keys. */
 export type EmailProviderKey = (typeof SUPPORTED_EMAIL_PROVIDERS)[number];
+
+/** Explicit outbound-email capabilities; public UI receives only the public route flags. */
+export type EmailCapabilities = {
+  verification: boolean;
+  passwordReset: boolean;
+  emailOtp: boolean;
+  newsletter: boolean;
+  contactForm: boolean;
+  operationalAlerts: boolean;
+};
 
 /** Union type of all supported server payment provider keys. */
 export type ServerPaymentProviderKey = (typeof SUPPORTED_SERVER_PAYMENT_PROVIDERS)[number];
@@ -296,8 +306,12 @@ export type AppCommonConfig = {
   };
   /** Outbound email configuration. */
   email: {
+    /** Disables all email provider construction and email-backed HTTP routes. */
+    enabled: boolean;
     /** Email provider key. */
     provider: EmailProviderKey;
+    /** Individually enabled email-backed flows. */
+    capabilities: EmailCapabilities;
     /** Sender address parts used to compose the from email. */
     from: {
       /** Local part of sender address (before @). */

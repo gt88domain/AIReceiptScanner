@@ -12,6 +12,8 @@ export const publicRuntimeConfig = {
     credits: true,
     creditPurchases: true,
     storage: false,
+    newsletter: true,
+    contactForm: true,
   },
   auth: {
     methods: {

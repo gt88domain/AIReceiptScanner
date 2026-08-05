@@ -11,6 +11,8 @@ export interface WebConfig {
   creditsEnabled: boolean;
   creditPurchasesEnabled: boolean;
   storageEnabled: boolean;
+  newsletterEnabled: boolean;
+  contactFormEnabled: boolean;
   auth: {
     methods: {
       emailPasswordEnabled: boolean;

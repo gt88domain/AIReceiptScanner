@@ -1,7 +1,7 @@
 import { and, asc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import type { Database } from "@/db";
 import { billingEvent } from "@/db/schema/payments";
-import { getEmailProvider } from "@/emails";
+import type { EmailService } from "@/emails";
 import { parseAdminEmails } from "@/lib/admin";
 
 const PENDING_WEBHOOK_ALERT_AFTER_MS = 15 * 60 * 1000;
@@ -116,8 +116,12 @@ export async function replayWebhookEvent(db: Database, eventId: string, now = ne
   return Boolean(replayed);
 }
 
-async function sendPendingWebhookAlert(recipients: readonly string[], alert: PendingWebhookAlert) {
-  await getEmailProvider().send({
+async function sendPendingWebhookAlert(
+  email: EmailService,
+  recipients: readonly string[],
+  alert: PendingWebhookAlert,
+) {
+  await email.send({
     to: [...recipients],
     subject: `[Action required] Pending ${alert.provider} webhook`,
     text: [
@@ -142,9 +146,12 @@ export async function alertPendingWebhookEvents(
   adminEmails: string | undefined,
   {
     now = new Date(),
+    email,
     send = (alert: PendingWebhookAlert) =>
-      sendPendingWebhookAlert([...parseAdminEmails(adminEmails)], alert),
-  }: { now?: Date; send?: SendPendingWebhookAlert } = {},
+      email
+        ? sendPendingWebhookAlert(email, [...parseAdminEmails(adminEmails)], alert)
+        : Promise.resolve(),
+  }: { now?: Date; email?: EmailService; send?: SendPendingWebhookAlert } = {},
 ) {
   const recipients = parseAdminEmails(adminEmails);
   if (recipients.size === 0) return 0;

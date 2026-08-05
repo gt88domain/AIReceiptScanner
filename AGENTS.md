@@ -96,8 +96,8 @@ ad hoc string manipulation when practical.
   Keep TanStack route files thin and do not add new domains to the legacy
   `apps/web/src/custom` directory.
 - Gate product features through `context.capabilities.can(user, capability)`;
-  do not compare plan names in application code. Define the minimum tier in
-  `packages/app-config/src/app-config.ts`.
+  do not compare plan names in application code. Put product-owned settings in
+  `packages/app-config/src/product-config.ts`; keep resolver and dependency code protected.
 - Put retryable background work in `apps/server/src/modules/jobs`. Job handlers
   must be idempotent because queue delivery is at least once. Use Cloudflare
   Workflows directly for long-lived, multi-step, or human-approval work.

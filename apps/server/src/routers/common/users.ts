@@ -1,4 +1,3 @@
-import { env } from "cloudflare:workers";
 import { ORPCError } from "@orpc/server";
 import { and, eq, isNotNull, isNull } from "drizzle-orm";
 import { getVisibleUserName } from "@repo/shared";
@@ -7,12 +6,7 @@ import { account, session, user } from "@/db/schema/auth";
 import type { Context } from "@/lib/context";
 import { buildDeletedAccountUserUpdate } from "@/lib/auth-session-guard";
 import { protectedProcedure, publicProcedure } from "@/lib/orpc";
-import {
-  getStorageProvider,
-  getStoragePublicBaseUrl,
-  getUserStoragePrefix,
-  parseStoragePublicUrl,
-} from "@/storage";
+import { getStoragePublicBaseUrl, getUserStoragePrefix, parseStoragePublicUrl } from "@/storage";
 
 // Output schemas
 const userSchema = z.object({
@@ -31,19 +25,15 @@ function normalizeUserForOutput(userItem: z.infer<typeof userSchema>) {
   return { ...userItem, name: getVisibleUserName(userItem) };
 }
 
-async function deleteOwnedAvatar(userId: string, image: string) {
-  const publicBaseUrl = getStoragePublicBaseUrl(env.SERVER_URL);
+async function deleteOwnedAvatar(context: Context, userId: string, image: string) {
+  if (!context.storage) return;
+  const publicBaseUrl = getStoragePublicBaseUrl(context.env.SERVER_URL);
   const parsedStorageUrl = parseStoragePublicUrl(publicBaseUrl, image);
   if (!parsedStorageUrl?.key.startsWith(getUserStoragePrefix("avatar", userId))) {
     return;
   }
 
-  const storageProvider = getStorageProvider({
-    storage: env.STORAGE,
-    provider: parsedStorageUrl.provider,
-    aliyunOssEnv: env,
-  });
-  await storageProvider.delete(parsedStorageUrl.key).catch((error) => {
+  await context.storage.delete(parsedStorageUrl.key).catch((error) => {
     console.error("Failed to delete unused avatar", {
       error: error instanceof Error ? error.message : "Unknown error",
       key: parsedStorageUrl.key,
@@ -180,13 +170,13 @@ export const usersRouter = {
         }
       } catch (error) {
         if (stagedAvatar) {
-          await deleteOwnedAvatar(userId, stagedAvatar);
+          await deleteOwnedAvatar(context, userId, stagedAvatar);
         }
         throw error;
       }
 
       if (currentUser?.image && currentUser.image !== updatedUser.image) {
-        await deleteOwnedAvatar(userId, currentUser.image);
+        await deleteOwnedAvatar(context, userId, currentUser.image);
       }
 
       return normalizeUserForOutput(updatedUser);

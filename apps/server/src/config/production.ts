@@ -1,6 +1,7 @@
 import {
   resolveProductFeatures,
   resolveRequiredResources,
+  type ResolvedEmailConfig,
   validateFeatureDependencies,
   type ProductFeatures,
 } from "@repo/app-config";
@@ -47,7 +48,7 @@ export type ProductionConfigInput = {
   requirements: {
     features?: ProductFeatures;
     paymentProviders: Iterable<string>;
-    emailEnabled: boolean;
+    email: ResolvedEmailConfig;
     oauth: { github: boolean; google: boolean; apple: boolean };
     productionPriceIds: Array<{ label: string; production: string; test: string }>;
   };
@@ -259,19 +260,12 @@ export function validateProductionConfigResult(
   }
 
   for (const [name, actual] of [
-    ["WORKER_NAME", server.workerName],
-    ["D1_DATABASE_ID", server.databaseId],
-    ["WEB_WORKER_NAME", web.workerName],
-    ["WEBSITE_URL", server.websiteUrl],
-    ["SERVER_URL", server.serverUrl],
+    ["EXPECTED_SERVER_WORKER", server.workerName],
+    ["EXPECTED_WEB_WORKER", web.workerName],
+    ["EXPECTED_WEB_HOST", getHostname(web.websiteUrl)],
+    ["EXPECTED_API_HOST", getHostname(server.serverUrl)],
   ] as const) {
     requireExpected(expectedEnv, name, actual, errors);
-  }
-  if (requiredResources.has("R2"))
-    requireExpected(expectedEnv, "R2_BUCKET", server.bucketName ?? "", errors);
-  if (requiredResources.has("Queue")) {
-    requireExpected(expectedEnv, "QUEUE_NAME", server.queueName ?? "", errors);
-    requireExpected(expectedEnv, "QUEUE_DLQ_NAME", server.dlqName ?? "", errors);
   }
 
   if (web.apiServiceName !== server.workerName) {
@@ -301,47 +295,6 @@ export function validateProductionConfigResult(
     add(errors, "INVALID_WEB_ROUTE", "Web route must use a non-placeholder production domain.");
   }
 
-  for (const name of ["WORKER_NAME", "D1_DATABASE_ID"] as const) {
-    const actual = required(productionEnv, name, errors);
-    if (actual && actual !== expectedEnv[name]?.trim()) {
-      add(
-        errors,
-        "PRODUCTION_ENV_MISMATCH",
-        `${name} in .env.production must match .production-safety.env.`,
-      );
-    }
-  }
-  if (requiredResources.has("R2")) {
-    const actual = required(productionEnv, "R2_BUCKET", errors);
-    if (actual && actual !== expectedEnv.R2_BUCKET?.trim()) {
-      add(
-        errors,
-        "PRODUCTION_ENV_MISMATCH",
-        "R2_BUCKET in .env.production must match .production-safety.env.",
-      );
-    }
-  }
-  if (requiredResources.has("Queue")) {
-    for (const name of ["QUEUE_NAME", "QUEUE_DLQ_NAME"] as const) {
-      const actual = required(productionEnv, name, errors);
-      if (actual && actual !== expectedEnv[name]?.trim()) {
-        add(
-          errors,
-          "PRODUCTION_ENV_MISMATCH",
-          `${name} in .env.production must match .production-safety.env.`,
-        );
-      }
-    }
-  }
-
-  if (productionEnv.CLOUDFLARE_D1_DATABASE_ID?.trim() !== server.databaseId) {
-    add(
-      errors,
-      "D1_BINDING_MISMATCH",
-      "CLOUDFLARE_D1_DATABASE_ID must match the DB binding in server wrangler.jsonc.",
-    );
-  }
-
   if (features.admin) {
     const adminEmails = required(productionEnv, "ADMIN_EMAILS", errors);
     if (
@@ -360,7 +313,7 @@ export function validateProductionConfigResult(
     add(errors, "SHORT_AUTH_SECRET", "BETTER_AUTH_SECRET must be at least 32 characters.");
   }
 
-  if (requirements.emailEnabled) {
+  if (requirements.email.enabled && requirements.email.provider === "resend") {
     required(productionEnv, "RESEND_API_KEY", errors);
     const emailFrom = required(productionEnv, "EMAIL_FROM", errors);
     const email = emailFrom?.match(/^[^<>\s]+@([^<>\s]+)$/);
@@ -371,6 +324,15 @@ export function validateProductionConfigResult(
         "EMAIL_FROM must use a non-placeholder production sender domain.",
       );
     }
+    if (requirements.email.capabilities.contactForm) {
+      required(productionEnv, "CONTACT_RECIPIENT", errors);
+    }
+  } else if (productionEnv.RESEND_API_KEY?.trim() || productionEnv.EMAIL_FROM?.trim()) {
+    add(
+      warnings,
+      "DISABLED_EMAIL_CONFIGURATION",
+      "Email is disabled but Resend configuration remains.",
+    );
   }
 
   for (const [enabled, clientId, value, secret] of [

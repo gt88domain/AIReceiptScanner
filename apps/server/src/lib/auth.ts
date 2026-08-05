@@ -1,4 +1,3 @@
-import { env } from "cloudflare:workers";
 import { resolveCommonConfig } from "@repo/app-config";
 import { joinUrl, parseHostname, resolveCrossSubdomainCookieDomain } from "@repo/shared";
 import { type BetterAuthOptions, betterAuth } from "better-auth";
@@ -12,11 +11,15 @@ import { getAppleProviderConfig } from "@/lib/apple-auth";
 import { createExpoAuthPlugin } from "@/auth/expo-plugin";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import * as schema from "../db/schema/auth";
-import { sendResetPasswordEmailFromRequest, sendVerificationEmailFromRequest } from "../emails";
+import {
+  createEmailService,
+  sendResetPasswordEmailFromRequest,
+  sendVerificationEmailFromRequest,
+} from "../emails";
 import type { Locale } from "@repo/i18n";
+import { resolveOriginConfig, type ServerRuntimeConfig } from "./runtime-config";
 
 const commonConfig = resolveCommonConfig();
-const mobileEnabled = commonConfig.features.mobile === true;
 
 /**
  * Map our locale to better-auth-localization locale
@@ -55,15 +58,34 @@ function resolveCookiePolicy(
   };
 }
 
-export function createAuth(d1: D1Database) {
+export function createAuth(
+  d1: D1Database,
+  runtimeConfig: ServerRuntimeConfig,
+  runtimeEnv: Cloudflare.Env,
+) {
   const cached = authCache.get(d1);
   if (cached) return cached;
 
   const db = drizzle(d1);
-  const runtimeNodeEnv: string | undefined = process.env.NODE_ENV;
-  const { cookieDomain, sameSite, secure } = resolveCookiePolicy(env.SERVER_URL, env.WEBSITE_URL);
+  const runtimeNodeEnv = runtimeEnv.NODE_ENV;
+  const origins = resolveOriginConfig(runtimeEnv);
+  const { cookieDomain, sameSite, secure } = resolveCookiePolicy(
+    origins.apiRuntimeOrigin,
+    origins.webRuntimeOrigin,
+  );
+  const resolveEmailService = (capability: "verification" | "passwordReset") => {
+    if (!runtimeConfig.email.enabled) {
+      throw new APIError("BAD_REQUEST", { message: "Email is disabled." });
+    }
+    if (!runtimeConfig.email.capabilities[capability]) {
+      throw new APIError("BAD_REQUEST", { message: "This email capability is disabled." });
+    }
+    const service = createEmailService(runtimeConfig.email, runtimeEnv);
+    if (!service) throw new APIError("BAD_REQUEST", { message: "Email is disabled." });
+    return service;
+  };
   const auth = betterAuth<BetterAuthOptions>({
-    baseURL: env.SERVER_URL || "",
+    baseURL: origins.authPublicOrigin,
     appName: commonConfig.app.name,
     database: drizzleAdapter(db, {
       provider: "sqlite",
@@ -105,11 +127,11 @@ export function createAuth(d1: D1Database) {
       },
     },
     trustedOrigins: [
-      env.WEBSITE_URL || "",
-      ...(mobileEnabled ? [commonConfig.app.nativeScheme + "://"] : []),
+      ...origins.authTrustedOrigins,
+      ...(runtimeConfig.features.mobile ? [commonConfig.app.nativeScheme + "://"] : []),
 
       // Development mode - Expo's exp:// scheme with local IP ranges
-      ...(mobileEnabled && runtimeNodeEnv === "development"
+      ...(runtimeConfig.features.mobile && String(runtimeNodeEnv) === "development"
         ? [
             "exp://", // Trust all Expo URLs (prefix matching)
             "exp://**", // Trust all Expo URLs (wildcard matching)
@@ -119,14 +141,17 @@ export function createAuth(d1: D1Database) {
     ],
     emailAndPassword: {
       enabled: true,
-      requireEmailVerification: true,
+      requireEmailVerification: runtimeConfig.email.capabilities.verification,
       password: {
         hash: hashPassword,
         verify: verifyPassword,
       },
       sendResetPassword: async ({ user, url }, request) => {
         try {
-          await sendResetPasswordEmailFromRequest(request)({
+          await sendResetPasswordEmailFromRequest(
+            resolveEmailService("passwordReset"),
+            request,
+          )({
             to: user.email,
             name: user.name || "User",
             resetUrl: url,
@@ -143,7 +168,10 @@ export function createAuth(d1: D1Database) {
       autoSignInAfterVerification: false,
       sendVerificationEmail: async ({ user, url }, request) => {
         try {
-          await sendVerificationEmailFromRequest(request)({
+          await sendVerificationEmailFromRequest(
+            resolveEmailService("verification"),
+            request,
+          )({
             to: user.email,
             name: user.name || "User",
             verificationUrl: url,
@@ -158,17 +186,17 @@ export function createAuth(d1: D1Database) {
     socialProviders: {
       github: {
         enabled: commonConfig.auth.methods.githubEnabled ?? false,
-        clientId: env.GITHUB_CLIENT_ID || "",
-        clientSecret: env.GITHUB_CLIENT_SECRET || "",
-        redirectURI: joinUrl(env.SERVER_URL, "/api/auth/callback/github"),
+        clientId: runtimeEnv.GITHUB_CLIENT_ID || "",
+        clientSecret: runtimeEnv.GITHUB_CLIENT_SECRET || "",
+        redirectURI: joinUrl(runtimeEnv.SERVER_URL, "/api/auth/callback/github"),
         scope: ["read:user", "user:email"],
       },
       google: {
         prompt: "select_account",
         enabled: commonConfig.auth.methods.googleEnabled ?? false,
-        clientId: env.GOOGLE_CLIENT_ID || "",
-        clientSecret: env.GOOGLE_CLIENT_SECRET || "",
-        redirectURI: joinUrl(env.SERVER_URL, "/api/auth/callback/google"),
+        clientId: runtimeEnv.GOOGLE_CLIENT_ID || "",
+        clientSecret: runtimeEnv.GOOGLE_CLIENT_SECRET || "",
+        redirectURI: joinUrl(runtimeEnv.SERVER_URL, "/api/auth/callback/google"),
         scope: ["openid", "email", "profile"],
       },
       apple: {
@@ -193,14 +221,14 @@ export function createAuth(d1: D1Database) {
       defaultCookieAttributes: {
         sameSite,
         secure,
-        httpOnly: !env.SERVER_URL?.includes("localhost"),
+        httpOnly: !runtimeEnv.SERVER_URL?.includes("localhost"),
         // shared subdomains
         domain: cookieDomain,
         path: "/",
       },
     },
     plugins: [
-      ...(mobileEnabled ? [createExpoAuthPlugin()] : []),
+      ...(runtimeConfig.features.mobile ? [createExpoAuthPlugin()] : []),
       localization({
         defaultLocale: "default",
         getLocale: (request) => {

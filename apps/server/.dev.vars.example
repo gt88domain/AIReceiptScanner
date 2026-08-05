@@ -38,6 +38,8 @@ APPLE_APP_BUNDLE_IDENTIFIER=
 # Resend Email - https://www.easystarter.dev/zh/docs/web/integrations/email
 # Provider console: https://resend.com/api-keys
 RESEND_API_KEY=
+# Server-only contact recipient. Required only when Contact Form is enabled.
+CONTACT_RECIPIENT=
 
 # R2 Storage - https://www.easystarter.dev/zh/docs/web/integrations/storage
 # Provider console: https://dash.cloudflare.com/

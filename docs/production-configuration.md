@@ -39,6 +39,17 @@ pnpm deploy
 ## What the guard rejects
 
 - Missing authentication, admin, resource, email, or enabled-provider values.
+
+Wrangler configuration is the source of actual D1, R2, Queue, DLQ, Cron, Worker,
+route, and service identities. `.production-safety.env` records only the expected
+environment, Worker names, and public hosts; `.env.production` contains secrets
+and environment settings, not duplicate resource IDs. `CLOUDFLARE_D1_DATABASE_ID`
+is intentionally not a production-preflight input.
+
+The preflight is feature-aware. Disabled Storage does not require R2; disabled
+Jobs does not require Queue, DLQ, Cron, or `JOB_QUEUE_DLQ_NAME`; disabled Email
+does not require Resend values. Residual disabled resource bindings are reported
+as warnings so removals remain deliberate.
 - `http`, localhost, `.example`, `example.com`, and `replace-*` production identities.
 - All-zero or malformed D1 IDs, template queue/bucket/Worker names, and missing DLQ consumers.
 - Web/API public URL disagreement or an `API_SERVICE` that does not target the configured API Worker.

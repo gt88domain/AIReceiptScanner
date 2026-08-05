@@ -51,3 +51,10 @@ bindings produce a warning. Disabled Billing does not require payment-provider
 secrets, disabled Storage does not require R2, disabled Mobile does not require
 RevenueCat, and disabled Admin does not require `ADMIN_EMAILS`. It still
 requires the core D1, Worker, URL, API service, and Better Auth configuration.
+
+Profiles describe infrastructure Features only. Product-facing metadata, auth
+method selection, email capabilities, storage selection, membership, and credit
+catalogs live in `packages/app-config/src/product-config.ts`. Resolver types,
+feature dependency rules, and profiles remain protected platform code. Email is
+independent of the profile resource list: disable it with the documented email
+contract when a product has no outbound-mail need.

@@ -152,7 +152,7 @@ describe("server Worker", () => {
     expect(response.status).toBe(404);
   });
 
-  it("updates the avatar reference before deleting the replaced object", async () => {
+  it("does not access avatar storage when the default Storage capability is disabled", async () => {
     const email = "avatar-update@example.test";
     const signedInClient = await signUp(email);
     const currentUser = await env.DB.prepare("SELECT id FROM user WHERE email = ?")
@@ -173,7 +173,7 @@ describe("server Worker", () => {
     await expect(signedInClient.users.update({ image: newUrl })).resolves.toMatchObject({
       image: newUrl,
     });
-    await expect(env.STORAGE.get(oldKey)).resolves.toBeNull();
+    await expect(env.STORAGE.get(oldKey)).resolves.not.toBeNull();
     await expect(env.STORAGE.get(newKey)).resolves.not.toBeNull();
   });
 

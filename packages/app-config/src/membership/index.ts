@@ -1,4 +1,4 @@
-import { resolveCommonConfig } from "../app-config";
+import { productMembershipPlans } from "../membership-config";
 import type {
   BillingInterval,
   MembershipCatalogConfig,
@@ -163,7 +163,9 @@ export const PAYMENT_PRESENTATIONS: Record<MembershipPresentationKind, PaymentPr
 } as const;
 
 /** Runtime membership catalog resolved from common app config. */
-export const membershipCatalogConfig: MembershipCatalogConfig = resolveCommonConfig().membership;
+export const membershipCatalogConfig: MembershipCatalogConfig = {
+  plans: productMembershipPlans,
+};
 
 function assertStatus(status: PlanStatus | undefined, field: string) {
   if (status && status !== "active" && status !== "archived") {

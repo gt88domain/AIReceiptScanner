@@ -1,5 +1,5 @@
 import { trimTrailingSlash } from "@repo/shared";
-import { resolveCommonConfig } from "../app-config";
+import { productStorageConfig } from "../product-storage-config";
 import { SUPPORTED_STORAGE_PROVIDERS, type StorageProviderKey } from "../types";
 
 /**
@@ -14,7 +14,7 @@ export type ParsedStoragePath = {
 };
 
 function getStorageConfig() {
-  return resolveCommonConfig().storage;
+  return productStorageConfig;
 }
 
 /**

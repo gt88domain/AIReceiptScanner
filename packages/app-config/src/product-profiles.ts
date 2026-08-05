@@ -28,103 +28,79 @@ export type ProductProfile = {
 
 const noNativeFeatures = { billing: false, credits: false, creditPurchases: false } as const;
 
+function defineProductProfile(
+  id: ProductProfileId,
+  label: string,
+  description: string,
+  input: ProductFeatureInput,
+): ProductProfile {
+  const features = createProductFeatures(input);
+  return {
+    id,
+    label,
+    description,
+    features,
+    expectedResources: resolveRequiredResources(features),
+  };
+}
+
 /**
  * Official, additive starting points for new products. They never alter the
  * repository's default appConfig or create Cloudflare resources.
  */
 export const productProfiles: Record<ProductProfileId, ProductProfile> = {
-  "full-saas": {
-    id: "full-saas",
-    label: "Full SaaS",
-    description: "Billing, Credits, Storage, and Jobs for a subscription or AI SaaS.",
-    features: createProductFeatures({
+  "full-saas": defineProductProfile(
+    "full-saas",
+    "Full SaaS",
+    "Billing, Credits, Storage, and Jobs for a subscription or AI SaaS.",
+    {
       admin: true,
       jobs: true,
       storage: true,
       mobile: false,
       web: { billing: true, credits: true, creditPurchases: true },
       native: noNativeFeatures,
-    }),
-    expectedResources: resolveRequiredResources(
-      createProductFeatures({
-        admin: true,
-        jobs: true,
-        storage: true,
-        mobile: false,
-        web: { billing: true, credits: true, creditPurchases: true },
-        native: noNativeFeatures,
-      }),
-    ),
-  },
-  "account-app": {
-    id: "account-app",
-    label: "Account App",
-    description: "Accounts, private content, Storage, Admin, and Jobs without commercial billing.",
-    features: createProductFeatures({
+    },
+  ),
+  "account-app": defineProductProfile(
+    "account-app",
+    "Account App",
+    "Accounts, private content, Storage, Admin, and Jobs without commercial billing.",
+    {
       admin: true,
       jobs: true,
       storage: true,
       mobile: false,
       web: { billing: false, credits: false, creditPurchases: false },
       native: noNativeFeatures,
-    }),
-    expectedResources: resolveRequiredResources(
-      createProductFeatures({
-        admin: true,
-        jobs: true,
-        storage: true,
-        mobile: false,
-        web: { billing: false, credits: false, creditPurchases: false },
-        native: noNativeFeatures,
-      }),
-    ),
-  },
-  directory: {
-    id: "directory",
-    label: "Directory",
-    description: "Directory or content platform with Admin and Jobs, without Storage or billing.",
-    features: createProductFeatures({
+    },
+  ),
+  directory: defineProductProfile(
+    "directory",
+    "Directory",
+    "Directory or content platform with Admin and Jobs, without Storage or billing.",
+    {
       admin: true,
       jobs: true,
       storage: false,
       mobile: false,
       web: { billing: false, credits: false, creditPurchases: false },
       native: noNativeFeatures,
-    }),
-    expectedResources: resolveRequiredResources(
-      createProductFeatures({
-        admin: true,
-        jobs: true,
-        storage: false,
-        mobile: false,
-        web: { billing: false, credits: false, creditPurchases: false },
-        native: noNativeFeatures,
-      }),
-    ),
-  },
-  "directory-lite": {
-    id: "directory-lite",
-    label: "Directory Lite",
-    description: "Directory or content platform with Admin, without Jobs, Storage, or billing.",
-    features: createProductFeatures({
+    },
+  ),
+  "directory-lite": defineProductProfile(
+    "directory-lite",
+    "Directory Lite",
+    "Directory or content platform with Admin, without Jobs, Storage, or billing.",
+    {
       admin: true,
       jobs: false,
       storage: false,
       mobile: false,
       web: { billing: false, credits: false, creditPurchases: false },
       native: noNativeFeatures,
-    }),
-    expectedResources: resolveRequiredResources(
-      createProductFeatures({
-        admin: true,
-        jobs: false,
-        storage: false,
-        mobile: false,
-        web: { billing: false, credits: false, creditPurchases: false },
-        native: noNativeFeatures,
-      }),
-    ),
-  },
+    },
+  ),
 };
 
 /** Creates a validated profile contract without mutating application configuration. */

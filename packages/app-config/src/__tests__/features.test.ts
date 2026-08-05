@@ -6,6 +6,8 @@ import {
   resolveRequiredResources,
   validateFeatureDependencies,
 } from "../features";
+import { resolveEmailConfig } from "../email-config";
+import { resolveCommonConfig } from "../app-config";
 import { createProductProfile, productProfiles } from "../product-profiles";
 
 describe("product features", () => {
@@ -187,5 +189,30 @@ describe("product features", () => {
     expect(() => createProductProfile("full-saas", { jobs: false })).toThrow(
       "[features:BILLING_REQUIRES_JOBS]",
     );
+  });
+
+  it("fails closed for invalid optional email capability combinations", () => {
+    const common = resolveCommonConfig();
+    expect(() =>
+      resolveEmailConfig({
+        ...common,
+        email: {
+          ...common.email,
+          enabled: false,
+          provider: "none",
+          capabilities: { ...common.email.capabilities, newsletter: true },
+        },
+      }),
+    ).toThrow("[email:DISABLED_CONFIG]");
+    expect(() =>
+      resolveEmailConfig({
+        ...common,
+        auth: {
+          ...common.auth,
+          methods: { ...common.auth.methods, emailOtpEnabled: true },
+        },
+        email: { ...common.email, capabilities: { ...common.email.capabilities, emailOtp: false } },
+      }),
+    ).toThrow("[email:OTP_CAPABILITY_REQUIRED]");
   });
 });

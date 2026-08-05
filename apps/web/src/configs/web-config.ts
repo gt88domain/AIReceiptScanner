@@ -48,6 +48,8 @@ export const webConfig: WebConfig = {
   creditsEnabled: publicRuntime.features.credits,
   creditPurchasesEnabled: publicRuntime.features.creditPurchases,
   storageEnabled: publicRuntime.features.storage,
+  newsletterEnabled: publicRuntime.features.newsletter,
+  contactFormEnabled: publicRuntime.features.contactForm,
   auth: {
     methods: {
       emailPasswordEnabled: publicRuntime.auth.methods.emailPassword,

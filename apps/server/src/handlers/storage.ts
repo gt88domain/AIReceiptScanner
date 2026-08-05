@@ -7,7 +7,8 @@
 
 import type { Context as HonoContext } from "hono";
 import { resolveCommonConfig } from "@repo/app-config/config";
-import { isServerFeatureEnabled } from "../lib/module-config";
+import type { ServerRuntimeConfig } from "../lib/runtime-config";
+import { resolveStorageBinding } from "../lib/storage-binding";
 import { getStorageProvider, parseStoragePath } from "../storage";
 
 /**
@@ -24,11 +25,8 @@ import { getStorageProvider, parseStoragePath } from "../storage";
  */
 export async function handleFileServe(
   c: HonoContext<{ Bindings: Cloudflare.Env }>,
+  runtimeConfig: ServerRuntimeConfig,
 ): Promise<Response> {
-  if (!isServerFeatureEnabled("storage")) {
-    return c.notFound();
-  }
-
   const storagePath = c.req.path.replace("/api/storage/", "");
   const parsedStoragePath = parseStoragePath(storagePath);
   const storageKeyPrefixes = resolveCommonConfig().storage.keyPrefixes;
@@ -42,9 +40,11 @@ export async function handleFileServe(
   }
 
   // Use storage provider for file serving
+  const storageBinding = resolveStorageBinding(runtimeConfig.features, c.env);
+  if (!storageBinding) return c.notFound();
   const storageProvider = getStorageProvider({
-    storage: c.env.STORAGE,
-    provider: parsedStoragePath.provider,
+    storage: storageBinding,
+    provider: runtimeConfig.storage.provider,
     aliyunOssEnv: c.env,
   });
   const file = await storageProvider.get(parsedStoragePath.key);

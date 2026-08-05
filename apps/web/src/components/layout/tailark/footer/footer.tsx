@@ -61,7 +61,9 @@ export const Footer = ({
         { name: footerT("sections.resources.links.terms"), href: "/terms" },
         { name: footerT("sections.resources.links.docs"), href: "/docs" },
         { name: footerT("sections.resources.links.blog"), href: "/blog" },
-        { name: footerT("sections.resources.links.contact"), href: "/contact" },
+        ...(webConfig.contactFormEnabled
+          ? [{ name: footerT("sections.resources.links.contact"), href: "/contact" }]
+          : []),
       ],
     },
   ];
@@ -101,7 +103,7 @@ export const Footer = ({
             ) : null}
           </div>
 
-          <NewsletterForm />
+          {webConfig.newsletterEnabled ? <NewsletterForm /> : null}
 
           {resolvedSections.map((section, sectionIdx) => (
             <div

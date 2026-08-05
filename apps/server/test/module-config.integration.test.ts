@@ -6,6 +6,7 @@ const configuredEnv = {
   ADMIN_EMAILS: "admin@example.test",
   BETTER_AUTH_SECRET: "test-only-better-auth-secret",
   REVENUECAT_WEBHOOK_SECRET: "test-revenuecat-webhook-secret",
+  RESEND_API_KEY: "re_test_module_check",
   STRIPE_SECRET_KEY: "sk_test_module_check",
   STRIPE_WEBHOOK_SECRET: "whsec_module_check",
 };

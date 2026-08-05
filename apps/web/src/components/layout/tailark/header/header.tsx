@@ -4,6 +4,7 @@ import React from "react";
 import { ThemeSwitch } from "@/components/features/theme-switch";
 import { LocaleSwitcher } from "@/components/i18n";
 import { BrandLogo } from "@/components/logos/brand-logo";
+import { webConfig } from "@/configs/web-config";
 import UserMenu from "@/components/navigation/user-menu";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "@/i18n";
@@ -33,7 +34,7 @@ export const Header = () => {
       { name: t("menu.pricing"), to: "/", hash: "pricing" },
       { name: t("menu.faq"), to: "/", hash: "faq" },
       { name: t("menu.blog"), to: "/blog" },
-      { name: t("menu.contact"), to: "/contact" },
+      ...(webConfig.contactFormEnabled ? [{ name: t("menu.contact"), to: "/contact" }] : []),
       { name: t("menu.docs"), href: "/docs" },
     ],
     [t],

@@ -1,56 +1,12 @@
 import { ACTIVE_SUBSCRIPTION_STATUSES } from "@repo/app-config/payments/web";
-import { and, asc, count, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
+import { count, desc, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { user } from "@/db/schema/auth";
 import { billingEvent, billingPurchase, billingSubscription } from "@/db/schema/payments";
-import { isAdminEmail } from "@/lib/admin";
-import { isServerFeatureEnabled } from "@/lib/module-config";
-import { adminProcedure, protectedProcedure } from "@/lib/orpc";
+import { adminProcedure } from "@/lib/orpc";
+import { recordAdminAuditLog } from "@/modules/audit";
 import { replayBillingOutboxJob } from "@/payments/application/billing-outbox";
 import { replayWebhookEvent } from "@/payments/application/webhook-observability";
-import { countAdminAuditLogs, listAdminAuditLogs } from "@/modules/audit/audit.repository";
-import { recordAdminAuditLog } from "@/modules/audit";
-import { adminJobsRouter } from "./admin/jobs";
-
-const listUsersInputSchema = z.object({
-  page: z.number().min(1).default(1),
-  perPage: z.number().min(1).max(100).default(10),
-  name: z.string().max(255).optional(),
-  sort: z
-    .array(z.object({ id: z.enum(["name", "email", "createdAt"]), desc: z.boolean() }))
-    .optional()
-    .default([{ id: "createdAt", desc: true }]),
-});
-
-const adminUserSchema = z.object({
-  id: z.string(),
-  name: z.string().nullable(),
-  email: z.string(),
-  emailVerified: z.boolean(),
-  phoneNumber: z.string().nullable(),
-  phoneNumberVerified: z.boolean(),
-  image: z.string().nullable(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-});
-
-const listAuditLogInputSchema = z.object({
-  page: z.number().min(1).default(1),
-  perPage: z.number().min(1).max(100).default(50),
-});
-
-const auditSnapshotSchema = z.record(z.string(), z.unknown()).nullable();
-const auditLogSchema = z.object({
-  id: z.string(),
-  actorId: z.string(),
-  actorEmail: z.string(),
-  action: z.string(),
-  entityType: z.string(),
-  entityId: z.string(),
-  before: auditSnapshotSchema,
-  after: auditSnapshotSchema,
-  createdAt: z.date(),
-});
 
 const overviewSchema = z.object({
   stats: z.object({
@@ -98,57 +54,8 @@ const overviewSchema = z.object({
   ),
 });
 
-/** Read-only operational data. Payment entitlements remain webhook-owned. */
-export const adminRouter = {
-  ...adminJobsRouter,
-  getAccess: protectedProcedure.handler(({ context }) => ({
-    isAdmin:
-      isServerFeatureEnabled("admin") &&
-      isAdminEmail(context.session?.user.email, context.env.ADMIN_EMAILS),
-  })),
-
-  listUsers: adminProcedure
-    .input(listUsersInputSchema)
-    .output(z.object({ data: z.array(adminUserSchema), pageCount: z.number(), total: z.number() }))
-    .handler(async ({ context, input }) => {
-      const whereClause = and(
-        isNull(user.deletedAt),
-        input.name
-          ? or(
-              sql`instr(lower(${user.name}), lower(${input.name})) > 0`,
-              sql`instr(lower(${user.email}), lower(${input.name})) > 0`,
-              sql`instr(lower(${user.phoneNumber}), lower(${input.name})) > 0`,
-            )
-          : undefined,
-      );
-      const columnMap = { name: user.name, email: user.email, createdAt: user.createdAt } as const;
-      const orderBy = input.sort.map((sort) =>
-        sort.desc ? desc(columnMap[sort.id]) : asc(columnMap[sort.id]),
-      );
-      const [users, countResult] = await Promise.all([
-        context.db
-          .select({
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            emailVerified: user.emailVerified,
-            phoneNumber: user.phoneNumber,
-            phoneNumberVerified: user.phoneNumberVerified,
-            image: user.image,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt,
-          })
-          .from(user)
-          .where(whereClause)
-          .orderBy(...orderBy)
-          .limit(input.perPage)
-          .offset((input.page - 1) * input.perPage),
-        context.db.select({ count: count() }).from(user).where(whereClause),
-      ]);
-      const total = countResult.at(0)?.count ?? 0;
-      return { data: users, pageCount: Math.ceil(total / input.perPage), total };
-    }),
-
+/** Static billing administration boundary; its physical omission is a v0.4.5 concern. */
+export const adminBillingRouter = {
   replayWebhook: adminProcedure
     .input(z.object({ eventId: z.string().uuid() }))
     .output(z.object({ queued: z.boolean() }))
@@ -164,7 +71,6 @@ export const adminRouter = {
       }
       return { queued };
     }),
-
   replayBillingOutboxJob: adminProcedure
     .input(z.object({ jobId: z.string().uuid() }))
     .output(z.object({ queued: z.boolean() }))
@@ -180,20 +86,6 @@ export const adminRouter = {
       }
       return { queued };
     }),
-  listAuditLog: adminProcedure
-    .input(listAuditLogInputSchema)
-    .output(z.object({ data: z.array(auditLogSchema), pageCount: z.number(), total: z.number() }))
-    .handler(async ({ context, input }) => {
-      const [data, total] = await Promise.all([
-        listAdminAuditLogs(context.db, {
-          limit: input.perPage,
-          offset: (input.page - 1) * input.perPage,
-        }),
-        countAdminAuditLogs(context.db),
-      ]);
-      return { data, pageCount: Math.ceil(total / input.perPage), total };
-    }),
-
   overview: adminProcedure.output(overviewSchema).handler(async ({ context }) => {
     const activeStatuses = [...ACTIVE_SUBSCRIPTION_STATUSES];
     const [
@@ -264,7 +156,6 @@ export const adminRouter = {
         .orderBy(desc(billingEvent.processedAt))
         .limit(10),
     ]);
-
     return {
       stats: {
         users: userCount.at(0)?.count ?? 0,

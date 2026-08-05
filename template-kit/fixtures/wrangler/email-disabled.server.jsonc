@@ -1,0 +1,13 @@
+{
+  "name": "replace-email-disabled-api-worker",
+  "main": "../../../apps/server/src/index.ts",
+  "compatibility_date": "2026-07-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [{ "binding": "DB", "database_name": "replace-email-disabled-d1", "database_id": "00000000-0000-0000-0000-000000000000" }],
+  "vars": {
+    "NODE_ENV": "production",
+    "WEBSITE_URL": "https://replace-email-disabled.example",
+    "SERVER_URL": "https://api.replace-email-disabled.example"
+  },
+  "secrets": { "required": ["ADMIN_EMAILS", "BETTER_AUTH_SECRET"] }
+}

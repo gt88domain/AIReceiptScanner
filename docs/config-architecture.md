@@ -8,7 +8,11 @@
 
 ## Single Config Source
 
-The unified config source lives in `packages/app-config/src/app-config.ts` and is exported as `appConfig`.
+The compatible assembled config is exported as `appConfig` from
+`packages/app-config/src/app-config.ts`. Product-owned metadata, auth selection,
+Email capabilities, Storage selection, membership, and Credits catalogs live in
+`packages/app-config/src/product-config.ts`; resolvers, types, and dependency
+rules remain in the protected config modules.
 
 This config includes non-sensitive settings such as:
 

@@ -1,11 +1,10 @@
-import { env } from "cloudflare:workers";
 import { ORPCError } from "@orpc/server";
 import { SUPPORTED_STORAGE_PROVIDERS } from "@repo/app-config";
 import { z } from "zod";
 import { storageProcedure } from "@/lib/orpc";
+import { requireStorageService } from "@/lib/storage-access";
 import {
   generateStorageKey,
-  getStorageProvider,
   getMaxFileSize,
   getPublicUrl,
   getStoragePublicBaseUrl,
@@ -50,6 +49,7 @@ export const storageRouter = {
     .input(uploadInputSchema)
     .output(uploadOutputSchema)
     .handler(async ({ context, input }) => {
+      const storageProvider = requireStorageService(context);
       const { session, t } = context;
       const { file, purpose } = input;
       const provider = resolveStorageProviderKey(input.provider);
@@ -81,18 +81,12 @@ export const storageRouter = {
 
       // Generate storage key
       const key = generateStorageKey(purpose, userId, file.name, contentType);
-      const storageProvider = getStorageProvider({
-        storage: env.STORAGE,
-        provider,
-        aliyunOssEnv: env,
-      });
-
       await storageProvider.put(key, file, {
         contentType,
       });
 
       // Build the public URL
-      const publicBaseUrl = getStoragePublicBaseUrl(env.SERVER_URL);
+      const publicBaseUrl = getStoragePublicBaseUrl(context.env.SERVER_URL);
       const url = getPublicUrl(publicBaseUrl, key, provider);
 
       return {
@@ -108,6 +102,7 @@ export const storageRouter = {
     .input(listInputSchema)
     .output(listOutputSchema)
     .handler(async ({ context, input }) => {
+      const storageProvider = requireStorageService(context);
       const { session, t } = context;
       const provider = resolveStorageProviderKey(input?.provider);
 
@@ -122,12 +117,7 @@ export const storageRouter = {
         ? [getUserStoragePrefix(input.purpose, userId)]
         : getUserStoragePrefixes(userId);
 
-      const storageProvider = getStorageProvider({
-        storage: env.STORAGE,
-        provider,
-        aliyunOssEnv: env,
-      });
-      const publicBaseUrl = getStoragePublicBaseUrl(env.SERVER_URL);
+      const publicBaseUrl = getStoragePublicBaseUrl(context.env.SERVER_URL);
       const objects = (
         await Promise.all(prefixes.map((prefix) => storageProvider.list({ prefix })))
       )
@@ -154,6 +144,7 @@ export const storageRouter = {
     .input(z.object({ url: z.string() }))
     .output(z.object({ success: z.boolean() }))
     .handler(async ({ context, input }) => {
+      const storageProvider = requireStorageService(context);
       const { session, t } = context;
       const { url } = input;
 
@@ -165,14 +156,14 @@ export const storageRouter = {
       }
 
       // Extract key from URL
-      const publicBaseUrl = getStoragePublicBaseUrl(env.SERVER_URL);
+      const publicBaseUrl = getStoragePublicBaseUrl(context.env.SERVER_URL);
       const parsedStorageUrl = parseStoragePublicUrl(publicBaseUrl, url);
       if (!parsedStorageUrl) {
         throw new ORPCError("BAD_REQUEST", {
           message: t("errors.invalidUrl"),
         });
       }
-      const { key, provider } = parsedStorageUrl;
+      const { key } = parsedStorageUrl;
 
       // Verify the file belongs to the user (key starts with purpose/userId/)
       const isOwner = getUserStoragePrefixes(userId).some((prefix) => key.startsWith(prefix));
@@ -183,11 +174,6 @@ export const storageRouter = {
         });
       }
 
-      const storageProvider = getStorageProvider({
-        storage: env.STORAGE,
-        provider,
-        aliyunOssEnv: env,
-      });
       await storageProvider.delete(key);
 
       return { success: true };

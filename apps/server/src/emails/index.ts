@@ -1,46 +1,31 @@
-export { withLocale } from "./locale";
-
-import { resolveCommonConfig } from "@repo/app-config/config";
-import { env } from "cloudflare:workers";
+import type { ResolvedEmailConfig } from "@repo/app-config";
 import { createResendEmailProvider } from "./providers/resend";
-import type { EmailProvider, EmailProviderKey } from "./types";
+import type { EmailService } from "./types";
 
-export {
-  sendResetPasswordEmail,
-  sendResetPasswordEmailFromRequest,
-} from "./senders/forgot-password-email";
-export {
-  sendVerificationEmail,
-  sendVerificationEmailFromRequest,
-} from "./senders/sign-up-verify-email";
-export { sendSignInOtpEmail, sendSignInOtpEmailFromRequest } from "./senders/email-otp-email";
-export type { EmailProvider, SendEmailParams } from "./types";
+type EmailBindings = Pick<Cloudflare.Env, "RESEND_API_KEY" | "EMAIL_FROM">;
 
-let cachedProvider: EmailProvider | null = null;
+export type { EmailProvider, EmailService, SendEmailParams } from "./types";
+export { sendResetPasswordEmailFromRequest } from "./senders/forgot-password-email";
+export { sendVerificationEmailFromRequest } from "./senders/sign-up-verify-email";
+export { sendSignInOtpEmailFromRequest } from "./senders/email-otp-email";
 
-export function getEmailProvider(): EmailProvider {
-  if (cachedProvider) return cachedProvider;
-
-  const commonConfig = resolveCommonConfig();
-  if (!commonConfig?.app || !commonConfig?.email) {
-    throw new Error("Invalid app config: missing common app/email settings");
+/** Creates a provider only after the explicit runtime email contract enables it. */
+export function createEmailService(
+  config: ResolvedEmailConfig,
+  env: EmailBindings,
+): EmailService | undefined {
+  if (!config.enabled) return undefined;
+  if (config.provider === "none") {
+    throw new Error("[email:PROVIDER_MISSING] Enabled email requires a provider.");
   }
-
-  const providerKey: EmailProviderKey = commonConfig.email.provider ?? "resend";
-
-  const providers: Record<EmailProviderKey, EmailProvider> = {
-    resend: createResendEmailProvider({
-      defaultFrom:
-        env.EMAIL_FROM ||
-        `${commonConfig.app.name} <${commonConfig.email.from.localPart}@${commonConfig.email.from.domain}>`,
-    }),
-  };
-
-  const provider = providers[providerKey];
-  if (!provider) {
-    throw new Error(`Email provider not registered: ${providerKey}`);
+  if (config.provider === "resend") {
+    if (!env.RESEND_API_KEY) {
+      throw new Error("[email:PROVIDER_MISSING] RESEND_API_KEY is not configured.");
+    }
+    return createResendEmailProvider({
+      apiKey: env.RESEND_API_KEY,
+      defaultFrom: env.EMAIL_FROM || config.defaultFrom,
+    });
   }
-
-  cachedProvider = provider;
-  return provider;
+  throw new Error(`[email:PROVIDER_MISSING] Email provider not registered: ${config.provider}`);
 }

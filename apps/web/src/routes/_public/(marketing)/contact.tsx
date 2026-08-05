@@ -29,6 +29,7 @@ export const Route = createFileRoute("/_public/(marketing)/contact")({
 
 function ContactPage() {
   const t = useTranslations("contact");
+  if (!webConfig.contactFormEnabled) return null;
   const form = useForm({
     defaultValues: { email: "", message: "", name: "", website: "" },
     onSubmit: async ({ value }) => {

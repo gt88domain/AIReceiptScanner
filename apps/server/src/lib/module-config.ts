@@ -1,10 +1,12 @@
 import {
+  resolveEmailConfig,
   resolveProductFeatures,
   resolveWebCommonConfig,
   validateFeatureDependencies,
   type ProductFeatures,
 } from "@repo/app-config";
 import { z } from "zod";
+import type { ServerRuntimeConfig } from "./runtime-config";
 
 type ServerRuntimeEnv = {
   ADMIN_EMAILS?: unknown;
@@ -12,6 +14,7 @@ type ServerRuntimeEnv = {
   CREEM_API_KEY?: unknown;
   CREEM_WEBHOOK_SECRET?: unknown;
   REVENUECAT_WEBHOOK_SECRET?: unknown;
+  RESEND_API_KEY?: unknown;
   STORAGE?: unknown;
   STRIPE_SECRET_KEY?: unknown;
   STRIPE_WEBHOOK_SECRET?: unknown;
@@ -21,18 +24,8 @@ type ServerRuntimeEnv = {
 
 const requiredString = z.string().trim().min(1);
 
-/** The server capability contract is derived from shared, public configuration only. */
+/** Compatibility export for existing modules; the Worker runtime reuses this immutable result. */
 export const productFeatures = validateFeatureDependencies(resolveProductFeatures());
-
-export type ServerFeature = "admin" | "billing" | "credits" | "storage";
-
-export function isServerFeatureEnabled(feature: ServerFeature) {
-  return productFeatures[feature];
-}
-
-export function isNativeBillingEnabled() {
-  return productFeatures.mobile && productFeatures.native.billing;
-}
 
 function requireValue(env: ServerRuntimeEnv, name: keyof ServerRuntimeEnv, missing: string[]) {
   if (!requiredString.safeParse(env[name]).success) {
@@ -42,7 +35,6 @@ function requireValue(env: ServerRuntimeEnv, name: keyof ServerRuntimeEnv, missi
 
 function validateWebBillingEnvironment(env: ServerRuntimeEnv, missing: string[]) {
   const provider = resolveWebCommonConfig().payments?.provider;
-
   switch (provider) {
     case "stripe":
       requireValue(env, "STRIPE_SECRET_KEY", missing);
@@ -67,9 +59,17 @@ function validateWebBillingEnvironment(env: ServerRuntimeEnv, missing: string[])
  */
 export function validateServerModuleEnvironment(
   env: ServerRuntimeEnv,
-  options: { features?: ProductFeatures; requireStorageBinding?: boolean } = {},
+  options: {
+    features?: ProductFeatures;
+    runtimeConfig?: ServerRuntimeConfig;
+    requireStorageBinding?: boolean;
+  } = {},
 ): ProductFeatures {
-  const features = options.features ?? productFeatures;
+  const features =
+    options.runtimeConfig?.features ??
+    options.features ??
+    validateFeatureDependencies(resolveProductFeatures());
+  const email = options.runtimeConfig?.email ?? resolveEmailConfig();
   const missing: string[] = [];
   requireValue(env, "BETTER_AUTH_SECRET", missing);
 
@@ -87,6 +87,10 @@ export function validateServerModuleEnvironment(
 
   if (features.storage && options.requireStorageBinding && !env.STORAGE) {
     missing.push("STORAGE binding");
+  }
+
+  if (email.enabled && email.provider === "resend") {
+    requireValue(env, "RESEND_API_KEY", missing);
   }
 
   if (missing.length > 0) {

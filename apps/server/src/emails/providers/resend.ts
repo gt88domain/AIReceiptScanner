@@ -1,26 +1,22 @@
-import { env } from "cloudflare:workers";
 import { render } from "@react-email/render";
 import { type CreateEmailOptions, Resend } from "resend";
-import type { EmailProvider, SendEmailParams } from "../types";
+import type { EmailService, SendEmailParams } from "../types";
 
 /**
  * Resend email provider factory
  */
 export function createResendEmailProvider({
+  apiKey,
   defaultFrom,
 }: {
+  apiKey: string;
   defaultFrom?: string;
-}): EmailProvider {
-  const resolvedKey = env.RESEND_API_KEY;
-  const client = resolvedKey ? new Resend(resolvedKey) : null;
+}): EmailService {
+  const client = new Resend(apiKey);
 
   return {
     key: "resend",
     async send({ from, to, subject, html, text, template }: SendEmailParams) {
-      if (!client) {
-        throw new Error("RESEND_API_KEY is not configured");
-      }
-
       const resolvedFrom = from ?? defaultFrom;
       if (!resolvedFrom) {
         throw new Error("Email service is not configured with a from address");
@@ -43,6 +39,16 @@ export function createResendEmailProvider({
         console.error("Failed to send email via Resend:", error);
         throw new Error(error.message);
       }
+    },
+    async subscribeNewsletter(email) {
+      const existing = await client.contacts.get({ email });
+      if (existing.error && existing.error.statusCode !== 404) {
+        throw new Error("Newsletter contact lookup failed");
+      }
+      const result = existing.data
+        ? await client.contacts.update({ email, unsubscribed: false })
+        : await client.contacts.create({ email, unsubscribed: false });
+      if (result.error) throw new Error("Newsletter contact update failed");
     },
   };
 }

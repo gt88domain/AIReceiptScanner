@@ -4,7 +4,12 @@ export {
   resolveWebCommonConfig,
 } from "./app-config";
 export { publicRuntimeConfig, resolvePublicRuntimeConfig } from "./public-runtime";
+export { productConfig } from "./product-config";
 export type { PublicRuntimeConfig } from "./public-runtime";
+export { resolveEmailConfig } from "./email-config";
+export type { ResolvedEmailConfig } from "./email-config";
+export { resolveStorageConfig } from "./storage-config";
+export type { ResolvedStorageConfig } from "./storage-config";
 
 export {
   FEATURE_DEPENDENCY_ERROR_CODES,
@@ -43,6 +48,7 @@ export {
   type CreditWebPackageConfig,
   type CreditWebProviderPriceEnvironmentConfig,
   type EmailProviderKey,
+  type EmailCapabilities,
   type FeatureCapabilityConfig,
   type MembershipCatalogConfig,
   type MembershipPlanConfig,

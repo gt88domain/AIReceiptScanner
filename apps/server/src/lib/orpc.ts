@@ -1,7 +1,8 @@
 import { ORPCError, os } from "@orpc/server";
-import { isServerFeatureEnabled, productFeatures, type ServerFeature } from "./module-config";
 import { requireAdmin as requireAdminGuard, requireUser } from "@/auth/guards";
 import type { Context } from "./context";
+
+type ServerFeature = "admin" | "billing" | "credits" | "storage";
 
 export const o = os.$context<Context>();
 
@@ -15,8 +16,8 @@ const requireAuth = o.middleware(async ({ context, next }) => {
 export const protectedProcedure = publicProcedure.use(requireAuth);
 
 function requireFeature(feature: ServerFeature) {
-  return o.middleware(async ({ next }) => {
-    if (!isServerFeatureEnabled(feature)) {
+  return o.middleware(async ({ context, next }) => {
+    if (!context.runtimeConfig.features[feature]) {
       throw new ORPCError("NOT_FOUND", {
         message: "Feature unavailable",
         data: { code: "FEATURE_DISABLED" },
@@ -26,8 +27,8 @@ function requireFeature(feature: ServerFeature) {
   });
 }
 
-const requireWebCreditPurchases = o.middleware(async ({ next }) => {
-  if (!productFeatures.web.creditPurchases) {
+const requireWebCreditPurchases = o.middleware(async ({ context, next }) => {
+  if (!context.runtimeConfig.features.web.creditPurchases) {
     throw new ORPCError("NOT_FOUND", {
       message: "Feature unavailable",
       data: { code: "FEATURE_DISABLED" },

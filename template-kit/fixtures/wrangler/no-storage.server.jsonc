@@ -1,0 +1,21 @@
+{
+  "name": "replace-no-storage-api-worker",
+  "main": "../../../apps/server/src/index.ts",
+  "compatibility_date": "2026-07-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [{ "binding": "DB", "database_name": "replace-no-storage-d1", "database_id": "00000000-0000-0000-0000-000000000000" }],
+  "queues": {
+    "producers": [{ "binding": "JOB_QUEUE", "queue": "replace-no-storage-jobs" }],
+    "consumers": [
+      { "queue": "replace-no-storage-jobs", "dead_letter_queue": "replace-no-storage-jobs-dlq" },
+      { "queue": "replace-no-storage-jobs-dlq" }
+    ]
+  },
+  "vars": {
+    "NODE_ENV": "production",
+    "WEBSITE_URL": "https://replace-no-storage.example",
+    "SERVER_URL": "https://api.replace-no-storage.example",
+    "JOB_QUEUE_DLQ_NAME": "replace-no-storage-jobs-dlq"
+  },
+  "secrets": { "required": ["ADMIN_EMAILS", "BETTER_AUTH_SECRET"] }
+}
