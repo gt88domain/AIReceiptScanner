@@ -3,6 +3,13 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [0.4.4](https://github.com/gt88domain/easystarter-template/compare/v0.4.3...v0.4.4) (2026-08-05)
+
+
+### Bug Fixes
+
+* **platform:** compose optional storage and email ([#36](https://github.com/gt88domain/easystarter-template/issues/36)) ([d7cb159](https://github.com/gt88domain/easystarter-template/commit/d7cb159762af01d257d6db05aeb6ae9b9a3a2933))
+
 ## [0.4.3](https://github.com/gt88domain/easystarter-template/compare/v0.4.2...v0.4.3) (2026-08-04)
 
 
