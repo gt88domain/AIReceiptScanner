@@ -1,7 +1,6 @@
 import type Stripe from "stripe";
 import {
   completeCreditOrderPurchase,
-  markCreditOrderRefunded,
   markCreditOrderStatus,
   recordCreditPaymentDispute,
   revokeCreditPurchaseBySource,
@@ -11,6 +10,7 @@ import {
   findPurchaseByProviderIntent,
   upsertBillingPurchaseIfNewer,
 } from "../../../infrastructure/repositories/billing-store";
+import { NonRetryableWebhookError } from "../../../application/webhook-observability";
 import { reconcileActivatedPriceWithExistingSubscriptions } from "../../shared/activated-price-effects";
 import { resolveUserFromMetadata } from "./owner-resolver";
 
@@ -77,8 +77,8 @@ export async function handleStripeChargeRefunded(
   providerEventAt: Date,
   providerEventId: string,
 ) {
-  if (!charge.refunded && charge.amount_refunded < charge.amount) {
-    return;
+  if (charge.amount_refunded > 0 && charge.amount_refunded < charge.amount) {
+    throw new NonRetryableWebhookError("PARTIAL_REFUND_REQUIRES_MANUAL_REVIEW");
   }
 
   const paymentIntentId =
@@ -95,11 +95,7 @@ export async function handleStripeChargeRefunded(
       amountRefunded: charge.amount_refunded,
     },
   });
-  const markedCreditOrder = await markCreditOrderRefunded(db, {
-    sourceProvider: "stripe",
-    providerPaymentId: paymentIntentId,
-  });
-  if (revokedCreditPurchase || markedCreditOrder) {
+  if (revokedCreditPurchase) {
     return;
   }
 

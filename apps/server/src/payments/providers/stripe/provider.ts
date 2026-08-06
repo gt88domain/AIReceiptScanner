@@ -7,6 +7,7 @@ import type {
   PaymentProvider,
   WebhookInput,
 } from "../../public/types";
+import { PaymentProviderRequestError } from "../../public/types";
 import { findStripeSubscriptionItemByPrice } from "./subscription-item";
 
 /**
@@ -43,6 +44,19 @@ function normalizeMetadata(metadata?: Record<string, string>) {
   return metadata && Object.keys(metadata).length > 0 ? metadata : undefined;
 }
 
+function normalizeStripeRequestError(error: unknown): PaymentProviderRequestError {
+  const message = error instanceof Error ? error.message : "Stripe request failed";
+  const definitelyFailed =
+    error instanceof Stripe.errors.StripeInvalidRequestError ||
+    error instanceof Stripe.errors.StripeCardError ||
+    error instanceof Stripe.errors.StripeAuthenticationError ||
+    error instanceof Stripe.errors.StripePermissionError;
+  return new PaymentProviderRequestError(
+    message,
+    definitelyFailed ? "definitely_failed" : "unknown",
+  );
+}
+
 /**
  * Creates Stripe payment provider implementation.
  *
@@ -53,6 +67,7 @@ export function createStripePaymentProvider(): PaymentProvider {
 
   return {
     key: "stripe",
+    capabilities: { checkoutIdempotency: "native", subscriptionUpdateIdempotency: "native" },
 
     /**
      * Creates a Stripe checkout session.
@@ -67,26 +82,36 @@ export function createStripePaymentProvider(): PaymentProvider {
           ? { customer_email: input.customerEmail }
           : {};
 
-      const session = await stripe.checkout.sessions.create({
-        mode: input.mode,
-        line_items: input.lineItems.map((item) => ({
-          price: item.priceId,
-          quantity: item.quantity,
-        })),
-        success_url: input.successUrl,
-        cancel_url: input.cancelUrl,
-        ...customerParams,
-        metadata: normalizeMetadata(input.metadata),
-        subscription_data:
-          input.mode === "subscription"
-            ? {
-                metadata: normalizeMetadata(input.metadata),
-                trial_period_days: input.trialDays ?? undefined,
-              }
-            : undefined,
-        payment_intent_data:
-          input.mode === "payment" ? { metadata: normalizeMetadata(input.metadata) } : undefined,
-      });
+      let session: Stripe.Checkout.Session;
+      try {
+        session = await stripe.checkout.sessions.create(
+          {
+            mode: input.mode,
+            line_items: input.lineItems.map((item) => ({
+              price: item.priceId,
+              quantity: item.quantity,
+            })),
+            success_url: input.successUrl,
+            cancel_url: input.cancelUrl,
+            ...customerParams,
+            metadata: normalizeMetadata(input.metadata),
+            subscription_data:
+              input.mode === "subscription"
+                ? {
+                    metadata: normalizeMetadata(input.metadata),
+                    trial_period_days: input.trialDays ?? undefined,
+                  }
+                : undefined,
+            payment_intent_data:
+              input.mode === "payment"
+                ? { metadata: normalizeMetadata(input.metadata) }
+                : undefined,
+          },
+          input.idempotencyKey ? { idempotencyKey: input.idempotencyKey } : undefined,
+        );
+      } catch (error) {
+        throw normalizeStripeRequestError(error);
+      }
 
       if (!session.url) {
         throw new Error("Stripe Checkout session missing URL");
@@ -134,23 +159,31 @@ export function createStripePaymentProvider(): PaymentProvider {
      * @param input - Subscription upgrade payload.
      */
     async updateSubscriptionPlan(input) {
-      const subscription = await stripe.subscriptions.retrieve(input.subscriptionId);
-      const subscriptionItem = findStripeSubscriptionItemByPrice(
-        subscription,
-        input.currentPriceId,
-      );
+      try {
+        const subscription = await stripe.subscriptions.retrieve(input.subscriptionId);
+        const subscriptionItem = findStripeSubscriptionItemByPrice(
+          subscription,
+          input.currentPriceId,
+        );
 
-      await stripe.subscriptions.update(input.subscriptionId, {
-        items: [
+        await stripe.subscriptions.update(
+          input.subscriptionId,
           {
-            id: subscriptionItem.id,
-            price: input.targetPriceId,
+            items: [
+              {
+                id: subscriptionItem.id,
+                price: input.targetPriceId,
+              },
+            ],
+            proration_behavior: "always_invoice",
+            payment_behavior: "error_if_incomplete",
+            cancel_at_period_end: false,
           },
-        ],
-        proration_behavior: "always_invoice",
-        payment_behavior: "error_if_incomplete",
-        cancel_at_period_end: false,
-      });
+          input.idempotencyKey ? { idempotencyKey: input.idempotencyKey } : undefined,
+        );
+      } catch (error) {
+        throw normalizeStripeRequestError(error);
+      }
     },
 
     /**

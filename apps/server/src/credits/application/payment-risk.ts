@@ -8,8 +8,7 @@ import {
   type CreditPaymentDisputeStatus,
 } from "@/db/schema/credits";
 import { ensureCreditAccount } from "./internal";
-import { revokeCreditPurchaseBySource } from "./consume";
-import { markCreditOrderRefunded } from "./orders";
+import { applyCreditPurchaseRecovery } from "./purchase-recovery";
 
 type CreditPaymentDisputeInput = {
   provider: ServerPaymentProviderKey;
@@ -24,8 +23,8 @@ type CreditPaymentDisputeInput = {
 };
 
 /**
- * Persists provider dispute state, blocks the affected account, and turns a lost
- * credit chargeback into a ledger debt. There is no automatic unhold for a loss.
+ * Persists provider dispute state and delegates lost/won ledger changes to the
+ * aggregate purchase-recovery engine.
  */
 export async function recordCreditPaymentDispute(db: Database, input: CreditPaymentDisputeInput) {
   const [order] = input.providerPaymentId
@@ -108,37 +107,27 @@ export async function recordCreditPaymentDispute(db: Database, input: CreditPaym
     })
     .where(eq(creditAccount.userId, userId));
 
-  if (dispute.status !== "lost" || !order) return dispute;
+  if ((dispute.status !== "lost" && dispute.status !== "won") || !order) return dispute;
   if (
-    input.amountCents === null ||
-    input.amountCents === undefined ||
-    input.amountCents <= 0 ||
-    !input.currency ||
-    input.currency.toLowerCase() !== order.currency.toLowerCase()
+    dispute.amountCents === null ||
+    dispute.amountCents <= 0 ||
+    !dispute.currency ||
+    dispute.currency.toLowerCase() !== order.currency.toLowerCase()
   ) {
-    throw new Error("Lost credit dispute is missing a matching payment amount and currency");
+    throw new Error("Credit dispute is missing a matching payment amount and currency");
   }
 
-  const disputedAmountCents = Math.min(input.amountCents, order.amountCents);
-  const creditDebt = Math.ceil((order.creditAmount * disputedAmountCents) / order.amountCents);
-  await revokeCreditPurchaseBySource(db, {
-    originalSourceProvider: input.provider,
-    originalSourceId: order.providerPaymentId ?? input.providerPaymentId!,
-    refundSourceId: dispute.providerDisputeId,
-    recoverySourceType: "chargeback",
-    amount: creditDebt,
-    metadata: {
-      disputeId: dispute.providerDisputeId,
-      disputedAmountCents,
-      providerEventId: dispute.providerEventId ?? "",
-    },
+  await applyCreditPurchaseRecovery(db, {
+    provider: input.provider,
+    providerPaymentId: order.providerPaymentId ?? input.providerPaymentId!,
+    recoveryType: "chargeback",
+    providerRecoveryId: dispute.providerDisputeId,
+    state: dispute.status === "lost" ? "active" : "inactive",
+    amountCents: Math.min(dispute.amountCents, order.amountCents),
+    currency: dispute.currency,
+    providerEventAt: dispute.providerEventAt,
+    providerEventId: dispute.providerEventId,
   });
-  if (disputedAmountCents === order.amountCents) {
-    await markCreditOrderRefunded(db, {
-      sourceProvider: input.provider,
-      providerPaymentId: order.providerPaymentId ?? input.providerPaymentId!,
-    });
-  }
 
   return dispute;
 }

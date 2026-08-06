@@ -101,6 +101,7 @@ function RouteComponent() {
     createCreditCheckout.mutate({
       packageId,
       returnUrl: getCreditReturnUrl(),
+      operationId: crypto.randomUUID(),
     });
   };
 

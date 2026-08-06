@@ -6,6 +6,7 @@ import type {
   PaymentProvider,
   WebhookInput,
 } from "../../public/types";
+import { PaymentProviderRequestError } from "../../public/types";
 
 type WaffoEnvironment = "test" | "prod";
 
@@ -66,6 +67,7 @@ export function createWaffoPaymentProvider(): PaymentProvider {
 
   return {
     key: "waffo",
+    capabilities: { checkoutIdempotency: "none", subscriptionUpdateIdempotency: "none" },
 
     async createCheckoutSession(input: CreateCheckoutInput) {
       const productId = pickWaffoProductId(input);
@@ -113,7 +115,10 @@ export function createWaffoPaymentProvider(): PaymentProvider {
     },
 
     async updateSubscriptionPlan() {
-      throw new Error("Waffo provider does not support direct subscription plan updates yet");
+      throw new PaymentProviderRequestError(
+        "Waffo provider does not support direct subscription plan updates yet",
+        "definitely_failed",
+      );
     },
 
     async parseWebhookEvent(input: WebhookInput): Promise<ParsedWebhookEvent> {

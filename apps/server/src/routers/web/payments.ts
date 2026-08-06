@@ -29,6 +29,7 @@ const createCheckoutInputSchema = z.object({
   successUrl: trustedWebsiteUrl, // Where to redirect after successful payment
   cancelUrl: trustedWebsiteUrl, // Where to redirect if payment is canceled
   provider: providerEnum.optional(), // Force specific payment provider (optional)
+  operationId: z.uuid().optional(),
 });
 
 /**
@@ -47,6 +48,7 @@ const upgradeSubscriptionInputSchema = z.object({
   planId: z.string(), // Target plan to upgrade into
   priceId: z.string(), // Target subscription price
   provider: providerEnum.optional(), // Force specific payment provider (optional)
+  operationId: z.uuid().optional(),
 });
 
 /**
@@ -93,6 +95,7 @@ export const paymentsRouter = {
           cancelUrl: input.cancelUrl,
           provider: input.provider,
           customerEmail: context.session?.user.email, // Pre-fill customer email
+          operationId: input.operationId,
         });
         return { url: session.url };
       } catch (error) {
@@ -152,6 +155,7 @@ export const paymentsRouter = {
           planId: input.planId,
           priceId: input.priceId,
           provider: input.provider,
+          operationId: input.operationId,
         });
         return { ok: true };
       } catch (error) {

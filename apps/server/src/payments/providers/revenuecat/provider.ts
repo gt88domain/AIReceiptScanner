@@ -7,6 +7,7 @@ import type {
   PaymentProvider,
   WebhookInput,
 } from "../../public/types";
+import { PaymentProviderRequestError } from "../../public/types";
 import type { RevenueCatWebhookEnvelope } from "./types";
 
 function requireWebhookAuthorization() {
@@ -47,12 +48,16 @@ function parseRevenueCatWebhook(rawBody: string): RevenueCatWebhookEnvelope {
 }
 
 function unsupportedRevenueCatOperation(name: string): never {
-  throw new Error(`RevenueCat provider does not support ${name} on the server`);
+  throw new PaymentProviderRequestError(
+    `RevenueCat provider does not support ${name} on the server`,
+    "definitely_failed",
+  );
 }
 
 export function createRevenueCatPaymentProvider(): PaymentProvider {
   return {
     key: "revenuecat",
+    capabilities: { checkoutIdempotency: "none", subscriptionUpdateIdempotency: "none" },
 
     async createCheckoutSession(_input: CreateCheckoutInput) {
       unsupportedRevenueCatOperation("createCheckoutSession");

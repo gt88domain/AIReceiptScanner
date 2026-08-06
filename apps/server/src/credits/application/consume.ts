@@ -1,17 +1,17 @@
 import { and, eq, gt, gte, isNull, or, sql } from "drizzle-orm";
 import type { Database } from "@/db";
-import { creditTransaction } from "@/db/schema/credits";
+import { creditOrder, creditTransaction } from "@/db/schema/credits";
 import {
   assertCreditsEnabled,
   assertPositiveAmount,
   CREDIT_CONSUMPTION_GRANT_LIMIT,
   createAccountDebitUpdate,
   createBatchChangeGuard,
-  ensureCreditAccount,
   findTransactionBySource,
   runCreditBatch,
   type CreditBatchItem,
 } from "./internal";
+import { applyCreditPurchaseRecovery } from "./purchase-recovery";
 import { getBalance } from "./read";
 import { ensureSignupGrant } from "./signup-grant";
 import { listSpendableCreditLots } from "./spendable-balance";
@@ -24,69 +24,27 @@ import type {
 } from "./types";
 
 export async function revokeCreditPurchase(db: Database, input: RevokeCreditPurchaseInput) {
-  assertCreditsEnabled();
-  await ensureCreditAccount(db, input.user.userId);
-
-  const refundSource = {
-    sourceProvider: input.originalSourceProvider,
-    sourceType: input.recoverySourceType ?? "refund",
-    sourceId: input.refundSourceId,
-  } satisfies CreditSource;
-
-  const existingRefund = await findTransactionBySource(db, refundSource);
-  if (existingRefund) return existingRefund;
-
-  const purchase = await findTransactionBySource(db, {
-    sourceProvider: input.originalSourceProvider,
-    sourceType: "purchase",
-    sourceId: input.originalSourceId,
+  if (input.amount !== undefined) throw new Error("CREDIT_RECOVERY_LEGACY_REVIEW_REQUIRED");
+  const [order] = await db
+    .select()
+    .from(creditOrder)
+    .where(
+      and(
+        eq(creditOrder.provider, input.originalSourceProvider),
+        eq(creditOrder.providerPaymentId, input.originalSourceId),
+      ),
+    )
+    .limit(1);
+  if (!order || order.userId !== input.user.userId) return null;
+  return applyCreditPurchaseRecovery(db, {
+    provider: input.originalSourceProvider,
+    providerPaymentId: input.originalSourceId,
+    recoveryType: input.recoverySourceType ?? "refund",
+    providerRecoveryId: input.refundSourceId,
+    state: "active",
+    amountCents: order.amountCents,
+    currency: order.currency,
   });
-  if (!purchase || purchase.userId !== input.user.userId) return null;
-
-  const amountToRevoke = Math.min(input.amount ?? purchase.amount, purchase.amount);
-  assertPositiveAmount(amountToRevoke);
-  const now = new Date();
-  try {
-    await runCreditBatch(db, [
-      db.insert(creditTransaction).values({
-        id: crypto.randomUUID(),
-        userId: input.user.userId,
-        amount: -amountToRevoke,
-        remainingAmount: 0,
-        sourceProvider: input.originalSourceProvider,
-        sourceType: refundSource.sourceType,
-        sourceId: input.refundSourceId,
-        packageId: purchase.packageId,
-        expiresAt: null,
-        metadata: {
-          ...input.metadata,
-          originalSourceId: input.originalSourceId,
-        },
-        createdAt: now,
-        updatedAt: now,
-      }),
-      db
-        .update(creditTransaction)
-        .set({
-          remainingAmount: sql`CASE WHEN ${creditTransaction.remainingAmount} > ${amountToRevoke}
-            THEN ${creditTransaction.remainingAmount} - ${amountToRevoke} ELSE 0 END`,
-          updatedAt: now,
-        })
-        .where(eq(creditTransaction.id, purchase.id)),
-      createAccountDebitUpdate(db, {
-        userId: input.user.userId,
-        amount: amountToRevoke,
-        field: "totalRevoked",
-        now,
-      }),
-    ]);
-  } catch (error) {
-    const existing = await findTransactionBySource(db, refundSource);
-    if (existing) return existing;
-    throw error;
-  }
-
-  return findTransactionBySource(db, refundSource);
 }
 
 export async function revokeCreditPurchaseBySource(

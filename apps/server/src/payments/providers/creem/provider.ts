@@ -7,6 +7,7 @@ import type {
   PaymentProvider,
   WebhookInput,
 } from "../../public/types";
+import { PaymentProviderRequestError } from "../../public/types";
 import {
   createCreemApiHeaders,
   pickCreemProductId,
@@ -45,7 +46,10 @@ async function creemRequest<T>(path: string, init: { method: "POST"; body?: unkn
   });
 
   if (!response.ok) {
-    throw new Error(`Creem request failed (${response.status}): ${await response.text()}`);
+    throw new PaymentProviderRequestError(
+      `Creem request failed (${response.status}): ${await response.text()}`,
+      "definitely_failed",
+    );
   }
 
   return (await response.json()) as T;
@@ -64,6 +68,7 @@ function parseCreemWebhook(rawBody: string) {
 export function createCreemPaymentProvider(): PaymentProvider {
   return {
     key: "creem",
+    capabilities: { checkoutIdempotency: "none", subscriptionUpdateIdempotency: "none" },
 
     async createCheckoutSession(input: CreateCheckoutInput) {
       const productId = pickCreemProductId(input.lineItems);

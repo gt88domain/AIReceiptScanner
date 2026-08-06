@@ -27,6 +27,16 @@ type PendingWebhookAlert = {
 type SendPendingWebhookAlert = (alert: PendingWebhookAlert) => Promise<void>;
 type WebhookClaim = { token: LeaseToken; attemptCount: number };
 
+/** A verified event requiring a human decision must not consume provider retry budget. */
+export class NonRetryableWebhookError extends Error {
+  readonly code: string;
+
+  constructor(code: string) {
+    super(code);
+    this.code = code;
+  }
+}
+
 export function sanitizePaymentJobError(error: unknown) {
   const message = error instanceof Error ? error.message : "Unknown webhook processing error";
   return message
@@ -80,7 +90,8 @@ export async function releaseWebhookEventClaim(
   error: unknown,
   now = new Date(),
 ) {
-  const exhausted = claim.attemptCount >= MAX_WEBHOOK_ATTEMPTS;
+  const exhausted =
+    error instanceof NonRetryableWebhookError || claim.attemptCount >= MAX_WEBHOOK_ATTEMPTS;
   await db
     .update(billingEvent)
     .set({
@@ -139,10 +150,15 @@ async function claimPendingWebhookAlert(db: Database, eventId: string, now: Date
     .where(
       and(
         eq(billingEvent.id, eventId),
-        inArray(billingEvent.processingStatus, ["pending", "dead_letter"]),
+        or(
+          eq(billingEvent.processingStatus, "dead_letter"),
+          and(
+            eq(billingEvent.processingStatus, "pending"),
+            lte(billingEvent.firstReceivedAt, threshold),
+            gte(billingEvent.attemptCount, PENDING_WEBHOOK_ALERT_MIN_ATTEMPTS),
+          ),
+        ),
         isNull(billingEvent.alertedAt),
-        lte(billingEvent.firstReceivedAt, threshold),
-        gte(billingEvent.attemptCount, PENDING_WEBHOOK_ALERT_MIN_ATTEMPTS),
         or(isNull(billingEvent.alertLeaseUntil), lte(billingEvent.alertLeaseUntil, now)),
       ),
     )
@@ -204,10 +220,15 @@ export async function alertPendingWebhookEvents(
     .from(billingEvent)
     .where(
       and(
-        inArray(billingEvent.processingStatus, ["pending", "dead_letter"]),
+        or(
+          eq(billingEvent.processingStatus, "dead_letter"),
+          and(
+            eq(billingEvent.processingStatus, "pending"),
+            lte(billingEvent.firstReceivedAt, threshold),
+            gte(billingEvent.attemptCount, PENDING_WEBHOOK_ALERT_MIN_ATTEMPTS),
+          ),
+        ),
         isNull(billingEvent.alertedAt),
-        lte(billingEvent.firstReceivedAt, threshold),
-        gte(billingEvent.attemptCount, PENDING_WEBHOOK_ALERT_MIN_ATTEMPTS),
       ),
     )
     .orderBy(asc(billingEvent.firstReceivedAt))

@@ -5,6 +5,15 @@ import type { Database } from "@/db";
 import { creditOrder } from "@/db/schema/credits";
 import { findBillingCustomer } from "@/payments/infrastructure/repositories/billing-store";
 import type { CheckoutSessionResult } from "@/payments/public/types";
+import {
+  claimPaymentOperation,
+  completePaymentOperation,
+  createPaymentOperationRequest,
+  failPaymentOperation,
+  getOrCreatePaymentOperation,
+  readCheckoutOperationResult,
+  savePaymentOperationProviderResult,
+} from "@/payments/application/payment-operation";
 import { assertCreditAccountNotOnBillingHold, assertCreditsEnabled } from "./internal";
 import { grantCredits } from "./grant";
 import type {
@@ -67,25 +76,66 @@ export async function createCreditCheckoutSession(
   });
   const { getPaymentProvider } = await import("@/payments/providers");
   const provider = getPaymentProvider(creditPackage.web.provider);
-  const orderId = crypto.randomUUID();
-
-  await db.insert(creditOrder).values({
-    id: orderId,
-    userId: input.user.userId,
-    packageId: creditPackage.id,
+  const requestedOrderId = crypto.randomUUID();
+  const operationId = input.operationId ?? crypto.randomUUID();
+  const operationRequest = await createPaymentOperationRequest({
     provider: creditPackage.web.provider,
-    providerSessionId: null,
-    providerPaymentId: null,
-    status: "pending",
+    mode: "payment",
+    packageId: creditPackage.id,
+    providerPriceId: creditPackage.web.providerPriceId,
     creditAmount: creditPackage.amount,
     amountCents: creditPackage.web.amountCents,
     currency: creditPackage.web.currency,
-    ledgerTransactionId: null,
-    expiresAt: null,
-    createdAt: now,
-    updatedAt: now,
+    returnUrl: new URL(input.returnUrl).toString(),
   });
+  const operation = await getOrCreatePaymentOperation(db, {
+    userId: input.user.userId,
+    provider: creditPackage.web.provider,
+    operationType: "credit_checkout",
+    operationId,
+    ...operationRequest,
+    idempotencyMode:
+      provider.capabilities.checkoutIdempotency === "native" ? "native" : "local_only",
+    relatedResourceType: "credit_order",
+    relatedResourceId: requestedOrderId,
+  });
+  const orderId = operation.relatedResourceId ?? requestedOrderId;
+  await db
+    .insert(creditOrder)
+    .values({
+      id: orderId,
+      userId: input.user.userId,
+      packageId: creditPackage.id,
+      provider: creditPackage.web.provider,
+      providerSessionId: null,
+      providerPaymentId: null,
+      status: "pending",
+      creditAmount: creditPackage.amount,
+      amountCents: creditPackage.web.amountCents,
+      currency: creditPackage.web.currency,
+      ledgerTransactionId: null,
+      expiresAt: null,
+      createdAt: now,
+      updatedAt: now,
+    })
+    .onConflictDoNothing();
+  if (operation.status === "completed" || operation.status === "provider_succeeded") {
+    const stored = readCheckoutOperationResult(operation);
+    if (operation.status === "provider_succeeded") {
+      await finalizeCreditOrderCheckout(db, orderId, stored, new Date());
+      await completePaymentOperation(db, operation.id);
+    }
+    return {
+      providerSessionId: stored.providerSessionId,
+      url: stored.url,
+      expiresAt: stored.expiresAt ? new Date(stored.expiresAt) : null,
+      creditOrderId: orderId,
+    };
+  }
+  const claim = await claimPaymentOperation(db, operation, now);
+  if (!claim) throw new Error("PAYMENT_OPERATION_IN_PROGRESS");
 
+  let providerSucceeded = false;
   try {
     const session = await provider.createCheckoutSession({
       mode: "payment",
@@ -97,9 +147,11 @@ export async function createCreditCheckoutSession(
         kind: "credit_purchase",
         userId: input.user.userId,
         creditPackageId: creditPackage.id,
+        paymentOperationId: operation.id,
         creditOrderId: orderId,
         provider: creditPackage.web.provider,
       },
+      idempotencyKey: claim.operation.operationKey,
       ...(existingCustomer?.providerCustomerId
         ? { customerId: existingCustomer.providerCustomerId }
         : {}),
@@ -108,23 +160,49 @@ export async function createCreditCheckoutSession(
         : {}),
     });
 
-    await db
-      .update(creditOrder)
-      .set({
-        providerSessionId: session.providerSessionId,
-        expiresAt: session.expiresAt ?? null,
-        updatedAt: new Date(),
-      })
-      .where(eq(creditOrder.id, orderId));
+    const stored = {
+      providerSessionId: session.providerSessionId,
+      url: session.url,
+      expiresAt: session.expiresAt?.toISOString() ?? null,
+    };
+    await savePaymentOperationProviderResult(db, operation.id, claim.token, stored, new Date());
+    providerSucceeded = true;
+    await finalizeCreditOrderCheckout(db, orderId, stored, new Date());
+    await completePaymentOperation(db, operation.id, new Date());
 
     return { ...session, creditOrderId: orderId };
   } catch (error) {
-    await db
-      .update(creditOrder)
-      .set({ status: "failed", updatedAt: new Date() })
-      .where(eq(creditOrder.id, orderId));
+    const failure = await failPaymentOperation(
+      db,
+      operation.id,
+      claim.token,
+      error,
+      operation.idempotencyMode === "local_only",
+    );
+    if (!providerSucceeded && failure?.status === "failed" && !failure.retryable) {
+      await db
+        .update(creditOrder)
+        .set({ status: "failed", updatedAt: new Date() })
+        .where(eq(creditOrder.id, orderId));
+    }
     throw error;
   }
+}
+
+async function finalizeCreditOrderCheckout(
+  db: Database,
+  orderId: string,
+  result: { providerSessionId: string; expiresAt: string | null },
+  now: Date,
+) {
+  await db
+    .update(creditOrder)
+    .set({
+      providerSessionId: result.providerSessionId,
+      expiresAt: result.expiresAt ? new Date(result.expiresAt) : null,
+      updatedAt: now,
+    })
+    .where(eq(creditOrder.id, orderId));
 }
 
 export async function completeCreditOrderPurchase(

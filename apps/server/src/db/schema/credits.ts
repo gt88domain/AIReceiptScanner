@@ -13,6 +13,7 @@ export const CREDIT_SOURCE_TYPES = [
   "chargeback",
   "usage",
   "expiration",
+  "recovery_reversal",
 ] as const;
 
 /** Payment lifecycle states for credit package orders. */
@@ -39,6 +40,10 @@ export const BILLABLE_OPERATION_STATUSES = [
 /** Payment dispute states that can block a credit account. */
 export const CREDIT_PAYMENT_DISPUTE_STATUSES = ["open", "won", "lost"] as const;
 
+export const CREDIT_PURCHASE_RECOVERY_STATES = ["active", "inactive", "manual_review"] as const;
+export const CREDIT_PURCHASE_RECOVERY_TYPES = ["refund", "chargeback"] as const;
+export const CREDIT_ORDER_RECOVERY_MODES = ["exact", "legacy_review"] as const;
+
 /** Stores the current account-level balance and aggregate counters for quick reads. */
 export const creditAccount = sqliteTable("credit_account", {
   userId: text("user_id")
@@ -49,6 +54,8 @@ export const creditAccount = sqliteTable("credit_account", {
   totalConsumed: integer("total_consumed").notNull().default(0),
   totalExpired: integer("total_expired").notNull().default(0),
   totalRevoked: integer("total_revoked").notNull().default(0),
+  /** Historical credits restored after a recovery is made inactive. */
+  totalRestored: integer("total_restored").notNull().default(0),
   /** True while a provider dispute is open or has been lost. */
   billingHold: integer("billing_hold", { mode: "boolean" }).notNull().default(false),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
@@ -91,6 +98,44 @@ export const creditTransaction = sqliteTable(
     index("credit_transaction_user_created_idx").on(table.userId, table.createdAt),
     index("credit_transaction_user_expiry_idx").on(table.userId, table.expiresAt),
     index("credit_transaction_expiry_idx").on(table.expiresAt, table.remainingAmount),
+  ],
+);
+
+/** Provider recovery facts are kept separately from ledger balance deltas. */
+export const creditPurchaseRecoveryEvent = sqliteTable(
+  "credit_purchase_recovery_event",
+  {
+    id: text("id").primaryKey(),
+    creditOrderId: text("credit_order_id")
+      .notNull()
+      .references(() => creditOrder.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    provider: text("provider").$type<ServerPaymentProviderKey>().notNull(),
+    recoveryType: text("recovery_type", { enum: CREDIT_PURCHASE_RECOVERY_TYPES }).notNull(),
+    providerRecoveryId: text("provider_recovery_id").notNull(),
+    providerPaymentId: text("provider_payment_id").notNull(),
+    state: text("state", { enum: CREDIT_PURCHASE_RECOVERY_STATES }).notNull(),
+    amountCents: integer("amount_cents").notNull(),
+    currency: text("currency").notNull(),
+    providerEventAt: integer("provider_event_at", { mode: "timestamp" }),
+    providerEventId: text("provider_event_id"),
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("credit_purchase_recovery_event_provider_id_idx").on(
+      table.provider,
+      table.recoveryType,
+      table.providerRecoveryId,
+    ),
+    index("credit_purchase_recovery_event_order_state_idx").on(table.creditOrderId, table.state),
+    index("credit_purchase_recovery_event_provider_payment_idx").on(
+      table.provider,
+      table.providerPaymentId,
+    ),
+    index("credit_purchase_recovery_event_provider_event_idx").on(table.providerEventAt),
   ],
 );
 
@@ -140,6 +185,14 @@ export const creditOrder = sqliteTable(
     currency: text("currency").notNull(),
     ledgerTransactionId: text("ledger_transaction_id"),
     expiresAt: integer("expires_at", { mode: "timestamp" }),
+    /** Aggregate, capped recovery state. Event facts live in creditPurchaseRecoveryEvent. */
+    recoveredAmountCents: integer("recovered_amount_cents").notNull().default(0),
+    recoveredCreditAmount: integer("recovered_credit_amount").notNull().default(0),
+    recoveredSpendableAmount: integer("recovered_spendable_amount").notNull().default(0),
+    recoveryVersion: integer("recovery_version").notNull().default(0),
+    recoveryMode: text("recovery_mode", { enum: CREDIT_ORDER_RECOVERY_MODES })
+      .notNull()
+      .default("exact"),
     createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
   },
@@ -235,6 +288,10 @@ export type NewCreditTransaction = typeof creditTransaction.$inferInsert;
 export type CreditOrder = typeof creditOrder.$inferSelect;
 /** Insertable credit order row type. */
 export type NewCreditOrder = typeof creditOrder.$inferInsert;
+/** Selected purchase recovery event row type. */
+export type CreditPurchaseRecoveryEvent = typeof creditPurchaseRecoveryEvent.$inferSelect;
+/** Insertable purchase recovery event row type. */
+export type NewCreditPurchaseRecoveryEvent = typeof creditPurchaseRecoveryEvent.$inferInsert;
 /** Selected signup grant claim row type. */
 export type CreditSignupGrantClaim = typeof creditSignupGrantClaim.$inferSelect;
 /** Insertable signup grant claim row type. */
@@ -257,3 +314,9 @@ export type CreditSignupGrantClaimStatus = (typeof CREDIT_SIGNUP_GRANT_CLAIM_STA
 export type BillableOperationStatus = (typeof BILLABLE_OPERATION_STATUSES)[number];
 /** Provider payment dispute lifecycle status. */
 export type CreditPaymentDisputeStatus = (typeof CREDIT_PAYMENT_DISPUTE_STATUSES)[number];
+/** Purchase recovery event state. */
+export type CreditPurchaseRecoveryState = (typeof CREDIT_PURCHASE_RECOVERY_STATES)[number];
+/** Purchase recovery event kind. */
+export type CreditPurchaseRecoveryType = (typeof CREDIT_PURCHASE_RECOVERY_TYPES)[number];
+/** Whether an order can be automatically restored. */
+export type CreditOrderRecoveryMode = (typeof CREDIT_ORDER_RECOVERY_MODES)[number];

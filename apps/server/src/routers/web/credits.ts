@@ -25,6 +25,7 @@ const createCreditCheckoutInputSchema = z.object({
   packageId: z.string(),
   returnUrl: trustedWebsiteUrl,
   provider: webCreditProviderEnum.optional(),
+  operationId: z.uuid().optional(),
 });
 
 /** Resolves the authenticated user for protected web credit endpoints. */
@@ -53,6 +54,7 @@ export const webCreditsRouter = {
           returnUrl: input.returnUrl,
           provider: input.provider,
           customerEmail: context.session?.user.email,
+          operationId: input.operationId,
         });
         return { url: session.url, orderId: session.creditOrderId };
       } catch (error) {

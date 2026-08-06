@@ -4,6 +4,7 @@ import { resolveJobQueue } from "../lib/jobs-binding";
 import type { ServerRuntimeConfig } from "../lib/runtime-config";
 import { runCreditMaintenance } from "../credits";
 import { processBillingOutbox } from "../payments/application/billing-outbox";
+import { reconcilePaymentOperations } from "../payments/application/payment-operation-recovery";
 import { processPendingWebhookEvents } from "../payments/application/webhook-dispatch";
 import { alertPendingWebhookEvents } from "../payments/application/webhook-observability";
 import { jobRegistry } from "../modules/jobs";
@@ -32,6 +33,7 @@ export function createJobWorkerHandlers(runtimeConfig: ServerRuntimeConfig): Job
       if (runtimeConfig.features.billing) {
         await processPendingWebhookEvents(db);
         await processBillingOutbox(db);
+        await reconcilePaymentOperations(db);
         const email =
           runtimeConfig.email.enabled && runtimeConfig.email.capabilities.operationalAlerts
             ? createEmailService(runtimeConfig.email, env)

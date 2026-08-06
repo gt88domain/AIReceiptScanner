@@ -1,6 +1,7 @@
 import type { NativeCreditPlatform } from "@repo/app-config/credits";
 import type { ServerPaymentProviderKey, WebPaymentProviderKey } from "@repo/app-config";
 import type { CreditSourceProvider, CreditSourceType } from "@/db/schema/credits";
+import type { CreditPurchaseRecoveryState, CreditPurchaseRecoveryType } from "@/db/schema/credits";
 
 export type CreditUser = {
   userId: string;
@@ -116,6 +117,7 @@ export type CreateCreditCheckoutSessionInput = {
   returnUrl: string;
   provider?: WebPaymentProviderKey;
   customerEmail?: string | null;
+  operationId?: string;
 };
 
 export type CompleteCreditOrderPurchaseInput = {
@@ -138,4 +140,16 @@ export type MarkCreditOrderStatusInput = {
 export type MarkCreditOrderRefundedInput = {
   sourceProvider: ServerPaymentProviderKey;
   providerPaymentId: string;
+};
+
+export type ApplyCreditPurchaseRecoveryInput = {
+  provider: ServerPaymentProviderKey;
+  providerPaymentId: string;
+  recoveryType: CreditPurchaseRecoveryType;
+  providerRecoveryId: string;
+  state: CreditPurchaseRecoveryState;
+  amountCents: number;
+  currency: string;
+  providerEventAt?: Date | null;
+  providerEventId?: string | null;
 };

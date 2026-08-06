@@ -5,6 +5,14 @@ import { findPlanById, findPriceById } from "../domain/plan-catalog";
 import { evaluateCheckoutDecision } from "../domain/policy";
 import { getPaymentProvider, resolvePaymentProviderKey } from "../providers";
 import { getBillingStatus } from "./billing-status";
+import {
+  claimPaymentOperation,
+  completePaymentOperation,
+  createPaymentOperationRequest,
+  failPaymentOperation,
+  getOrCreatePaymentOperation,
+  savePaymentOperationProviderSuccess,
+} from "./payment-operation";
 import { createCheckoutDecisionBlockedError, type UpgradeSubscriptionServiceInput } from "./types";
 
 export async function upgradeSubscription(db: Database, input: UpgradeSubscriptionServiceInput) {
@@ -60,14 +68,90 @@ export async function upgradeSubscription(db: Database, input: UpgradeSubscripti
   ) {
     throw new Error("Current subscription price is not available");
   }
-
-  await provider.updateSubscriptionPlan({
+  const operationId = input.operationId ?? crypto.randomUUID();
+  const operationRequest = await createPaymentOperationRequest({
+    provider: providerKey,
     subscriptionId: subscription.providerSubscriptionId,
-    currentPriceId: currentPrice.providerPriceId,
+    expectedCurrentPriceId: currentPrice.id,
+    expectedCurrentProviderPriceId: currentPrice.providerPriceId,
+    targetPlanId: plan.id,
     targetPriceId: price.providerPriceId,
   });
-  await db
+  const operation = await getOrCreatePaymentOperation(db, {
+    userId: input.user.userId,
+    provider: providerKey,
+    operationType: "subscription_upgrade",
+    operationId,
+    ...operationRequest,
+    idempotencyMode:
+      provider.capabilities.subscriptionUpdateIdempotency === "native" ? "native" : "local_only",
+    scopeKey: `subscription:${providerKey}:${subscription.providerSubscriptionId}`,
+    relatedResourceType: "subscription",
+    relatedResourceId: subscription.id,
+  });
+  if (operation.status === "completed") return;
+  if (operation.status === "provider_succeeded") {
+    await finalizeSubscriptionUpgrade(db, subscription.id, currentPrice.id, plan.id, price.id, now);
+    await completePaymentOperation(db, operation.id, now);
+    return;
+  }
+  const claim = await claimPaymentOperation(db, operation, now);
+  if (!claim) throw new Error("SUBSCRIPTION_OPERATION_IN_PROGRESS");
+
+  try {
+    await provider.updateSubscriptionPlan({
+      subscriptionId: subscription.providerSubscriptionId,
+      currentPriceId: currentPrice.providerPriceId,
+      targetPriceId: price.providerPriceId,
+      idempotencyKey: claim.operation.operationKey,
+    });
+    await savePaymentOperationProviderSuccess(
+      db,
+      operation.id,
+      claim.token,
+      subscription.providerSubscriptionId,
+      JSON.stringify({ version: 1, targetPriceId: price.id }),
+      now,
+    );
+    await finalizeSubscriptionUpgrade(db, subscription.id, currentPrice.id, plan.id, price.id, now);
+    await completePaymentOperation(db, operation.id, now);
+  } catch (error) {
+    await failPaymentOperation(
+      db,
+      operation.id,
+      claim.token,
+      error,
+      operation.idempotencyMode === "local_only",
+      now,
+    );
+    throw error;
+  }
+}
+
+async function finalizeSubscriptionUpgrade(
+  db: Database,
+  subscriptionId: string,
+  expectedPriceId: string,
+  planId: string,
+  targetPriceId: string,
+  now: Date,
+) {
+  const [updated] = await db
     .update(billingSubscription)
-    .set({ planId: plan.id, priceId: price.id, cancelAtPeriodEnd: false, updatedAt: now })
-    .where(eq(billingSubscription.id, subscription.id));
+    .set({ planId, priceId: targetPriceId, cancelAtPeriodEnd: false, updatedAt: now })
+    .where(
+      and(
+        eq(billingSubscription.id, subscriptionId),
+        eq(billingSubscription.priceId, expectedPriceId),
+      ),
+    )
+    .returning({ id: billingSubscription.id });
+  if (updated) return;
+  const [current] = await db
+    .select({ priceId: billingSubscription.priceId })
+    .from(billingSubscription)
+    .where(eq(billingSubscription.id, subscriptionId))
+    .limit(1);
+  if (current?.priceId === targetPriceId) return;
+  throw new Error("SUBSCRIPTION_LOCAL_STATE_DIVERGED");
 }

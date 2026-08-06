@@ -16,6 +16,7 @@ export {
   markCreditOrderStatus,
   recordNativeCreditOrderPurchase,
   recordCreditPaymentDispute,
+  auditLegacyCreditRecoveries,
   revokeCreditPurchase,
   revokeCreditPurchaseBySource,
   runCreditMaintenance,

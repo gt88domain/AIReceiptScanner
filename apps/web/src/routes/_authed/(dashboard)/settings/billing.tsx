@@ -117,6 +117,7 @@ function RouteComponent() {
       upgradeSubscription.mutate({
         planId,
         priceId: priceMeta.priceId,
+        operationId: crypto.randomUUID(),
       });
       return;
     }
@@ -133,6 +134,7 @@ function RouteComponent() {
         priceId: priceMeta.priceId,
       }),
       cancelUrl: billingUrls.cancelURL,
+      operationId: crypto.randomUUID(),
     });
   };
 

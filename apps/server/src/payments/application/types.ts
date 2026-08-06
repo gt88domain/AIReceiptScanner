@@ -10,6 +10,7 @@ export type CreateCheckoutServiceInput = {
   cancelUrl: string;
   provider?: ServerPaymentProviderKey;
   customerEmail?: string | null;
+  operationId?: string;
 };
 
 export type CreatePortalServiceInput = {
@@ -23,6 +24,7 @@ export type UpgradeSubscriptionServiceInput = {
   planId: string;
   priceId: string;
   provider?: ServerPaymentProviderKey;
+  operationId?: string;
 };
 
 export type HandleWebhookInput = {

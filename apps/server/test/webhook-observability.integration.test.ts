@@ -9,6 +9,7 @@ import {
   replayBillingOutboxJob,
 } from "@/payments/application/billing-outbox";
 import { getPaymentProvider } from "@/payments/providers";
+import { handleWebhookEvent } from "@/payments/application/webhook-dispatch";
 import {
   alertPendingWebhookEvents,
   claimWebhookEvent,
@@ -31,6 +32,54 @@ function insertPendingEvent(id: string, firstReceivedAt: Date) {
 }
 
 describe("webhook observability", () => {
+  it("dead-letters a verified Stripe partial refund once without mutating credits", async () => {
+    const db = createDb(env.DB);
+    const eventId = crypto.randomUUID();
+    const provider = getPaymentProvider("stripe");
+    const parse = vi.spyOn(provider, "parseWebhookEvent").mockResolvedValue({
+      providerEventId: eventId,
+      type: "charge.refunded",
+      createdAt: new Date("2026-08-06T00:00:00.000Z"),
+      payload: {
+        id: eventId,
+        type: "charge.refunded",
+        created: 1_786_032_000,
+        data: {
+          object: {
+            id: "ch_partial",
+            amount: 1000,
+            amount_refunded: 400,
+            refunded: false,
+            payment_intent: "pi_partial",
+          },
+        },
+      },
+    });
+    try {
+      await expect(
+        handleWebhookEvent(db, { provider: "stripe", rawBody: "verified" }),
+      ).rejects.toThrow("PARTIAL_REFUND_REQUIRES_MANUAL_REVIEW");
+      const [event] = await db
+        .select()
+        .from(billingEvent)
+        .where(eq(billingEvent.providerEventId, eventId));
+      expect(event).toMatchObject({
+        processingStatus: "dead_letter",
+        attemptCount: 1,
+        deadLetteredAt: expect.any(Date),
+      });
+      const sent: string[] = [];
+      const send = async (alert: { id: string }) => {
+        sent.push(alert.id);
+      };
+      await expect(alertPendingWebhookEvents(db, "admin@example.test", { send })).resolves.toBe(1);
+      await expect(alertPendingWebhookEvents(db, "admin@example.test", { send })).resolves.toBe(0);
+      expect(sent).toEqual([event!.id]);
+    } finally {
+      parse.mockRestore();
+    }
+  });
+
   it("atomically claims an event once and releases failures for retry", async () => {
     const db = createDb(env.DB);
     const id = crypto.randomUUID();

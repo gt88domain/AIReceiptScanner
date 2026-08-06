@@ -3,6 +3,20 @@ import { SUBSCRIPTION_STATUSES } from "@repo/app-config/payments/web";
 import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { user } from "./auth";
 
+export const PAYMENT_OPERATION_TYPES = [
+  "checkout",
+  "credit_checkout",
+  "subscription_upgrade",
+] as const;
+export const PAYMENT_OPERATION_STATUSES = [
+  "pending",
+  "processing",
+  "provider_succeeded",
+  "completed",
+  "failed",
+  "manual_review",
+] as const;
+
 /** Maps RevenueCat App User IDs and aliases to one internal account. */
 export const revenueCatIdentity = sqliteTable(
   "revenuecat_identity",
@@ -123,6 +137,51 @@ export const billingCheckoutSession = sqliteTable(
     index("billing_checkout_session_user_created_idx").on(table.userId, table.createdAt),
   ],
 );
+
+/** Durable request records for payment-provider side effects and their recovery. */
+export const paymentOperation = sqliteTable(
+  "payment_operation",
+  {
+    id: text("id").primaryKey(),
+    operationKey: text("operation_key").notNull(),
+    scopeKey: text("scope_key"),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    provider: text("provider", { enum: SUPPORTED_SERVER_PAYMENT_PROVIDERS }).notNull(),
+    operationType: text("operation_type", { enum: PAYMENT_OPERATION_TYPES }).notNull(),
+    requestVersion: integer("request_version").notNull().default(1),
+    requestHash: text("request_hash").notNull(),
+    requestJson: text("request_json").notNull(),
+    status: text("status", { enum: PAYMENT_OPERATION_STATUSES }).notNull().default("pending"),
+    idempotencyMode: text("idempotency_mode", { enum: ["native", "local_only"] }).notNull(),
+    providerResourceId: text("provider_resource_id"),
+    resultJson: text("result_json"),
+    relatedResourceType: text("related_resource_type", {
+      enum: ["checkout_session", "credit_order", "subscription"],
+    }),
+    relatedResourceId: text("related_resource_id"),
+    attemptCount: integer("attempt_count").notNull().default(0),
+    leaseToken: text("lease_token"),
+    leaseUntil: integer("lease_until", { mode: "timestamp" }),
+    nextRetryAt: integer("next_retry_at", { mode: "timestamp" }),
+    retryable: integer("retryable", { mode: "boolean" }).notNull().default(false),
+    lastError: text("last_error"),
+    manualReviewCode: text("manual_review_code"),
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+    completedAt: integer("completed_at", { mode: "timestamp" }),
+  },
+  (table) => [
+    uniqueIndex("payment_operation_key_idx").on(table.operationKey),
+    index("payment_operation_retry_idx").on(table.status, table.nextRetryAt, table.leaseUntil),
+    index("payment_operation_user_created_idx").on(table.userId, table.createdAt),
+    index("payment_operation_type_status_idx").on(table.operationType, table.status),
+  ],
+);
+
+export type PaymentOperation = typeof paymentOperation.$inferSelect;
+export type NewPaymentOperation = typeof paymentOperation.$inferInsert;
 
 /**
  * Billing events table - stores webhook events from payment providers

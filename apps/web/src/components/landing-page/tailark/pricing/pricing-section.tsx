@@ -81,6 +81,7 @@ export function PricingSection({ title, subtitle }: PricingSectionProps) {
           upgradeSubscription.mutate({
             planId,
             priceId: priceMeta.priceId,
+            operationId: crypto.randomUUID(),
           });
           return;
         }
@@ -96,6 +97,7 @@ export function PricingSection({ title, subtitle }: PricingSectionProps) {
             priceId: priceMeta.priceId,
           }),
           cancelUrl: billingUrls.cancelURL,
+          operationId: crypto.randomUUID(),
         });
       }
     : undefined;

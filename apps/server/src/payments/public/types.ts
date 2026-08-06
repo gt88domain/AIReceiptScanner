@@ -45,6 +45,8 @@ export type CreateCheckoutInput = {
   metadata?: Record<string, string>;
   /** Optional free-trial duration in days for subscription checkout. */
   trialDays?: number | null;
+  /** Provider-native idempotency key when the adapter explicitly supports one. */
+  idempotencyKey?: string;
 };
 
 /**
@@ -123,7 +125,25 @@ export type UpdateSubscriptionPlanInput = {
   currentPriceId: string;
   /** Target provider price identifier. */
   targetPriceId: string;
+  /** Provider-native idempotency key when the adapter explicitly supports one. */
+  idempotencyKey?: string;
 };
+
+export type PaymentProviderCapabilities = {
+  checkoutIdempotency: "native" | "none";
+  subscriptionUpdateIdempotency: "native" | "none";
+};
+
+/** Distinguishes a provider rejection from an outcome that cannot be safely inferred. */
+export class PaymentProviderRequestError extends Error {
+  constructor(
+    message: string,
+    readonly outcome: "definitely_failed" | "unknown",
+  ) {
+    super(message);
+    this.name = "PaymentProviderRequestError";
+  }
+}
 
 /**
  * Provider interface required by the payment application service.
@@ -131,6 +151,8 @@ export type UpdateSubscriptionPlanInput = {
 export type PaymentProvider = {
   /** Provider key. */
   key: ServerPaymentProviderKey;
+  /** Only official provider support may opt into native request idempotency. */
+  capabilities: PaymentProviderCapabilities;
 
   /**
    * Creates a checkout session.
