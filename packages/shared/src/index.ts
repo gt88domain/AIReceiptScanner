@@ -57,3 +57,5 @@ export {
 } from "./pricing-config";
 
 export { isAbsoluteUrl, joinUrl, normalizePath, toAbsoluteUrl, trimTrailingSlash } from "./url";
+export { parseRuntimeUrl } from "./domain";
+export type { RuntimeUrl } from "./domain";

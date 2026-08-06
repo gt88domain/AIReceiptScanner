@@ -6,7 +6,7 @@ const packagePaths = {
   server: "apps/server/package.json",
   mobile: "optional/mobile/package.json",
 };
-const expectedVersion = "1.6.23";
+const expectedVersion = "1.6.26";
 
 const packages = Object.fromEntries(
   await Promise.all(

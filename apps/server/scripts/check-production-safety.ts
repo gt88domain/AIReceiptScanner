@@ -319,6 +319,18 @@ function selfCheck() {
     }).join("\n"),
     /WEBSITE_URL must be a non-placeholder HTTPS URL/,
   );
+  assert.ok(
+    validateProductionConfigResult({
+      ...validInput,
+      server: { ...validInput.server, websiteUrl: "http://app.acme.test" },
+    }).errors.some(({ code }) => code === "AUTH_PRODUCTION_URL_NOT_HTTPS"),
+  );
+  assert.ok(
+    validateProductionConfigResult({
+      ...validInput,
+      server: { ...validInput.server, serverUrl: "not a URL" },
+    }).errors.some(({ code }) => code === "AUTH_PUBLIC_URL_INVALID"),
+  );
   assert.match(
     errors({
       ...validInput,

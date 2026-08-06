@@ -1,14 +1,20 @@
 import { resolveCommonConfig } from "@repo/app-config";
-import { joinUrl, parseHostname, resolveCrossSubdomainCookieDomain } from "@repo/shared";
+import { joinUrl, parseRuntimeUrl } from "@repo/shared";
 import { type BetterAuthOptions, betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError } from "better-auth/api";
+import { customSession } from "better-auth/plugins";
 import { localization } from "better-auth-localization";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { createT, getLocaleFromHeaders, getLocaleFromRequest } from "@/i18n";
 import { getAppleProviderConfig } from "@/lib/apple-auth";
 import { createExpoAuthPlugin } from "@/auth/expo-plugin";
+import {
+  normalizeAvatarForOutput,
+  normalizeAvatarUrl,
+  resolveAllowedRemoteAvatarHosts,
+} from "@/auth/avatar-policy";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import * as schema from "../db/schema/auth";
 import {
@@ -35,6 +41,7 @@ const betterAuthLocaleMap = {
 const authCache = new WeakMap<D1Database, ReturnType<typeof betterAuth>>();
 
 function resolveCookiePolicy(
+  nodeEnv: string | undefined,
   serverUrl: string | undefined,
   websiteUrl: string | undefined,
 ): {
@@ -42,12 +49,32 @@ function resolveCookiePolicy(
   sameSite: "Lax" | "None";
   secure: boolean;
 } {
-  const secure = serverUrl?.startsWith("https") ?? false;
-  const cookieDomain = resolveCrossSubdomainCookieDomain(serverUrl, websiteUrl);
-  const serverHost = parseHostname(serverUrl);
-  const websiteHost = parseHostname(websiteUrl);
+  const server = parseRuntimeUrl(serverUrl);
+  const website = parseRuntimeUrl(websiteUrl);
+  const configuredSite = parseRuntimeUrl(commonConfig.app.websiteUrl);
+  const isProduction = nodeEnv === "production";
+  if (isProduction && (!server.isHttps || !website.isHttps)) {
+    throw new Error("[auth:AUTH_PRODUCTION_URL_NOT_HTTPS] Auth public URLs must use HTTPS.");
+  }
+
+  const cookieDomain =
+    configuredSite.isValid &&
+    configuredSite.hostname &&
+    server.hostname &&
+    website.hostname &&
+    server.hostname !== website.hostname &&
+    [server.hostname, website.hostname].every(
+      (hostname) =>
+        hostname === configuredSite.hostname || hostname.endsWith(`.${configuredSite.hostname}`),
+    )
+      ? configuredSite.hostname
+      : undefined;
   const isCrossSite =
-    Boolean(serverHost) && Boolean(websiteHost) && serverHost !== websiteHost && !cookieDomain;
+    Boolean(server.hostname) &&
+    Boolean(website.hostname) &&
+    server.hostname !== website.hostname &&
+    !cookieDomain;
+  const secure = server.isHttps;
 
   // Cross-site cookies require SameSite=None and Secure=true.
   const sameSite = isCrossSite && secure ? "None" : "Lax";
@@ -71,6 +98,7 @@ export function createAuth(
   const runtimeNodeEnv = runtimeEnv.NODE_ENV;
   const origins = resolveOriginConfig(runtimeEnv);
   const { cookieDomain, sameSite, secure } = resolveCookiePolicy(
+    runtimeNodeEnv,
     origins.apiRuntimeOrigin,
     origins.webRuntimeOrigin,
   );
@@ -97,6 +125,9 @@ export function createAuth(
       accountLinking: {
         enabled: true,
         trustedProviders: ["google", "github"],
+        allowDifferentEmails: false,
+        allowUnlinkingAll: false,
+        updateUserInfoOnLink: false,
       },
     },
     session: {
@@ -108,6 +139,36 @@ export function createAuth(
       updateAge: 60 * 60 * 24,
     },
     databaseHooks: {
+      user: {
+        create: {
+          before: async (nextUser) => {
+            if (nextUser.image === undefined) return;
+            return {
+              data: {
+                ...nextUser,
+                image: normalizeAvatarUrl(
+                  nextUser.image,
+                  resolveAllowedRemoteAvatarHosts(runtimeEnv.SERVER_URL),
+                ),
+              },
+            };
+          },
+        },
+        update: {
+          before: async (nextUser) => {
+            if (nextUser.image === undefined) return;
+            return {
+              data: {
+                ...nextUser,
+                image: normalizeAvatarUrl(
+                  nextUser.image,
+                  resolveAllowedRemoteAvatarHosts(runtimeEnv.SERVER_URL),
+                ),
+              },
+            };
+          },
+        },
+      },
       session: {
         create: {
           before: async (nextSession, context) => {
@@ -222,19 +283,28 @@ export function createAuth(
     advanced: {
       // https://better-auth.com/docs/reference/options#advanced
       ipAddress: {
-        ipAddressHeaders: ["cf-connecting-ip", "x-forwarded-for", "x-real-ip"],
+        ipAddressHeaders:
+          runtimeNodeEnv === "production"
+            ? ["cf-connecting-ip"]
+            : ["cf-connecting-ip", "x-real-ip"],
       },
       cookiePrefix: "better-auth-v2",
+      useSecureCookies: secure,
+      crossSubDomainCookies: cookieDomain ? { enabled: true, domain: cookieDomain } : undefined,
       defaultCookieAttributes: {
         sameSite,
         secure,
-        httpOnly: !runtimeEnv.SERVER_URL?.includes("localhost"),
+        httpOnly: true,
         // shared subdomains
         domain: cookieDomain,
         path: "/",
       },
     },
     plugins: [
+      customSession(async ({ session, user }) => ({
+        session,
+        user: normalizeAvatarForOutput(user, runtimeEnv.SERVER_URL),
+      })),
       ...(runtimeConfig.features.mobile ? [createExpoAuthPlugin()] : []),
       localization({
         defaultLocale: "default",

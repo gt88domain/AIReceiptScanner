@@ -3,6 +3,7 @@ import { z } from "zod";
 import { user } from "@/db/schema/auth";
 import { isAdminEmail } from "@/lib/admin";
 import { adminProcedure, protectedProcedure } from "@/lib/orpc";
+import { normalizeAvatarForOutput } from "@/auth/avatar-policy";
 
 const listUsersInputSchema = z.object({
   page: z.number().min(1).default(1),
@@ -73,6 +74,10 @@ export const adminCoreRouter = {
         context.db.select({ count: count() }).from(user).where(whereClause),
       ]);
       const total = countResult.at(0)?.count ?? 0;
-      return { data: users, pageCount: Math.ceil(total / input.perPage), total };
+      return {
+        data: users.map((userItem) => normalizeAvatarForOutput(userItem, context.env.SERVER_URL)),
+        pageCount: Math.ceil(total / input.perPage),
+        total,
+      };
     }),
 };

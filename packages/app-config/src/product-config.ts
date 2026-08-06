@@ -23,6 +23,7 @@ export const productConfig = {
       appStoreUrl: "https://apps.apple.com/app/id",
     },
     auth: {
+      allowedRemoteAvatarHosts: ["avatars.githubusercontent.com", "lh3.googleusercontent.com"],
       methods: {
         emailPasswordEnabled: publicRuntimeConfig.auth.methods.emailPassword,
         emailOtpEnabled: publicRuntimeConfig.auth.methods.emailOtp,

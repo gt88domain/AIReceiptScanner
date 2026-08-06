@@ -7,6 +7,11 @@ import type { Context } from "@/lib/context";
 import { buildDeletedAccountUserUpdate } from "@/lib/auth-session-guard";
 import { protectedProcedure, publicProcedure } from "@/lib/orpc";
 import { getStoragePublicBaseUrl, getUserStoragePrefix, parseStoragePublicUrl } from "@/storage";
+import {
+  normalizeAvatarForOutput,
+  normalizeAvatarUrl,
+  resolveAllowedRemoteAvatarHosts,
+} from "@/auth/avatar-policy";
 
 // Output schemas
 const userSchema = z.object({
@@ -21,8 +26,9 @@ const userSchema = z.object({
   updatedAt: z.date(),
 });
 
-function normalizeUserForOutput(userItem: z.infer<typeof userSchema>) {
-  return { ...userItem, name: getVisibleUserName(userItem) };
+function normalizeUserForOutput(userItem: z.infer<typeof userSchema>, serverUrl: string) {
+  const normalized = normalizeAvatarForOutput(userItem, serverUrl);
+  return { ...normalized, name: getVisibleUserName(normalized) };
 }
 
 async function deleteOwnedAvatar(context: Context, userId: string, image: string) {
@@ -140,6 +146,16 @@ export const usersRouter = {
     .handler(async ({ context, input }) => {
       const { db, t } = context;
       const userId = context.session?.user.id;
+      const normalizedInput =
+        input.image === undefined
+          ? input
+          : {
+              ...input,
+              image: normalizeAvatarUrl(
+                input.image,
+                resolveAllowedRemoteAvatarHosts(context.env.SERVER_URL),
+              ),
+            };
 
       if (!userId) {
         throw new ORPCError("UNAUTHORIZED", {
@@ -148,18 +164,20 @@ export const usersRouter = {
       }
 
       const [currentUser] =
-        input.image === undefined
+        normalizedInput.image === undefined
           ? []
           : await db.select({ image: user.image }).from(user).where(eq(user.id, userId));
 
       const stagedAvatar =
-        typeof input.image === "string" && input.image !== currentUser?.image ? input.image : null;
+        typeof normalizedInput.image === "string" && normalizedInput.image !== currentUser?.image
+          ? normalizedInput.image
+          : null;
       let updatedUser: typeof user.$inferSelect | undefined;
       try {
         [updatedUser] = await db
           .update(user)
           .set({
-            ...input,
+            ...normalizedInput,
             updatedAt: new Date(),
           })
           .where(eq(user.id, userId))
@@ -181,7 +199,7 @@ export const usersRouter = {
         await deleteOwnedAvatar(context, userId, currentUser.image);
       }
 
-      return normalizeUserForOutput(updatedUser);
+      return normalizeUserForOutput(updatedUser, context.env.SERVER_URL);
     }),
 };
 
@@ -204,5 +222,5 @@ export async function getCurrentUserFromContext(context: Context) {
     .from(user)
     .where(and(eq(user.id, sessionUser.id), isNull(user.deletedAt)));
 
-  return currentUser ? normalizeUserForOutput(currentUser) : null;
+  return currentUser ? normalizeUserForOutput(currentUser, context.env.SERVER_URL) : null;
 }

@@ -276,6 +276,8 @@ export type AppCommonConfig = {
   };
   /** Authentication provider configuration shared by auth UIs. */
   auth: {
+    /** Exact remote hosts allowed to supply user avatar images. */
+    allowedRemoteAvatarHosts?: readonly string[];
     /** Login method UI switches. */
     methods: {
       /** Toggle that controls email/password auth UI entry points. */

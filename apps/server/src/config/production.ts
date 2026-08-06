@@ -1,4 +1,5 @@
 import {
+  resolveCommonConfig,
   resolveProductFeatures,
   resolveRequiredResources,
   type ResolvedEmailConfig,
@@ -58,6 +59,7 @@ export type ProductionConfigInput = {
 const PLACEHOLDER_VALUE = /(?:^|[-_.])(?:your|replace|placeholder|template)(?:$|[-_.])|^<.+>$/i;
 const PLACEHOLDER_HOSTNAME = /(^|\.)(?:example\.com|localhost|local|invalid)$|\.example$/i;
 const ZERO_D1_ID = "00000000-0000-0000-0000-000000000000";
+const IPV4_ADDRESS = /^\d{1,3}(?:\.\d{1,3}){3}$/;
 
 function add(messages: ValidationMessage[], code: string, message: string) {
   messages.push({ code, message });
@@ -101,6 +103,82 @@ function getHostname(value: string) {
     return new URL(value).hostname;
   } catch {
     return "";
+  }
+}
+
+function isSafeHostname(value: string) {
+  const hostname = value.trim().toLowerCase();
+  return (
+    /^[a-z\d](?:[a-z\d-]{0,61}[a-z\d])?(?:\.[a-z\d](?:[a-z\d-]{0,61}[a-z\d])?)+$/.test(hostname) &&
+    !PLACEHOLDER_HOSTNAME.test(hostname) &&
+    !IPV4_ADDRESS.test(hostname)
+  );
+}
+
+function validateAuthBoundaryConfig(
+  server: ProductionConfigInput["server"],
+  errors: ValidationMessage[],
+) {
+  for (const [name, value] of [
+    ["WEBSITE_URL", server.websiteUrl],
+    ["SERVER_URL", server.serverUrl],
+  ] as const) {
+    let url: URL;
+    try {
+      url = new URL(value);
+    } catch {
+      add(errors, "AUTH_PUBLIC_URL_INVALID", `${name} must be a valid public Auth URL.`);
+      continue;
+    }
+    if (url.protocol !== "https:") {
+      add(errors, "AUTH_PRODUCTION_URL_NOT_HTTPS", `${name} must use HTTPS for Auth cookies.`);
+    }
+  }
+
+  const common = resolveCommonConfig();
+  const cookieDomain = getHostname(common.app.websiteUrl);
+  if (
+    /^[a-z\d](?:[a-z\d-]{0,61}[a-z\d])?$/i.test(cookieDomain) &&
+    !PLACEHOLDER_HOSTNAME.test(cookieDomain)
+  ) {
+    add(
+      errors,
+      "AUTH_COOKIE_DOMAIN_TOO_BROAD",
+      "The configured Auth cookie domain must not be a public suffix.",
+    );
+  } else if (!isSafeHostname(cookieDomain)) {
+    add(
+      errors,
+      "AUTH_COOKIE_DOMAIN_INVALID",
+      "The configured app website URL must provide a valid Auth cookie domain.",
+    );
+  }
+
+  for (const hostname of common.auth.allowedRemoteAvatarHosts ?? []) {
+    if (!isSafeHostname(hostname)) {
+      add(
+        errors,
+        "AUTH_AVATAR_HOST_INVALID",
+        "Every configured remote avatar host must be a concrete non-local hostname.",
+      );
+    }
+  }
+
+  try {
+    const storageUrl = new URL(common.storage.publicPath, server.serverUrl);
+    if (storageUrl.protocol !== "https:") {
+      add(
+        errors,
+        "AUTH_AVATAR_STORAGE_HOST_NOT_HTTPS",
+        "The Storage public base used for avatars must use HTTPS in production.",
+      );
+    }
+  } catch {
+    add(
+      errors,
+      "AUTH_AVATAR_STORAGE_HOST_NOT_HTTPS",
+      "The Storage public base used for avatars must resolve to HTTPS in production.",
+    );
   }
 }
 
@@ -194,6 +272,7 @@ export function validateProductionConfigResult(
   const features = requirements.features ?? resolveProductFeatures();
   const requiredResources = new Set(resolveRequiredResources(features));
   validateFeatureContract(features, errors);
+  validateAuthBoundaryConfig(server, errors);
 
   if (server.nodeEnv !== "production") {
     add(errors, "INVALID_NODE_ENV", "NODE_ENV must be production in server wrangler.jsonc.");
@@ -426,5 +505,6 @@ export function validateProductionConfig(input: ProductionConfigInput): string[]
 
 export const productionConfigTestUtils = {
   isProductionUrl,
+  isSafeHostname,
   validateProviderSecrets,
 };

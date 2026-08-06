@@ -4,7 +4,7 @@ import * as z from "zod";
 
 // Keep this synchronized with the exact Better Auth versions asserted by
 // scripts/check-expo-auth-compatibility.mjs.
-export const EXPO_AUTH_PLUGIN_COMPAT_VERSION = "1.6.23";
+export const EXPO_AUTH_PLUGIN_COMPAT_VERSION = "1.6.26";
 
 export function forwardExpoCallbackCookie(context: {
   responseHeaders?: Headers;

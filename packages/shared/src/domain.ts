@@ -11,6 +11,40 @@ export function parseHostname(url: string | undefined): string | null {
   }
 }
 
+export type RuntimeUrl = Readonly<{
+  protocol: string | null;
+  hostname: string | null;
+  origin: string | null;
+  isHttps: boolean;
+  isLoopback: boolean;
+  isValid: boolean;
+}>;
+
+/** Parses a configured runtime URL without relying on substring checks. */
+export function parseRuntimeUrl(value: string | undefined): RuntimeUrl {
+  try {
+    const url = new URL(value ?? "");
+    const hostname = url.hostname.toLowerCase();
+    return {
+      protocol: url.protocol,
+      hostname,
+      origin: url.origin,
+      isHttps: url.protocol === "https:",
+      isLoopback: hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]",
+      isValid: true,
+    };
+  } catch {
+    return {
+      protocol: null,
+      hostname: null,
+      origin: null,
+      isHttps: false,
+      isLoopback: false,
+      isValid: false,
+    };
+  }
+}
+
 /**
  * Check whether a hostname is localhost or an IP address.
  */
