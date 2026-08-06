@@ -3,6 +3,13 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [0.4.8](https://github.com/gt88domain/easystarter-template/compare/v0.4.7...v0.4.8) (2026-08-06)
+
+
+### Bug Fixes
+
+* fence asynchronous state ownership ([#44](https://github.com/gt88domain/easystarter-template/issues/44)) ([30d3d67](https://github.com/gt88domain/easystarter-template/commit/30d3d67deb404bc7ae627ea254c398a3edb96996))
+
 ## [0.4.7](https://github.com/gt88domain/easystarter-template/compare/v0.4.6...v0.4.7) (2026-08-05)
 
 
