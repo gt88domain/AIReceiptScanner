@@ -3,6 +3,13 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [0.4.9](https://github.com/gt88domain/easystarter-template/compare/v0.4.8...v0.4.9) (2026-08-06)
+
+
+### Bug Fixes
+
+* **money:** make v0.4.9 payment recovery durable ([6f004a3](https://github.com/gt88domain/easystarter-template/commit/6f004a32101cc2f3928fe0e51fa2a7a8a1b95f96))
+
 ## [0.4.8](https://github.com/gt88domain/easystarter-template/compare/v0.4.7...v0.4.8) (2026-08-06)
 
 
