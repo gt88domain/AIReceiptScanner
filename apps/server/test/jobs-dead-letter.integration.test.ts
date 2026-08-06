@@ -70,9 +70,11 @@ describe("job dead-letter queue", () => {
         sent.push(body);
       },
     } as unknown as Queue<{ jobId: string }>);
-    await expect(
+    const retries = await Promise.all([
       jobs.retryFailed({ failedJobEventId: events[0]!.id, resolvedBy: "admin-1" }),
-    ).resolves.toBe(true);
+      jobs.retryFailed({ failedJobEventId: events[0]!.id, resolvedBy: "admin-2" }),
+    ]);
+    expect(retries.filter(Boolean)).toHaveLength(1);
 
     const [retriedJob] = await db.select().from(job).where(eq(job.id, jobId));
     const [resolvedEvent] = await db
@@ -82,5 +84,57 @@ describe("job dead-letter queue", () => {
     expect(retriedJob).toMatchObject({ status: "pending", attemptCount: 0, error: null });
     expect(resolvedEvent).toMatchObject({ resolution: "retried", resolvedBy: "admin-1" });
     expect(sent).toEqual([{ jobId }]);
+  });
+
+  it("does not resolve a DLQ event when its durable job state is missing", async () => {
+    const db = createDb(env.DB);
+    const now = new Date();
+    const jobId = crypto.randomUUID();
+    await db.insert(job).values({
+      id: jobId,
+      idempotencyKey: `missing-outbox:${jobId}`,
+      type: "ai.generate",
+      ownerId: null,
+      status: "failed",
+      payload: {},
+      payloadHash: "hash",
+      result: null,
+      error: "failed",
+      attemptCount: 3,
+      maxAttempts: 3,
+      runAfter: now,
+      lockedAt: null,
+      leaseToken: null,
+      leaseUntil: null,
+      startedAt: now,
+      completedAt: now,
+      createdAt: now,
+      updatedAt: now,
+    });
+    const eventId = crypto.randomUUID();
+    await db.insert(failedJobEvent).values({
+      id: eventId,
+      queueMessageId: crypto.randomUUID(),
+      jobId,
+      jobType: "ai.generate",
+      payload: {},
+      error: "failed",
+      attempts: 3,
+      failedAt: now,
+      resolvedAt: null,
+      resolvedBy: null,
+      resolution: null,
+      resolutionToken: null,
+    });
+    const jobs = createJobService(db, { send: async () => undefined } as unknown as Queue<{
+      jobId: string;
+    }>);
+
+    await expect(
+      jobs.retryFailed({ failedJobEventId: eventId, resolvedBy: "admin-1" }),
+    ).resolves.toBe(false);
+
+    const [event] = await db.select().from(failedJobEvent).where(eq(failedJobEvent.id, eventId));
+    expect(event).toMatchObject({ resolvedAt: null, resolution: null, resolutionToken: null });
   });
 });

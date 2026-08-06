@@ -53,6 +53,7 @@ describe("server Worker", () => {
       status: "ok",
       service: "TanStack Template",
       version: templateVersion.version,
+      templateVersion: templateVersion.version,
     });
   });
 

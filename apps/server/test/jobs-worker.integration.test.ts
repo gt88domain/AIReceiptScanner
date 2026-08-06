@@ -6,6 +6,7 @@ import { failedJobEvent, job, jobEvent } from "@/db/schema/jobs";
 import worker from "@/index";
 import { jobRegistry } from "@/modules/jobs";
 import { createJobService } from "@/modules/jobs/job.service";
+import { processJobMessage } from "@/modules/jobs/job.worker";
 
 function createQueueBatch(queue: string, body: unknown) {
   let acknowledgements = 0;
@@ -93,11 +94,62 @@ describe("Worker Queue routing", () => {
         .from(jobEvent)
         .where(eq(jobEvent.jobId, record.id));
       expect(queue.getAcknowledgements()).toBe(1);
-      expect(persisted).toMatchObject({ status: "cancelled", result: null });
+      expect(persisted).toMatchObject({
+        status: "cancelled",
+        result: null,
+        lockedAt: null,
+        leaseToken: null,
+        leaseUntil: null,
+      });
       expect(events.map((event) => event.type)).not.toContain("succeeded");
     } finally {
       delete jobRegistry.handlers[type];
     }
+  });
+
+  it("fences a late completion after an expired lease is reclaimed", async () => {
+    const db = createDb(env.DB);
+    const jobs = createJobs(db);
+    const record = await jobs.create({
+      idempotencyKey: crypto.randomUUID(),
+      type: "ai.generate",
+      payload: { prompt: "test" },
+    });
+    const now = new Date(record.runAfter.getTime() + 1);
+    let releaseFirst!: () => void;
+    let signalFirstStarted!: () => void;
+    const firstCanFinish = new Promise<void>((resolve) => {
+      releaseFirst = resolve;
+    });
+    const firstStarted = new Promise<void>((resolve) => {
+      signalFirstStarted = resolve;
+    });
+    let calls = 0;
+    const handlers = {
+      "ai.generate": async () => {
+        calls += 1;
+        if (calls === 1) {
+          signalFirstStarted();
+          await firstCanFinish;
+          return { worker: "first" };
+        }
+        return { worker: "second" };
+      },
+    };
+
+    const first = processJobMessage(db, { jobId: record.id }, handlers, now);
+    await firstStarted;
+    await db
+      .update(job)
+      .set({ leaseUntil: new Date(now.getTime() - 1) })
+      .where(eq(job.id, record.id));
+    await processJobMessage(db, { jobId: record.id }, handlers, new Date(now.getTime() + 1));
+    releaseFirst();
+    await first;
+
+    const [persisted] = await db.select().from(job).where(eq(job.id, record.id));
+    expect(calls).toBe(2);
+    expect(persisted).toMatchObject({ status: "succeeded", result: { worker: "second" } });
   });
 
   it("keeps the provider idempotency key stable across Queue retries", async () => {

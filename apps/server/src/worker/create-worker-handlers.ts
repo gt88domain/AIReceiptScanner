@@ -27,7 +27,7 @@ function requireJobQueueDlqName(env: Pick<Cloudflare.Env, "JOB_QUEUE_DLQ_NAME">)
 export function createJobWorkerHandlers(runtimeConfig: ServerRuntimeConfig): JobHandlers {
   return {
     async scheduled(controller, env) {
-      if (controller.cron !== "*/10 * * * *") return;
+      if (controller.cron !== "* * * * *") return;
       const db = createDb(env.DB);
       if (runtimeConfig.features.billing) {
         await processPendingWebhookEvents(db);

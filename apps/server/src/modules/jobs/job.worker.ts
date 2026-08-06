@@ -1,6 +1,8 @@
-import { and, eq, isNull, lt, or, sql } from "drizzle-orm";
+import { and, eq, isNull, lte, or, sql } from "drizzle-orm";
 import type { Database } from "@/db";
 import { job } from "@/db/schema/jobs";
+import { createLeaseToken, leaseUntil } from "@/lib/lease";
+import { logSafeError, redactErrorText } from "@/lib/safe-error";
 import { recordJobEvent } from "./job.events";
 import type { JobHandlers, JobQueueMessage } from "./job.types";
 import { getRetryDelaySeconds } from "./job.retry";
@@ -27,7 +29,7 @@ export async function consumeJobMessages(
         message.retry({ delaySeconds: retryDelay });
       }
     } catch (error) {
-      console.error("Job message processing failed", { jobId: message.body.jobId, error });
+      logSafeError("Job message processing failed", error, { jobId: message.body.jobId });
       message.retry({ delaySeconds: 60 });
     }
   }
@@ -43,7 +45,12 @@ function isJobQueueMessage(value: unknown): value is JobQueueMessage {
   );
 }
 
-async function processJobMessage(db: Database, message: JobQueueMessage, handlers: JobHandlers) {
+export async function processJobMessage(
+  db: Database,
+  message: JobQueueMessage,
+  handlers: JobHandlers,
+  now = new Date(),
+) {
   const [existing] = await db.select().from(job).where(eq(job.id, message.jobId)).limit(1);
   if (!existing || existing.status === "succeeded" || existing.status === "cancelled") {
     return null;
@@ -52,23 +59,36 @@ async function processJobMessage(db: Database, message: JobQueueMessage, handler
   // A terminal failure remains unacknowledged so Cloudflare moves its message to the DLQ.
   if (existing.status === "failed") return getRetryDelaySeconds(existing.attemptCount || 1);
 
-  const now = new Date();
-  if (existing.runAfter > now) {
+  if (existing.status === "pending" && existing.runAfter > now) {
     return Math.min(
       Math.max(1, Math.ceil((existing.runAfter.getTime() - now.getTime()) / 1000)),
       MAX_QUEUE_DELAY_SECONDS,
     );
   }
-  const leaseExpiredAt = new Date(now.getTime() - JOB_LEASE_MS);
-  if (existing.status === "running" && existing.lockedAt && existing.lockedAt > leaseExpiredAt) {
-    return Math.max(1, Math.ceil((existing.lockedAt.getTime() - leaseExpiredAt.getTime()) / 1000));
+  const legacyLeaseExpiredAt = new Date(now.getTime() - JOB_LEASE_MS);
+  if (existing.status === "running" && existing.leaseUntil && existing.leaseUntil > now) {
+    return Math.max(1, Math.ceil((existing.leaseUntil.getTime() - now.getTime()) / 1000));
   }
+  if (
+    existing.status === "running" &&
+    !existing.leaseToken &&
+    existing.lockedAt &&
+    existing.lockedAt > legacyLeaseExpiredAt
+  ) {
+    return Math.max(
+      1,
+      Math.ceil((existing.lockedAt.getTime() - legacyLeaseExpiredAt.getTime()) / 1000),
+    );
+  }
+  const token = createLeaseToken();
   const claim = await db
     .update(job)
     .set({
       status: "running",
       attemptCount: sql`${job.attemptCount} + 1`,
       lockedAt: now,
+      leaseToken: token,
+      leaseUntil: leaseUntil(now, JOB_LEASE_MS),
       startedAt: existing.startedAt ?? now,
       updatedAt: now,
     })
@@ -79,21 +99,29 @@ async function processJobMessage(db: Database, message: JobQueueMessage, handler
           eq(job.status, "pending"),
           and(
             eq(job.status, "running"),
-            or(isNull(job.lockedAt), lt(job.lockedAt, leaseExpiredAt)),
+            or(
+              and(
+                isNull(job.leaseToken),
+                or(isNull(job.lockedAt), lte(job.lockedAt, legacyLeaseExpiredAt)),
+              ),
+              and(isNull(job.leaseUntil)),
+              lte(job.leaseUntil, now),
+            ),
           ),
         ),
       ),
     )
-    .run();
-  if (claim.meta.changes !== 1) return null;
+    .returning({ attemptCount: job.attemptCount });
+  if (!claim[0]) return null;
 
-  const attempt = existing.attemptCount + 1;
+  const attempt = claim[0].attemptCount;
   await recordJobEvent(db, { jobId: existing.id, type: "started" });
   const handler = handlers[existing.type];
   if (!handler) {
     await failJob(
       db,
       existing.id,
+      token,
       attempt,
       existing.maxAttempts,
       `No handler for job type: ${existing.type}`,
@@ -117,10 +145,12 @@ async function processJobMessage(db: Database, message: JobQueueMessage, handler
         result: result ?? null,
         error: null,
         lockedAt: null,
+        leaseToken: null,
+        leaseUntil: null,
         completedAt,
         updatedAt: completedAt,
       })
-      .where(and(eq(job.id, existing.id), eq(job.status, "running")))
+      .where(and(eq(job.id, existing.id), eq(job.status, "running"), eq(job.leaseToken, token)))
       .run();
     // Cancellation wins if it happened while an external handler was finishing.
     if (completion.meta.changes !== 1) return null;
@@ -130,6 +160,7 @@ async function processJobMessage(db: Database, message: JobQueueMessage, handler
     return failJob(
       db,
       existing.id,
+      token,
       attempt,
       existing.maxAttempts,
       error instanceof Error ? error.message : String(error),
@@ -140,6 +171,7 @@ async function processJobMessage(db: Database, message: JobQueueMessage, handler
 async function failJob(
   db: Database,
   id: string,
+  token: string,
   attempt: number,
   maxAttempts: number,
   error: string,
@@ -151,14 +183,16 @@ async function failJob(
     .update(job)
     .set({
       status: terminal ? "failed" : "pending",
-      error,
+      error: redactErrorText(error),
       lockedAt: null,
+      leaseToken: null,
+      leaseUntil: null,
       completedAt: terminal ? now : null,
       updatedAt: now,
     })
-    .where(and(eq(job.id, id), eq(job.status, "running")))
+    .where(and(eq(job.id, id), eq(job.status, "running"), eq(job.leaseToken, token)))
     .run();
   if (update.meta.changes !== 1) return null;
-  await recordJobEvent(db, { jobId: id, type: "failed", detail: error });
+  await recordJobEvent(db, { jobId: id, type: "failed", detail: redactErrorText(error) });
   return getRetryDelaySeconds(attempt);
 }

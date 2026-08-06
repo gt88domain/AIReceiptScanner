@@ -2,6 +2,7 @@ import { and, asc, eq, isNull, lte, or } from "drizzle-orm";
 import type { ServerPaymentProviderKey } from "@repo/app-config";
 import type { Database } from "@/db";
 import { billingEvent } from "@/db/schema/payments";
+import { logSafeError } from "@/lib/safe-error";
 import { getPaymentProvider } from "../providers";
 import { handleCreemEvent } from "../providers/creem/webhook/handle-event";
 import { handleRevenueCatEvent } from "../providers/revenuecat/webhook/handle-event";
@@ -44,10 +45,19 @@ export async function handleWebhookEvent(db: Database, input: HandleWebhookInput
       `Billing event lookup failed after insert conflict for ${parsed.providerEventId}`,
     );
   }
-  if (!(await claimWebhookEvent(db, eventRowId, now))) {
+  const claim = await claimWebhookEvent(db, eventRowId, now);
+  if (!claim) {
     return { received: true, duplicate: true };
   }
-  return dispatchClaimedWebhookEvent(db, input.provider, parsed.payload, eventRowId, now, true);
+  return dispatchClaimedWebhookEvent(
+    db,
+    input.provider,
+    parsed.payload,
+    eventRowId,
+    claim,
+    now,
+    true,
+  );
 }
 
 async function findWebhookEventId(
@@ -91,6 +101,7 @@ async function dispatchClaimedWebhookEvent(
   provider: ServerPaymentProviderKey,
   payload: unknown,
   eventRowId: string,
+  claim: NonNullable<Awaited<ReturnType<typeof claimWebhookEvent>>>,
   now: Date,
   rethrow: boolean,
 ) {
@@ -98,19 +109,26 @@ async function dispatchClaimedWebhookEvent(
     await dispatchWebhookPayload(db, provider, payload);
   } catch (error) {
     try {
-      await releaseWebhookEventClaim(db, eventRowId, error, now);
+      await releaseWebhookEventClaim(db, eventRowId, claim, error, now);
     } catch (recordError) {
-      console.error("Failed to record webhook processing failure", recordError);
+      logSafeError("Failed to record webhook processing failure", recordError, { eventRowId });
     }
     if (rethrow) throw error;
     return false;
   }
 
-  await db
+  const [completed] = await db
     .update(billingEvent)
-    .set({ processingStatus: "processed", leaseUntil: null, nextRetryAt: null })
-    .where(and(eq(billingEvent.id, eventRowId), eq(billingEvent.processingStatus, "processing")));
-  return true;
+    .set({ processingStatus: "processed", leaseToken: null, leaseUntil: null, nextRetryAt: null })
+    .where(
+      and(
+        eq(billingEvent.id, eventRowId),
+        eq(billingEvent.processingStatus, "processing"),
+        eq(billingEvent.leaseToken, claim.token),
+      ),
+    )
+    .returning({ id: billingEvent.id });
+  return Boolean(completed);
 }
 
 /** Replays due inbox events from D1 after a bounded backoff or an expired lease. */
@@ -139,14 +157,17 @@ export async function processPendingWebhookEvents(db: Database, now = new Date()
 
   let processed = 0;
   for (const event of events) {
-    if (!(await claimWebhookEvent(db, event.id, now))) continue;
+    const claim = await claimWebhookEvent(db, event.id, now);
+    if (!claim) continue;
     try {
       const payload = JSON.parse(event.payloadJson) as unknown;
-      if (await dispatchClaimedWebhookEvent(db, event.provider, payload, event.id, now, false)) {
+      if (
+        await dispatchClaimedWebhookEvent(db, event.provider, payload, event.id, claim, now, false)
+      ) {
         processed += 1;
       }
     } catch (error) {
-      await releaseWebhookEventClaim(db, event.id, error, now);
+      await releaseWebhookEventClaim(db, event.id, claim, error, now);
     }
   }
   return processed;

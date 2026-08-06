@@ -84,7 +84,13 @@ export async function resolveFailedJobEvent(
   const result = await db
     .update(failedJobEvent)
     .set({ resolvedAt: new Date(), resolvedBy: input.resolvedBy, resolution: input.resolution })
-    .where(and(eq(failedJobEvent.id, input.id), isNull(failedJobEvent.resolvedAt)))
+    .where(
+      and(
+        eq(failedJobEvent.id, input.id),
+        isNull(failedJobEvent.resolvedAt),
+        isNull(failedJobEvent.resolutionToken),
+      ),
+    )
     .returning({ id: failedJobEvent.id, jobId: failedJobEvent.jobId });
   return result[0] ?? null;
 }

@@ -46,7 +46,7 @@
     "consumers": [
       {
         "queue": "replace-job-queue",
-        "max_batch_size": 10,
+        "max_batch_size": 1,
         "max_batch_timeout": 5,
         "max_retries": 3,
         "dead_letter_queue": "replace-job-queue-dlq",
@@ -60,7 +60,7 @@
     ],
   },
   "triggers": {
-    "crons": ["*/10 * * * *"],
+    "crons": ["* * * * *"],
   },
   "observability": {
     "logs": {

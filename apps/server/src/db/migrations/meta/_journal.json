@@ -134,6 +134,13 @@
       "when": 1785562684976,
       "tag": "0018_orange_nomad",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1785978523392,
+      "tag": "0019_fast_shard",
+      "breakpoints": true
     }
   ]
 }

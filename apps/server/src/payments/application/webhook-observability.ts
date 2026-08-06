@@ -3,6 +3,8 @@ import type { Database } from "@/db";
 import { billingEvent } from "@/db/schema/payments";
 import type { EmailService } from "@/emails";
 import { parseAdminEmails } from "@/lib/admin";
+import { createLeaseToken, leaseUntil, type LeaseToken } from "@/lib/lease";
+import { logSafeError } from "@/lib/safe-error";
 
 const PENDING_WEBHOOK_ALERT_AFTER_MS = 15 * 60 * 1000;
 const PENDING_WEBHOOK_ALERT_MIN_ATTEMPTS = 2;
@@ -23,6 +25,7 @@ type PendingWebhookAlert = {
 };
 
 type SendPendingWebhookAlert = (alert: PendingWebhookAlert) => Promise<void>;
+type WebhookClaim = { token: LeaseToken; attemptCount: number };
 
 export function sanitizePaymentJobError(error: unknown) {
   const message = error instanceof Error ? error.message : "Unknown webhook processing error";
@@ -41,11 +44,13 @@ function retryAt(now: Date, attemptCount: number) {
 
 /** Atomically claims a pending or expired webhook lease for one handler invocation. */
 export async function claimWebhookEvent(db: Database, eventId: string, now = new Date()) {
+  const token = createLeaseToken();
   const [claimed] = await db
     .update(billingEvent)
     .set({
       processingStatus: "processing",
-      leaseUntil: new Date(now.getTime() + WEBHOOK_PROCESSING_LEASE_MS),
+      leaseToken: token,
+      leaseUntil: leaseUntil(now, WEBHOOK_PROCESSING_LEASE_MS),
       nextRetryAt: null,
       attemptCount: sql`${billingEvent.attemptCount} + 1`,
       lastAttemptAt: now,
@@ -63,33 +68,36 @@ export async function claimWebhookEvent(db: Database, eventId: string, now = new
         ),
       ),
     )
-    .returning({ id: billingEvent.id });
-  return Boolean(claimed);
+    .returning({ attemptCount: billingEvent.attemptCount });
+  return claimed ? ({ token, attemptCount: claimed.attemptCount } satisfies WebhookClaim) : null;
 }
 
 /** Releases a failed claim with bounded exponential backoff, or dead-letters it. */
 export async function releaseWebhookEventClaim(
   db: Database,
   eventId: string,
+  claim: WebhookClaim,
   error: unknown,
   now = new Date(),
 ) {
-  const [event] = await db
-    .select({ attemptCount: billingEvent.attemptCount })
-    .from(billingEvent)
-    .where(eq(billingEvent.id, eventId))
-    .limit(1);
-  const exhausted = (event?.attemptCount ?? MAX_WEBHOOK_ATTEMPTS) >= MAX_WEBHOOK_ATTEMPTS;
+  const exhausted = claim.attemptCount >= MAX_WEBHOOK_ATTEMPTS;
   await db
     .update(billingEvent)
     .set({
       processingStatus: exhausted ? "dead_letter" : "pending",
+      leaseToken: null,
       leaseUntil: null,
-      nextRetryAt: exhausted ? null : retryAt(now, event?.attemptCount ?? 1),
+      nextRetryAt: exhausted ? null : retryAt(now, claim.attemptCount),
       deadLetteredAt: exhausted ? now : null,
       lastError: sanitizePaymentJobError(error),
     })
-    .where(and(eq(billingEvent.id, eventId), eq(billingEvent.processingStatus, "processing")));
+    .where(
+      and(
+        eq(billingEvent.id, eventId),
+        eq(billingEvent.processingStatus, "processing"),
+        eq(billingEvent.leaseToken, claim.token),
+      ),
+    );
 }
 
 /** Reopens one non-successful event after an administrator fixes its cause. */
@@ -101,9 +109,12 @@ export async function replayWebhookEvent(db: Database, eventId: string, now = ne
       attemptCount: 0,
       lastAttemptAt: null,
       lastError: null,
+      leaseToken: null,
       leaseUntil: null,
       nextRetryAt: now,
       alertedAt: null,
+      alertLeaseToken: null,
+      alertLeaseUntil: null,
       deadLetteredAt: null,
     })
     .where(
@@ -114,6 +125,37 @@ export async function replayWebhookEvent(db: Database, eventId: string, now = ne
     )
     .returning({ id: billingEvent.id });
   return Boolean(replayed);
+}
+
+async function claimPendingWebhookAlert(db: Database, eventId: string, now: Date) {
+  const token = createLeaseToken();
+  const threshold = new Date(now.getTime() - PENDING_WEBHOOK_ALERT_AFTER_MS);
+  const [claimed] = await db
+    .update(billingEvent)
+    .set({
+      alertLeaseToken: token,
+      alertLeaseUntil: leaseUntil(now, WEBHOOK_PROCESSING_LEASE_MS),
+    })
+    .where(
+      and(
+        eq(billingEvent.id, eventId),
+        inArray(billingEvent.processingStatus, ["pending", "dead_letter"]),
+        isNull(billingEvent.alertedAt),
+        lte(billingEvent.firstReceivedAt, threshold),
+        gte(billingEvent.attemptCount, PENDING_WEBHOOK_ALERT_MIN_ATTEMPTS),
+        or(isNull(billingEvent.alertLeaseUntil), lte(billingEvent.alertLeaseUntil, now)),
+      ),
+    )
+    .returning({
+      id: billingEvent.id,
+      provider: billingEvent.provider,
+      eventType: billingEvent.eventType,
+      firstReceivedAt: billingEvent.firstReceivedAt,
+      lastAttemptAt: billingEvent.lastAttemptAt,
+      attemptCount: billingEvent.attemptCount,
+      lastError: billingEvent.lastError,
+    });
+  return claimed ? { event: claimed, token } : null;
 }
 
 async function sendPendingWebhookAlert(
@@ -158,15 +200,7 @@ export async function alertPendingWebhookEvents(
 
   const threshold = new Date(now.getTime() - PENDING_WEBHOOK_ALERT_AFTER_MS);
   const pending = await db
-    .select({
-      id: billingEvent.id,
-      provider: billingEvent.provider,
-      eventType: billingEvent.eventType,
-      firstReceivedAt: billingEvent.firstReceivedAt,
-      lastAttemptAt: billingEvent.lastAttemptAt,
-      attemptCount: billingEvent.attemptCount,
-      lastError: billingEvent.lastError,
-    })
+    .select({ id: billingEvent.id })
     .from(billingEvent)
     .where(
       and(
@@ -181,18 +215,28 @@ export async function alertPendingWebhookEvents(
 
   let alerted = 0;
   for (const event of pending) {
+    const claim = await claimPendingWebhookAlert(db, event.id, now);
+    if (!claim) continue;
     try {
-      await send(event);
+      await send(claim.event);
+      const [completed] = await db
+        .update(billingEvent)
+        .set({ alertedAt: now, alertLeaseToken: null, alertLeaseUntil: null })
+        .where(
+          and(
+            eq(billingEvent.id, event.id),
+            isNull(billingEvent.alertedAt),
+            eq(billingEvent.alertLeaseToken, claim.token),
+          ),
+        )
+        .returning({ id: billingEvent.id });
+      if (completed) alerted += 1;
+    } catch (error) {
       await db
         .update(billingEvent)
-        .set({ alertedAt: now })
-        .where(and(eq(billingEvent.id, event.id), isNull(billingEvent.alertedAt)));
-      alerted += 1;
-    } catch (error) {
-      console.error("Failed to send pending webhook alert", {
-        eventId: event.id,
-        error: sanitizePaymentJobError(error),
-      });
+        .set({ alertLeaseToken: null, alertLeaseUntil: null })
+        .where(and(eq(billingEvent.id, event.id), eq(billingEvent.alertLeaseToken, claim.token)));
+      logSafeError("Failed to send pending webhook alert", error, { eventId: event.id });
     }
   }
   return alerted;

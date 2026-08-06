@@ -2,6 +2,7 @@ import { and, asc, eq, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import type { ServerPaymentProviderKey } from "@repo/app-config";
 import type { Database } from "@/db";
 import { billingOutbox, billingSubscription } from "@/db/schema/payments";
+import { createLeaseToken, leaseUntil, type LeaseToken } from "@/lib/lease";
 import type { DbLike } from "@/payments/infrastructure/repositories/billing-store";
 import { getPaymentProvider } from "../providers";
 import { sanitizePaymentJobError } from "./webhook-observability";
@@ -15,6 +16,8 @@ const OUTBOX_BATCH_SIZE = 20;
 type CancelPreviousSubscriptionPayload = {
   subscriptionId: string;
 };
+
+type BillingOutboxClaim = { token: LeaseToken; attemptCount: number };
 
 function retryAt(now: Date, attemptCount: number) {
   const multiplier = 2 ** Math.max(0, attemptCount - 1);
@@ -53,6 +56,7 @@ export async function replayBillingOutboxJob(db: Database, jobId: string, now = 
       attemptCount: 0,
       lastAttemptAt: null,
       lastError: null,
+      leaseToken: null,
       leaseUntil: null,
       nextRetryAt: now,
       deadLetteredAt: null,
@@ -69,6 +73,7 @@ export async function replayBillingOutboxJob(db: Database, jobId: string, now = 
 }
 
 async function claimBillingOutboxJob(db: Database, jobId: string, now: Date) {
+  const token = createLeaseToken();
   const [claimed] = await db
     .update(billingOutbox)
     .set({
@@ -76,7 +81,8 @@ async function claimBillingOutboxJob(db: Database, jobId: string, now: Date) {
       attemptCount: sql`${billingOutbox.attemptCount} + 1`,
       lastAttemptAt: now,
       lastError: null,
-      leaseUntil: new Date(now.getTime() + OUTBOX_LEASE_MS),
+      leaseToken: token,
+      leaseUntil: leaseUntil(now, OUTBOX_LEASE_MS),
       nextRetryAt: null,
       updatedAt: now,
     })
@@ -92,33 +98,44 @@ async function claimBillingOutboxJob(db: Database, jobId: string, now: Date) {
         ),
       ),
     )
-    .returning({ id: billingOutbox.id });
-  return Boolean(claimed);
+    .returning({ attemptCount: billingOutbox.attemptCount });
+  return claimed
+    ? ({ token, attemptCount: claimed.attemptCount } satisfies BillingOutboxClaim)
+    : null;
 }
 
-async function releaseBillingOutboxJob(db: Database, jobId: string, error: unknown, now: Date) {
-  const [job] = await db
-    .select({ attemptCount: billingOutbox.attemptCount })
-    .from(billingOutbox)
-    .where(eq(billingOutbox.id, jobId))
-    .limit(1);
-  const exhausted = (job?.attemptCount ?? MAX_OUTBOX_ATTEMPTS) >= MAX_OUTBOX_ATTEMPTS;
+async function releaseBillingOutboxJob(
+  db: Database,
+  jobId: string,
+  claim: BillingOutboxClaim,
+  error: unknown,
+  now: Date,
+) {
+  const exhausted = claim.attemptCount >= MAX_OUTBOX_ATTEMPTS;
   await db
     .update(billingOutbox)
     .set({
       processingStatus: exhausted ? "dead_letter" : "pending",
       lastError: sanitizePaymentJobError(error),
+      leaseToken: null,
       leaseUntil: null,
-      nextRetryAt: exhausted ? null : retryAt(now, job?.attemptCount ?? 1),
+      nextRetryAt: exhausted ? null : retryAt(now, claim.attemptCount),
       deadLetteredAt: exhausted ? now : null,
       updatedAt: now,
     })
-    .where(and(eq(billingOutbox.id, jobId), eq(billingOutbox.processingStatus, "processing")));
+    .where(
+      and(
+        eq(billingOutbox.id, jobId),
+        eq(billingOutbox.processingStatus, "processing"),
+        eq(billingOutbox.leaseToken, claim.token),
+      ),
+    );
 }
 
 async function processBillingOutboxJob(
   db: Database,
   job: typeof billingOutbox.$inferSelect,
+  claim: BillingOutboxClaim,
   now: Date,
 ) {
   if (job.jobType !== "cancel_previous_subscription") return;
@@ -136,6 +153,10 @@ async function processBillingOutboxJob(
       and(
         eq(billingSubscription.provider, job.provider),
         eq(billingSubscription.providerSubscriptionId, payload.subscriptionId),
+        sql`exists (
+          select 1 from billing_outbox
+          where id = ${job.id} and lease_token = ${claim.token}
+        )`,
       ),
     );
 }
@@ -162,16 +183,30 @@ export async function processBillingOutbox(db: Database, now = new Date()) {
 
   let processed = 0;
   for (const job of jobs) {
-    if (!(await claimBillingOutboxJob(db, job.id, now))) continue;
+    const claim = await claimBillingOutboxJob(db, job.id, now);
+    if (!claim) continue;
     try {
-      await processBillingOutboxJob(db, job, now);
-      await db
+      await processBillingOutboxJob(db, job, claim, now);
+      const [completed] = await db
         .update(billingOutbox)
-        .set({ processingStatus: "processed", leaseUntil: null, nextRetryAt: null, updatedAt: now })
-        .where(and(eq(billingOutbox.id, job.id), eq(billingOutbox.processingStatus, "processing")));
-      processed += 1;
+        .set({
+          processingStatus: "processed",
+          leaseToken: null,
+          leaseUntil: null,
+          nextRetryAt: null,
+          updatedAt: now,
+        })
+        .where(
+          and(
+            eq(billingOutbox.id, job.id),
+            eq(billingOutbox.processingStatus, "processing"),
+            eq(billingOutbox.leaseToken, claim.token),
+          ),
+        )
+        .returning({ id: billingOutbox.id });
+      if (completed) processed += 1;
     } catch (error) {
-      await releaseBillingOutboxJob(db, job.id, error, now);
+      await releaseBillingOutboxJob(db, job.id, claim, error, now);
     }
   }
   return processed;

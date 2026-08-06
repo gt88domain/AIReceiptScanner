@@ -154,8 +154,11 @@ export const billingEvent = sqliteTable(
     attemptCount: integer("attempt_count").notNull().default(0),
     lastError: text("last_error"),
     leaseUntil: integer("lease_until", { mode: "timestamp" }),
+    leaseToken: text("lease_token"),
     nextRetryAt: integer("next_retry_at", { mode: "timestamp" }),
     alertedAt: integer("alerted_at", { mode: "timestamp" }),
+    alertLeaseToken: text("alert_lease_token"),
+    alertLeaseUntil: integer("alert_lease_until", { mode: "timestamp" }),
     deadLetteredAt: integer("dead_lettered_at", { mode: "timestamp" }),
   },
   (table) => [
@@ -171,6 +174,7 @@ export const billingEvent = sqliteTable(
       table.nextRetryAt,
       table.leaseUntil,
     ),
+    index("billing_event_alert_lease_idx").on(table.alertedAt, table.alertLeaseUntil),
   ],
 );
 
@@ -195,6 +199,7 @@ export const billingOutbox = sqliteTable(
     lastAttemptAt: integer("last_attempt_at", { mode: "timestamp" }),
     lastError: text("last_error"),
     leaseUntil: integer("lease_until", { mode: "timestamp" }),
+    leaseToken: text("lease_token"),
     nextRetryAt: integer("next_retry_at", { mode: "timestamp" }),
     deadLetteredAt: integer("dead_lettered_at", { mode: "timestamp" }),
     createdAt: integer("created_at", { mode: "timestamp" }).notNull(),

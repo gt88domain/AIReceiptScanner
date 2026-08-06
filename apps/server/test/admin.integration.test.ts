@@ -2,7 +2,7 @@ import { env, exports } from "cloudflare:workers";
 import { createApiClient } from "@repo/api-client";
 import type { AppRouterClient } from "@/routers";
 import { createDb } from "@/db";
-import { failedJobEvent, job } from "@/db/schema/jobs";
+import { failedJobEvent, job, jobOutbox } from "@/db/schema/jobs";
 import { recordAdminAuditLog } from "@/modules/audit";
 import { describe, expect, it } from "vitest";
 
@@ -78,8 +78,22 @@ describe("administrator RPC authorization", () => {
         maxAttempts: 3,
         runAfter: now,
         lockedAt: null,
+        leaseToken: null,
+        leaseUntil: null,
         startedAt: now,
         completedAt: now,
+        createdAt: now,
+        updatedAt: now,
+      }),
+      db.insert(jobOutbox).values({
+        id: crypto.randomUUID(),
+        jobId,
+        status: "published",
+        leaseToken: null,
+        leaseUntil: null,
+        attempts: 1,
+        lastError: null,
+        publishedAt: now,
         createdAt: now,
         updatedAt: now,
       }),
@@ -95,6 +109,7 @@ describe("administrator RPC authorization", () => {
         resolvedAt: null,
         resolvedBy: null,
         resolution: null,
+        resolutionToken: null,
       }),
     ]);
 

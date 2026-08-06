@@ -2,7 +2,7 @@ import { env } from "cloudflare:workers";
 import { count, eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { createDb } from "@/db";
-import { job } from "@/db/schema/jobs";
+import { job, jobOutbox } from "@/db/schema/jobs";
 import { createJobService } from "@/modules/jobs/job.service";
 
 describe("job idempotency", () => {
@@ -49,5 +49,72 @@ describe("job idempotency", () => {
         maxAttempts: 0,
       }),
     ).rejects.toThrow("positive integer");
+  });
+
+  it("claims an outbox publication once when dispatchers overlap", async () => {
+    const db = createDb(env.DB);
+    const now = new Date();
+    const jobId = crypto.randomUUID();
+    await db.batch([
+      db.insert(job).values({
+        id: jobId,
+        idempotencyKey: `outbox:${jobId}`,
+        type: "ai.generate",
+        ownerId: null,
+        status: "pending",
+        payload: {},
+        payloadHash: "hash",
+        result: null,
+        error: null,
+        attemptCount: 0,
+        maxAttempts: 3,
+        runAfter: now,
+        lockedAt: null,
+        leaseToken: null,
+        leaseUntil: null,
+        startedAt: null,
+        completedAt: null,
+        createdAt: now,
+        updatedAt: now,
+      }),
+      db.insert(jobOutbox).values({
+        id: crypto.randomUUID(),
+        jobId,
+        status: "pending",
+        leaseToken: null,
+        leaseUntil: null,
+        attempts: 0,
+        lastError: null,
+        publishedAt: null,
+        createdAt: now,
+        updatedAt: now,
+      }),
+    ]);
+    let releaseSend!: () => void;
+    let signalSendStarted!: () => void;
+    const sent = new Promise<void>((resolve) => {
+      releaseSend = resolve;
+    });
+    const sendStarted = new Promise<void>((resolve) => {
+      signalSendStarted = resolve;
+    });
+    let sends = 0;
+    const jobs = createJobService(db, {
+      send: async () => {
+        sends += 1;
+        signalSendStarted();
+        await sent;
+      },
+    } as unknown as Queue<{ jobId: string }>);
+
+    const first = jobs.flushOutbox();
+    await sendStarted;
+    const second = jobs.flushOutbox();
+    releaseSend();
+    await Promise.all([first, second]);
+
+    const [outbox] = await db.select().from(jobOutbox).where(eq(jobOutbox.jobId, jobId));
+    expect(sends).toBe(1);
+    expect(outbox).toMatchObject({ status: "published", attempts: 1, leaseToken: null });
   });
 });

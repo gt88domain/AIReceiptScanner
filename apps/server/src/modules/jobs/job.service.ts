@@ -1,9 +1,12 @@
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import type { Database } from "@/db";
 import { failedJobEvent, job, jobOutbox, type Job } from "@/db/schema/jobs";
-import { resolveFailedJobEvent } from "./job.dead-letter";
+import { createLeaseToken, leaseUntil } from "@/lib/lease";
+import { logSafeError, redactErrorText } from "@/lib/safe-error";
 import { recordJobEvent } from "./job.events";
 import type { JobQueueMessage, JobType } from "./job.types";
+
+const JOB_OUTBOX_LEASE_MS = 5 * 60 * 1000;
 
 export type CreateJobInput = {
   idempotencyKey: string;
@@ -66,6 +69,8 @@ export function createJobService(db: Database, queue: Pick<Queue<JobQueueMessage
       maxAttempts,
       runAfter: input.runAfter ?? now,
       lockedAt: null,
+      leaseToken: null,
+      leaseUntil: null,
       startedAt: null,
       completedAt: null,
       createdAt: now,
@@ -109,36 +114,74 @@ export function createJobService(db: Database, queue: Pick<Queue<JobQueueMessage
       await publishOutboxRecord(outboxId);
     } catch (error) {
       // The durable outbox is retried by the scheduled dispatcher.
-      console.error("Failed to publish a newly created job", { jobId: record.id, error });
+      logSafeError("Failed to publish a newly created job", error, { jobId: record.id });
     }
     return record;
   }
 
   async function publishOutboxRecord(outboxId: string) {
-    const [outbox] = await db.select().from(jobOutbox).where(eq(jobOutbox.id, outboxId)).limit(1);
-    if (!outbox || outbox.status === "published") return;
-
     const now = new Date();
+    const token = createLeaseToken();
+    const [outbox] = await db
+      .update(jobOutbox)
+      .set({
+        status: "publishing",
+        leaseToken: token,
+        leaseUntil: leaseUntil(now, JOB_OUTBOX_LEASE_MS),
+        attempts: sql`${jobOutbox.attempts} + 1`,
+        lastError: null,
+        updatedAt: now,
+      })
+      .where(
+        and(
+          eq(jobOutbox.id, outboxId),
+          or(
+            eq(jobOutbox.status, "pending"),
+            and(
+              eq(jobOutbox.status, "publishing"),
+              or(isNull(jobOutbox.leaseUntil), lte(jobOutbox.leaseUntil, now)),
+            ),
+          ),
+        ),
+      )
+      .returning({ id: jobOutbox.id, jobId: jobOutbox.jobId });
+    if (!outbox) return;
+
     try {
       await queue.send({ jobId: outbox.jobId }, { contentType: "json" });
       await db
         .update(jobOutbox)
         .set({
           status: "published",
-          attempts: outbox.attempts + 1,
+          leaseToken: null,
+          leaseUntil: null,
           publishedAt: now,
           updatedAt: now,
         })
-        .where(eq(jobOutbox.id, outbox.id));
+        .where(
+          and(
+            eq(jobOutbox.id, outbox.id),
+            eq(jobOutbox.status, "publishing"),
+            eq(jobOutbox.leaseToken, token),
+          ),
+        );
     } catch (error) {
       await db
         .update(jobOutbox)
         .set({
-          attempts: outbox.attempts + 1,
-          lastError: error instanceof Error ? error.message : String(error),
+          status: "pending",
+          leaseToken: null,
+          leaseUntil: null,
+          lastError: redactErrorText(error instanceof Error ? error.message : String(error)),
           updatedAt: now,
         })
-        .where(eq(jobOutbox.id, outbox.id));
+        .where(
+          and(
+            eq(jobOutbox.id, outbox.id),
+            eq(jobOutbox.status, "publishing"),
+            eq(jobOutbox.leaseToken, token),
+          ),
+        );
       throw error;
     }
   }
@@ -147,7 +190,15 @@ export function createJobService(db: Database, queue: Pick<Queue<JobQueueMessage
     const pending = await db
       .select({ id: jobOutbox.id })
       .from(jobOutbox)
-      .where(eq(jobOutbox.status, "pending"))
+      .where(
+        or(
+          eq(jobOutbox.status, "pending"),
+          and(
+            eq(jobOutbox.status, "publishing"),
+            or(isNull(jobOutbox.leaseUntil), lte(jobOutbox.leaseUntil, new Date())),
+          ),
+        ),
+      )
       .orderBy(asc(jobOutbox.createdAt))
       .limit(limit);
 
@@ -155,7 +206,7 @@ export function createJobService(db: Database, queue: Pick<Queue<JobQueueMessage
       try {
         await publishOutboxRecord(outbox.id);
       } catch (error) {
-        console.error("Failed to publish job outbox record", { outboxId: outbox.id, error });
+        logSafeError("Failed to publish job outbox record", error, { outboxId: outbox.id });
       }
     }
   }
@@ -164,7 +215,14 @@ export function createJobService(db: Database, queue: Pick<Queue<JobQueueMessage
     const now = new Date();
     const result = await db
       .update(job)
-      .set({ status: "cancelled", completedAt: now, updatedAt: now })
+      .set({
+        status: "cancelled",
+        lockedAt: null,
+        leaseToken: null,
+        leaseUntil: null,
+        completedAt: now,
+        updatedAt: now,
+      })
       .where(and(eq(job.id, id), inArray(job.status, ["pending", "running"])))
       .returning({ id: job.id, status: job.status });
     if (result[0]?.status === "cancelled") {
@@ -183,7 +241,28 @@ export function createJobService(db: Database, queue: Pick<Queue<JobQueueMessage
     if (!event) return false;
 
     const now = new Date();
+    const resolutionToken = createLeaseToken();
+    const retryableState = sql`exists (
+      select 1 from job where id = ${event.jobId} and status = 'failed'
+    ) and exists (
+      select 1 from job_outbox where job_id = ${event.jobId}
+    )`;
+    const eventIsClaimed = sql`exists (
+      select 1 from failed_job_event
+      where id = ${event.id} and resolution_token = ${resolutionToken}
+    )`;
     const updates = await db.batch([
+      db
+        .update(failedJobEvent)
+        .set({ resolutionToken })
+        .where(
+          and(
+            eq(failedJobEvent.id, event.id),
+            isNull(failedJobEvent.resolvedAt),
+            isNull(failedJobEvent.resolutionToken),
+            retryableState,
+          ),
+        ),
       db
         .update(job)
         .set({
@@ -192,24 +271,44 @@ export function createJobService(db: Database, queue: Pick<Queue<JobQueueMessage
           attemptCount: 0,
           runAfter: now,
           lockedAt: null,
+          leaseToken: null,
+          leaseUntil: null,
           startedAt: null,
           completedAt: null,
           updatedAt: now,
         })
-        .where(and(eq(job.id, event.jobId), eq(job.status, "failed"))),
+        .where(and(eq(job.id, event.jobId), eq(job.status, "failed"), eventIsClaimed)),
       db
         .update(jobOutbox)
-        .set({ status: "pending", lastError: null, publishedAt: null, updatedAt: now })
-        .where(eq(jobOutbox.jobId, event.jobId)),
+        .set({
+          status: "pending",
+          leaseToken: null,
+          leaseUntil: null,
+          lastError: null,
+          publishedAt: null,
+          updatedAt: now,
+        })
+        .where(and(eq(jobOutbox.jobId, event.jobId), eventIsClaimed)),
+      db
+        .update(failedJobEvent)
+        .set({
+          resolvedAt: now,
+          resolvedBy: input.resolvedBy,
+          resolution: "retried",
+          resolutionToken: null,
+        })
+        .where(
+          and(eq(failedJobEvent.id, event.id), eq(failedJobEvent.resolutionToken, resolutionToken)),
+        ),
     ]);
-    if (updates[0].meta.changes !== 1) return false;
-
-    const resolved = await resolveFailedJobEvent(db, {
-      id: event.id,
-      resolvedBy: input.resolvedBy,
-      resolution: "retried",
-    });
-    if (!resolved) return false;
+    if (
+      updates[0].meta.changes !== 1 ||
+      updates[1].meta.changes !== 1 ||
+      updates[2].meta.changes !== 1 ||
+      updates[3].meta.changes !== 1
+    ) {
+      return false;
+    }
     await recordJobEvent(db, { jobId: event.jobId, type: "queued", detail: "retried from DLQ" });
     await publishOutboxRecordForJob(event.jobId);
     return true;
