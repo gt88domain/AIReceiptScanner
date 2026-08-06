@@ -3,6 +3,13 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [0.4.10](https://github.com/gt88domain/easystarter-template/compare/v0.4.9...v0.4.10) (2026-08-06)
+
+
+### Bug Fixes
+
+* **auth:** harden identity boundaries and avatar ownership ([#49](https://github.com/gt88domain/easystarter-template/issues/49)) ([c9747b6](https://github.com/gt88domain/easystarter-template/commit/c9747b6f31f8400b5ddf6d886a483e427c3faf80))
+
 ## [0.4.9](https://github.com/gt88domain/easystarter-template/compare/v0.4.8...v0.4.9) (2026-08-06)
 
 
