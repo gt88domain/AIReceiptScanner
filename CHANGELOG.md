@@ -3,6 +3,13 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [0.4.11](https://github.com/gt88domain/easystarter-template/compare/v0.4.10...v0.4.11) (2026-08-07)
+
+
+### Bug Fixes
+
+* **security:** override js-yaml 4.3.1 ([192618d](https://github.com/gt88domain/easystarter-template/commit/192618da00509f3a4d335d1cee02f42250f0e0e6))
+
 ## [0.4.10](https://github.com/gt88domain/easystarter-template/compare/v0.4.9...v0.4.10) (2026-08-06)
 
 
