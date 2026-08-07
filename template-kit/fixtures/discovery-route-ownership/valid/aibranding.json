@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "product": "aibranding",
+  "sourceRepository": "gt88domain/aibranding-easystarter",
+  "sourceCommit": "c5e2e376a20bab78d4e068a5e2b6a7668e8e73d0",
+  "claims": [
+    { "pattern": "/:slug", "owner": "aibranding", "kind": "product-route", "status": "frozen-existing" },
+    { "pattern": "/domains/:slug", "owner": "aibranding", "kind": "product-route", "status": "frozen-existing" },
+    { "pattern": "/category/:slug", "owner": "aibranding", "kind": "product-route", "status": "frozen-existing" },
+    { "pattern": "/rankings/:type", "owner": "aibranding", "kind": "product-route", "status": "frozen-existing" }
+  ]
+}
