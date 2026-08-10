@@ -1,5 +1,6 @@
 import {
   Cable,
+  ChartNoAxesCombined,
   ClipboardList,
   Coins,
   LayoutDashboard,
@@ -84,6 +85,11 @@ export const administrationNavGroup: SidebarData["navGroups"][number] = {
       title: "dashboard.nav.overview",
       url: "/admin",
       icon: LayoutDashboard,
+    },
+    {
+      title: "dashboard.nav.analytics",
+      url: "/admin/analytics",
+      icon: ChartNoAxesCombined,
     },
     {
       title: "dashboard.nav.users",

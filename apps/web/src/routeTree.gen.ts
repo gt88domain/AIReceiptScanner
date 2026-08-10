@@ -30,6 +30,7 @@ import { Route as ApiNewsletterSubscribeRouteImport } from './routes/api/newslet
 import { Route as authAuthUnauthedForgotPasswordRouteImport } from './routes/(auth)/auth/_unauthed/forgot-password'
 import { Route as authAuthUnauthedSignInRouteImport } from './routes/(auth)/auth/_unauthed/sign-in'
 import { Route as authAuthUnauthedSignUpRouteImport } from './routes/(auth)/auth/_unauthed/sign-up'
+import { Route as AutheddashboardAdminAnalyticsRouteImport } from './routes/_authed/(dashboard)/admin/analytics'
 import { Route as AutheddashboardAdminAuditRouteImport } from './routes/_authed/(dashboard)/admin/audit'
 import { Route as AutheddashboardAdminIntegrationsRouteImport } from './routes/_authed/(dashboard)/admin/integrations'
 import { Route as AutheddashboardAdminSystemRouteImport } from './routes/_authed/(dashboard)/admin/system'
@@ -153,6 +154,12 @@ const authAuthUnauthedSignUpRoute = authAuthUnauthedSignUpRouteImport.update({
   path: '/sign-up',
   getParentRoute: () => authAuthUnauthedRouteRoute,
 } as any)
+const AutheddashboardAdminAnalyticsRoute =
+  AutheddashboardAdminAnalyticsRouteImport.update({
+    id: '/analytics',
+    path: '/analytics',
+    getParentRoute: () => AutheddashboardAdminRoute,
+  } as any)
 const AutheddashboardAdminAuditRoute =
   AutheddashboardAdminAuditRouteImport.update({
     id: '/audit',
@@ -275,6 +282,7 @@ export interface FileRoutesByFullPath {
   '/auth/forgot-password': typeof authAuthUnauthedForgotPasswordRoute
   '/auth/sign-in': typeof authAuthUnauthedSignInRoute
   '/auth/sign-up': typeof authAuthUnauthedSignUpRoute
+  '/admin/analytics': typeof AutheddashboardAdminAnalyticsRoute
   '/admin/audit': typeof AutheddashboardAdminAuditRoute
   '/admin/integrations': typeof AutheddashboardAdminIntegrationsRoute
   '/admin/system': typeof AutheddashboardAdminSystemRoute
@@ -311,6 +319,7 @@ export interface FileRoutesByTo {
   '/auth/forgot-password': typeof authAuthUnauthedForgotPasswordRoute
   '/auth/sign-in': typeof authAuthUnauthedSignInRoute
   '/auth/sign-up': typeof authAuthUnauthedSignUpRoute
+  '/admin/analytics': typeof AutheddashboardAdminAnalyticsRoute
   '/admin/audit': typeof AutheddashboardAdminAuditRoute
   '/admin/integrations': typeof AutheddashboardAdminIntegrationsRoute
   '/admin/system': typeof AutheddashboardAdminSystemRoute
@@ -352,6 +361,7 @@ export interface FileRoutesById {
   '/(auth)/auth/_unauthed/forgot-password': typeof authAuthUnauthedForgotPasswordRoute
   '/(auth)/auth/_unauthed/sign-in': typeof authAuthUnauthedSignInRoute
   '/(auth)/auth/_unauthed/sign-up': typeof authAuthUnauthedSignUpRoute
+  '/_authed/(dashboard)/admin/analytics': typeof AutheddashboardAdminAnalyticsRoute
   '/_authed/(dashboard)/admin/audit': typeof AutheddashboardAdminAuditRoute
   '/_authed/(dashboard)/admin/integrations': typeof AutheddashboardAdminIntegrationsRoute
   '/_authed/(dashboard)/admin/system': typeof AutheddashboardAdminSystemRoute
@@ -392,6 +402,7 @@ export interface FileRouteTypes {
     | '/auth/forgot-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/admin/analytics'
     | '/admin/audit'
     | '/admin/integrations'
     | '/admin/system'
@@ -428,6 +439,7 @@ export interface FileRouteTypes {
     | '/auth/forgot-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/admin/analytics'
     | '/admin/audit'
     | '/admin/integrations'
     | '/admin/system'
@@ -468,6 +480,7 @@ export interface FileRouteTypes {
     | '/(auth)/auth/_unauthed/forgot-password'
     | '/(auth)/auth/_unauthed/sign-in'
     | '/(auth)/auth/_unauthed/sign-up'
+    | '/_authed/(dashboard)/admin/analytics'
     | '/_authed/(dashboard)/admin/audit'
     | '/_authed/(dashboard)/admin/integrations'
     | '/_authed/(dashboard)/admin/system'
@@ -647,6 +660,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/sign-up'
       preLoaderRoute: typeof authAuthUnauthedSignUpRouteImport
       parentRoute: typeof authAuthUnauthedRouteRoute
+    }
+    '/_authed/(dashboard)/admin/analytics': {
+      id: '/_authed/(dashboard)/admin/analytics'
+      path: '/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AutheddashboardAdminAnalyticsRouteImport
+      parentRoute: typeof AutheddashboardAdminRoute
     }
     '/_authed/(dashboard)/admin/audit': {
       id: '/_authed/(dashboard)/admin/audit'
@@ -847,6 +867,7 @@ const authAuthRouteRouteWithChildren = authAuthRouteRoute._addFileChildren(
 )
 
 interface AutheddashboardAdminRouteChildren {
+  AutheddashboardAdminAnalyticsRoute: typeof AutheddashboardAdminAnalyticsRoute
   AutheddashboardAdminAuditRoute: typeof AutheddashboardAdminAuditRoute
   AutheddashboardAdminIntegrationsRoute: typeof AutheddashboardAdminIntegrationsRoute
   AutheddashboardAdminSystemRoute: typeof AutheddashboardAdminSystemRoute
@@ -854,6 +875,7 @@ interface AutheddashboardAdminRouteChildren {
 }
 
 const AutheddashboardAdminRouteChildren: AutheddashboardAdminRouteChildren = {
+  AutheddashboardAdminAnalyticsRoute: AutheddashboardAdminAnalyticsRoute,
   AutheddashboardAdminAuditRoute: AutheddashboardAdminAuditRoute,
   AutheddashboardAdminIntegrationsRoute: AutheddashboardAdminIntegrationsRoute,
   AutheddashboardAdminSystemRoute: AutheddashboardAdminSystemRoute,
