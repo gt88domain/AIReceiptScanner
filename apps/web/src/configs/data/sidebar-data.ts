@@ -1,4 +1,15 @@
-import { Coins, LayoutDashboard, Settings, Shield, ShieldCheck, UserCog } from "lucide-react";
+import {
+  Cable,
+  ClipboardList,
+  Coins,
+  LayoutDashboard,
+  ServerCog,
+  Settings,
+  Shield,
+  ShieldCheck,
+  UserCog,
+  Users,
+} from "lucide-react";
 import type { SidebarData } from "@/components/dashboard/types";
 import { webConfig } from "@/configs/web-config";
 
@@ -62,6 +73,37 @@ export const sidebarData: SidebarData = {
           ],
         },
       ],
+    },
+  ],
+};
+
+export const administrationNavGroup: SidebarData["navGroups"][number] = {
+  title: "dashboard.nav.administration",
+  items: [
+    {
+      title: "dashboard.nav.overview",
+      url: "/admin",
+      icon: LayoutDashboard,
+    },
+    {
+      title: "dashboard.nav.users",
+      url: "/admin/users",
+      icon: Users,
+    },
+    {
+      title: "dashboard.nav.integrations",
+      url: "/admin/integrations",
+      icon: Cable,
+    },
+    {
+      title: "dashboard.nav.audit",
+      url: "/admin/audit",
+      icon: ClipboardList,
+    },
+    {
+      title: "dashboard.nav.system",
+      url: "/admin/system",
+      icon: ServerCog,
     },
   ],
 };

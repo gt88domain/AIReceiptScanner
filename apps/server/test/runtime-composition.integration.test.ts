@@ -68,6 +68,8 @@ describe("runtime platform composition", () => {
     expect(Object.hasOwn(nestedRouter(router, "web"), "payments")).toBe(false);
     expect(Object.hasOwn(nestedRouter(router, "admin"), "listFailedJobs")).toBe(false);
     expect(Object.hasOwn(nestedRouter(router, "admin"), "getPaymentProviderHealth")).toBe(false);
+    expect(Object.hasOwn(nestedRouter(router, "admin"), "getIntegrations")).toBe(true);
+    expect(Object.hasOwn(nestedRouter(router, "admin"), "getSystem")).toBe(true);
     await expect(
       app.fetch(new Request("https://server.test/api/webhooks/stripe", { method: "POST" }), env),
     ).resolves.toMatchObject({ status: 404 });

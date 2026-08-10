@@ -44,6 +44,22 @@ describe("administrator RPC authorization", () => {
     const client = await signUp("ordinary@example.test");
 
     await expect(client.admin.overview()).rejects.toMatchObject({ code: "FORBIDDEN", status: 403 });
+    await expect(client.admin.getUserSummary()).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      status: 403,
+    });
+    await expect(client.admin.getIntegrations()).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      status: 403,
+    });
+    await expect(client.admin.getSystem()).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      status: 403,
+    });
+    await expect(client.admin.listAuditLog({ page: 1, perPage: 10 })).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      status: 403,
+    });
   });
 
   it("permits only the Worker-secret allowlisted email", async () => {
@@ -114,6 +130,23 @@ describe("administrator RPC authorization", () => {
     ]);
 
     await expect(client.admin.getAccess()).resolves.toEqual({ isAdmin: true });
+    await expect(client.admin.getUserSummary()).resolves.toMatchObject({
+      users: expect.any(Number),
+    });
+    const integrations = await client.admin.getIntegrations();
+    expect(integrations).toContainEqual(
+      expect.objectContaining({ id: "d1", category: "infrastructure", status: "configured" }),
+    );
+    expect(JSON.stringify(integrations)).not.toContain("sk_test_module_check");
+    expect(JSON.stringify(integrations)).not.toContain("whsec_module_check");
+    expect(JSON.stringify(integrations)).not.toContain("test-revenuecat-webhook-secret");
+    await expect(client.admin.getSystem()).resolves.toMatchObject({
+      application: { templateVersion: expect.any(String), environment: expect.any(String) },
+      modules: expect.arrayContaining([expect.objectContaining({ id: "admin", enabled: true })]),
+      resources: expect.arrayContaining([
+        expect.objectContaining({ id: "d1", status: "configured" }),
+      ]),
+    });
     await expect(client.admin.overview()).resolves.toMatchObject({
       stats: { users: expect.any(Number) },
     });

@@ -35,6 +35,16 @@ export const adminCoreRouter = {
       isAdminEmail(context.session?.user.email, context.env.ADMIN_EMAILS),
   })),
 
+  getUserSummary: adminProcedure
+    .output(z.object({ users: z.number() }))
+    .handler(async ({ context }) => {
+      const [result] = await context.db
+        .select({ count: count() })
+        .from(user)
+        .where(isNull(user.deletedAt));
+      return { users: result?.count ?? 0 };
+    }),
+
   listUsers: adminProcedure
     .input(listUsersInputSchema)
     .output(z.object({ data: z.array(adminUserSchema), pageCount: z.number(), total: z.number() }))

@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ShieldCheck } from "lucide-react";
 import { BrandLogo } from "@/components/logos/brand-logo";
 import { useLayout } from "@/components/providers/layout-provider";
 import {
@@ -13,7 +12,7 @@ import {
 import type { CurrentUser } from "@/lib/auth/auth-server";
 import { useOrpc } from "@/hooks/use-orpc";
 import { webConfig } from "@/configs/web-config";
-import { sidebarData } from "../../configs/data/sidebar-data";
+import { administrationNavGroup, sidebarData } from "../../configs/data/sidebar-data";
 import { NavGroup } from "./nav-group";
 import { NavUser } from "./nav-user";
 
@@ -26,13 +25,7 @@ export function AppSidebar({ user }: { user: CurrentUser }) {
     enabled: webConfig.adminEnabled,
   });
   const navGroups = adminAccess.data?.isAdmin
-    ? [
-        ...sidebarData.navGroups,
-        {
-          title: "dashboard.nav.admin",
-          items: [{ title: "dashboard.nav.admin", url: "/admin", icon: ShieldCheck }],
-        },
-      ]
+    ? [...sidebarData.navGroups, administrationNavGroup]
     : sidebarData.navGroups;
   return (
     <Sidebar collapsible={collapsible} variant={variant}>

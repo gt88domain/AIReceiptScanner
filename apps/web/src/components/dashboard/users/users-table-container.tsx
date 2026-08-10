@@ -15,7 +15,7 @@ const sortableColumnSet = new Set<string>(sortableColumnIds);
 
 export function AdminUsersTableContainer() {
   const navigate = useNavigate();
-  const searchParams = useSearch({ from: "/_authed/(dashboard)/admin" });
+  const searchParams = useSearch({ from: "/_authed/(dashboard)/admin/users" });
 
   const defaultSorting = useMemo<ExtendedColumnSort<User>[]>(
     () => [{ id: "createdAt", desc: true }],
