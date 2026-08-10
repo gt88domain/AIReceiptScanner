@@ -3,6 +3,13 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [0.5.0](https://github.com/gt88domain/easystarter-template/compare/v0.4.12...v0.5.0) (2026-08-10)
+
+
+### Features
+
+* **admin:** build core administration workspace ([#62](https://github.com/gt88domain/easystarter-template/issues/62)) ([c51f247](https://github.com/gt88domain/easystarter-template/commit/c51f247b5a9ce0e50eab6c7012f4736dad9f1fd6))
+
 ## [0.4.12](https://github.com/gt88domain/easystarter-template/compare/v0.4.11...v0.4.12) (2026-08-10)
 
 
