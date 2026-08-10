@@ -1,6 +1,6 @@
 # 10 — v5 Delivery Plan（交付节奏与 PR 边界）
 
-状态：提案 v2（contract-first、adapter-first、schema-deferred）。
+状态：交付计划 v2（contract-first、adapter-first、schema-deferred）。
 
 基线：EasyStarter `v0.4.10`。目标不是将 AIBranding、Prompt Dir 或 URL Next 的旧实现搬进模板，而是先在真实下游中验证一个薄 Discovery Foundation。
 
@@ -60,6 +60,11 @@
 3. 所有产品保留自己的数据、URL、UI、筛选、排行算法、导入与商业逻辑；
 4. `siteModules.discovery` 关闭时 Profile 矩阵无路由、导航和 sitemap 回归；
 5. 所有后置候选都明确标为 ADR，而非隐藏实现承诺。
+
+2026-08-10 的 Foundation 验收结论见
+[Discovery v5 Foundation acceptance](./v5-execution/11-v5-foundation-acceptance.md)。
+它冻结已由 Prompt Dir 与 AIBranding v5 证明的薄 Foundation；不把 URL
+Next、生产切流、共享 UI 或共享数据模型误列为这个验收的前置条件。
 
 ## PR 规则
 
