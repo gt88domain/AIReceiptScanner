@@ -3,6 +3,13 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [0.4.12](https://github.com/gt88domain/easystarter-template/compare/v0.4.11...v0.4.12) (2026-08-10)
+
+
+### Bug Fixes
+
+* **security:** pin vulnerable nanoid release ([7d54d87](https://github.com/gt88domain/easystarter-template/commit/7d54d8756ef79c6fbda25a35f8a9b5ed356743b3))
+
 ## [0.4.11](https://github.com/gt88domain/easystarter-template/compare/v0.4.10...v0.4.11) (2026-08-07)
 
 
