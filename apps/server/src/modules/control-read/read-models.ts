@@ -20,10 +20,10 @@ import type { Context } from "@/lib/context";
 import { countAdminAuditLogs, listAdminAuditLogs } from "@/modules/audit/audit.repository";
 import { countFailedJobEvents } from "@/modules/jobs/job.dead-letter";
 
-export type ControlReadDependencies = Pick<
-  Context,
-  "db" | "env" | "runtimeConfig" | "storage" | "jobs"
->;
+export type ControlReadDependencies = Pick<Context, "db" | "env" | "runtimeConfig"> & {
+  jobs?: unknown;
+  storage?: unknown;
+};
 
 type AnalyticsWindow = ControlAnalyticsInputV1["window"];
 

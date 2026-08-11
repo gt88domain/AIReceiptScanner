@@ -26,6 +26,9 @@
     "GITHUB_CLIENT_ID": "",
     "GOOGLE_CLIENT_ID": "",
     "APPLE_APP_BUNDLE_IDENTIFIER": "",
+    "CONTROL_READ_HTTP_HOST": "",
+    "CONTROL_ACCESS_TEAM_DOMAIN": "",
+    "CONTROL_ACCESS_AUD": "",
   },
   "secrets": {
     "required": ["ADMIN_EMAILS", "BETTER_AUTH_SECRET"],

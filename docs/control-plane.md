@@ -46,17 +46,71 @@ enables their module. Disabled Billing, Credits, Jobs, and Storage do not cause
 provider clients, Queue bindings, or R2 bindings to be initialized by this
 read model. No cache, KV, Cron, Queue, or snapshot table is added.
 
-## Transport and security boundary
+## Control 2 transports
 
-Control 1 adds neither a Worker Entrypoint, Service Binding/RPC transport, HTTP
-Control API, Cloudflare Access policy, CORS rule, service token, nor deployment.
+### Same Cloudflare account
+
+`ControlReadEntrypoint` is a named `WorkerEntrypoint` exposing exactly the seven
+`ControlReadV1` methods. It has no public URL and is intended only for an
+explicit same-account Service Binding:
+
+```jsonc
+{
+  "services": [
+    {
+      "binding": "AIBRANDING_CONTROL",
+      "service": "downstream-project-worker",
+      "entrypoint": "ControlReadEntrypoint",
+    },
+  ],
+}
+```
+
+The binding is the capability boundary. There is no RPC shared secret, API key,
+HMAC, or second token.
+
+### Different Cloudflare accounts
+
+Cross-account access is disabled unless `CONTROL_READ_HTTP_HOST` is a concrete,
+dedicated hostname. When enabled, only that exact hostname receives the fixed,
+GET-only routes under `/__control/v1/`:
+
+```text
+snapshot | overview | analytics | users | integrations | audit | system
+```
+
+The adapter sends JSON with `Cache-Control: no-store`, has no CORS headers, and
+returns only bounded `400 INVALID_INPUT`, `403 FORBIDDEN`, `404 NOT_FOUND`,
+`405 METHOD_NOT_ALLOWED`, or `503 CONTROL_UNAVAILABLE` responses. Other paths
+on the dedicated hostname always return 404; they never fall through to the
+normal public app.
+
+Cloudflare Access must protect that hostname with a **Service Auth only**
+policy. The Central Admin Worker sends `CF-Access-Client-Id` and
+`CF-Access-Client-Secret` to Access. The downstream Worker never stores or
+checks that secret: it validates the resulting `Cf-Access-Jwt-Assertion` against
+the configured Access Team Domain JWKS, exact issuer, and exact audience.
+
+```text
+CONTROL_READ_HTTP_HOST=control.project.example
+CONTROL_ACCESS_TEAM_DOMAIN=https://team.cloudflareaccess.com
+CONTROL_ACCESS_AUD=access-application-audience
+```
+
+All values above are non-secret server configuration and must remain server-only.
+The host is optional; when it is absent/empty the two Access values are not
+required. Production preflight rejects an enabled host with missing or malformed
+Access configuration, wildcard hosts, localhost, or IP literals.
+
 Existing `adminProcedure`, route guards, Better Auth, and `ADMIN_EMAILS` remain
-the local Admin authorization boundary.
+the local Admin authorization boundary. Future human administration uses
+Cloudflare Access + MFA at `admin.aibranding.com`; EasyStarter does not add
+Central RBAC or a second IAM system.
 
-Control 2 may add same-account Service Binding/RPC and cross-account
-Access-protected HTTPS adapters. Any adapter must validate the schemas exported
-by `@repo/shared` and map failures to the small Control error vocabulary without
-returning internals.
+`ControlReadV1` never writes: neither transport offers generic SQL, actions,
+proxying, commands, write methods, rate-limit storage, or a token manager.
+Service Token credentials stay in the future Central Admin Worker, not in a
+downstream Worker, D1, browser bundle, or repository.
 
 Cloudflare remains responsible for logs, CPU, traces, and infrastructure
 observability; ControlRead is not an observability platform.

@@ -159,6 +159,9 @@ async function loadProductionConfig(
         google: value(serverVars, "GOOGLE_CLIENT_ID"),
         apple: value(serverVars, "APPLE_APP_BUNDLE_IDENTIFIER"),
       },
+      controlReadHttpHost: value(serverVars, "CONTROL_READ_HTTP_HOST"),
+      controlAccessTeamDomain: value(serverVars, "CONTROL_ACCESS_TEAM_DOMAIN"),
+      controlAccessAud: value(serverVars, "CONTROL_ACCESS_AUD"),
     },
     web: {
       workerName: value(webConfig, "name"),
@@ -235,6 +238,9 @@ function selfCheck() {
       serverUrl: "https://api.acme.test",
       nodeEnv: "production",
       oauthClientIds: { github: "", google: "", apple: "" },
+      controlReadHttpHost: "",
+      controlAccessTeamDomain: "",
+      controlAccessAud: "",
     },
     web: {
       workerName: "acme-web",
@@ -275,6 +281,44 @@ function selfCheck() {
       .errors.map(({ code }) => code)
       .join("\n"),
     /PARTIAL_TURNSTILE_CONFIGURATION/,
+  );
+  const controlHttpEnabledInput = {
+    ...validInput,
+    server: {
+      ...validInput.server,
+      controlReadHttpHost: "control.acme.test",
+      controlAccessTeamDomain: "https://team.cloudflareaccess.com",
+      controlAccessAud: "control-audience",
+    },
+  };
+  assert.deepEqual(errors(controlHttpEnabledInput), []);
+  assert.match(
+    errors({
+      ...controlHttpEnabledInput,
+      server: { ...controlHttpEnabledInput.server, controlAccessTeamDomain: "" },
+    }).join("\n"),
+    /CONTROL_ACCESS_TEAM_DOMAIN is required/,
+  );
+  assert.match(
+    errors({
+      ...controlHttpEnabledInput,
+      server: { ...controlHttpEnabledInput.server, controlAccessAud: "" },
+    }).join("\n"),
+    /CONTROL_ACCESS_AUD is required/,
+  );
+  assert.match(
+    errors({
+      ...controlHttpEnabledInput,
+      server: { ...controlHttpEnabledInput.server, controlReadHttpHost: "*.acme.test" },
+    }).join("\n"),
+    /CONTROL_READ_HTTP_HOST must be one concrete non-local hostname/,
+  );
+  assert.match(
+    errors({
+      ...controlHttpEnabledInput,
+      server: { ...controlHttpEnabledInput.server, controlReadHttpHost: "localhost" },
+    }).join("\n"),
+    /CONTROL_READ_HTTP_HOST must be one concrete non-local hostname/,
   );
   assert.match(
     validateProductionConfigResult({

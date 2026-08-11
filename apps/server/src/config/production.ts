@@ -6,6 +6,10 @@ import {
   validateFeatureDependencies,
   type ProductFeatures,
 } from "@repo/app-config";
+import {
+  normalizeControlAccessTeamDomain,
+  normalizeControlReadHttpHost,
+} from "../modules/control-read/config";
 
 export type EnvValues = Record<string, string | undefined>;
 
@@ -36,6 +40,9 @@ export type ProductionConfigInput = {
     serverUrl: string;
     nodeEnv: string;
     oauthClientIds: { github: string; google: string; apple: string };
+    controlReadHttpHost: string;
+    controlAccessTeamDomain: string;
+    controlAccessAud: string;
   };
   web: {
     workerName: string;
@@ -262,6 +269,44 @@ function validateFeatureContract(features: ProductFeatures, errors: ValidationMe
   }
 }
 
+function validateControlReadHttpConfig(
+  server: ProductionConfigInput["server"],
+  errors: ValidationMessage[],
+) {
+  const host = server.controlReadHttpHost.trim();
+  if (!host) return;
+  if (!normalizeControlReadHttpHost(host)) {
+    add(
+      errors,
+      "INVALID_CONTROL_READ_HTTP_HOST",
+      "CONTROL_READ_HTTP_HOST must be one concrete non-local hostname.",
+    );
+  }
+  if (!server.controlAccessTeamDomain.trim()) {
+    add(
+      errors,
+      "MISSING_CONTROL_ACCESS_TEAM_DOMAIN",
+      "CONTROL_ACCESS_TEAM_DOMAIN is required when Control HTTP is enabled.",
+    );
+  } else if (!normalizeControlAccessTeamDomain(server.controlAccessTeamDomain)) {
+    add(
+      errors,
+      "INVALID_CONTROL_ACCESS_TEAM_DOMAIN",
+      "CONTROL_ACCESS_TEAM_DOMAIN must be a concrete HTTPS origin.",
+    );
+  }
+  const audience = server.controlAccessAud.trim();
+  if (!audience) {
+    add(
+      errors,
+      "MISSING_CONTROL_ACCESS_AUD",
+      "CONTROL_ACCESS_AUD is required when Control HTTP is enabled.",
+    );
+  } else if (audience.length > 512) {
+    add(errors, "INVALID_CONTROL_ACCESS_AUD", "CONTROL_ACCESS_AUD is too long.");
+  }
+}
+
 /** Validates enabled capabilities and reports non-blocking stale configuration separately. */
 export function validateProductionConfigResult(
   input: ProductionConfigInput,
@@ -273,6 +318,7 @@ export function validateProductionConfigResult(
   const requiredResources = new Set(resolveRequiredResources(features));
   validateFeatureContract(features, errors);
   validateAuthBoundaryConfig(server, errors);
+  validateControlReadHttpConfig(server, errors);
 
   if (server.nodeEnv !== "production") {
     add(errors, "INVALID_NODE_ENV", "NODE_ENV must be production in server wrangler.jsonc.");
@@ -506,5 +552,7 @@ export function validateProductionConfig(input: ProductionConfigInput): string[]
 export const productionConfigTestUtils = {
   isProductionUrl,
   isSafeHostname,
+  normalizeControlAccessTeamDomain,
+  normalizeControlReadHttpHost,
   validateProviderSecrets,
 };
