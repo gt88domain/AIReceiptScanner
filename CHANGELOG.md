@@ -3,6 +3,13 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [0.8.0](https://github.com/gt88domain/easystarter-template/compare/v0.7.0...v0.8.0) (2026-08-11)
+
+
+### Features
+
+* **control:** add read-only control transports ([#68](https://github.com/gt88domain/easystarter-template/issues/68)) ([d036035](https://github.com/gt88domain/easystarter-template/commit/d0360356eb927120b875c98620e3333cebf9c696))
+
 ## [0.7.0](https://github.com/gt88domain/easystarter-template/compare/v0.6.0...v0.7.0) (2026-08-10)
 
 
