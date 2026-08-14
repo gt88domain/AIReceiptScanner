@@ -3,6 +3,13 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [0.8.1](https://github.com/gt88domain/easystarter-template/compare/v0.8.0...v0.8.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* **security:** update nanoid 3.x override ([#71](https://github.com/gt88domain/easystarter-template/issues/71)) ([0cbdaf4](https://github.com/gt88domain/easystarter-template/commit/0cbdaf4b290786dd773519bc75c137d6865740d4))
+
 ## [0.8.0](https://github.com/gt88domain/easystarter-template/compare/v0.7.0...v0.8.0) (2026-08-11)
 
 
