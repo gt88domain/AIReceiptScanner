@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { useOrpc } from "@/hooks/use-orpc";
 import { AdminEmptyState } from "./admin-empty-state";
+import { AdminIntegrations } from "./admin-integrations";
 import { AdminPageHeader } from "./admin-page-header";
 import { AdminStatusBadge } from "./admin-status-badge";
 
@@ -22,6 +23,7 @@ const resourceIcons = {
 export function AdminSystem() {
   const orpc = useOrpc();
   const system = useQuery(orpc.admin.getSystem.queryOptions());
+  const migrations = useQuery(orpc.admin.getMigrationStatus.queryOptions());
 
   if (system.isPending) return <SystemSkeleton />;
 
@@ -39,7 +41,7 @@ export function AdminSystem() {
         />
       ) : (
         <>
-          <section className="grid gap-4 md:grid-cols-2">
+          <section className="grid gap-4 md:grid-cols-3">
             <Card>
               <CardHeader>
                 <CardTitle>Application</CardTitle>
@@ -53,6 +55,36 @@ export function AdminSystem() {
                   value={system.data.application.templateVersion}
                 />
                 <Definition label="Environment" value={system.data.application.environment} />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Database migrations</CardTitle>
+                <CardDescription>Applied migration ledger for this D1 database.</CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-4">
+                {migrations.isError ? (
+                  <Definition label="State" value="Unavailable" />
+                ) : migrations.data && !migrations.data.available ? (
+                  <Definition label="State" value="No migration ledger recorded" />
+                ) : (
+                  <>
+                    <Definition
+                      label="Applied"
+                      value={migrations.isPending ? "Loading…" : (migrations.data?.applied ?? 0)}
+                    />
+                    <Definition
+                      label="Latest applied"
+                      value={
+                        migrations.data?.latestAppliedAt
+                          ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(
+                              migrations.data.latestAppliedAt,
+                            )
+                          : "No migrations recorded"
+                      }
+                    />
+                  </>
+                )}
               </CardContent>
             </Card>
             <Card>
@@ -112,6 +144,15 @@ export function AdminSystem() {
                 })}
               </CardContent>
             </Card>
+          </section>
+          <section className="space-y-4">
+            <div>
+              <h2 className="font-semibold text-lg">Providers</h2>
+              <p className="text-muted-foreground text-sm">
+                Configuration state only; credentials and provider identifiers are never shown.
+              </p>
+            </div>
+            <AdminIntegrations embedded />
           </section>
         </>
       )}

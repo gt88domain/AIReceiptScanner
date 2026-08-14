@@ -36,7 +36,7 @@ const integrationDetails = {
 
 type Filter = "all" | "configured" | "disabled" | "missing";
 
-export function AdminIntegrations() {
+export function AdminIntegrations({ embedded = false }: { embedded?: boolean }) {
   const orpc = useOrpc();
   const integrations = useQuery(orpc.admin.getIntegrations.queryOptions());
   const [filter, setFilter] = useState<Filter>("all");
@@ -57,10 +57,12 @@ export function AdminIntegrations() {
 
   return (
     <div className="space-y-6">
-      <AdminPageHeader
-        description="Platform services and configured providers. Configuration state only; no credentials are shown."
-        title="Integrations"
-      />
+      {!embedded ? (
+        <AdminPageHeader
+          description="Platform services and configured providers. Configuration state only; no credentials are shown."
+          title="Providers"
+        />
+      ) : null}
 
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="relative w-full md:max-w-sm">
@@ -91,7 +93,7 @@ export function AdminIntegrations() {
         <AdminEmptyState
           description="The configuration summary could not be loaded. Refresh the page to try again."
           icon={ServerCogIcon}
-          title="Integrations unavailable"
+          title="Providers unavailable"
         />
       ) : null}
       {integrations.data && visibleIntegrations.length === 0 ? (
