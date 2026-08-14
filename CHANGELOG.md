@@ -3,6 +3,20 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [0.9.0](https://github.com/gt88domain/easystarter-template/compare/v0.8.1...v0.9.0) (2026-08-14)
+
+
+### Features
+
+* **admin:** add read-only payments and action queue ([82e7ca1](https://github.com/gt88domain/easystarter-template/commit/82e7ca1a41c43a74669806c72f2aa2f5565d7d4c))
+* **backoffice:** finalize user and admin navigation ([33d28ce](https://github.com/gt88domain/easystarter-template/commit/33d28cef89d9c85a9430b38ec73a4594844c8b3c))
+
+
+### Bug Fixes
+
+* **config:** keep email identity out of web bundle ([9eeed30](https://github.com/gt88domain/easystarter-template/commit/9eeed302c47fa409ea5ce61f9fd0044c686b4d78))
+* **help:** disable contact form when delivery is unavailable ([49a5d19](https://github.com/gt88domain/easystarter-template/commit/49a5d1995a65f715655e6cc39a5aa04d3f93ae26))
+
 ## [0.8.1](https://github.com/gt88domain/easystarter-template/compare/v0.8.0...v0.8.1) (2026-08-14)
 
 
