@@ -23,6 +23,8 @@ import { Route as authAuthUnauthedRouteRouteImport } from './routes/(auth)/auth/
 import { Route as authAuthResetPasswordRouteImport } from './routes/(auth)/auth/reset-password'
 import { Route as AutheddashboardAdminRouteImport } from './routes/_authed/(dashboard)/admin'
 import { Route as AutheddashboardDashboardRouteRouteImport } from './routes/_authed/(dashboard)/dashboard/route'
+import { Route as AutheddashboardHelpRouteImport } from './routes/_authed/(dashboard)/help'
+import { Route as AutheddashboardPurchasesRouteImport } from './routes/_authed/(dashboard)/purchases'
 import { Route as PubliclegalPrivacyRouteImport } from './routes/_public/(legal)/privacy'
 import { Route as PubliclegalTermsRouteImport } from './routes/_public/(legal)/terms'
 import { Route as PublicmarketingContactRouteImport } from './routes/_public/(marketing)/contact'
@@ -34,6 +36,7 @@ import { Route as AutheddashboardAdminIndexRouteImport } from './routes/_authed/
 import { Route as AutheddashboardAdminAnalyticsRouteImport } from './routes/_authed/(dashboard)/admin/analytics'
 import { Route as AutheddashboardAdminAuditRouteImport } from './routes/_authed/(dashboard)/admin/audit'
 import { Route as AutheddashboardAdminIntegrationsRouteImport } from './routes/_authed/(dashboard)/admin/integrations'
+import { Route as AutheddashboardAdminPaymentsRouteImport } from './routes/_authed/(dashboard)/admin/payments'
 import { Route as AutheddashboardAdminSystemRouteImport } from './routes/_authed/(dashboard)/admin/system'
 import { Route as AutheddashboardAdminUsersRouteImport } from './routes/_authed/(dashboard)/admin/users'
 import { Route as AutheddashboardCreditsPurchaseRouteImport } from './routes/_authed/(dashboard)/credits/purchase'
@@ -119,6 +122,17 @@ const AutheddashboardDashboardRouteRoute =
     path: '/dashboard',
     getParentRoute: () => AutheddashboardRouteRoute,
   } as any)
+const AutheddashboardHelpRoute = AutheddashboardHelpRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => AutheddashboardRouteRoute,
+} as any)
+const AutheddashboardPurchasesRoute =
+  AutheddashboardPurchasesRouteImport.update({
+    id: '/purchases',
+    path: '/purchases',
+    getParentRoute: () => AutheddashboardRouteRoute,
+  } as any)
 const PubliclegalPrivacyRoute = PubliclegalPrivacyRouteImport.update({
   id: '/(legal)/privacy',
   path: '/privacy',
@@ -177,6 +191,12 @@ const AutheddashboardAdminIntegrationsRoute =
   AutheddashboardAdminIntegrationsRouteImport.update({
     id: '/integrations',
     path: '/integrations',
+    getParentRoute: () => AutheddashboardAdminRoute,
+  } as any)
+const AutheddashboardAdminPaymentsRoute =
+  AutheddashboardAdminPaymentsRouteImport.update({
+    id: '/payments',
+    path: '/payments',
     getParentRoute: () => AutheddashboardAdminRoute,
   } as any)
 const AutheddashboardAdminSystemRoute =
@@ -282,6 +302,8 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AutheddashboardDashboardRouteRoute
   '/auth/reset-password': typeof authAuthResetPasswordRoute
   '/admin': typeof AutheddashboardAdminRouteWithChildren
+  '/help': typeof AutheddashboardHelpRoute
+  '/purchases': typeof AutheddashboardPurchasesRoute
   '/privacy': typeof PubliclegalPrivacyRoute
   '/terms': typeof PubliclegalTermsRoute
   '/contact': typeof PublicmarketingContactRoute
@@ -292,6 +314,7 @@ export interface FileRoutesByFullPath {
   '/admin/analytics': typeof AutheddashboardAdminAnalyticsRoute
   '/admin/audit': typeof AutheddashboardAdminAuditRoute
   '/admin/integrations': typeof AutheddashboardAdminIntegrationsRoute
+  '/admin/payments': typeof AutheddashboardAdminPaymentsRoute
   '/admin/system': typeof AutheddashboardAdminSystemRoute
   '/admin/users': typeof AutheddashboardAdminUsersRoute
   '/credits/purchase': typeof AutheddashboardCreditsPurchaseRoute
@@ -319,6 +342,8 @@ export interface FileRoutesByTo {
   '/docs/$': typeof DocsSplatRoute
   '/dashboard': typeof AutheddashboardDashboardRouteRoute
   '/auth/reset-password': typeof authAuthResetPasswordRoute
+  '/help': typeof AutheddashboardHelpRoute
+  '/purchases': typeof AutheddashboardPurchasesRoute
   '/privacy': typeof PubliclegalPrivacyRoute
   '/terms': typeof PubliclegalTermsRoute
   '/contact': typeof PublicmarketingContactRoute
@@ -329,6 +354,7 @@ export interface FileRoutesByTo {
   '/admin/analytics': typeof AutheddashboardAdminAnalyticsRoute
   '/admin/audit': typeof AutheddashboardAdminAuditRoute
   '/admin/integrations': typeof AutheddashboardAdminIntegrationsRoute
+  '/admin/payments': typeof AutheddashboardAdminPaymentsRoute
   '/admin/system': typeof AutheddashboardAdminSystemRoute
   '/admin/users': typeof AutheddashboardAdminUsersRoute
   '/credits/purchase': typeof AutheddashboardCreditsPurchaseRoute
@@ -362,6 +388,8 @@ export interface FileRoutesById {
   '/_authed/(dashboard)/dashboard': typeof AutheddashboardDashboardRouteRoute
   '/(auth)/auth/reset-password': typeof authAuthResetPasswordRoute
   '/_authed/(dashboard)/admin': typeof AutheddashboardAdminRouteWithChildren
+  '/_authed/(dashboard)/help': typeof AutheddashboardHelpRoute
+  '/_authed/(dashboard)/purchases': typeof AutheddashboardPurchasesRoute
   '/_public/(legal)/privacy': typeof PubliclegalPrivacyRoute
   '/_public/(legal)/terms': typeof PubliclegalTermsRoute
   '/_public/(marketing)/contact': typeof PublicmarketingContactRoute
@@ -372,6 +400,7 @@ export interface FileRoutesById {
   '/_authed/(dashboard)/admin/analytics': typeof AutheddashboardAdminAnalyticsRoute
   '/_authed/(dashboard)/admin/audit': typeof AutheddashboardAdminAuditRoute
   '/_authed/(dashboard)/admin/integrations': typeof AutheddashboardAdminIntegrationsRoute
+  '/_authed/(dashboard)/admin/payments': typeof AutheddashboardAdminPaymentsRoute
   '/_authed/(dashboard)/admin/system': typeof AutheddashboardAdminSystemRoute
   '/_authed/(dashboard)/admin/users': typeof AutheddashboardAdminUsersRoute
   '/_authed/(dashboard)/credits/purchase': typeof AutheddashboardCreditsPurchaseRoute
@@ -404,6 +433,8 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/auth/reset-password'
     | '/admin'
+    | '/help'
+    | '/purchases'
     | '/privacy'
     | '/terms'
     | '/contact'
@@ -414,6 +445,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/integrations'
+    | '/admin/payments'
     | '/admin/system'
     | '/admin/users'
     | '/credits/purchase'
@@ -441,6 +473,8 @@ export interface FileRouteTypes {
     | '/docs/$'
     | '/dashboard'
     | '/auth/reset-password'
+    | '/help'
+    | '/purchases'
     | '/privacy'
     | '/terms'
     | '/contact'
@@ -451,6 +485,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/integrations'
+    | '/admin/payments'
     | '/admin/system'
     | '/admin/users'
     | '/credits/purchase'
@@ -483,6 +518,8 @@ export interface FileRouteTypes {
     | '/_authed/(dashboard)/dashboard'
     | '/(auth)/auth/reset-password'
     | '/_authed/(dashboard)/admin'
+    | '/_authed/(dashboard)/help'
+    | '/_authed/(dashboard)/purchases'
     | '/_public/(legal)/privacy'
     | '/_public/(legal)/terms'
     | '/_public/(marketing)/contact'
@@ -493,6 +530,7 @@ export interface FileRouteTypes {
     | '/_authed/(dashboard)/admin/analytics'
     | '/_authed/(dashboard)/admin/audit'
     | '/_authed/(dashboard)/admin/integrations'
+    | '/_authed/(dashboard)/admin/payments'
     | '/_authed/(dashboard)/admin/system'
     | '/_authed/(dashboard)/admin/users'
     | '/_authed/(dashboard)/credits/purchase'
@@ -623,6 +661,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AutheddashboardDashboardRouteRouteImport
       parentRoute: typeof AutheddashboardRouteRoute
     }
+    '/_authed/(dashboard)/help': {
+      id: '/_authed/(dashboard)/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof AutheddashboardHelpRouteImport
+      parentRoute: typeof AutheddashboardRouteRoute
+    }
+    '/_authed/(dashboard)/purchases': {
+      id: '/_authed/(dashboard)/purchases'
+      path: '/purchases'
+      fullPath: '/purchases'
+      preLoaderRoute: typeof AutheddashboardPurchasesRouteImport
+      parentRoute: typeof AutheddashboardRouteRoute
+    }
     '/_public/(legal)/privacy': {
       id: '/_public/(legal)/privacy'
       path: '/privacy'
@@ -698,6 +750,13 @@ declare module '@tanstack/react-router' {
       path: '/integrations'
       fullPath: '/admin/integrations'
       preLoaderRoute: typeof AutheddashboardAdminIntegrationsRouteImport
+      parentRoute: typeof AutheddashboardAdminRoute
+    }
+    '/_authed/(dashboard)/admin/payments': {
+      id: '/_authed/(dashboard)/admin/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AutheddashboardAdminPaymentsRouteImport
       parentRoute: typeof AutheddashboardAdminRoute
     }
     '/_authed/(dashboard)/admin/system': {
@@ -888,6 +947,7 @@ interface AutheddashboardAdminRouteChildren {
   AutheddashboardAdminAnalyticsRoute: typeof AutheddashboardAdminAnalyticsRoute
   AutheddashboardAdminAuditRoute: typeof AutheddashboardAdminAuditRoute
   AutheddashboardAdminIntegrationsRoute: typeof AutheddashboardAdminIntegrationsRoute
+  AutheddashboardAdminPaymentsRoute: typeof AutheddashboardAdminPaymentsRoute
   AutheddashboardAdminSystemRoute: typeof AutheddashboardAdminSystemRoute
   AutheddashboardAdminUsersRoute: typeof AutheddashboardAdminUsersRoute
   AutheddashboardAdminIndexRoute: typeof AutheddashboardAdminIndexRoute
@@ -897,6 +957,7 @@ const AutheddashboardAdminRouteChildren: AutheddashboardAdminRouteChildren = {
   AutheddashboardAdminAnalyticsRoute: AutheddashboardAdminAnalyticsRoute,
   AutheddashboardAdminAuditRoute: AutheddashboardAdminAuditRoute,
   AutheddashboardAdminIntegrationsRoute: AutheddashboardAdminIntegrationsRoute,
+  AutheddashboardAdminPaymentsRoute: AutheddashboardAdminPaymentsRoute,
   AutheddashboardAdminSystemRoute: AutheddashboardAdminSystemRoute,
   AutheddashboardAdminUsersRoute: AutheddashboardAdminUsersRoute,
   AutheddashboardAdminIndexRoute: AutheddashboardAdminIndexRoute,
@@ -908,6 +969,8 @@ const AutheddashboardAdminRouteWithChildren =
 interface AutheddashboardRouteRouteChildren {
   AutheddashboardDashboardRouteRoute: typeof AutheddashboardDashboardRouteRoute
   AutheddashboardAdminRoute: typeof AutheddashboardAdminRouteWithChildren
+  AutheddashboardHelpRoute: typeof AutheddashboardHelpRoute
+  AutheddashboardPurchasesRoute: typeof AutheddashboardPurchasesRoute
   AutheddashboardCreditsPurchaseRoute: typeof AutheddashboardCreditsPurchaseRoute
   AutheddashboardCreditsTransactionsRoute: typeof AutheddashboardCreditsTransactionsRoute
   AutheddashboardSettingsBillingRoute: typeof AutheddashboardSettingsBillingRoute
@@ -919,6 +982,8 @@ interface AutheddashboardRouteRouteChildren {
 const AutheddashboardRouteRouteChildren: AutheddashboardRouteRouteChildren = {
   AutheddashboardDashboardRouteRoute: AutheddashboardDashboardRouteRoute,
   AutheddashboardAdminRoute: AutheddashboardAdminRouteWithChildren,
+  AutheddashboardHelpRoute: AutheddashboardHelpRoute,
+  AutheddashboardPurchasesRoute: AutheddashboardPurchasesRoute,
   AutheddashboardCreditsPurchaseRoute: AutheddashboardCreditsPurchaseRoute,
   AutheddashboardCreditsTransactionsRoute:
     AutheddashboardCreditsTransactionsRoute,
