@@ -1,121 +1,104 @@
 import { useQuery } from "@tanstack/react-query";
-import { CreditCardIcon, UsersIcon, WebhookIcon } from "lucide-react";
+import { CheckCircle2Icon, CircleAlertIcon, CreditCardIcon, WebhookIcon } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { webConfig } from "@/configs/web-config";
 import { useOrpc } from "@/hooks/use-orpc";
-import { AdminMetricCard } from "./admin-metric-card";
 import { AdminPageHeader } from "./admin-page-header";
 
 export function AdminOverview() {
   const orpc = useOrpc();
-  const users = useQuery(orpc.admin.getUserSummary.queryOptions());
-  const billing = useQuery({
-    ...orpc.admin.overview.queryOptions(),
-    enabled: webConfig.billingEnabled,
+  const system = useQuery(orpc.admin.getSystem.queryOptions());
+  const migrations = useQuery(orpc.admin.getMigrationStatus.queryOptions());
+  const paymentEnabled = webConfig.billingEnabled || webConfig.creditPurchasesEnabled;
+  const billing = useQuery({ ...orpc.admin.overview.queryOptions(), enabled: paymentEnabled });
+  const operations = useQuery({
+    ...orpc.admin.listPaymentOperations.queryOptions({ input: {} }),
+    enabled: paymentEnabled,
   });
 
-  if (users.isPending || (webConfig.billingEnabled && billing.isPending)) {
+  if (
+    system.isPending ||
+    migrations.isPending ||
+    (paymentEnabled && (billing.isPending || operations.isPending))
+  ) {
     return <OverviewSkeleton />;
   }
 
-  if (users.isError || billing.isError) {
-    return (
-      <div className="space-y-6">
-        <AdminPageHeader
-          description="Platform overview and operational status."
-          title="Administration"
-        />
-        <Card>
-          <CardContent className="py-6 text-muted-foreground text-sm">
-            Administration data could not be loaded. Refresh the page to try again.
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const failedWebhooks = (billing.data?.webhooks ?? []).filter(
+    (webhook) => webhook.processingStatus === "dead_letter" || webhook.lastError !== null,
+  ).length;
+  const failedPayments = (operations.data ?? []).filter(
+    (operation) => operation.status === "failed" || operation.status === "manual_review",
+  ).length;
+  const items = [
+    {
+      title: "Failed or dead-letter webhooks",
+      count: failedWebhooks,
+      description: paymentEnabled
+        ? "Webhook deliveries that need provider-side review."
+        : "Payments are not enabled for this profile.",
+      to: "/admin/payments" as const,
+      visible: paymentEnabled,
+      icon: WebhookIcon,
+    },
+    {
+      title: "Failed payment operations",
+      count: failedPayments,
+      description: paymentEnabled
+        ? "Checkout or subscription operations requiring attention."
+        : "Payments are not enabled for this profile.",
+      to: "/admin/payments" as const,
+      visible: paymentEnabled,
+      icon: CreditCardIcon,
+    },
+    {
+      title: "Database migrations",
+      count: migrations.data?.available ? 0 : 1,
+      description: migrations.data?.available
+        ? `${migrations.data.applied} migrations recorded in the D1 ledger.`
+        : "No migration ledger is available for this runtime.",
+      to: "/admin/system" as const,
+      visible: true,
+      icon: migrations.data?.available ? CheckCircle2Icon : CircleAlertIcon,
+    },
+    {
+      title: "Runtime status",
+      count: system.isError ? 1 : 0,
+      description: system.isError
+        ? "The runtime read model could not be loaded."
+        : "Configuration and migration state are available in System.",
+      to: "/admin/system" as const,
+      visible: true,
+      icon: system.isError ? CircleAlertIcon : CheckCircle2Icon,
+    },
+  ].filter((item) => item.visible);
 
-  const overview = billing.data;
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        description="Platform overview and operational status."
+        description="Small, read-only queue for issues that need a human check."
         title="Administration"
       />
-
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <AdminMetricCard icon={UsersIcon} label="Users" value={users.data.users} />
-        {overview ? (
-          <>
-            <AdminMetricCard
-              icon={CreditCardIcon}
-              label="Active subscriptions"
-              value={overview.stats.activeSubscriptions}
-            />
-            <AdminMetricCard
-              icon={CreditCardIcon}
-              label="Successful purchases"
-              value={overview.stats.successfulPurchases}
-            />
-            <AdminMetricCard
-              icon={WebhookIcon}
-              label="Pending webhooks"
-              value={overview.stats.pendingWebhooks}
-            />
-          </>
-        ) : null}
-      </div>
-
-      {overview ? (
-        <BillingSummary
-          purchase={overview.purchases.at(0)}
-          subscription={overview.subscriptions.at(0)}
-        />
-      ) : null}
-    </div>
-  );
-}
-
-function BillingSummary({
-  subscription,
-  purchase,
-}: {
-  subscription: { email: string | null; status: string } | undefined;
-  purchase: { email: string | null; status: string } | undefined;
-}) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Recent billing activity</CardTitle>
-        <CardDescription>Latest processed subscription and purchase records.</CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-4 sm:grid-cols-2">
-        <ActivityItem
-          label="Subscription"
-          value={
-            subscription
-              ? `${subscription.email ?? "Unknown user"} · ${subscription.status}`
-              : "No subscription records."
-          }
-        />
-        <ActivityItem
-          label="Purchase"
-          value={
-            purchase
-              ? `${purchase.email ?? "Unknown user"} · ${purchase.status}`
-              : "No purchase records."
-          }
-        />
-      </CardContent>
-    </Card>
-  );
-}
-
-function ActivityItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="border-l-2 pl-3">
-      <p className="font-medium text-sm">{label}</p>
-      <p className="mt-1 text-muted-foreground text-sm">{value}</p>
+      <section className="grid gap-4 lg:grid-cols-4">
+        {items.map(({ count, description, icon: Icon, title, to }) => (
+          <Card key={title}>
+            <CardHeader className="flex-row items-start justify-between gap-4 space-y-0">
+              <div className="space-y-1">
+                <CardTitle className="text-base">{title}</CardTitle>
+                <CardDescription>{description}</CardDescription>
+              </div>
+              <Icon className="size-5 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <Link className="font-semibold text-2xl tabular-nums hover:underline" to={to}>
+                {count}
+              </Link>
+            </CardContent>
+          </Card>
+        ))}
+      </section>
     </div>
   );
 }
@@ -127,9 +110,9 @@ function OverviewSkeleton() {
         <Skeleton className="h-7 w-44" />
         <Skeleton className="h-4 w-80" />
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 lg:grid-cols-4">
         {Array.from({ length: 4 }, (_, index) => (
-          <Skeleton className="h-32" key={index} />
+          <Skeleton className="h-36" key={index} />
         ))}
       </div>
     </div>
