@@ -123,6 +123,22 @@ export const billingStatusSchema = z.object({
     .nullable(),
 });
 
+/** A safe, user-facing payment history row. Provider identifiers stay server-side. */
+export const purchaseHistoryItemSchema = z.object({
+  type: z.enum(["subscription", "membership", "credits"]),
+  label: z.string(),
+  provider: providerEnum,
+  status: z.string(),
+  amountCents: z.number().int().nullable(),
+  currency: z.string().nullable(),
+  createdAt: z.date(),
+  completedAt: z.date().nullable(),
+});
+
+export const purchaseHistorySchema = z.array(purchaseHistoryItemSchema);
+
+export type PurchaseHistoryItem = z.infer<typeof purchaseHistoryItemSchema>;
+
 /**
  * Billing status TypeScript type inferred from schema.
  */

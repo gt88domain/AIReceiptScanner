@@ -14,6 +14,7 @@ export type { ResolvedStorageConfig } from "./storage-config";
 export {
   FEATURE_DEPENDENCY_ERROR_CODES,
   createProductFeatures,
+  resolveBackofficeVisibility,
   featureDependencyRules,
   resolveProductFeatures,
   resolveRequiredResources,

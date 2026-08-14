@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   createProductFeatures,
   featureDependencyRules,
+  resolveBackofficeVisibility,
   resolveProductFeatures,
   resolveRequiredResources,
   validateFeatureDependencies,
@@ -233,6 +234,30 @@ describe("product features", () => {
     expect(JSON.parse(JSON.stringify(directoryLite))).toMatchObject({
       profileId: "directory-lite",
       checksum: directoryLite.checksum,
+    });
+  });
+
+  it("derives backoffice navigation from each official web profile", () => {
+    const visibility = (profile: "full-saas" | "account-app" | "directory-lite") =>
+      resolveBackofficeVisibility(createProductProfile(profile));
+
+    expect(visibility("full-saas")).toEqual({
+      billing: true,
+      credits: true,
+      purchases: true,
+      payments: true,
+    });
+    expect(visibility("account-app")).toEqual({
+      billing: false,
+      credits: false,
+      purchases: false,
+      payments: false,
+    });
+    expect(visibility("directory-lite")).toEqual({
+      billing: false,
+      credits: false,
+      purchases: false,
+      payments: false,
     });
   });
 

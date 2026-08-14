@@ -2,7 +2,9 @@ import { env, exports } from "cloudflare:workers";
 import { createApiClient } from "@repo/api-client";
 import type { AppRouterClient } from "@/routers";
 import { createDb } from "@/db";
+import { creditOrder } from "@/db/schema/credits";
 import { failedJobEvent, job, jobOutbox } from "@/db/schema/jobs";
+import { billingPurchase, billingSubscription } from "@/db/schema/payments";
 import { recordAdminAuditLog } from "@/modules/audit";
 import { describe, expect, it } from "vitest";
 
@@ -53,6 +55,10 @@ describe("administrator RPC authorization", () => {
       status: 403,
     });
     await expect(client.admin.getSystem()).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      status: 403,
+    });
+    await expect(client.admin.getMigrationStatus()).rejects.toMatchObject({
       code: "FORBIDDEN",
       status: 403,
     });
@@ -147,6 +153,10 @@ describe("administrator RPC authorization", () => {
         expect.objectContaining({ id: "d1", status: "configured" }),
       ]),
     });
+    await expect(client.admin.getMigrationStatus()).resolves.toMatchObject({
+      available: expect.any(Boolean),
+      applied: expect.any(Number),
+    });
     await expect(client.admin.overview()).resolves.toMatchObject({
       stats: { users: expect.any(Number) },
     });
@@ -207,5 +217,84 @@ describe("administrator RPC authorization", () => {
       .run();
 
     await expect(client.admin.overview()).rejects.toMatchObject({ code: "FORBIDDEN", status: 403 });
+  });
+});
+
+describe("purchase history", () => {
+  it("returns only the signed-in user's safe payment history", async () => {
+    await env.DB.prepare('DELETE FROM "rateLimit"').run();
+    const email = `purchases-${crypto.randomUUID()}@example.test`;
+    const client = await signUp(email);
+    const account = await env.DB.prepare("SELECT id FROM user WHERE email = ?").bind(email).first<{
+      id: string;
+    }>();
+    expect(account?.id).toBeTruthy();
+    const now = new Date();
+    const db = createDb(env.DB);
+    await db.batch([
+      db.insert(billingSubscription).values({
+        id: crypto.randomUUID(),
+        userId: account!.id,
+        provider: "stripe",
+        providerSubscriptionId: "sub_private_history",
+        providerCustomerId: "cus_private_history",
+        planId: "pro",
+        priceId: "price_private_history",
+        status: "active",
+        currentPeriodEnd: null,
+        cancelAtPeriodEnd: false,
+        startedAt: now,
+        endedAt: null,
+        providerEventAt: now,
+        providerEventId: "evt_private_history",
+        createdAt: now,
+        updatedAt: now,
+      }),
+      db.insert(billingPurchase).values({
+        id: crypto.randomUUID(),
+        userId: account!.id,
+        provider: "stripe",
+        providerPaymentIntentId: "pi_private_history",
+        planId: "lifetime",
+        priceId: "price_private_history",
+        status: "succeeded",
+        paidAt: now,
+        providerEventAt: now,
+        providerEventId: "evt_private_history_purchase",
+        createdAt: now,
+        updatedAt: now,
+      }),
+      db.insert(creditOrder).values({
+        id: crypto.randomUUID(),
+        userId: account!.id,
+        packageId: "starter",
+        provider: "stripe",
+        providerSessionId: "cs_private_history",
+        providerPaymentId: "pi_private_credit_history",
+        status: "completed",
+        creditAmount: 100,
+        amountCents: 499,
+        currency: "usd",
+        ledgerTransactionId: null,
+        expiresAt: null,
+        createdAt: now,
+        updatedAt: now,
+      }),
+    ]);
+
+    const history = await client.payments.listPurchaseHistory();
+    expect(history).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: "subscription", label: "pro", amountCents: null }),
+        expect.objectContaining({ type: "membership", label: "lifetime", amountCents: null }),
+        expect.objectContaining({
+          type: "credits",
+          label: "starter",
+          amountCents: 499,
+          currency: "usd",
+        }),
+      ]),
+    );
+    expect(JSON.stringify(history)).not.toContain("private_history");
   });
 });

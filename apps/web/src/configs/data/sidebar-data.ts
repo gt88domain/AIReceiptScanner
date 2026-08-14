@@ -1,115 +1,167 @@
 import {
-  Cable,
   ChartNoAxesCombined,
   ClipboardList,
   Coins,
+  CircleHelp,
+  CreditCard,
   LayoutDashboard,
   ServerCog,
   Settings,
   Shield,
   ShieldCheck,
+  ShoppingBag,
   UserCog,
   Users,
 } from "lucide-react";
+import { resolveBackofficeVisibility } from "@repo/app-config";
 import type { SidebarData } from "@/components/dashboard/types";
 import { webConfig } from "@/configs/web-config";
 
-const creditsEnabled = webConfig.creditsEnabled;
-const billingEnabled = webConfig.billingEnabled;
-const creditUrl = webConfig.creditPurchasesEnabled ? "/credits/purchase" : "/credits/transactions";
+type BackofficeCapabilities = Pick<
+  typeof webConfig,
+  "billingEnabled" | "creditsEnabled" | "creditPurchasesEnabled"
+>;
 
-export const sidebarData: SidebarData = {
-  user: {
-    name: "satnaing",
-    email: "satnaingdev@gmail.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  navGroups: [
-    {
-      title: "dashboard.nav.general",
-      items: [
-        {
-          title: "dashboard.nav.dashboard",
-          url: "/dashboard",
-          icon: LayoutDashboard,
-        },
-      ],
+export function createSidebarData({
+  billingEnabled,
+  creditsEnabled,
+  creditPurchasesEnabled,
+}: BackofficeCapabilities): SidebarData {
+  const visibility = resolveBackofficeVisibility({
+    web: {
+      billing: billingEnabled,
+      credits: creditsEnabled,
+      creditPurchases: creditPurchasesEnabled,
     },
-    {
-      title: "dashboard.nav.other",
-      items: [
-        {
-          title: "dashboard.nav.settings",
-          icon: Settings,
-          defaultOpen: true,
-          items: [
-            {
-              title: "dashboard.nav.profile",
-              url: "/settings/profile",
-              icon: UserCog,
-            },
-            ...(billingEnabled
-              ? [
-                  {
-                    title: "dashboard.nav.billing",
-                    url: "/settings/billing",
-                    icon: ShieldCheck,
-                  },
-                ]
-              : []),
-            ...(creditsEnabled
-              ? [
-                  {
-                    title: "dashboard.nav.credits",
-                    url: creditUrl,
-                    icon: Coins,
-                  },
-                ]
-              : []),
-            {
-              title: "dashboard.nav.security",
-              url: "/settings/security",
-              icon: Shield,
-            },
-          ],
-        },
-      ],
-    },
-  ],
-};
+  });
+  const creditUrl = creditPurchasesEnabled ? "/credits/purchase" : "/credits/transactions";
 
-export const administrationNavGroup: SidebarData["navGroups"][number] = {
-  title: "dashboard.nav.administration",
-  items: [
-    {
-      title: "dashboard.nav.overview",
-      url: "/admin",
-      icon: LayoutDashboard,
+  return {
+    user: {
+      name: "satnaing",
+      email: "satnaingdev@gmail.com",
+      avatar: "/avatars/shadcn.jpg",
     },
-    {
-      title: "dashboard.nav.analytics",
-      url: "/admin/analytics",
-      icon: ChartNoAxesCombined,
-    },
-    {
-      title: "dashboard.nav.users",
-      url: "/admin/users",
-      icon: Users,
-    },
-    {
-      title: "dashboard.nav.integrations",
-      url: "/admin/integrations",
-      icon: Cable,
-    },
-    {
-      title: "dashboard.nav.audit",
-      url: "/admin/audit",
-      icon: ClipboardList,
-    },
-    {
-      title: "dashboard.nav.system",
-      url: "/admin/system",
-      icon: ServerCog,
-    },
-  ],
-};
+    navGroups: [
+      {
+        title: "dashboard.nav.general",
+        items: [
+          {
+            title: "dashboard.nav.dashboard",
+            url: "/dashboard",
+            icon: LayoutDashboard,
+          },
+        ],
+      },
+      {
+        title: "dashboard.nav.other",
+        items: [
+          {
+            title: "dashboard.nav.account",
+            icon: Settings,
+            defaultOpen: true,
+            items: [
+              {
+                title: "dashboard.nav.profile",
+                url: "/settings/profile",
+                icon: UserCog,
+              },
+              ...(visibility.billing
+                ? [
+                    {
+                      title: "dashboard.nav.billing",
+                      url: "/settings/billing",
+                      icon: ShieldCheck,
+                    },
+                  ]
+                : []),
+              ...(visibility.credits
+                ? [
+                    {
+                      title: "dashboard.nav.credits",
+                      url: creditUrl,
+                      icon: Coins,
+                    },
+                  ]
+                : []),
+              {
+                title: "dashboard.nav.security",
+                url: "/settings/security",
+                icon: Shield,
+              },
+            ],
+          },
+          ...(visibility.purchases
+            ? [
+                {
+                  title: "dashboard.nav.purchases",
+                  url: "/purchases",
+                  icon: ShoppingBag,
+                },
+              ]
+            : []),
+          {
+            title: "dashboard.nav.help",
+            url: "/help",
+            icon: CircleHelp,
+          },
+        ],
+      },
+    ],
+  };
+}
+
+export const sidebarData = createSidebarData(webConfig);
+
+export function createAdministrationNavGroup({
+  billingEnabled,
+  creditPurchasesEnabled,
+}: Pick<
+  BackofficeCapabilities,
+  "billingEnabled" | "creditPurchasesEnabled"
+>): SidebarData["navGroups"][number] {
+  const visibility = resolveBackofficeVisibility({
+    web: { billing: billingEnabled, credits: false, creditPurchases: creditPurchasesEnabled },
+  });
+  return {
+    title: "dashboard.nav.administration",
+    items: [
+      {
+        title: "dashboard.nav.overview",
+        url: "/admin",
+        icon: LayoutDashboard,
+      },
+      {
+        title: "dashboard.nav.analytics",
+        url: "/admin/analytics",
+        icon: ChartNoAxesCombined,
+      },
+      {
+        title: "dashboard.nav.users",
+        url: "/admin/users",
+        icon: Users,
+      },
+      ...(visibility.payments
+        ? [
+            {
+              title: "dashboard.nav.payments",
+              url: "/admin/payments",
+              icon: CreditCard,
+            },
+          ]
+        : []),
+      {
+        title: "dashboard.nav.audit",
+        url: "/admin/audit",
+        icon: ClipboardList,
+      },
+      {
+        title: "dashboard.nav.system",
+        url: "/admin/system",
+        icon: ServerCog,
+      },
+    ],
+  };
+}
+
+export const administrationNavGroup = createAdministrationNavGroup(webConfig);

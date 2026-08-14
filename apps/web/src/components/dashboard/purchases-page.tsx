@@ -1,0 +1,92 @@
+import { formatCurrency } from "@repo/shared";
+import { useQuery } from "@tanstack/react-query";
+import { ReceiptTextIcon } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useOrpc } from "@/hooks/use-orpc";
+
+export function PurchasesPage() {
+  const orpc = useOrpc();
+  const purchases = useQuery(orpc.payments.listPurchaseHistory.queryOptions());
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Purchases</h1>
+        <p className="mt-2 text-muted-foreground">
+          Your subscriptions, memberships, and credit orders.
+        </p>
+      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Payment history</CardTitle>
+          <CardDescription>
+            Amounts are shown only when the completed order records them.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {purchases.isPending ? <PurchaseSkeleton /> : null}
+          {purchases.isError ? (
+            <p className="text-muted-foreground text-sm">Purchase history could not be loaded.</p>
+          ) : null}
+          {purchases.data?.length === 0 ? <EmptyPurchases /> : null}
+          {purchases.data && purchases.data.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px] text-left text-sm">
+                <thead className="border-b text-muted-foreground">
+                  <tr>
+                    <th className="px-3 py-2 font-medium">Type</th>
+                    <th className="px-3 py-2 font-medium">Item</th>
+                    <th className="px-3 py-2 font-medium">Amount</th>
+                    <th className="px-3 py-2 font-medium">Status</th>
+                    <th className="px-3 py-2 font-medium">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {purchases.data.map((purchase, index) => (
+                    <tr
+                      className="border-b last:border-0"
+                      key={`${purchase.type}-${purchase.label}-${index}`}
+                    >
+                      <td className="px-3 py-3 capitalize">{purchase.type}</td>
+                      <td className="px-3 py-3 font-medium">{purchase.label}</td>
+                      <td className="px-3 py-3 tabular-nums">
+                        {purchase.amountCents !== null && purchase.currency
+                          ? formatCurrency(purchase.amountCents, purchase.currency)
+                          : "Not recorded"}
+                      </td>
+                      <td className="px-3 py-3 capitalize">
+                        {purchase.status.replaceAll("_", " ")}
+                      </td>
+                      <td className="px-3 py-3 text-muted-foreground">
+                        {formatDate(purchase.completedAt ?? purchase.createdAt)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function EmptyPurchases() {
+  return (
+    <div className="flex min-h-40 flex-col items-center justify-center gap-2 text-center">
+      <ReceiptTextIcon className="size-6 text-muted-foreground" />
+      <p className="font-medium text-sm">No purchases yet</p>
+      <p className="text-muted-foreground text-sm">Completed purchases will appear here.</p>
+    </div>
+  );
+}
+
+function PurchaseSkeleton() {
+  return <Skeleton className="h-40 w-full" />;
+}
+
+function formatDate(value: Date) {
+  return new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(value);
+}
