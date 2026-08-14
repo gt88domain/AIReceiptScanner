@@ -7,6 +7,7 @@ import { requirePaymentService } from "@/lib/payment-access";
 import { protectedBillingProcedure } from "@/lib/orpc";
 import { createPaymentOperationError } from "@/lib/payment-operation-error";
 import { providerEnum } from "@/payments/public/schemas";
+import { assertBackofficePreviewAllowsExternalActions } from "@/lib/backoffice-preview";
 
 /**
  * Schema for validating checkout session creation requests
@@ -85,6 +86,7 @@ export const paymentsRouter = {
       }),
     )
     .handler(async ({ context, input }) => {
+      assertBackofficePreviewAllowsExternalActions(context.env);
       const user = resolveBillingUser(context);
       try {
         const session = await requirePaymentService(context).createCheckoutSession({
@@ -123,6 +125,7 @@ export const paymentsRouter = {
       }),
     )
     .handler(async ({ context, input }) => {
+      assertBackofficePreviewAllowsExternalActions(context.env);
       const user = resolveBillingUser(context);
       try {
         const session = await requirePaymentService(context).createPortalSession({
@@ -148,6 +151,7 @@ export const paymentsRouter = {
       }),
     )
     .handler(async ({ context, input }) => {
+      assertBackofficePreviewAllowsExternalActions(context.env);
       const user = resolveBillingUser(context);
       try {
         await requirePaymentService(context).upgradeSubscription({

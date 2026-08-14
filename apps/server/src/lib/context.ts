@@ -17,6 +17,7 @@ import { resolveJobQueue } from "./jobs-binding";
 import type { ServerRuntimeConfig } from "./runtime-config";
 import { resolveStorageBinding } from "./storage-binding";
 import { getStorageProvider } from "../storage";
+import { isBackofficePreview } from "./backoffice-preview";
 
 export type CreateContextOptions = {
   /** Hono request context with Cloudflare bindings. */
@@ -46,9 +47,10 @@ export async function createContext({ context, runtimeConfig }: CreateContextOpt
         aliyunOssEnv: context.env,
       })
     : undefined;
-  const email = runtimeConfig.email.enabled
-    ? createEmailService(runtimeConfig.email, context.env)
-    : undefined;
+  const email =
+    runtimeConfig.email.enabled && !isBackofficePreview(context.env)
+      ? createEmailService(runtimeConfig.email, context.env)
+      : undefined;
   const payments = runtimeConfig.composition.modules.billing ? getPaymentService(db) : undefined;
   const entitlements = payments
     ? createPaymentEntitlementReader(payments)

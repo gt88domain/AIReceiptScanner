@@ -4,6 +4,7 @@ import { createContactHandler } from "../handlers/contact";
 import { createNewsletterHandler } from "../handlers/newsletter";
 import type { ServerRuntimeConfig } from "../lib/runtime-config";
 import type { ServerApp } from "./types";
+import { isBackofficePreview } from "../lib/backoffice-preview";
 
 /** Registers public email routes only for explicitly enabled capabilities. */
 export function registerEmailRoutes(app: ServerApp, runtimeConfig: ServerRuntimeConfig) {
@@ -13,6 +14,9 @@ export function registerEmailRoutes(app: ServerApp, runtimeConfig: ServerRuntime
       "/api/newsletter/subscribe",
       bodyLimit({ maxSize: 1024, onError: (c) => c.json({ error: "Payload too large" }, 413) }),
       (c) => {
+        if (isBackofficePreview(c.env)) {
+          return c.json({ error: "Email is disabled in Backoffice preview." }, 503);
+        }
         const email = createEmailService(runtimeConfig.email, c.env);
         if (!email) return c.notFound();
         return createNewsletterHandler(email)(c);
@@ -27,6 +31,9 @@ export function registerEmailRoutes(app: ServerApp, runtimeConfig: ServerRuntime
         onError: (c) => c.json({ error: "Payload too large" }, 413),
       }),
       (c) => {
+        if (isBackofficePreview(c.env)) {
+          return c.json({ error: "Email is disabled in Backoffice preview." }, 503);
+        }
         const email = createEmailService(runtimeConfig.email, c.env);
         if (!email) return c.notFound();
         return createContactHandler(email)(c);

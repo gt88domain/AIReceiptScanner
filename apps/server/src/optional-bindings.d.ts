@@ -1,5 +1,6 @@
 declare namespace Cloudflare {
   interface Env {
+    BACKOFFICE_PREVIEW?: string;
     ALIBABA_CLOUD_ACCESS_KEY_ID: string;
     ALIBABA_CLOUD_ACCESS_KEY_SECRET: string;
     ALIYUN_OSS_BUCKET: string;

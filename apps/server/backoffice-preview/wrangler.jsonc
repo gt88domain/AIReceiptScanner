@@ -1,0 +1,37 @@
+{
+  "name": "easystarter-backoffice-preview",
+  "main": "../src/index.ts",
+  "compatibility_date": "2026-07-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "easystarter-backoffice-preview-local",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "../src/db/migrations",
+    },
+  ],
+  "vars": {
+    "NODE_ENV": "development",
+    "BACKOFFICE_PREVIEW": "1",
+    "WEBSITE_URL": "http://localhost:3100",
+    "SERVER_URL": "http://localhost:3101",
+    "ADMIN_EMAILS": "admin-preview@local.test",
+    "BETTER_AUTH_SECRET": "backoffice-preview-local-only-secret",
+    "JOB_QUEUE_DLQ_NAME": "easystarter-backoffice-preview-local-dlq",
+    "GITHUB_CLIENT_ID": "",
+    "GOOGLE_CLIENT_ID": "",
+    "APPLE_APP_BUNDLE_IDENTIFIER": "",
+    "CONTROL_READ_HTTP_HOST": "",
+    "CONTROL_ACCESS_TEAM_DOMAIN": "",
+    "CONTROL_ACCESS_AUD": "",
+  },
+  "queues": {
+    "producers": [
+      {
+        "binding": "JOB_QUEUE",
+        "queue": "easystarter-backoffice-preview-local",
+      },
+    ],
+  },
+}

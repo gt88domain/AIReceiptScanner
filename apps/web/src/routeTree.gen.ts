@@ -30,6 +30,7 @@ import { Route as ApiNewsletterSubscribeRouteImport } from './routes/api/newslet
 import { Route as authAuthUnauthedForgotPasswordRouteImport } from './routes/(auth)/auth/_unauthed/forgot-password'
 import { Route as authAuthUnauthedSignInRouteImport } from './routes/(auth)/auth/_unauthed/sign-in'
 import { Route as authAuthUnauthedSignUpRouteImport } from './routes/(auth)/auth/_unauthed/sign-up'
+import { Route as AutheddashboardAdminIndexRouteImport } from './routes/_authed/(dashboard)/admin/index'
 import { Route as AutheddashboardAdminAnalyticsRouteImport } from './routes/_authed/(dashboard)/admin/analytics'
 import { Route as AutheddashboardAdminAuditRouteImport } from './routes/_authed/(dashboard)/admin/audit'
 import { Route as AutheddashboardAdminIntegrationsRouteImport } from './routes/_authed/(dashboard)/admin/integrations'
@@ -154,6 +155,12 @@ const authAuthUnauthedSignUpRoute = authAuthUnauthedSignUpRouteImport.update({
   path: '/sign-up',
   getParentRoute: () => authAuthUnauthedRouteRoute,
 } as any)
+const AutheddashboardAdminIndexRoute =
+  AutheddashboardAdminIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AutheddashboardAdminRoute,
+  } as any)
 const AutheddashboardAdminAnalyticsRoute =
   AutheddashboardAdminAnalyticsRouteImport.update({
     id: '/analytics',
@@ -295,6 +302,7 @@ export interface FileRoutesByFullPath {
   '/blog/$slug': typeof PublicmarketingBlogSlugRoute
   '/listing/$slug': typeof PublicmarketingListingSlugRoute
   '/templates/landing-composer': typeof PublicmarketingTemplatesLandingComposerRoute
+  '/admin/': typeof AutheddashboardAdminIndexRoute
   '/settings/': typeof AutheddashboardSettingsIndexRoute
   '/blog/': typeof PublicmarketingBlogIndexRoute
   '/listing/': typeof PublicmarketingListingIndexRoute
@@ -311,7 +319,6 @@ export interface FileRoutesByTo {
   '/docs/$': typeof DocsSplatRoute
   '/dashboard': typeof AutheddashboardDashboardRouteRoute
   '/auth/reset-password': typeof authAuthResetPasswordRoute
-  '/admin': typeof AutheddashboardAdminRouteWithChildren
   '/privacy': typeof PubliclegalPrivacyRoute
   '/terms': typeof PubliclegalTermsRoute
   '/contact': typeof PublicmarketingContactRoute
@@ -332,6 +339,7 @@ export interface FileRoutesByTo {
   '/blog/$slug': typeof PublicmarketingBlogSlugRoute
   '/listing/$slug': typeof PublicmarketingListingSlugRoute
   '/templates/landing-composer': typeof PublicmarketingTemplatesLandingComposerRoute
+  '/admin': typeof AutheddashboardAdminIndexRoute
   '/settings': typeof AutheddashboardSettingsIndexRoute
   '/': typeof PublicmarketinglandingPageIndexRoute
   '/blog': typeof PublicmarketingBlogIndexRoute
@@ -374,6 +382,7 @@ export interface FileRoutesById {
   '/_public/(marketing)/blog/$slug': typeof PublicmarketingBlogSlugRoute
   '/_public/(marketing)/listing/$slug': typeof PublicmarketingListingSlugRoute
   '/_public/(marketing)/templates/landing-composer': typeof PublicmarketingTemplatesLandingComposerRoute
+  '/_authed/(dashboard)/admin/': typeof AutheddashboardAdminIndexRoute
   '/_authed/(dashboard)/settings/': typeof AutheddashboardSettingsIndexRoute
   '/_public/(marketing)/(landing-page)/': typeof PublicmarketinglandingPageIndexRoute
   '/_public/(marketing)/blog/': typeof PublicmarketingBlogIndexRoute
@@ -415,6 +424,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/listing/$slug'
     | '/templates/landing-composer'
+    | '/admin/'
     | '/settings/'
     | '/blog/'
     | '/listing/'
@@ -431,7 +441,6 @@ export interface FileRouteTypes {
     | '/docs/$'
     | '/dashboard'
     | '/auth/reset-password'
-    | '/admin'
     | '/privacy'
     | '/terms'
     | '/contact'
@@ -452,6 +461,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/listing/$slug'
     | '/templates/landing-composer'
+    | '/admin'
     | '/settings'
     | '/'
     | '/blog'
@@ -493,6 +503,7 @@ export interface FileRouteTypes {
     | '/_public/(marketing)/blog/$slug'
     | '/_public/(marketing)/listing/$slug'
     | '/_public/(marketing)/templates/landing-composer'
+    | '/_authed/(dashboard)/admin/'
     | '/_authed/(dashboard)/settings/'
     | '/_public/(marketing)/(landing-page)/'
     | '/_public/(marketing)/blog/'
@@ -660,6 +671,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/sign-up'
       preLoaderRoute: typeof authAuthUnauthedSignUpRouteImport
       parentRoute: typeof authAuthUnauthedRouteRoute
+    }
+    '/_authed/(dashboard)/admin/': {
+      id: '/_authed/(dashboard)/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AutheddashboardAdminIndexRouteImport
+      parentRoute: typeof AutheddashboardAdminRoute
     }
     '/_authed/(dashboard)/admin/analytics': {
       id: '/_authed/(dashboard)/admin/analytics'
@@ -872,6 +890,7 @@ interface AutheddashboardAdminRouteChildren {
   AutheddashboardAdminIntegrationsRoute: typeof AutheddashboardAdminIntegrationsRoute
   AutheddashboardAdminSystemRoute: typeof AutheddashboardAdminSystemRoute
   AutheddashboardAdminUsersRoute: typeof AutheddashboardAdminUsersRoute
+  AutheddashboardAdminIndexRoute: typeof AutheddashboardAdminIndexRoute
 }
 
 const AutheddashboardAdminRouteChildren: AutheddashboardAdminRouteChildren = {
@@ -880,6 +899,7 @@ const AutheddashboardAdminRouteChildren: AutheddashboardAdminRouteChildren = {
   AutheddashboardAdminIntegrationsRoute: AutheddashboardAdminIntegrationsRoute,
   AutheddashboardAdminSystemRoute: AutheddashboardAdminSystemRoute,
   AutheddashboardAdminUsersRoute: AutheddashboardAdminUsersRoute,
+  AutheddashboardAdminIndexRoute: AutheddashboardAdminIndexRoute,
 }
 
 const AutheddashboardAdminRouteWithChildren =

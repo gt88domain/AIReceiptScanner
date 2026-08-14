@@ -25,6 +25,7 @@ import {
 import type { Locale } from "@repo/i18n";
 import { resolveOriginConfig, type ServerRuntimeConfig } from "./runtime-config";
 import { logSafeError } from "./safe-error";
+import { isBackofficePreview } from "./backoffice-preview";
 
 const commonConfig = resolveCommonConfig();
 
@@ -96,6 +97,7 @@ export function createAuth(
 
   const db = drizzle(d1);
   const runtimeNodeEnv = runtimeEnv.NODE_ENV;
+  const backofficePreview = isBackofficePreview(runtimeEnv);
   const origins = resolveOriginConfig(runtimeEnv);
   const { cookieDomain, sameSite, secure } = resolveCookiePolicy(
     runtimeNodeEnv,
@@ -103,6 +105,9 @@ export function createAuth(
     origins.webRuntimeOrigin,
   );
   const resolveEmailService = (capability: "verification" | "passwordReset") => {
+    if (backofficePreview) {
+      throw new APIError("BAD_REQUEST", { message: "Email is disabled in Backoffice preview." });
+    }
     if (!runtimeConfig.email.enabled) {
       throw new APIError("BAD_REQUEST", { message: "Email is disabled." });
     }
@@ -203,7 +208,10 @@ export function createAuth(
     ],
     emailAndPassword: {
       enabled: true,
-      requireEmailVerification: runtimeConfig.email.capabilities.verification,
+      disableSignUp: backofficePreview,
+      requireEmailVerification: backofficePreview
+        ? false
+        : runtimeConfig.email.capabilities.verification,
       password: {
         hash: hashPassword,
         verify: verifyPassword,

@@ -5,6 +5,7 @@ import type { Context } from "@/lib/context";
 import { requireCreditsService } from "@/lib/credits-access";
 import { webCreditPurchaseProcedure } from "@/lib/orpc";
 import { createPaymentOperationError } from "@/lib/payment-operation-error";
+import { assertBackofficePreviewAllowsExternalActions } from "@/lib/backoffice-preview";
 
 /** Web payment providers that can create credit package checkout sessions. */
 const webCreditProviderEnum = z.enum(["stripe", "creem"]);
@@ -46,6 +47,7 @@ export const webCreditsRouter = {
     .input(createCreditCheckoutInputSchema)
     .output(z.object({ url: z.url(), orderId: z.string() }))
     .handler(async ({ context, input }) => {
+      assertBackofficePreviewAllowsExternalActions(context.env);
       const user = resolveCreditUser(context);
       try {
         const session = await requireCreditsService(context).createCheckoutSession({
