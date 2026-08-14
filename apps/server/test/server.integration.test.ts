@@ -193,8 +193,8 @@ describe("server Worker", () => {
       .run();
 
     await expect(signedInClient.users.update({ image: newUrl })).resolves.toMatchObject({
-      // HTTP local URLs are intentionally rejected by the avatar safety policy.
-      image: null,
+      // The local preview uses HTTP while production-shaped fixtures use HTTPS.
+      image: newUrl.startsWith("https://") ? newUrl : null,
     });
     await expect(env.STORAGE.get(oldKey)).resolves.not.toBeNull();
     await expect(env.STORAGE.get(newKey)).resolves.not.toBeNull();
