@@ -13,7 +13,7 @@ import {
   UserCog,
   Users,
 } from "lucide-react";
-import { resolveBackofficeVisibility } from "@repo/app-config";
+import { resolveBackofficeVisibility } from "@repo/app-config/backoffice-visibility";
 import type { SidebarData } from "@/components/dashboard/types";
 import { webConfig } from "@/configs/web-config";
 

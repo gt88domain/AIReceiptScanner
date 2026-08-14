@@ -51,7 +51,7 @@ export const productConfig = {
         contactForm: true,
         operationalAlerts: true,
       },
-      from: { localPart: "noreply", domain: "mail.aibranding.com" },
+      from: { localPart: "noreply", domain: "mail.demo.aiarticles.com" },
     },
     storage: productStorageConfig,
   } satisfies Pick<AppCommonConfig, "features" | "app" | "auth" | "email" | "storage">,

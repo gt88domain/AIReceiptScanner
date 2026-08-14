@@ -3,6 +3,7 @@ import {
   resolveNativeCommonConfig,
   resolveWebCommonConfig,
 } from "./app-config";
+export { resolveBackofficeVisibility } from "./backoffice-visibility";
 
 /** Resolved product capabilities. Provider choices and secrets stay outside this contract. */
 export type ProductFeatures = {
@@ -211,15 +212,4 @@ export function resolveRequiredResources(features: ProductFeatures): readonly Pr
   if (features.storage) resources.push("R2");
   if (features.jobs) resources.push("Queue", "DLQ", "Cron");
   return resources;
-}
-
-/** User and admin backoffice visibility derived from the existing web capability contract. */
-export function resolveBackofficeVisibility(features: Pick<ProductFeatures, "web">) {
-  const payments = features.web.billing || features.web.creditPurchases;
-  return {
-    billing: features.web.billing,
-    credits: features.web.credits,
-    purchases: payments,
-    payments,
-  } as const;
 }
