@@ -5,6 +5,7 @@ import { z } from "zod";
 import { account, session, user } from "@/db/schema/auth";
 import type { Context } from "@/lib/context";
 import { buildDeletedAccountUserUpdate } from "@/lib/auth-session-guard";
+import { isContactDeliveryAvailable } from "@/lib/contact-delivery";
 import { protectedProcedure, publicProcedure } from "@/lib/orpc";
 import { getStoragePublicBaseUrl, getUserStoragePrefix, parseStoragePublicUrl } from "@/storage";
 import {
@@ -50,6 +51,11 @@ async function deleteOwnedAvatar(context: Context, userId: string, image: string
 
 export const usersRouter = {
   getCurrentUser: publicProcedure.handler(({ context }) => getCurrentUserFromContext(context)),
+  getContactAvailability: protectedProcedure
+    .output(z.object({ available: z.boolean() }))
+    .handler(({ context }) => ({
+      available: isContactDeliveryAvailable(context.runtimeConfig, context.env),
+    })),
   getPasswordStatus: protectedProcedure
     .output(
       z.object({
