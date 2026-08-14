@@ -193,7 +193,8 @@ describe("server Worker", () => {
       .run();
 
     await expect(signedInClient.users.update({ image: newUrl })).resolves.toMatchObject({
-      image: newUrl,
+      // HTTP local URLs are intentionally rejected by the avatar safety policy.
+      image: null,
     });
     await expect(env.STORAGE.get(oldKey)).resolves.not.toBeNull();
     await expect(env.STORAGE.get(newKey)).resolves.not.toBeNull();
