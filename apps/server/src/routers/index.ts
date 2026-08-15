@@ -8,6 +8,7 @@ import { storageRouter } from "./common/storage";
 import { getCurrentUserFromContext, usersRouter } from "./common/users";
 import { webCreditsRouter } from "./web/credits";
 import { paymentsRouter } from "./web/payments";
+import { ticketsRouter } from "../modules/tickets/router";
 
 const healthCheck = publicProcedure.handler(() => "OK");
 const getCurrentUser = publicProcedure.handler(({ context }) => getCurrentUserFromContext(context));
@@ -20,6 +21,7 @@ type PlatformContractRouter = {
   storage: typeof storageRouter;
   payments: typeof commonPaymentsRouter;
   credits: typeof creditsRouter;
+  tickets: typeof ticketsRouter;
   web: { payments: typeof paymentsRouter; credits: typeof webCreditsRouter };
   native: Record<never, never>;
 } & typeof moduleRouters;
@@ -33,6 +35,7 @@ export const platformContractRouter: PlatformContractRouter = {
   storage: storageRouter,
   payments: commonPaymentsRouter,
   credits: creditsRouter,
+  tickets: ticketsRouter,
   ...moduleRouters,
   web: { payments: paymentsRouter, credits: webCreditsRouter },
   native: {},

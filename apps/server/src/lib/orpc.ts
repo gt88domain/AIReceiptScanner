@@ -3,7 +3,7 @@ import { requireAdmin as requireAdminGuard, requireUser } from "@/auth/guards";
 import type { Context } from "./context";
 import { createSafeOrpcError } from "./safe-error";
 
-type ServerFeature = "admin" | "billing" | "credits" | "storage";
+type ServerFeature = "admin" | "billing" | "credits" | "storage" | "tickets";
 
 export const o = os.$context<Context>();
 
@@ -52,6 +52,7 @@ export const creditsProcedure = publicProcedure.use(requireFeature("credits"));
 export const protectedCreditsProcedure = protectedProcedure.use(requireFeature("credits"));
 export const webCreditPurchaseProcedure = protectedCreditsProcedure.use(requireWebCreditPurchases);
 export const storageProcedure = protectedProcedure.use(requireFeature("storage"));
+export const ticketsProcedure = protectedProcedure.use(requireFeature("tickets"));
 
 const requireAdminMiddleware = o.middleware(async ({ context, next }) => {
   await requireAdminGuard(context);
@@ -60,5 +61,9 @@ const requireAdminMiddleware = o.middleware(async ({ context, next }) => {
 
 /** Use this for every procedure that can read or change administrator-only data. */
 export const adminProcedure = protectedProcedure
+  .use(requireFeature("admin"))
+  .use(requireAdminMiddleware);
+export const adminTicketsProcedure = protectedProcedure
+  .use(requireFeature("tickets"))
   .use(requireFeature("admin"))
   .use(requireAdminMiddleware);

@@ -72,6 +72,7 @@ export async function createContext({ context, runtimeConfig }: CreateContextOpt
   return {
     // Server-only Worker bindings. Never return this object from an RPC procedure.
     env: context.env,
+    request: context.req.raw,
     runtimeConfig,
     session,
     // This is the only deletion-state check for the request. Procedures reuse it.

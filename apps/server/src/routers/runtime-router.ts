@@ -9,6 +9,7 @@ import { storageRouter } from "./common/storage";
 import { getCurrentUserFromContext, usersRouter } from "./common/users";
 import { webCreditsRouter } from "./web/credits";
 import { paymentsRouter } from "./web/payments";
+import { ticketsRouter } from "../modules/tickets/router";
 
 const healthCheck = publicProcedure.handler(() => "OK");
 const getCurrentUser = publicProcedure.handler(({ context }) => getCurrentUserFromContext(context));
@@ -25,6 +26,7 @@ export function buildRuntimeAppRouter(composition: PlatformComposition): AnyRout
     ...(modules.storage ? { storage: storageRouter } : {}),
     ...(modules.billing ? { payments: commonPaymentsRouter } : {}),
     ...(modules.credits ? { credits: creditsRouter } : {}),
+    ...(modules.tickets ? { tickets: ticketsRouter } : {}),
     web: {
       ...(modules.webBilling ? { payments: paymentsRouter } : {}),
       ...(modules.webCreditPurchases ? { credits: webCreditsRouter } : {}),
