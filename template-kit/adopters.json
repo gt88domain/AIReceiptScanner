@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "asOf": "2026-08-14",
+  "recommendedBaseline": "v0.8.1",
+  "adopters": [
+    {
+      "repository": "gt88domain/prompt-dir-next",
+      "mainCommit": "6b9f28c1f93c62dc354fff8b450717990992bd03",
+      "sourceManifest": "missing",
+      "upgradeCheck": "unavailable"
+    },
+    {
+      "repository": "gt88domain/aibranding-easystarter",
+      "mainCommit": "0b5cce30aba3261f77a5ab0873fe82e684f94382",
+      "sourceManifest": "incomplete",
+      "adoptedCommit": "901786041e313e587a11afc8e05864059460c57a",
+      "upgradeCheck": "unavailable"
+    },
+    {
+      "repository": "gt88domain/url-next",
+      "mainCommit": "11f64909c76b36e3a1460a25f836e935b88c92fd",
+      "sourceManifest": "v0.4.0",
+      "adoptedCommit": "901786041e313e587a11afc8e05864059460c57a",
+      "upgradeCheck": "unavailable"
+    }
+  ]
+}

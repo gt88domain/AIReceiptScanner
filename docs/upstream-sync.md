@@ -42,6 +42,22 @@ the manifest, or running migrations. It blocks migration-history changes on
 both sides. Review that report before merging a released tag; EasyStarter never
 updates downstream repositories automatically.
 
+## Recommended portfolio baseline
+
+The current recommended release is recorded in
+[`template-kit/recommended-baseline.json`](../template-kit/recommended-baseline.json).
+The portfolio inventory in
+[`template-kit/adopters.json`](../template-kit/adopters.json) is evidence, not
+a control plane: it does not open PRs, fetch remotes, or change a downstream.
+See the dated [first dry-run record](./upstream/adoption-dry-run-2026-08-14.md)
+for each product's current bootstrap state.
+
+An adopter must have the current `template:upgrade-check` command, a complete
+source manifest, and a named template remote before the check can produce an
+upgrade assessment. Do not treat a missing command or manifest as a clean
+dry-run result; add the tooling in that product's deliberately reviewed
+adoption PR.
+
 After each sync, run `pnpm install --frozen-lockfile`, `pnpm lint`,
 `pnpm check-types`, `pnpm test`, and `pnpm build`. Update the manifest's
 release and commit only after these checks pass. Open a Draft PR for the
