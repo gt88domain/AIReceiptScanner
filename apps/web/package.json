@@ -6,6 +6,7 @@
     "build": "vite build",
     "check-types": "tsc -b",
     "serve": "vite preview",
+    "test:integration": "vitest run",
     "dev": "vite dev --port=3000 --host",
     "start": "pnpm run dev",
     "lint": "oxlint",
@@ -120,6 +121,7 @@
     "typescript": "^5.9.3",
     "vite": "catalog:",
     "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^4.1.10",
     "web-vitals": "^5.3.0",
     "wrangler": "^4.113.0"
   }
