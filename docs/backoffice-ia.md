@@ -1,45 +1,38 @@
 # Backoffice information architecture
 
-The authenticated workspace has two deliberately separate surfaces.
+This is the current template IA at `v0.11.0`. “v1.0”, “v1.1”, and “v1.2” are completed backoffice milestone names, not semantic-release version numbers.
 
 ## Account workspace
 
-Always available: Dashboard, Account (Profile and Security), and Help.
+Dashboard, Account (Profile and Security), and Help are always available. Billing appears with `features.web.billing`; Credits with `features.web.credits`; Purchases with web billing or web credit purchases. Tickets adds My Tickets below Help only when its capability is enabled.
 
-Billing appears only when `features.web.billing` is enabled. Credits appears only when
-`features.web.credits` is enabled. Purchases appears when web billing or web credit purchases
-is enabled. These decisions come from `resolveBackofficeVisibility`; UI hiding does not grant
-or revoke server access.
+Help uses the server-configured `CONTACT_RECIPIENT`; the browser never receives it. If delivery is unavailable, including Backoffice preview mode, the form is disabled and the user is given the support email instead.
 
-Help reuses the existing contact delivery path. It sends only to the server-configured
-`CONTACT_RECIPIENT`; the browser never receives that value. When delivery is unavailable,
-including Backoffice preview mode, the UI directs the user to the configured support email.
-
-Saved, rewards, and anonymous visitor collections are not part of the template workspace.
-The Apps group appears only when a product registers at least one build-time user module.
+The Apps group appears only when a downstream registers one or more build-time user modules. Saved, rewards, and anonymous visitor collections are not generic template pages.
 
 ## Administration workspace
 
-Every `/admin/*` route remains server-side admin guarded. The pages are Overview, Analytics,
-Users, Payments (only with a web payment capability), Audit, and System. Payments is read-only.
-Refunds, disputes, tax, and provider actions remain in the provider dashboard.
+Every `/admin/*` route is server-side administrator guarded. Overview, Analytics, Users, Audit, and System are the stable core. Payments is read-only and appears only when billing or web credit purchases are enabled. Support appears only when Tickets is enabled. Refunds, disputes, tax, and provider mutations remain in the payment provider dashboard.
 
-System includes runtime composition, safe resource status, the D1 migration ledger, and a
-Providers section. It replaces the standalone Integrations navigation; `/admin/integrations`
-redirects to `/admin/system` for compatibility. Neither screen exposes credentials, provider
-identifiers, or database connection information.
+System shows runtime composition, safe resource status, the D1 migration ledger, and Providers. It replaces standalone Integrations navigation; `/admin/integrations` redirects to `/admin/system`. Credentials, provider identifiers, and database connection details never enter the read model.
 
-Overview is a small read-only queue based on real webhook/payment operation records and the
-System read model. It intentionally contains no invented deployment events, ticket counts, or
-observability product.
+Overview is a small read-only queue based on real webhook/payment operation records and, when enabled, open Tickets. Traffic, Worker runtime metrics, and infrastructure logs remain in their analytics providers and Cloudflare.
 
-Product-specific administration entries appear only when a product registers a build-time
-admin module. Their routes remain protected by the shared server-side administrator guard.
+Downstream product administration pages are build-time modules. Their manifests add navigation; their thin routes use `createAdminModuleRoute()`, which fixes the existing admin guard. See [`backoffice-modules.md`](./backoffice-modules.md).
 
-## Explicit v1.0.0 exclusions
+## Visibility matrix
 
-- Ticket/chat UI or ticket feature flags
-- Central control changes and product-specific pages
-- Writes from the admin payment screen
-- Runtime plugin/App registries, RBAC, observability, or deployment history
-- New payment-provider record URLs unless a safe configured URL is already part of a read model
+| Surface | Always | Capability or registration controlled |
+| --- | --- | --- |
+| Account | Dashboard, Profile, Security, Help | Billing, Credits, Purchases, My Tickets, Apps |
+| Administration | Overview, Analytics, Users, Audit, System | Payments, Support, product admin modules |
+
+Browser visibility is presentation only. Billing entitlement, administrator access, and user authentication remain separate server-enforced decisions.
+
+## Permanent boundaries
+
+- No runtime plugins, remote module loading, sandbox, generic SQL proxy, or generic write proxy.
+- No RBAC database model, observability product, deployment history, or Central changes in the template workspace.
+- No advanced ticket features: attachments, assignment, labels, SLA, priority, full-text search, push/realtime notification, or custom-field system.
+- No product-specific Domains, Offers, Quotes, Submit, or order workflow in template core.
+- No writes from the administration Payments screen; provider dashboards own provider actions.

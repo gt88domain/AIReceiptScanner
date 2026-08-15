@@ -118,8 +118,9 @@ ad hoc string manipulation when practical.
 
 ## Migration Playbook
 
-For any migration from an existing app, site, database, or provider, follow the
-documents in `docs/migration/` in this exact order:
+For any migration from an existing app, site, database, or provider, read
+`docs/migration-guide.md` for the adoption decision, then follow the documents
+in `docs/migration/` in this exact order:
 
 1. `00-audit.md`
 2. `01-data-owner.md`
