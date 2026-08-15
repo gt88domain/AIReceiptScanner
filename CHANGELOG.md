@@ -3,6 +3,14 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [0.11.0](https://github.com/gt88domain/easystarter-template/compare/v0.10.0...v0.11.0) (2026-08-15)
+
+
+### Features
+
+* **auth:** guard product administration routes ([bdba05d](https://github.com/gt88domain/easystarter-template/commit/bdba05d034792c17fee6efa9b5eca602d923b3aa))
+* **backoffice:** add build-time module navigation ([3570814](https://github.com/gt88domain/easystarter-template/commit/357081444651179073d058980b307b89d4890ca4))
+
 ## [0.10.0](https://github.com/gt88domain/easystarter-template/compare/v0.9.0...v0.10.0) (2026-08-15)
 
 
