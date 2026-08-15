@@ -45,12 +45,16 @@ import { Route as AutheddashboardSettingsIndexRouteImport } from './routes/_auth
 import { Route as AutheddashboardSettingsBillingRouteImport } from './routes/_authed/(dashboard)/settings/billing'
 import { Route as AutheddashboardSettingsProfileRouteImport } from './routes/_authed/(dashboard)/settings/profile'
 import { Route as AutheddashboardSettingsSecurityRouteImport } from './routes/_authed/(dashboard)/settings/security'
+import { Route as AutheddashboardTicketsIndexRouteImport } from './routes/_authed/(dashboard)/tickets/index'
+import { Route as AutheddashboardTicketsTicketIdRouteImport } from './routes/_authed/(dashboard)/tickets/$ticketId'
 import { Route as PublicmarketinglandingPageIndexRouteImport } from './routes/_public/(marketing)/(landing-page)/index'
 import { Route as PublicmarketingBlogIndexRouteImport } from './routes/_public/(marketing)/blog/index'
 import { Route as PublicmarketingBlogSlugRouteImport } from './routes/_public/(marketing)/blog/$slug'
 import { Route as PublicmarketingListingIndexRouteImport } from './routes/_public/(marketing)/listing/index'
 import { Route as PublicmarketingListingSlugRouteImport } from './routes/_public/(marketing)/listing/$slug'
 import { Route as PublicmarketingTemplatesLandingComposerRouteImport } from './routes/_public/(marketing)/templates/landing-composer'
+import { Route as AutheddashboardAdminSupportIndexRouteImport } from './routes/_authed/(dashboard)/admin/support/index'
+import { Route as AutheddashboardAdminSupportTicketIdRouteImport } from './routes/_authed/(dashboard)/admin/support/$ticketId'
 import { Route as PublicmarketingBlogCategorySlugRouteImport } from './routes/_public/(marketing)/blog/category/$slug'
 
 const SplatRoute = SplatRouteImport.update({
@@ -247,6 +251,18 @@ const AutheddashboardSettingsSecurityRoute =
     path: '/settings/security',
     getParentRoute: () => AutheddashboardRouteRoute,
   } as any)
+const AutheddashboardTicketsIndexRoute =
+  AutheddashboardTicketsIndexRouteImport.update({
+    id: '/tickets/',
+    path: '/tickets/',
+    getParentRoute: () => AutheddashboardRouteRoute,
+  } as any)
+const AutheddashboardTicketsTicketIdRoute =
+  AutheddashboardTicketsTicketIdRouteImport.update({
+    id: '/tickets/$ticketId',
+    path: '/tickets/$ticketId',
+    getParentRoute: () => AutheddashboardRouteRoute,
+  } as any)
 const PublicmarketinglandingPageIndexRoute =
   PublicmarketinglandingPageIndexRouteImport.update({
     id: '/(marketing)/(landing-page)/',
@@ -281,6 +297,18 @@ const PublicmarketingTemplatesLandingComposerRoute =
     id: '/(marketing)/templates/landing-composer',
     path: '/templates/landing-composer',
     getParentRoute: () => PublicRouteRoute,
+  } as any)
+const AutheddashboardAdminSupportIndexRoute =
+  AutheddashboardAdminSupportIndexRouteImport.update({
+    id: '/support/',
+    path: '/support/',
+    getParentRoute: () => AutheddashboardAdminRoute,
+  } as any)
+const AutheddashboardAdminSupportTicketIdRoute =
+  AutheddashboardAdminSupportTicketIdRouteImport.update({
+    id: '/support/$ticketId',
+    path: '/support/$ticketId',
+    getParentRoute: () => AutheddashboardAdminRoute,
   } as any)
 const PublicmarketingBlogCategorySlugRoute =
   PublicmarketingBlogCategorySlugRouteImport.update({
@@ -322,14 +350,18 @@ export interface FileRoutesByFullPath {
   '/settings/billing': typeof AutheddashboardSettingsBillingRoute
   '/settings/profile': typeof AutheddashboardSettingsProfileRoute
   '/settings/security': typeof AutheddashboardSettingsSecurityRoute
+  '/tickets/$ticketId': typeof AutheddashboardTicketsTicketIdRoute
   '/blog/$slug': typeof PublicmarketingBlogSlugRoute
   '/listing/$slug': typeof PublicmarketingListingSlugRoute
   '/templates/landing-composer': typeof PublicmarketingTemplatesLandingComposerRoute
   '/admin/': typeof AutheddashboardAdminIndexRoute
   '/settings/': typeof AutheddashboardSettingsIndexRoute
+  '/tickets/': typeof AutheddashboardTicketsIndexRoute
   '/blog/': typeof PublicmarketingBlogIndexRoute
   '/listing/': typeof PublicmarketingListingIndexRoute
+  '/admin/support/$ticketId': typeof AutheddashboardAdminSupportTicketIdRoute
   '/blog/category/$slug': typeof PublicmarketingBlogCategorySlugRoute
+  '/admin/support/': typeof AutheddashboardAdminSupportIndexRoute
 }
 export interface FileRoutesByTo {
   '/billing': typeof BillingRouteRouteWithChildren
@@ -362,15 +394,19 @@ export interface FileRoutesByTo {
   '/settings/billing': typeof AutheddashboardSettingsBillingRoute
   '/settings/profile': typeof AutheddashboardSettingsProfileRoute
   '/settings/security': typeof AutheddashboardSettingsSecurityRoute
+  '/tickets/$ticketId': typeof AutheddashboardTicketsTicketIdRoute
   '/blog/$slug': typeof PublicmarketingBlogSlugRoute
   '/listing/$slug': typeof PublicmarketingListingSlugRoute
   '/templates/landing-composer': typeof PublicmarketingTemplatesLandingComposerRoute
   '/admin': typeof AutheddashboardAdminIndexRoute
   '/settings': typeof AutheddashboardSettingsIndexRoute
+  '/tickets': typeof AutheddashboardTicketsIndexRoute
   '/': typeof PublicmarketinglandingPageIndexRoute
   '/blog': typeof PublicmarketingBlogIndexRoute
   '/listing': typeof PublicmarketingListingIndexRoute
+  '/admin/support/$ticketId': typeof AutheddashboardAdminSupportTicketIdRoute
   '/blog/category/$slug': typeof PublicmarketingBlogCategorySlugRoute
+  '/admin/support': typeof AutheddashboardAdminSupportIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -408,15 +444,19 @@ export interface FileRoutesById {
   '/_authed/(dashboard)/settings/billing': typeof AutheddashboardSettingsBillingRoute
   '/_authed/(dashboard)/settings/profile': typeof AutheddashboardSettingsProfileRoute
   '/_authed/(dashboard)/settings/security': typeof AutheddashboardSettingsSecurityRoute
+  '/_authed/(dashboard)/tickets/$ticketId': typeof AutheddashboardTicketsTicketIdRoute
   '/_public/(marketing)/blog/$slug': typeof PublicmarketingBlogSlugRoute
   '/_public/(marketing)/listing/$slug': typeof PublicmarketingListingSlugRoute
   '/_public/(marketing)/templates/landing-composer': typeof PublicmarketingTemplatesLandingComposerRoute
   '/_authed/(dashboard)/admin/': typeof AutheddashboardAdminIndexRoute
   '/_authed/(dashboard)/settings/': typeof AutheddashboardSettingsIndexRoute
+  '/_authed/(dashboard)/tickets/': typeof AutheddashboardTicketsIndexRoute
   '/_public/(marketing)/(landing-page)/': typeof PublicmarketinglandingPageIndexRoute
   '/_public/(marketing)/blog/': typeof PublicmarketingBlogIndexRoute
   '/_public/(marketing)/listing/': typeof PublicmarketingListingIndexRoute
+  '/_authed/(dashboard)/admin/support/$ticketId': typeof AutheddashboardAdminSupportTicketIdRoute
   '/_public/(marketing)/blog/category/$slug': typeof PublicmarketingBlogCategorySlugRoute
+  '/_authed/(dashboard)/admin/support/': typeof AutheddashboardAdminSupportIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -453,14 +493,18 @@ export interface FileRouteTypes {
     | '/settings/billing'
     | '/settings/profile'
     | '/settings/security'
+    | '/tickets/$ticketId'
     | '/blog/$slug'
     | '/listing/$slug'
     | '/templates/landing-composer'
     | '/admin/'
     | '/settings/'
+    | '/tickets/'
     | '/blog/'
     | '/listing/'
+    | '/admin/support/$ticketId'
     | '/blog/category/$slug'
+    | '/admin/support/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/billing'
@@ -493,15 +537,19 @@ export interface FileRouteTypes {
     | '/settings/billing'
     | '/settings/profile'
     | '/settings/security'
+    | '/tickets/$ticketId'
     | '/blog/$slug'
     | '/listing/$slug'
     | '/templates/landing-composer'
     | '/admin'
     | '/settings'
+    | '/tickets'
     | '/'
     | '/blog'
     | '/listing'
+    | '/admin/support/$ticketId'
     | '/blog/category/$slug'
+    | '/admin/support'
   id:
     | '__root__'
     | '/_public'
@@ -538,15 +586,19 @@ export interface FileRouteTypes {
     | '/_authed/(dashboard)/settings/billing'
     | '/_authed/(dashboard)/settings/profile'
     | '/_authed/(dashboard)/settings/security'
+    | '/_authed/(dashboard)/tickets/$ticketId'
     | '/_public/(marketing)/blog/$slug'
     | '/_public/(marketing)/listing/$slug'
     | '/_public/(marketing)/templates/landing-composer'
     | '/_authed/(dashboard)/admin/'
     | '/_authed/(dashboard)/settings/'
+    | '/_authed/(dashboard)/tickets/'
     | '/_public/(marketing)/(landing-page)/'
     | '/_public/(marketing)/blog/'
     | '/_public/(marketing)/listing/'
+    | '/_authed/(dashboard)/admin/support/$ticketId'
     | '/_public/(marketing)/blog/category/$slug'
+    | '/_authed/(dashboard)/admin/support/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -815,6 +867,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AutheddashboardSettingsSecurityRouteImport
       parentRoute: typeof AutheddashboardRouteRoute
     }
+    '/_authed/(dashboard)/tickets/': {
+      id: '/_authed/(dashboard)/tickets/'
+      path: '/tickets'
+      fullPath: '/tickets/'
+      preLoaderRoute: typeof AutheddashboardTicketsIndexRouteImport
+      parentRoute: typeof AutheddashboardRouteRoute
+    }
+    '/_authed/(dashboard)/tickets/$ticketId': {
+      id: '/_authed/(dashboard)/tickets/$ticketId'
+      path: '/tickets/$ticketId'
+      fullPath: '/tickets/$ticketId'
+      preLoaderRoute: typeof AutheddashboardTicketsTicketIdRouteImport
+      parentRoute: typeof AutheddashboardRouteRoute
+    }
     '/_public/(marketing)/(landing-page)/': {
       id: '/_public/(marketing)/(landing-page)/'
       path: '/'
@@ -856,6 +922,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/templates/landing-composer'
       preLoaderRoute: typeof PublicmarketingTemplatesLandingComposerRouteImport
       parentRoute: typeof PublicRouteRoute
+    }
+    '/_authed/(dashboard)/admin/support/': {
+      id: '/_authed/(dashboard)/admin/support/'
+      path: '/support'
+      fullPath: '/admin/support/'
+      preLoaderRoute: typeof AutheddashboardAdminSupportIndexRouteImport
+      parentRoute: typeof AutheddashboardAdminRoute
+    }
+    '/_authed/(dashboard)/admin/support/$ticketId': {
+      id: '/_authed/(dashboard)/admin/support/$ticketId'
+      path: '/support/$ticketId'
+      fullPath: '/admin/support/$ticketId'
+      preLoaderRoute: typeof AutheddashboardAdminSupportTicketIdRouteImport
+      parentRoute: typeof AutheddashboardAdminRoute
     }
     '/_public/(marketing)/blog/category/$slug': {
       id: '/_public/(marketing)/blog/category/$slug'
@@ -951,6 +1031,8 @@ interface AutheddashboardAdminRouteChildren {
   AutheddashboardAdminSystemRoute: typeof AutheddashboardAdminSystemRoute
   AutheddashboardAdminUsersRoute: typeof AutheddashboardAdminUsersRoute
   AutheddashboardAdminIndexRoute: typeof AutheddashboardAdminIndexRoute
+  AutheddashboardAdminSupportTicketIdRoute: typeof AutheddashboardAdminSupportTicketIdRoute
+  AutheddashboardAdminSupportIndexRoute: typeof AutheddashboardAdminSupportIndexRoute
 }
 
 const AutheddashboardAdminRouteChildren: AutheddashboardAdminRouteChildren = {
@@ -961,6 +1043,9 @@ const AutheddashboardAdminRouteChildren: AutheddashboardAdminRouteChildren = {
   AutheddashboardAdminSystemRoute: AutheddashboardAdminSystemRoute,
   AutheddashboardAdminUsersRoute: AutheddashboardAdminUsersRoute,
   AutheddashboardAdminIndexRoute: AutheddashboardAdminIndexRoute,
+  AutheddashboardAdminSupportTicketIdRoute:
+    AutheddashboardAdminSupportTicketIdRoute,
+  AutheddashboardAdminSupportIndexRoute: AutheddashboardAdminSupportIndexRoute,
 }
 
 const AutheddashboardAdminRouteWithChildren =
@@ -976,7 +1061,9 @@ interface AutheddashboardRouteRouteChildren {
   AutheddashboardSettingsBillingRoute: typeof AutheddashboardSettingsBillingRoute
   AutheddashboardSettingsProfileRoute: typeof AutheddashboardSettingsProfileRoute
   AutheddashboardSettingsSecurityRoute: typeof AutheddashboardSettingsSecurityRoute
+  AutheddashboardTicketsTicketIdRoute: typeof AutheddashboardTicketsTicketIdRoute
   AutheddashboardSettingsIndexRoute: typeof AutheddashboardSettingsIndexRoute
+  AutheddashboardTicketsIndexRoute: typeof AutheddashboardTicketsIndexRoute
 }
 
 const AutheddashboardRouteRouteChildren: AutheddashboardRouteRouteChildren = {
@@ -990,7 +1077,9 @@ const AutheddashboardRouteRouteChildren: AutheddashboardRouteRouteChildren = {
   AutheddashboardSettingsBillingRoute: AutheddashboardSettingsBillingRoute,
   AutheddashboardSettingsProfileRoute: AutheddashboardSettingsProfileRoute,
   AutheddashboardSettingsSecurityRoute: AutheddashboardSettingsSecurityRoute,
+  AutheddashboardTicketsTicketIdRoute: AutheddashboardTicketsTicketIdRoute,
   AutheddashboardSettingsIndexRoute: AutheddashboardSettingsIndexRoute,
+  AutheddashboardTicketsIndexRoute: AutheddashboardTicketsIndexRoute,
 }
 
 const AutheddashboardRouteRouteWithChildren =

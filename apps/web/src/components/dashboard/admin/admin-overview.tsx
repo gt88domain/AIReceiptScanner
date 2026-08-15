@@ -17,11 +17,16 @@ export function AdminOverview() {
     ...orpc.admin.listPaymentOperations.queryOptions({ input: {} }),
     enabled: paymentEnabled,
   });
+  const tickets = useQuery({
+    ...orpc.tickets.countOpenAdmin.queryOptions(),
+    enabled: webConfig.ticketsEnabled,
+  });
 
   if (
     system.isPending ||
     migrations.isPending ||
-    (paymentEnabled && (billing.isPending || operations.isPending))
+    (paymentEnabled && (billing.isPending || operations.isPending)) ||
+    (webConfig.ticketsEnabled && tickets.isPending)
   ) {
     return <OverviewSkeleton />;
   }
@@ -33,6 +38,14 @@ export function AdminOverview() {
     (operation) => operation.status === "failed" || operation.status === "manual_review",
   ).length;
   const items = [
+    {
+      title: "Open support tickets",
+      count: tickets.data?.count ?? 0,
+      description: "Customer questions waiting for an administrator response.",
+      to: "/admin/support" as const,
+      visible: webConfig.ticketsEnabled,
+      icon: CircleAlertIcon,
+    },
     {
       title: "Failed or dead-letter webhooks",
       count: failedWebhooks,
