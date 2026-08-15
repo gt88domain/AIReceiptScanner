@@ -3,6 +3,9 @@
   "main": "../src/index.ts",
   "compatibility_date": "2026-07-14",
   "compatibility_flags": ["nodejs_compat"],
+  "define": {
+    "__EASYSTARTER_BACKOFFICE_PREVIEW_TICKETS__": "\"1\"",
+  },
   "d1_databases": [
     {
       "binding": "DB",

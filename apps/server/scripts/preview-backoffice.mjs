@@ -64,6 +64,7 @@ const previewPassword = randomBytes(18).toString("base64url");
 const previewEnv = {
   ...process.env,
   BACKOFFICE_PREVIEW: "1",
+  BACKOFFICE_PREVIEW_TICKETS: "1",
   LOCAL_D1_DB_PATH: localDbPath,
   BACKOFFICE_PREVIEW_PASSWORD: previewPassword,
 };
@@ -103,7 +104,12 @@ const server = spawn(
 );
 const web = spawn("pnpm", ["--filter", "web", "exec", "vite", "--port", "3100"], {
   cwd: repositoryRoot,
-  env: { ...previewEnv, VITE_SERVER_URL: serverUrl, VITE_WEBSITE_URL: webUrl },
+  env: {
+    ...previewEnv,
+    VITE_APP_URL: webUrl,
+    VITE_SERVER_URL: serverUrl,
+    VITE_WEBSITE_URL: webUrl,
+  },
   stdio: "inherit",
 });
 
@@ -144,6 +150,7 @@ function printPreviewLinks(password) {
     "/settings/billing",
     "/credits/purchase",
     "/credits/transactions",
+    "/tickets",
   ];
   const adminPages = [
     "/admin",
@@ -152,6 +159,7 @@ function printPreviewLinks(password) {
     "/admin/integrations",
     "/admin/audit",
     "/admin/system",
+    "/admin/support",
   ];
 
   console.log("\nBackoffice preview is local only. Press Ctrl+C to stop.\n");
