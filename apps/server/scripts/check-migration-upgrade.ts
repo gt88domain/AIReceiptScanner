@@ -48,7 +48,7 @@ test("upgrades a 0019 database through 0020 with its partial scope index", async
   }
 });
 
-test("opens v0.4.9 Auth records without an implicit v0.4.10 migration", async () => {
+test("preserves v0.4.9 Auth records through later product migrations", async () => {
   const directory = await mkdtemp(join(tmpdir(), "easystarter-auth-upgrade-"));
   const database = createClient({ url: `file:${join(directory, "upgrade.sqlite")}` });
   try {
@@ -56,7 +56,6 @@ test("opens v0.4.9 Auth records without an implicit v0.4.10 migration", async ()
       .filter((file) => /^\d{4}_.+\.sql$/.test(file))
       .sort();
     const v049Migrations = files.filter((file) => file <= "0020_cultured_tattoo.sql");
-    assert.deepEqual(files, v049Migrations, "v0.4.10 must not add an Auth migration");
     for (const file of v049Migrations) {
       const sql = await readFile(new URL(file, migrationsDir), "utf8");
       for (const statement of statements(sql)) await database.execute(statement);
@@ -93,6 +92,11 @@ test("opens v0.4.9 Auth records without an implicit v0.4.10 migration", async ()
         args: ["v049-rate-limit", "sign-in:v049-user", 1, now],
       },
     ]);
+
+    for (const file of files.filter((file) => file > "0020_cultured_tattoo.sql")) {
+      const sql = await readFile(new URL(file, migrationsDir), "utf8");
+      for (const statement of statements(sql)) await database.execute(statement);
+    }
 
     const user = await database.execute({
       sql: "SELECT email, deleted_at FROM user WHERE id = ?",

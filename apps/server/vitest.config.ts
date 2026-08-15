@@ -18,6 +18,9 @@ const d1Migrations = await Promise.all(
 );
 
 export default defineConfig({
+  define: {
+    __EASYSTARTER_BACKOFFICE_PREVIEW_TICKETS__: JSON.stringify("1"),
+  },
   plugins: [
     cloudflareTest({
       wrangler: { configPath: "./wrangler.jsonc" },
