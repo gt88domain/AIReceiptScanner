@@ -72,6 +72,14 @@
         ]
       },
       {
+        "id": "web-admin-module-routes-use-helper",
+        "description": "Product admin module routes use the guarded route helper.",
+        "directories": ["apps/web/src/routes/_authed/(dashboard)/admin/(modules)"],
+        "forbiddenImportPatterns": [
+          "(?:from\\s+|import\\s*\\()[\\\"']@tanstack/react-router[\\\"']"
+        ]
+      },
+      {
         "id": "server-product-no-provider-sdk",
         "description": "Product server modules use core adapters and standard guards rather than provider SDKs.",
         "directories": ["apps/server/src/modules"],
