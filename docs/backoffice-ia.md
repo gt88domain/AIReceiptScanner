@@ -15,7 +15,8 @@ Help reuses the existing contact delivery path. It sends only to the server-conf
 `CONTACT_RECIPIENT`; the browser never receives that value. When delivery is unavailable,
 including Backoffice preview mode, the UI directs the user to the configured support email.
 
-Saved, rewards, anonymous visitor collections, and an Apps shell are not part of v1.0.0.
+Saved, rewards, and anonymous visitor collections are not part of the template workspace.
+The Apps group appears only when a product registers at least one build-time user module.
 
 ## Administration workspace
 
@@ -31,6 +32,9 @@ identifiers, or database connection information.
 Overview is a small read-only queue based on real webhook/payment operation records and the
 System read model. It intentionally contains no invented deployment events, ticket counts, or
 observability product.
+
+Product-specific administration entries appear only when a product registers a build-time
+admin module. Their routes remain protected by the shared server-side administrator guard.
 
 ## Explicit v1.0.0 exclusions
 
