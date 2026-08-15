@@ -47,6 +47,7 @@ export const webConfig: WebConfig = {
   billingEnabled: publicRuntime.features.billing,
   creditsEnabled: publicRuntime.features.credits,
   creditPurchasesEnabled: publicRuntime.features.creditPurchases,
+  ticketsEnabled: publicRuntime.features.tickets,
   storageEnabled: publicRuntime.features.storage,
   newsletterEnabled: publicRuntime.features.newsletter,
   contactFormEnabled: publicRuntime.features.contactForm,

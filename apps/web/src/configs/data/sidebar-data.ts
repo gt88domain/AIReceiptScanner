@@ -19,19 +19,21 @@ import { webConfig } from "@/configs/web-config";
 
 type BackofficeCapabilities = Pick<
   typeof webConfig,
-  "billingEnabled" | "creditsEnabled" | "creditPurchasesEnabled"
+  "billingEnabled" | "creditsEnabled" | "creditPurchasesEnabled" | "ticketsEnabled"
 >;
 
 export function createSidebarData({
   billingEnabled,
   creditsEnabled,
   creditPurchasesEnabled,
+  ticketsEnabled,
 }: BackofficeCapabilities): SidebarData {
   const visibility = resolveBackofficeVisibility({
     web: {
       billing: billingEnabled,
       credits: creditsEnabled,
       creditPurchases: creditPurchasesEnabled,
+      tickets: ticketsEnabled,
     },
   });
   const creditUrl = creditPurchasesEnabled ? "/credits/purchase" : "/credits/transactions";
@@ -100,11 +102,24 @@ export function createSidebarData({
                 },
               ]
             : []),
-          {
-            title: "dashboard.nav.help",
-            url: "/help",
-            icon: CircleHelp,
-          },
+          ...(visibility.tickets
+            ? [
+                {
+                  title: "dashboard.nav.help",
+                  icon: CircleHelp,
+                  items: [
+                    { title: "dashboard.nav.contact", url: "/help" },
+                    { title: "dashboard.nav.tickets", url: "/tickets" },
+                  ],
+                },
+              ]
+            : [
+                {
+                  title: "dashboard.nav.help",
+                  url: "/help",
+                  icon: CircleHelp,
+                },
+              ]),
         ],
       },
     ],
@@ -116,12 +131,18 @@ export const sidebarData = createSidebarData(webConfig);
 export function createAdministrationNavGroup({
   billingEnabled,
   creditPurchasesEnabled,
+  ticketsEnabled,
 }: Pick<
   BackofficeCapabilities,
-  "billingEnabled" | "creditPurchasesEnabled"
+  "billingEnabled" | "creditPurchasesEnabled" | "ticketsEnabled"
 >): SidebarData["navGroups"][number] {
   const visibility = resolveBackofficeVisibility({
-    web: { billing: billingEnabled, credits: false, creditPurchases: creditPurchasesEnabled },
+    web: {
+      billing: billingEnabled,
+      credits: false,
+      creditPurchases: creditPurchasesEnabled,
+      tickets: ticketsEnabled,
+    },
   });
   return {
     title: "dashboard.nav.administration",
@@ -147,6 +168,15 @@ export function createAdministrationNavGroup({
               title: "dashboard.nav.payments",
               url: "/admin/payments",
               icon: CreditCard,
+            },
+          ]
+        : []),
+      ...(visibility.tickets
+        ? [
+            {
+              title: "dashboard.nav.support",
+              url: "/admin/support",
+              icon: CircleHelp,
             },
           ]
         : []),

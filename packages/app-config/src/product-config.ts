@@ -11,6 +11,7 @@ export const productConfig = {
   common: {
     features: {
       admin: publicRuntimeConfig.features.admin,
+      tickets: publicRuntimeConfig.features.tickets,
       jobs: true,
       mobile: false,
     },

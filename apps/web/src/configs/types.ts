@@ -10,6 +10,7 @@ export interface WebConfig {
   billingEnabled: boolean;
   creditsEnabled: boolean;
   creditPurchasesEnabled: boolean;
+  ticketsEnabled: boolean;
   storageEnabled: boolean;
   newsletterEnabled: boolean;
   contactFormEnabled: boolean;

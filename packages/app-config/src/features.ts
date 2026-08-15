@@ -14,6 +14,7 @@ export type ProductFeatures = {
   credits: boolean;
   storage: boolean;
   jobs: boolean;
+  tickets: boolean;
   mobile: boolean;
   web: {
     billing: boolean;
@@ -36,6 +37,7 @@ export type ProductFeatureInput = {
   jobs?: boolean;
   mobile?: boolean;
   storage?: boolean;
+  tickets?: boolean;
   web: {
     billing: boolean;
     credits: boolean;
@@ -126,6 +128,7 @@ export function createProductFeatures(input: ProductFeatureInput): ProductFeatur
     credits: input.web.credits || native.credits,
     storage: input.storage ?? false,
     jobs: input.jobs ?? true,
+    tickets: input.tickets ?? false,
     mobile,
     web: input.web,
     native,
@@ -147,6 +150,7 @@ export function resolveProductFeatures(): ProductFeatures {
     admin: commonConfig.features.admin ?? true,
     storage: commonConfig.storage.enabled === true,
     jobs: commonConfig.features.jobs ?? true,
+    tickets: commonConfig.features.tickets === true,
     mobile,
     web: {
       billing: webBilling,

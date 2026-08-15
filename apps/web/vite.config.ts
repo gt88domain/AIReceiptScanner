@@ -94,6 +94,9 @@ export default defineConfig(({ mode }) => {
   clientBuildEnv.__EASYSTARTER_PROFILE_BUILD__ = JSON.stringify(
     process.env.EASYSTARTER_PROFILE_BUILD ?? "",
   );
+  clientBuildEnv.__EASYSTARTER_BACKOFFICE_PREVIEW_TICKETS__ = JSON.stringify(
+    process.env.BACKOFFICE_PREVIEW_TICKETS ?? "",
+  );
   const sitemapHost = resolveBuildEnvValue("VITE_APP_URL", [
     process.env,
     env,

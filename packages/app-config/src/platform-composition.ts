@@ -33,6 +33,7 @@ export type PlatformComposition = Readonly<{
     }>;
     jobs: boolean;
     storage: boolean;
+    tickets: boolean;
     billing: boolean;
     credits: boolean;
     webBilling: boolean;
@@ -72,6 +73,7 @@ export function createPlatformComposition({
       }),
       jobs: resolved.jobs,
       storage: resolved.storage,
+      tickets: resolved.tickets,
       billing: resolved.billing,
       credits: resolved.credits,
       webBilling: resolved.web.billing,

@@ -45,6 +45,7 @@ describe("product features", () => {
       auth: true,
       admin: true,
       jobs: true,
+      tickets: false,
       storage: false,
       mobile: false,
       billing: true,
@@ -246,19 +247,36 @@ describe("product features", () => {
       credits: true,
       purchases: true,
       payments: true,
+      tickets: false,
     });
     expect(visibility("account-app")).toEqual({
       billing: false,
       credits: false,
       purchases: false,
       payments: false,
+      tickets: false,
     });
     expect(visibility("directory-lite")).toEqual({
       billing: false,
       credits: false,
       purchases: false,
       payments: false,
+      tickets: false,
     });
+  });
+
+  it("keeps Tickets off in every official profile until a product explicitly enables it", () => {
+    for (const profile of ["full-saas", "account-app", "directory", "directory-lite"] as const) {
+      expect(createProductProfile(profile).tickets).toBe(false);
+    }
+    const tickets = createProductFeatures({
+      tickets: true,
+      web: { billing: false, credits: false, creditPurchases: false },
+      native: { billing: false, credits: false, creditPurchases: false },
+    });
+    expect(
+      createPlatformComposition({ features: tickets, featureCapabilities: {} }).modules.tickets,
+    ).toBe(true);
   });
 
   it("derives providers only from enabled, active platform capabilities", () => {

@@ -1,5 +1,5 @@
 import { productProfileDefinitions } from "./profile-definitions";
-import { resolveProfileBuildId } from "./profile-build-env";
+import { isBackofficePreviewTicketsEnabled, resolveProfileBuildId } from "./profile-build-env";
 
 /**
  * Browser-safe configuration used by public routes and the base client runtime.
@@ -15,6 +15,7 @@ export const publicRuntimeConfig = {
     credits: true,
     creditPurchases: true,
     storage: false,
+    tickets: isBackofficePreviewTicketsEnabled(),
     newsletter: true,
     contactForm: true,
   },
@@ -62,6 +63,7 @@ export function resolvePublicRuntimeConfig(): PublicRuntimeConfig {
       credits: profile.web.credits,
       creditPurchases: profile.web.creditPurchases,
       storage: profile.storage,
+      tickets: profile.tickets,
     },
   };
 }

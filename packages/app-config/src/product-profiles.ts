@@ -13,7 +13,7 @@ type PlatformFeatureOverrides = Partial<ProductFeatureInput["web"]>;
 
 /** Small, explicit overrides for a profile; provider details stay in appConfig. */
 export type ProductFeatureOverrides = Partial<
-  Pick<ProductFeatureInput, "admin" | "jobs" | "mobile" | "storage">
+  Pick<ProductFeatureInput, "admin" | "jobs" | "mobile" | "storage" | "tickets">
 > & {
   web?: PlatformFeatureOverrides;
   native?: Partial<ProductFeatureInput["native"]>;
@@ -87,6 +87,7 @@ export function createProductProfile(
       jobs: overrides.jobs ?? base.jobs,
       mobile: overrides.mobile ?? base.mobile,
       storage: overrides.storage ?? base.storage,
+      tickets: overrides.tickets ?? base.tickets,
       web: { ...base.web, ...overrides.web },
       native: { ...base.native, ...overrides.native },
     }),
