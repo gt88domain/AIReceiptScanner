@@ -3,6 +3,20 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [0.10.0](https://github.com/gt88domain/easystarter-template/compare/v0.9.0...v0.10.0) (2026-08-15)
+
+
+### Features
+
+* **backoffice:** add ticket support workspaces ([6da60fa](https://github.com/gt88domain/easystarter-template/commit/6da60facb71b69d4ff6bd828a470f2a333213219))
+* **config:** add optional tickets capability ([b3cead7](https://github.com/gt88domain/easystarter-template/commit/b3cead7dbde6236379dd4208a11729ce470d4c54))
+* **tickets:** add protected ticket workflows ([7724782](https://github.com/gt88domain/easystarter-template/commit/7724782939155972ea44f99884e269cf5adeccf4))
+
+
+### Bug Fixes
+
+* **backoffice-preview:** configure ticket acceptance callback ([52df9a5](https://github.com/gt88domain/easystarter-template/commit/52df9a519bdd286abacb85e8a8ad790aeff212c2))
+
 ## [0.9.0](https://github.com/gt88domain/easystarter-template/compare/v0.8.1...v0.9.0) (2026-08-14)
 
 
