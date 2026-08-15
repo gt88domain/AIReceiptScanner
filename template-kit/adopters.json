@@ -1,27 +1,28 @@
 {
   "schemaVersion": 1,
-  "asOf": "2026-08-14",
-  "recommendedBaseline": "v0.8.1",
+  "asOf": "2026-08-15",
+  "recommendedBaseline": "v0.9.0",
   "adopters": [
     {
       "repository": "gt88domain/prompt-dir-next",
-      "mainCommit": "6b9f28c1f93c62dc354fff8b450717990992bd03",
-      "sourceManifest": "missing",
-      "upgradeCheck": "unavailable"
+      "mainCommit": "5aab3b8da387978df0719c58f06cf5a999b483a4",
+      "sourceManifest": "pre-v0.2.0 provisional commit baseline",
+      "adoptedCommit": "3fa26fe7e189b0e0620e1818dbea2676b0bab833",
+      "upgradeCheck": "blocked: manual migration review required"
     },
     {
       "repository": "gt88domain/aibranding-easystarter",
-      "mainCommit": "0b5cce30aba3261f77a5ab0873fe82e684f94382",
-      "sourceManifest": "incomplete",
+      "mainCommit": "07b510a99a7146be7292ff4132e509e65d3a76f2",
+      "sourceManifest": "v0.4.0",
       "adoptedCommit": "901786041e313e587a11afc8e05864059460c57a",
-      "upgradeCheck": "unavailable"
+      "upgradeCheck": "blocked: manual migration review required"
     },
     {
       "repository": "gt88domain/url-next",
       "mainCommit": "11f64909c76b36e3a1460a25f836e935b88c92fd",
       "sourceManifest": "v0.4.0",
       "adoptedCommit": "901786041e313e587a11afc8e05864059460c57a",
-      "upgradeCheck": "unavailable"
+      "upgradeCheck": "blocked: manual migration review required"
     }
   ]
 }

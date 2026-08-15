@@ -49,8 +49,8 @@ The current recommended release is recorded in
 The portfolio inventory in
 [`template-kit/adopters.json`](../template-kit/adopters.json) is evidence, not
 a control plane: it does not open PRs, fetch remotes, or change a downstream.
-See the dated [first dry-run record](./upstream/adoption-dry-run-2026-08-14.md)
-for each product's current bootstrap state.
+See the dated [v0.9.0 dry-run record](./upstream/adoption-dry-run-2026-08-15-v0.9.0.md)
+for each product's current bootstrap state and required decisions.
 
 An adopter must have the current `template:upgrade-check` command, a complete
 source manifest, and a named template remote before the check can produce an
