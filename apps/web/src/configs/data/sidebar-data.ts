@@ -16,18 +16,23 @@ import {
 import { resolveBackofficeVisibility } from "@repo/app-config/backoffice-visibility";
 import type { SidebarData } from "@/components/dashboard/types";
 import { webConfig } from "@/configs/web-config";
+import { resolveBackofficeModules, type BackofficeModule } from "@/modules/backoffice";
+import { registeredBackofficeModules } from "@/modules/backoffice-registry";
 
 type BackofficeCapabilities = Pick<
   typeof webConfig,
   "billingEnabled" | "creditsEnabled" | "creditPurchasesEnabled" | "ticketsEnabled"
 >;
 
-export function createSidebarData({
-  billingEnabled,
-  creditsEnabled,
-  creditPurchasesEnabled,
-  ticketsEnabled,
-}: BackofficeCapabilities): SidebarData {
+export function createSidebarData(
+  {
+    billingEnabled,
+    creditsEnabled,
+    creditPurchasesEnabled,
+    ticketsEnabled,
+  }: BackofficeCapabilities,
+  manifests: readonly BackofficeModule[] = registeredBackofficeModules,
+): SidebarData {
   const visibility = resolveBackofficeVisibility({
     web: {
       billing: billingEnabled,
@@ -35,6 +40,11 @@ export function createSidebarData({
       creditPurchases: creditPurchasesEnabled,
       tickets: ticketsEnabled,
     },
+  });
+  const modules = resolveBackofficeModules(manifests, {
+    billing: billingEnabled,
+    credits: creditsEnabled,
+    tickets: ticketsEnabled,
   });
   const creditUrl = creditPurchasesEnabled ? "/credits/purchase" : "/credits/transactions";
 
@@ -102,6 +112,17 @@ export function createSidebarData({
                 },
               ]
             : []),
+          ...(modules.userApps.length
+            ? [
+                {
+                  title: "dashboard.nav.apps",
+                  items: modules.userApps.map(({ titleKey, routeId }) => ({
+                    title: titleKey,
+                    url: routeId,
+                  })),
+                },
+              ]
+            : []),
           ...(visibility.tickets
             ? [
                 {
@@ -128,14 +149,14 @@ export function createSidebarData({
 
 export const sidebarData = createSidebarData(webConfig);
 
-export function createAdministrationNavGroup({
-  billingEnabled,
-  creditPurchasesEnabled,
-  ticketsEnabled,
-}: Pick<
-  BackofficeCapabilities,
-  "billingEnabled" | "creditPurchasesEnabled" | "ticketsEnabled"
->): SidebarData["navGroups"][number] {
+export function createAdministrationNavGroup(
+  {
+    billingEnabled,
+    creditPurchasesEnabled,
+    ticketsEnabled,
+  }: Pick<BackofficeCapabilities, "billingEnabled" | "creditPurchasesEnabled" | "ticketsEnabled">,
+  manifests: readonly BackofficeModule[] = registeredBackofficeModules,
+): SidebarData["navGroups"][number] {
   const visibility = resolveBackofficeVisibility({
     web: {
       billing: billingEnabled,
@@ -143,6 +164,11 @@ export function createAdministrationNavGroup({
       creditPurchases: creditPurchasesEnabled,
       tickets: ticketsEnabled,
     },
+  });
+  const modules = resolveBackofficeModules(manifests, {
+    billing: billingEnabled,
+    credits: false,
+    tickets: ticketsEnabled,
   });
   return {
     title: "dashboard.nav.administration",
@@ -180,6 +206,10 @@ export function createAdministrationNavGroup({
             },
           ]
         : []),
+      ...modules.adminModules.map(({ titleKey, routeId }) => ({
+        title: titleKey,
+        url: routeId,
+      })),
       {
         title: "dashboard.nav.audit",
         url: "/admin/audit",
