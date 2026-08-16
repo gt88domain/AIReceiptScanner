@@ -3,6 +3,14 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [0.12.0](https://github.com/gt88domain/easystarter-template/compare/v0.11.0...v0.12.0) (2026-08-16)
+
+
+### Features
+
+* **config:** allow downstream ticket activation ([3fb7098](https://github.com/gt88domain/easystarter-template/commit/3fb709819f8480fe8d0410176c75fbdc2ed59129))
+* **tickets:** render admin metadata safely ([8a2fd61](https://github.com/gt88domain/easystarter-template/commit/8a2fd6147632b34b3f9135c48a8823044309c514))
+
 ## [0.11.0](https://github.com/gt88domain/easystarter-template/compare/v0.10.0...v0.11.0) (2026-08-15)
 
 
