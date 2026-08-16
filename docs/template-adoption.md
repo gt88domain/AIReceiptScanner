@@ -47,14 +47,19 @@ terms in the privacy policy and terms pages.
 
 1. Create a repository from the template and keep this repository as the
    `template` remote described in [upstream sync](./upstream-sync.md).
-2. Choose source-controlled capabilities in `packages/app-config`: auth is
+2. Create the product-owned D1 ledger beginning with `0000_product_init.sql`.
+   Future template releases do not add their migration history to that ledger;
+   record optional platform-schema installs in
+   `template-capabilities.lock.json`. See
+   [product-owned D1 ledger and capability installs](./product-owned-ledger.md).
+3. Choose source-controlled capabilities in `packages/app-config`: auth is
    core; enable Billing, Credits, Storage, Jobs, and native/mobile support only
    when the product needs them. Mobile additionally requires
    `common.features.mobile: true`; this activates only its Server integrations,
    not Expo dependencies in the root workspace. See [platform modules](./modules.md).
-3. Create business domains in `apps/server/src/modules/<domain>` and
+4. Create business domains in `apps/server/src/modules/<domain>` and
    `apps/web/src/modules/<domain>`; do not customize core modules for the first
    product feature.
-4. Before deployment, run `pnpm install --frozen-lockfile`, `pnpm lint`,
+5. Before deployment, run `pnpm install --frozen-lockfile`, `pnpm lint`,
    `pnpm check-types`, `pnpm test`, and `pnpm build`, then complete the
    production configuration preflight.

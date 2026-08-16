@@ -127,6 +127,7 @@ pnpm dev
 - `docs/native-email-verification-with-ngrok.md` — Native email verification setup with ngrok
 - `docs/template-adoption.md` — Buyer-owned identifiers and deployment checklist
 - `docs/upstream-sync.md` — Released-tag adoption and downstream modification manifest
+- `docs/product-owned-ledger.md` — New-product D1 ownership and capability-install policy
 - `docs/golden-paths/` — SaaS, Directory, and AI Generator implementation paths
 - `docs/extensions.md` — Stable source-controlled extension points
 - `docs/testing-strategy.md` — Required core-path test coverage and CI gates

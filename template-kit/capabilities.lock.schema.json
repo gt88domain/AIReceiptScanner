@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EasyStarter product capability lock",
+  "type": "object",
+  "required": ["capabilities"],
+  "additionalProperties": false,
+  "properties": {
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["source", "installedMigration", "sqlHash", "requires"],
+        "additionalProperties": false,
+        "properties": {
+          "source": {
+            "type": "object",
+            "required": ["release", "commit"],
+            "additionalProperties": false,
+            "properties": {
+              "release": { "type": "string", "minLength": 1 },
+              "commit": { "type": "string", "minLength": 1 }
+            }
+          },
+          "installedMigration": { "type": "string", "minLength": 1 },
+          "sqlHash": { "type": "string", "pattern": "^sha256:" },
+          "requires": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "uniqueItems": true
+          }
+        }
+      }
+    }
+  }
+}

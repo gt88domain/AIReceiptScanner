@@ -42,6 +42,14 @@ the manifest, or running migrations. It blocks migration-history changes on
 both sides. Review that report before merging a released tag; EasyStarter never
 updates downstream repositories automatically.
 
+For a **new product with a product-owned D1 ledger**, a full-tag merge is not
+the normal update mechanism: upstream migrations are scaffold history, not a
+second history to import later. Adopt reviewed runtime/tooling slices instead,
+and install optional schemas as the product's next migration. See
+[product-owned D1 ledger and capability installs](./product-owned-ledger.md).
+Existing products retain their current ledger; this policy never authorizes a
+history rewrite.
+
 ## Recommended portfolio baseline
 
 The current recommended release is recorded in
