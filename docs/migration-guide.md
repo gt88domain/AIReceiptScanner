@@ -62,7 +62,7 @@ grants access.
 | `web.billing` | Supported provider and real plans exist | Billing, Purchases, Payments | Billing needs Jobs and verified webhooks |
 | `web.credits` | The product has a real credit ledger | Credits | Does not itself sell credits |
 | `web.creditPurchases` | Credits are sold through web billing | Credit purchase and Payments | Requires web Credits and Billing |
-| `tickets` | A user/admin message thread is needed | My Tickets and Support | Default-off; routes fail closed while disabled |
+| `tickets` | A user/admin message thread is needed | My Tickets and Support | Default-off; a downstream product explicitly sets `tickets: true` in `product-feature-overrides.ts`, otherwise both route sets fail closed |
 | `storage` | Product assets need authorization | No generic navigation | R2 and the assets access model required |
 | `jobs` | Retryable asynchronous work is used | No generic navigation | Queue, DLQ, Cron required; Billing depends on it |
 

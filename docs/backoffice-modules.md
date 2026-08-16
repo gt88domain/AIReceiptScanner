@@ -24,6 +24,11 @@ i18n keys. `requiresFeature` may be `billing`, `credits`, or `tickets`; if disab
 entry is shown. A manifest only controls navigation and visibility—it does not create a route or
 grant authorization.
 
+Tickets are default-off in every official profile. A downstream product that needs them enables
+only the boolean `tickets: true` in `packages/app-config/src/product-feature-overrides.ts`.
+That browser-safe entry refines the selected profile for both the user and administrator routes;
+it must never contain product identity, provider, or secret configuration.
+
 ## Add the thin routes
 
 Add a user route under `apps/web/src/routes/` that renders the module page entry point.
