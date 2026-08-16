@@ -1,5 +1,7 @@
 import { productProfileDefinitions } from "./profile-definitions";
 import { isBackofficePreviewTicketsEnabled, resolveProfileBuildId } from "./profile-build-env";
+import { productFeatureOverrides } from "./product-feature-overrides";
+import type { ProductFeatureOverrides } from "./product-profiles";
 
 /**
  * Browser-safe configuration used by public routes and the base client runtime.
@@ -47,9 +49,19 @@ export type PublicRuntimeConfig = Omit<typeof publicRuntimeConfig, "features"> &
   features: { [Key in keyof typeof publicRuntimeConfig.features]: boolean };
 };
 
-export function resolvePublicRuntimeConfig(): PublicRuntimeConfig {
-  const profileId = resolveProfileBuildId();
-  if (!profileId) return publicRuntimeConfig;
+export function resolvePublicRuntimeConfig(
+  profileId = resolveProfileBuildId(),
+  featureOverrides: Pick<ProductFeatureOverrides, "tickets"> = productFeatureOverrides,
+): PublicRuntimeConfig {
+  if (!profileId) {
+    return {
+      ...publicRuntimeConfig,
+      features: {
+        ...publicRuntimeConfig.features,
+        tickets: featureOverrides.tickets ?? publicRuntimeConfig.features.tickets,
+      },
+    };
+  }
   if (!(profileId in productProfileDefinitions)) {
     throw new Error(`[public-runtime:UNKNOWN_PROFILE] ${profileId} is not an official profile.`);
   }
@@ -63,7 +75,7 @@ export function resolvePublicRuntimeConfig(): PublicRuntimeConfig {
       credits: profile.web.credits,
       creditPurchases: profile.web.creditPurchases,
       storage: profile.storage,
-      tickets: profile.tickets,
+      tickets: featureOverrides.tickets ?? profile.tickets,
     },
   };
 }

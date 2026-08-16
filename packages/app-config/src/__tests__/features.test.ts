@@ -13,6 +13,7 @@ import { createProductProfile, productProfiles } from "../product-profiles";
 import { resolveConfiguredPaymentProviders } from "../payment-providers";
 import { createProfileBuildDescriptor } from "../profile-build-descriptor";
 import { createPlatformComposition } from "../platform-composition";
+import { resolvePublicRuntimeConfig } from "../public-runtime";
 
 describe("product features", () => {
   it("derives a public capability contract without exposing provider secrets", () => {
@@ -269,14 +270,15 @@ describe("product features", () => {
     for (const profile of ["full-saas", "account-app", "directory", "directory-lite"] as const) {
       expect(createProductProfile(profile).tickets).toBe(false);
     }
-    const tickets = createProductFeatures({
-      tickets: true,
-      web: { billing: false, credits: false, creditPurchases: false },
-      native: { billing: false, credits: false, creditPurchases: false },
-    });
+    const tickets = createProductProfile("directory-lite", { tickets: true });
     expect(
       createPlatformComposition({ features: tickets, featureCapabilities: {} }).modules.tickets,
     ).toBe(true);
+    expect(resolveBackofficeVisibility(tickets).tickets).toBe(true);
+    expect(resolvePublicRuntimeConfig("directory-lite").features.tickets).toBe(false);
+    expect(resolvePublicRuntimeConfig("directory-lite", { tickets: true }).features.tickets).toBe(
+      true,
+    );
   });
 
   it("derives providers only from enabled, active platform capabilities", () => {

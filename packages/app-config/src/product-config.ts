@@ -1,7 +1,9 @@
-import { publicRuntimeConfig } from "./public-runtime";
+import { publicRuntimeConfig, resolvePublicRuntimeConfig } from "./public-runtime";
 import { productMembershipPlans } from "./membership-config";
 import { productStorageConfig } from "./product-storage-config";
 import type { AppCommonConfig, AppCreditsConfig } from "./types";
+
+const resolvedPublicRuntimeConfig = resolvePublicRuntimeConfig();
 
 /**
  * Product-owned settings. Downstream products edit this file; resolver, type,
@@ -11,7 +13,7 @@ export const productConfig = {
   common: {
     features: {
       admin: publicRuntimeConfig.features.admin,
-      tickets: publicRuntimeConfig.features.tickets,
+      tickets: resolvedPublicRuntimeConfig.features.tickets,
       jobs: true,
       mobile: false,
     },

@@ -7,6 +7,7 @@ import {
 } from "./features";
 import { resolveCommonConfig } from "./app-config";
 import { createProductProfile } from "./product-profiles";
+import { productFeatureOverrides } from "./product-feature-overrides";
 import { productProfileDefinitions, type ProductProfileId } from "./profile-definitions";
 import { resolveProfileBuildId } from "./profile-build-env";
 import type { FeatureCapabilityConfig } from "./types";
@@ -96,7 +97,7 @@ export function resolvePlatformComposition(): PlatformComposition {
     throw new Error(`[composition:UNKNOWN_PROFILE] ${profileId} is not an official profile.`);
   }
   return createPlatformComposition({
-    features: createProductProfile(profileId as ProductProfileId),
+    features: createProductProfile(profileId as ProductProfileId, productFeatureOverrides),
     featureCapabilities,
   });
 }
