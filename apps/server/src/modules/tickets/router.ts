@@ -28,6 +28,9 @@ const ticketDetailSchema = ticketSummarySchema.extend({
   closedAt: z.date().nullable(),
   messages: z.array(ticketMessageSchema),
 });
+const adminTicketDetailSchema = ticketDetailSchema.extend({
+  metadata: z.record(z.string(), z.unknown()).nullable(),
+});
 const createSchema = z.object({
   subject: z.string().trim().min(3).max(160),
   body: z.string().trim().min(1).max(5_000),
@@ -145,11 +148,11 @@ export const ticketsRouter = {
     }),
   getAdmin: adminTicketsProcedure
     .input(z.object({ id: z.string().uuid() }))
-    .output(ticketDetailSchema)
+    .output(adminTicketDetailSchema)
     .handler(({ context, input }) => getTicketDetail(context, input.id)),
   replyAdmin: adminTicketsProcedure
     .input(replySchema)
-    .output(ticketDetailSchema)
+    .output(adminTicketDetailSchema)
     .handler(async ({ context, input }) => {
       const item = await getTicketDetail(context, input.ticketId);
       if (item.status === "closed")
@@ -187,7 +190,7 @@ export const ticketsRouter = {
     }),
   closeAdmin: adminTicketsProcedure
     .input(z.object({ ticketId: z.string().uuid() }))
-    .output(ticketDetailSchema)
+    .output(adminTicketDetailSchema)
     .handler(async ({ context, input }) => {
       const item = await getTicketDetail(context, input.ticketId);
       const now = new Date();

@@ -14,6 +14,7 @@ type TicketDetail = {
   subject: string;
   status: "open" | "replied" | "closed";
   closedAt: Date | null;
+  metadata?: Record<string, unknown> | null;
   messages: Array<{ authorRole: "user" | "admin"; body: string }>;
 };
 
@@ -26,6 +27,7 @@ type TicketsClient = {
   getMine(input: { id: string }): Promise<TicketDetail>;
   reply(input: { ticketId: string; body: string }): Promise<TicketDetail>;
   listAdmin(input: { status?: "open" | "replied" | "closed" }): Promise<Array<TicketDetail>>;
+  getAdmin(input: { id: string }): Promise<TicketDetail>;
   replyAdmin(input: { ticketId: string; body: string }): Promise<TicketDetail>;
   closeAdmin(input: { ticketId: string }): Promise<TicketDetail>;
 };
@@ -95,6 +97,9 @@ describe("tickets", () => {
     await expect(stranger.listAdmin({})).rejects.toMatchObject({ code: "FORBIDDEN", status: 403 });
 
     const admin = ticketsClient(await signUp("admin@example.test"));
+    await expect(admin.getAdmin({ id: item.id })).resolves.toMatchObject({
+      metadata: { untrusted: "<img src=x onerror=alert(1)>" },
+    });
     await expect(admin.listAdmin({ status: "open" })).resolves.toEqual(
       expect.arrayContaining([expect.objectContaining({ id: item.id, status: "open" })]),
     );

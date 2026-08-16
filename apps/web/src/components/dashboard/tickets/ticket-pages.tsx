@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useOrpc } from "@/hooks/use-orpc";
 import { AdminEmptyState } from "../admin/admin-empty-state";
 import { AdminPageHeader } from "../admin/admin-page-header";
+import { TicketMetadata } from "./ticket-metadata";
 
 const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
   dateStyle: "medium",
@@ -290,6 +291,7 @@ export function AdminTicketDetailPage({ ticketId }: { ticketId: string }) {
     return <p className="text-destructive">Ticket could not be loaded.</p>;
   return (
     <div className="space-y-6">
+      <TicketMetadata metadata={ticket.data.metadata} />
       <TicketThread
         ticket={ticket.data}
         replyLabel="Send reply"
