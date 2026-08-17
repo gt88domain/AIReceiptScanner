@@ -3,6 +3,17 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.0.0](https://github.com/gt88domain/easystarter-template/compare/v0.12.0...v1.0.0) (2026-08-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* **template:** clean baseline for downstream forks ([#86](https://github.com/gt88domain/easystarter-template/issues/86))
+
+### Code Refactoring
+
+* **template:** clean baseline for downstream forks ([#86](https://github.com/gt88domain/easystarter-template/issues/86)) ([4d4d494](https://github.com/gt88domain/easystarter-template/commit/4d4d494ed33ee79d300c8ba88820d5447e2812ec))
+
 ## [0.12.0](https://github.com/gt88domain/easystarter-template/compare/v0.11.0...v0.12.0) (2026-08-16)
 
 
