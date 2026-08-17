@@ -1,6 +1,0 @@
-{
-  "schemaVersion": 1,
-  "product": "candidate-directory",
-  "operation": "public-read",
-  "dependencies": ["d1", "read-repository", "product-config", "request-log", "request-id"]
-}

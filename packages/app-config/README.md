@@ -13,5 +13,5 @@ Use this package for:
 Do not store secrets here. Runtime secrets belong in platform env/secret
 systems.
 
-Future optional module toggles such as `siteModules.discovery.enabled` should be
-small and documented in `CUSTOMIZATIONS.md` when added.
+Product-owned settings belong in `product-config.ts`. Track template core
+modifications with the `template-kit` modification manifest.

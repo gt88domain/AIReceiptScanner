@@ -12,8 +12,8 @@ export const Route = createFileRoute("/_public/(marketing)/templates/landing-com
     const messages = getMessages(locale);
     return buildSeoHead({
       locale,
-      title: `${messages.listingTemplate.title} | ${webConfig.AppName}`,
-      description: messages.listingTemplate.description,
+      title: `${messages.landingComposer.title} | ${webConfig.AppName}`,
+      description: messages.landingComposer.description,
       canonicalPath: "/templates/landing-composer",
       siteName: webConfig.AppName,
       robots: "noindex,nofollow",

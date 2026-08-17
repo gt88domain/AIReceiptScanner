@@ -33,11 +33,10 @@ All Admin data is returned from `adminProcedure` endpoints.
 ## Deliberate exclusions
 
 This foundation has no RBAC editor, menu CMS, organizations, user mutation,
-impersonation, analytics, Ticket inbox, Discovery administration, or
+impersonation, analytics, Ticket inbox, product-domain administration, or
 observability platform.
 
 Future work stays separate:
 
 - Admin B: analytics or an actually justified shared DataTable improvement.
 - Ticket: inbox, tickets, messages, and attachments.
-- Discovery: its own v5 administration surface.

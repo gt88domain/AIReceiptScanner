@@ -1,9 +1,0 @@
-{
-  "schemaVersion": 1,
-  "product": "candidate-directory",
-  "sourceRepository": "gt88domain/easystarter-template",
-  "sourceCommit": "eb36f970e7ddc8ba499e4c2b6e25f591a4ab2f97",
-  "claims": [
-    { "pattern": "/catalogue/:slug", "owner": "candidate-directory", "kind": "resource-route", "namespace": "catalogue", "status": "proposed" }
-  ]
-}

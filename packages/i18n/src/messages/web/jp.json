@@ -36,7 +36,6 @@
         "integrations": "連携",
         "pricing": "料金",
         "faq": "よくある質問",
-        "listing": "一覧ページテンプレート",
         "blog": "ブログ",
         "contact": "お問い合わせ",
         "docs": "ドキュメント"
@@ -131,7 +130,6 @@
           "links": {
             "overview": "概要",
             "pricing": "料金",
-            "listingTemplate": "一覧ページテンプレート",
             "features": "機能"
           }
         },
@@ -148,77 +146,9 @@
       }
     }
   },
-  "listingTemplate": {
-    "eyebrow": "再利用可能な公開パターン",
-    "title": "一覧ページテンプレート",
-    "description": "ディレクトリ、マーケットプレイス、リソースライブラリ、検索可能なカタログ向けの本番対応の出発点です。",
-    "resultCount": "{count} 件のパターン",
-    "searchLabel": "テンプレートを検索",
-    "searchPlaceholder": "用途または機能で検索",
-    "filterLabel": "絞り込み",
-    "categoryLabel": "用途",
-    "allCategories": "すべてのパターン",
-    "layoutLabel": "レイアウト",
-    "allLayouts": "すべてのレイアウト",
-    "sortLabel": "並び順",
-    "sortRecommended": "おすすめ",
-    "sortNewest": "新着",
-    "sortName": "名前",
-    "emptyTitle": "一致するパターンがありません",
-    "emptyDescription": "検索語を変えるか、フィルターを解除してください。",
-    "clearFilters": "フィルターを解除",
-    "viewDetails": "詳細を見る",
-    "backToListing": "テンプレート一覧に戻る",
-    "detail": {
-      "includedTitle": "含まれるパターン機能",
-      "includedSearch": "検索に対応した絞り込みコントロール",
-      "includedFilters": "カテゴリとレイアウトのファセットフィルター",
-      "includedResponsive": "レスポンシブなグリッドとリストレイアウト",
-      "includedEmptyState": "空状態・ローディング状態の基礎コンポーネント",
-      "previewTitle": "レイアウトプレビュー",
-      "useCaseTitle": "おすすめの用途",
-      "copyLink": "リンクをコピー",
-      "copiedLink": "コピーしました",
-      "startUsing": "始める"
-    },
-    "items": {
-      "directory": {
-        "title": "ベンダーディレクトリ",
-        "description": "カテゴリ、場所、機能で絞り込める公開カード。",
-        "category": "ディレクトリ",
-        "layout": "グリッド"
-      },
-      "marketplace": {
-        "title": "テンプレートマーケットプレイス",
-        "description": "価格の手がかりとコレクション絞り込みを備えた検索可能なカタログ。",
-        "category": "マーケットプレイス",
-        "layout": "グリッド"
-      },
-      "resources": {
-        "title": "リソースライブラリ",
-        "description": "トピックと形式で絞り込めるガイド、ツール、ダウンロード。",
-        "category": "コンテンツ",
-        "layout": "グリッド"
-      },
-      "changelog": {
-        "title": "変更履歴フィード",
-        "description": "バージョンと種別で絞り込める時系列の製品更新。",
-        "category": "コンテンツ",
-        "layout": "リスト"
-      },
-      "jobs": {
-        "title": "求人ボード",
-        "description": "勤務地、勤務形態、チームで絞り込める求人一覧。",
-        "category": "ディレクトリ",
-        "layout": "リスト"
-      },
-      "projects": {
-        "title": "プロジェクトギャラリー",
-        "description": "タグ、コレクション、さらに読み込むページネーション付きの作品紹介。",
-        "category": "マーケットプレイス",
-        "layout": "グリッド"
-      }
-    }
+  "landingComposer": {
+    "title": "ランディングページコンポーザー",
+    "description": "ランディングページのセクションとテーマをプレビューして構成します。"
   },
   "contact": {
     "eyebrow": "お問い合わせ",

@@ -63,7 +63,9 @@
     ],
   },
   "triggers": {
-    "crons": ["* * * * *"],
+    // "* * * * *" pumps billing webhook/outbox recovery and the job outbox.
+    // "10 16 * * *" runs daily credit maintenance; keep both when Credits are enabled.
+    "crons": ["* * * * *", "10 16 * * *"],
   },
   "observability": {
     "logs": {

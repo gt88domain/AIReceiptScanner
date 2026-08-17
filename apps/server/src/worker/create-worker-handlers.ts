@@ -28,8 +28,14 @@ function requireJobQueueDlqName(env: Pick<Cloudflare.Env, "JOB_QUEUE_DLQ_NAME">)
 export function createJobWorkerHandlers(runtimeConfig: ServerRuntimeConfig): JobHandlers {
   return {
     async scheduled(controller, env) {
-      if (controller.cron !== "* * * * *") return;
       const db = createDb(env.DB);
+      if (controller.cron === "10 16 * * *") {
+        if (runtimeConfig.features.credits) {
+          await runCreditMaintenance(db);
+        }
+        return;
+      }
+      if (controller.cron !== "* * * * *") return;
       if (runtimeConfig.features.billing) {
         await processPendingWebhookEvents(db);
         await processBillingOutbox(db);
@@ -43,14 +49,6 @@ export function createJobWorkerHandlers(runtimeConfig: ServerRuntimeConfig): Job
       const queue = resolveJobQueue(runtimeConfig.features, env);
       if (!queue) return;
       await createJobService(db, queue).flushOutbox();
-      const scheduledAt = new Date(controller.scheduledTime);
-      if (
-        runtimeConfig.features.credits &&
-        scheduledAt.getUTCHours() === 16 &&
-        scheduledAt.getUTCMinutes() === 10
-      ) {
-        await runCreditMaintenance(db);
-      }
     },
     async queue(batch, env) {
       const db = createDb(env.DB);
