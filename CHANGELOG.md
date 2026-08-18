@@ -3,6 +3,17 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.0.0](https://github.com/gt88domain/easystarter-template/compare/v1.0.0...v2.0.0) (2026-08-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* **web:** strip demo marketing surface, restore docs/blog as opt-in zero-content capability ([#89](https://github.com/gt88domain/easystarter-template/issues/89))
+
+### Features
+
+* **web:** strip demo marketing surface, restore docs/blog as opt-in zero-content capability ([#89](https://github.com/gt88domain/easystarter-template/issues/89)) ([79284c1](https://github.com/gt88domain/easystarter-template/commit/79284c1853e9e9292a2cdaf7dad0ec6f381d2f2c))
+
 ## [1.0.0](https://github.com/gt88domain/easystarter-template/compare/v0.12.0...v1.0.0) (2026-08-17)
 
 
