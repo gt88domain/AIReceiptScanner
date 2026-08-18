@@ -1,6 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /api/
-Disallow: /rpc/
-
-Sitemap: https://demo.aiarticles.com/sitemap.xml

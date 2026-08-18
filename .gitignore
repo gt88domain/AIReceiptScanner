@@ -12,6 +12,7 @@ artifacts/performance/
 .worktrees
 apps/server/src/**/*.js
 apps/server/src/**/*.js.map
+apps/web/.source/
 
 # START Ruler Generated Files
 /.codex/config.json

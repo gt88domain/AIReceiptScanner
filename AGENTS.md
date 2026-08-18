@@ -174,6 +174,15 @@ that newly orphaned code.
 Commit messages should follow Conventional Commits. Use `pnpm commit` when the
 user asks to create a commit.
 
+## 执行红线（每次会话必读）
+
+- 合并上游采用类 PR（含 tag 合并 / `source.json` 变更）必须用 merge commit；禁止 squash / rebase / auto-merge —— squash 会断祖先链，Manifest 检查必挂。
+- 禁止直接 push `main`；一切走 PR，留下出处。
+- 生产部署只从与 `main` 一致的干净工作区发出；部署前必须过 `pnpm verify:production-config`（需要 `apps/server/.production-safety.env`）。
+- 禁止擅自执行生产 D1 迁移、改 secret、删 worktree / 分支。
+- Release Please 的 release PR 由仓库自动化合并，不要手动干预；它只改 3 个记账文件。
+- 每个里程碑结束停在「未提交 / 未部署」checkpoint，等用户验收。
+
 ## Demo Page Deployment
 
 For a completed change that affects a user-facing page or visual web UI:

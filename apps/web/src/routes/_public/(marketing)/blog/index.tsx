@@ -30,7 +30,7 @@ type BlogListLoaderData = {
 };
 
 export const Route = createFileRoute("/_public/(marketing)/blog/")({
-  head: () => {
+  head: ({ loaderData }) => {
     const locale = getCurrentLocale();
     const messages = getMessages(locale);
     return buildSeoHead({
@@ -40,8 +40,7 @@ export const Route = createFileRoute("/_public/(marketing)/blog/")({
       canonicalPath: "/blog",
       type: "article",
       siteName: webConfig.AppName,
-      robots: "noindex,nofollow",
-      alternates: false,
+      robots: loaderData?.posts.length ? "index,follow" : "noindex,nofollow",
       ldJson: {
         "@context": "https://schema.org",
         "@type": "Blog",

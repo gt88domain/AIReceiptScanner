@@ -1,5 +1,5 @@
-import { readFileSync, readdirSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
@@ -7,21 +7,62 @@ import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import mdx from "fumadocs-mdx/vite";
+import { frontmatter } from "fumadocs-core/content/md/frontmatter";
 import { parse } from "jsonc-parser";
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig, loadEnv, type Plugin } from "vite";
+import { defaultLocale, isValidLocale } from "../../packages/i18n/src/locales.ts";
 import * as MdxConfig from "./source.config";
+import { createRobotsTxt } from "./scripts/robots.mjs";
 
 const appDirectory = dirname(fileURLToPath(import.meta.url));
 
-function hasMdxContent(collection: string): boolean {
+type ContentPage = {
+  locale: string;
+  path: string;
+  lastmod: string;
+};
+
+function getPublishedContentPages(collection: string): ContentPage[] {
   const directory = resolve(appDirectory, "content", collection);
-  try {
-    return readdirSync(directory, { recursive: true }).some((entry) =>
-      String(entry).endsWith(".mdx"),
-    );
-  } catch {
-    return false;
-  }
+  if (!existsSync(directory)) return [];
+
+  return readdirSync(directory, { recursive: true })
+    .filter((entry) => String(entry).endsWith(".mdx"))
+    .flatMap((entry) => {
+      const filePath = resolve(directory, String(entry));
+      const data = frontmatter(readFileSync(filePath, "utf8")).data as { published?: boolean };
+      if (data.published === false) return [];
+
+      const [locale, ...slugParts] = relative(directory, filePath)
+        .replace(/\\/g, "/")
+        .replace(/\.mdx$/, "")
+        .split("/");
+      if (!locale || slugParts.length === 0 || !isValidLocale(locale)) return [];
+
+      const slug = slugParts.at(-1) === "index" ? slugParts.slice(0, -1) : slugParts;
+      const localePrefix = locale === defaultLocale ? "" : `/${locale}`;
+      return [
+        {
+          locale,
+          path: `${localePrefix}/${collection}${slug.length > 0 ? `/${slug.join("/")}` : ""}`,
+          lastmod: statSync(filePath).mtime.toISOString(),
+        },
+      ];
+    });
+}
+
+function robotsTxtPlugin(sitemapHost: string | undefined): Plugin {
+  return {
+    name: "generate-robots-txt",
+    apply: "build" as const,
+    generateBundle() {
+      this.emitFile({
+        type: "asset",
+        fileName: "robots.txt",
+        source: createRobotsTxt(sitemapHost),
+      });
+    },
+  };
 }
 
 import { contentSurfaceFlags } from "@repo/app-config/content-flags";
@@ -31,33 +72,40 @@ import { contentSurfaceFlags } from "@repo/app-config/content-flags";
 // navigation, sitemap, and search entries must only appear for the latter.
 const docsEnabled = contentSurfaceFlags.docs;
 const blogEnabled = contentSurfaceFlags.blog;
-const docsPublic = docsEnabled && hasMdxContent("docs");
-const blogPublic = blogEnabled && hasMdxContent("blog");
+const docsPages = docsEnabled ? getPublishedContentPages("docs") : [];
+const blogPages = blogEnabled ? getPublishedContentPages("blog") : [];
+const docsPublic = docsPages.length > 0;
+const blogPublic = blogPages.length > 0;
 
 const publicPages = [
   "/",
   "/privacy",
   "/terms",
-  ...(docsPublic ? ["/docs"] : []),
-  ...(blogPublic ? ["/blog"] : []),
   "/zh",
   "/zh/privacy",
   "/zh/terms",
-  ...(docsPublic ? ["/zh/docs"] : []),
-  ...(blogPublic ? ["/zh/blog"] : []),
   "/jp",
   "/jp/privacy",
   "/jp/terms",
-  ...(docsPublic ? ["/jp/docs"] : []),
-  ...(blogPublic ? ["/jp/blog"] : []),
 ];
 
-const publicPageEntries = publicPages.map((path) => ({
-  path,
-  prerender: {
-    crawlLinks: false,
-  },
+const blogIndexPages = [...new Set(blogPages.map(({ locale }) => locale))].map((locale) => ({
+  path: `${locale === defaultLocale ? "" : `/${locale}`}/blog`,
 }));
+const contentPageEntries = [...docsPages, ...blogPages].map(({ path, lastmod }) => ({
+  path,
+  sitemap: { lastmod },
+}));
+const publicPageEntries = [
+  ...publicPages.map((path) => ({
+    path,
+    prerender: {
+      crawlLinks: false,
+    },
+  })),
+  ...blogIndexPages,
+  ...contentPageEntries,
+];
 
 const devOptimizeDeps = ["@unpic/react"];
 
@@ -156,6 +204,7 @@ export default defineConfig(({ mode }) => {
       include: devOptimizeDeps,
     },
     plugins: [
+      robotsTxtPlugin(sitemapHost),
       cloudflare({ viteEnvironment: { name: "ssr" } }),
       devtools(),
       tailwindcss(),

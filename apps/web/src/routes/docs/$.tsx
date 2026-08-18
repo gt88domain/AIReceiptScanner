@@ -58,8 +58,7 @@ export const Route = createFileRoute("/docs/$")({
       canonicalPath: seo.canonicalPath,
       type: "article",
       siteName: webConfig.AppName,
-      robots: "noindex,nofollow",
-      alternates: false,
+      robots: "index,follow",
       ldJson: {
         "@context": "https://schema.org",
         "@type": "TechArticle",
