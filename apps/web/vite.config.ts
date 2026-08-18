@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { cloudflare } from "@cloudflare/vite-plugin";
@@ -11,19 +11,45 @@ import { parse } from "jsonc-parser";
 import { defineConfig, loadEnv } from "vite";
 import * as MdxConfig from "./source.config";
 
+const appDirectory = dirname(fileURLToPath(import.meta.url));
+
+function hasMdxContent(collection: string): boolean {
+  const directory = resolve(appDirectory, "content", collection);
+  try {
+    return readdirSync(directory, { recursive: true }).some((entry) =>
+      String(entry).endsWith(".mdx"),
+    );
+  } catch {
+    return false;
+  }
+}
+
+import { contentSurfaceFlags } from "@repo/app-config/content-flags";
+
+// Capability switch (product enables the docs/blog surface) and public-entry
+// visibility (capability on AND published content present) are separate states:
+// navigation, sitemap, and search entries must only appear for the latter.
+const docsEnabled = contentSurfaceFlags.docs;
+const blogEnabled = contentSurfaceFlags.blog;
+const docsPublic = docsEnabled && hasMdxContent("docs");
+const blogPublic = blogEnabled && hasMdxContent("blog");
+
 const publicPages = [
   "/",
   "/privacy",
   "/terms",
-  "/docs",
+  ...(docsPublic ? ["/docs"] : []),
+  ...(blogPublic ? ["/blog"] : []),
   "/zh",
   "/zh/privacy",
   "/zh/terms",
-  "/zh/docs",
+  ...(docsPublic ? ["/zh/docs"] : []),
+  ...(blogPublic ? ["/zh/blog"] : []),
   "/jp",
   "/jp/privacy",
   "/jp/terms",
-  "/jp/docs",
+  ...(docsPublic ? ["/jp/docs"] : []),
+  ...(blogPublic ? ["/jp/blog"] : []),
 ];
 
 const publicPageEntries = publicPages.map((path) => ({
@@ -46,8 +72,6 @@ const nonPublicPrefixes = [
   "/rpc",
 ];
 
-const appDirectory = dirname(fileURLToPath(import.meta.url));
-
 function isPrerenderablePath(path: string): boolean {
   if (path.includes("#")) {
     return false;
@@ -58,6 +82,17 @@ function isPrerenderablePath(path: string): boolean {
   return !nonPublicPrefixes.some(
     (prefix) => normalizedPath === prefix || normalizedPath.startsWith(`${prefix}/`),
   );
+}
+
+function isContentSurfaceEnabled(path: string): boolean {
+  const normalizedPath = (path.split(/[?#]/)[0] || "/").replace(/^\/(?:zh|jp)(?=\/|$)/, "");
+  if (normalizedPath === "/docs" || normalizedPath.startsWith("/docs/")) {
+    return docsPublic;
+  }
+  if (normalizedPath === "/blog" || normalizedPath.startsWith("/blog/")) {
+    return blogPublic;
+  }
+  return true;
 }
 
 function loadWranglerVars(): Record<string, string> {
@@ -97,6 +132,10 @@ export default defineConfig(({ mode }) => {
   clientBuildEnv.__EASYSTARTER_BACKOFFICE_PREVIEW_TICKETS__ = JSON.stringify(
     process.env.BACKOFFICE_PREVIEW_TICKETS ?? "",
   );
+  clientBuildEnv["import.meta.env.VITE_CONTENT_DOCS_ENABLED"] = JSON.stringify(String(docsEnabled));
+  clientBuildEnv["import.meta.env.VITE_CONTENT_BLOG_ENABLED"] = JSON.stringify(String(blogEnabled));
+  clientBuildEnv["import.meta.env.VITE_CONTENT_DOCS_PUBLIC"] = JSON.stringify(String(docsPublic));
+  clientBuildEnv["import.meta.env.VITE_CONTENT_BLOG_PUBLIC"] = JSON.stringify(String(blogPublic));
   const sitemapHost = resolveBuildEnvValue("VITE_APP_URL", [
     process.env,
     env,
@@ -128,7 +167,8 @@ export default defineConfig(({ mode }) => {
           crawlLinks: true,
           autoStaticPathsDiscovery: false,
           filter: (page) => {
-            const isPublicPath = isPrerenderablePath(page.path);
+            const isPublicPath =
+              isPrerenderablePath(page.path) && isContentSurfaceEnabled(page.path);
             if (!isPublicPath) {
               page.sitemap = {
                 ...page.sitemap,

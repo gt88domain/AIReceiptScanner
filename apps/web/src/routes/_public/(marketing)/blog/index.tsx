@@ -35,8 +35,8 @@ export const Route = createFileRoute("/_public/(marketing)/blog/")({
     const messages = getMessages(locale);
     return buildSeoHead({
       locale,
-      title: `${messages.blog.list.title} | ${webConfig.AppName}`,
-      description: messages.blog.list.description,
+      title: `${messages.contentBlog.title} | ${webConfig.AppName}`,
+      description: messages.contentBlog.description,
       canonicalPath: "/blog",
       type: "article",
       siteName: webConfig.AppName,
@@ -45,8 +45,8 @@ export const Route = createFileRoute("/_public/(marketing)/blog/")({
       ldJson: {
         "@context": "https://schema.org",
         "@type": "Blog",
-        name: messages.blog.list.title,
-        description: messages.blog.list.description,
+        name: messages.contentBlog.title,
+        description: messages.contentBlog.description,
         inLanguage: locale,
       },
     });
@@ -63,6 +63,10 @@ const serverLoader = createServerFn({
 })
   .validator((data: { locale: Locale }) => data)
   .handler(async ({ data: { locale } }): Promise<BlogListLoaderData> => {
+    if (!webConfig.blogEnabled) {
+      return { posts: [], categories: [] };
+    }
+
     const { authorSource, categorySource, getPublishedBlogPages, sortBlogPagesByDateDesc } =
       await import("@/lib/blog-source");
     const posts = sortBlogPagesByDateDesc(getPublishedBlogPages(locale));
@@ -109,7 +113,7 @@ const serverLoader = createServerFn({
   });
 
 function RouteComponent() {
-  const t = useTranslations("blog.list");
+  const t = useTranslations("contentBlog");
   const locale = useLocale();
   const { posts, categories } = Route.useLoaderData();
 
@@ -118,11 +122,13 @@ function RouteComponent() {
       <section className="space-y-4 border-b border-border pb-8">
         <h1 className="text-4xl font-semibold tracking-tight">{t("title")}</h1>
         <p className="max-w-2xl text-muted-foreground">{t("description")}</p>
-        <BlogCategoryFilter
-          categories={categories}
-          allLabel={t("allCategories")}
-          selectCategoryLabel={t("selectCategory")}
-        />
+        {categories.length > 0 ? (
+          <BlogCategoryFilter
+            categories={categories}
+            allLabel={t("allCategories")}
+            selectCategoryLabel={t("selectCategory")}
+          />
+        ) : null}
       </section>
       <section className="mt-8">
         {posts.length > 0 ? (

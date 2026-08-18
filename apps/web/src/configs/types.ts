@@ -1,5 +1,4 @@
 import type { AppCommonConfig } from "@repo/app-config";
-import type { LandingPageComponentKey } from "./landing-page-component/landing-page-component-registry";
 import type { ThemePresetKey } from "./theme-presets";
 
 export interface WebConfig {
@@ -14,6 +13,11 @@ export interface WebConfig {
   storageEnabled: boolean;
   newsletterEnabled: boolean;
   contactFormEnabled: boolean;
+  docsEnabled: boolean;
+  blogEnabled: boolean;
+  /** Capability on AND published content present; gates nav/sitemap/search entries. */
+  docsPublic: boolean;
+  blogPublic: boolean;
   auth: {
     methods: {
       emailPasswordEnabled: boolean;
@@ -27,7 +31,6 @@ export interface WebConfig {
     };
   };
   defaultThemePresetKey: ThemePresetKey;
-  defaultLandingPageComponents: readonly LandingPageComponentKey[];
 }
 
 export type AuthUrls = {

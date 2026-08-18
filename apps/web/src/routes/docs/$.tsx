@@ -12,24 +12,29 @@ type DocsSeoData = {
   canonicalPath: string;
 };
 
-export type DocsLoaderData = {
-  path: string;
-  pageTree: Awaited<ReturnType<typeof source.serializePageTree>>;
-  seo: DocsSeoData;
-};
+export type DocsLoaderData =
+  | { empty: true }
+  | {
+      empty: false;
+      path: string;
+      pageTree: Awaited<ReturnType<typeof source.serializePageTree>>;
+      seo: DocsSeoData;
+    };
 
 export const Route = createFileRoute("/docs/$")({
   loader: async ({ params }) => {
     const slugs = (params._splat ?? "").split("/").filter(Boolean);
     const lang = getCurrentLocale();
     const data = await serverLoader({ data: { slugs, lang } });
-    const { preloadDocsContent } = await import("./$.lazy");
-    await preloadDocsContent(data.path);
+    if (!data.empty) {
+      const { preloadDocsContent } = await import("./$.lazy");
+      await preloadDocsContent(data.path);
+    }
     return data;
   },
   head: ({ loaderData }) => {
     const locale = getCurrentLocale();
-    const seo = loaderData?.seo;
+    const seo = loaderData && !loaderData.empty ? loaderData.seo : undefined;
 
     if (!seo) {
       return buildSeoHead({
@@ -72,11 +77,16 @@ const serverLoader = createServerFn({
 })
   .validator((data: { slugs: string[]; lang: Locale }) => data)
   .handler(async ({ data: { slugs, lang } }): Promise<DocsLoaderData> => {
+    if (!webConfig.docsEnabled) return { empty: true };
+
+    if (source.getPages(lang).length === 0) return { empty: true };
+
     const page = source.getPage(slugs, lang);
     if (!page) throw notFound();
     const canonicalPath = slugs.length > 0 ? `/docs/${slugs.join("/")}` : "/docs";
 
     return {
+      empty: false,
       path: page.path,
       pageTree: await source.serializePageTree(source.getPageTree(lang)),
       seo: {

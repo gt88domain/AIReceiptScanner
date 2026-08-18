@@ -58,8 +58,12 @@ export const Footer = ({
       links: [
         { name: footerT("sections.resources.links.privacy"), href: "/privacy" },
         { name: footerT("sections.resources.links.terms"), href: "/terms" },
-        { name: footerT("sections.resources.links.docs"), href: "/docs" },
-        { name: footerT("sections.resources.links.blog"), href: "/blog" },
+        ...(webConfig.docsPublic
+          ? [{ name: footerT("sections.resources.links.docs"), href: "/docs" }]
+          : []),
+        ...(webConfig.blogPublic
+          ? [{ name: footerT("sections.resources.links.blog"), href: "/blog" }]
+          : []),
         ...(webConfig.contactFormEnabled
           ? [{ name: footerT("sections.resources.links.contact"), href: "/contact" }]
           : []),
@@ -69,7 +73,8 @@ export const Footer = ({
   const resolvedDescription = description ?? footerT("description");
   // ponytail: social accounts belong to the template adopter, so no upstream profile is rendered by default.
   const resolvedSocialLinks = socialLinks ?? [];
-  const resolvedCopyright = copyright ?? footerT("copyright", { year: currentYear });
+  const resolvedCopyright =
+    copyright ?? footerT("copyright", { appName: webConfig.AppName, year: currentYear });
   const resolvedLegalLinks = legalLinks ?? [
     { name: authT("termsOfService"), href: "/terms" },
     { name: authT("privacyPolicy"), href: "/privacy" },

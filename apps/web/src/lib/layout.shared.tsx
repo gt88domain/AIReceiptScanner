@@ -2,11 +2,9 @@
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
 import { ThemeSwitch } from "@/components/features/theme-switch";
 import { BrandLogo } from "@/components/logos/brand-logo";
-import type { Locale } from "@/i18n";
 import { fumadocsI18n } from "./fumadocs-i18n";
 
-export function baseOptions(locale: Locale): BaseLayoutProps {
-  console.log(locale);
+export function baseOptions(): BaseLayoutProps {
   return {
     i18n: fumadocsI18n,
     themeSwitch: {

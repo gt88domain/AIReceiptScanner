@@ -4,6 +4,7 @@
   "forbiddenInitialRequestTokens": [
     "search-default",
     "orama-static",
+    "fumadocs",
     "admin-",
     "billing-",
     "purchase-",

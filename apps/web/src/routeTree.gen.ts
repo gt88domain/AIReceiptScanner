@@ -50,7 +50,6 @@ import { Route as AutheddashboardTicketsTicketIdRouteImport } from './routes/_au
 import { Route as PublicmarketinglandingPageIndexRouteImport } from './routes/_public/(marketing)/(landing-page)/index'
 import { Route as PublicmarketingBlogIndexRouteImport } from './routes/_public/(marketing)/blog/index'
 import { Route as PublicmarketingBlogSlugRouteImport } from './routes/_public/(marketing)/blog/$slug'
-import { Route as PublicmarketingTemplatesLandingComposerRouteImport } from './routes/_public/(marketing)/templates/landing-composer'
 import { Route as AutheddashboardAdminSupportIndexRouteImport } from './routes/_authed/(dashboard)/admin/support/index'
 import { Route as AutheddashboardAdminSupportTicketIdRouteImport } from './routes/_authed/(dashboard)/admin/support/$ticketId'
 import { Route as PublicmarketingBlogCategorySlugRouteImport } from './routes/_public/(marketing)/blog/category/$slug'
@@ -278,12 +277,6 @@ const PublicmarketingBlogSlugRoute = PublicmarketingBlogSlugRouteImport.update({
   path: '/blog/$slug',
   getParentRoute: () => PublicRouteRoute,
 } as any)
-const PublicmarketingTemplatesLandingComposerRoute =
-  PublicmarketingTemplatesLandingComposerRouteImport.update({
-    id: '/(marketing)/templates/landing-composer',
-    path: '/templates/landing-composer',
-    getParentRoute: () => PublicRouteRoute,
-  } as any)
 const AutheddashboardAdminSupportIndexRoute =
   AutheddashboardAdminSupportIndexRouteImport.update({
     id: '/support/',
@@ -338,7 +331,6 @@ export interface FileRoutesByFullPath {
   '/settings/security': typeof AutheddashboardSettingsSecurityRoute
   '/tickets/$ticketId': typeof AutheddashboardTicketsTicketIdRoute
   '/blog/$slug': typeof PublicmarketingBlogSlugRoute
-  '/templates/landing-composer': typeof PublicmarketingTemplatesLandingComposerRoute
   '/admin/': typeof AutheddashboardAdminIndexRoute
   '/settings/': typeof AutheddashboardSettingsIndexRoute
   '/tickets/': typeof AutheddashboardTicketsIndexRoute
@@ -380,7 +372,6 @@ export interface FileRoutesByTo {
   '/settings/security': typeof AutheddashboardSettingsSecurityRoute
   '/tickets/$ticketId': typeof AutheddashboardTicketsTicketIdRoute
   '/blog/$slug': typeof PublicmarketingBlogSlugRoute
-  '/templates/landing-composer': typeof PublicmarketingTemplatesLandingComposerRoute
   '/admin': typeof AutheddashboardAdminIndexRoute
   '/settings': typeof AutheddashboardSettingsIndexRoute
   '/tickets': typeof AutheddashboardTicketsIndexRoute
@@ -428,7 +419,6 @@ export interface FileRoutesById {
   '/_authed/(dashboard)/settings/security': typeof AutheddashboardSettingsSecurityRoute
   '/_authed/(dashboard)/tickets/$ticketId': typeof AutheddashboardTicketsTicketIdRoute
   '/_public/(marketing)/blog/$slug': typeof PublicmarketingBlogSlugRoute
-  '/_public/(marketing)/templates/landing-composer': typeof PublicmarketingTemplatesLandingComposerRoute
   '/_authed/(dashboard)/admin/': typeof AutheddashboardAdminIndexRoute
   '/_authed/(dashboard)/settings/': typeof AutheddashboardSettingsIndexRoute
   '/_authed/(dashboard)/tickets/': typeof AutheddashboardTicketsIndexRoute
@@ -475,7 +465,6 @@ export interface FileRouteTypes {
     | '/settings/security'
     | '/tickets/$ticketId'
     | '/blog/$slug'
-    | '/templates/landing-composer'
     | '/admin/'
     | '/settings/'
     | '/tickets/'
@@ -517,7 +506,6 @@ export interface FileRouteTypes {
     | '/settings/security'
     | '/tickets/$ticketId'
     | '/blog/$slug'
-    | '/templates/landing-composer'
     | '/admin'
     | '/settings'
     | '/tickets'
@@ -564,7 +552,6 @@ export interface FileRouteTypes {
     | '/_authed/(dashboard)/settings/security'
     | '/_authed/(dashboard)/tickets/$ticketId'
     | '/_public/(marketing)/blog/$slug'
-    | '/_public/(marketing)/templates/landing-composer'
     | '/_authed/(dashboard)/admin/'
     | '/_authed/(dashboard)/settings/'
     | '/_authed/(dashboard)/tickets/'
@@ -876,13 +863,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicmarketingBlogSlugRouteImport
       parentRoute: typeof PublicRouteRoute
     }
-    '/_public/(marketing)/templates/landing-composer': {
-      id: '/_public/(marketing)/templates/landing-composer'
-      path: '/templates/landing-composer'
-      fullPath: '/templates/landing-composer'
-      preLoaderRoute: typeof PublicmarketingTemplatesLandingComposerRouteImport
-      parentRoute: typeof PublicRouteRoute
-    }
     '/_authed/(dashboard)/admin/support/': {
       id: '/_authed/(dashboard)/admin/support/'
       path: '/support'
@@ -912,7 +892,6 @@ interface PublicRouteRouteChildren {
   PubliclegalTermsRoute: typeof PubliclegalTermsRoute
   PublicmarketingContactRoute: typeof PublicmarketingContactRoute
   PublicmarketingBlogSlugRoute: typeof PublicmarketingBlogSlugRoute
-  PublicmarketingTemplatesLandingComposerRoute: typeof PublicmarketingTemplatesLandingComposerRoute
   PublicmarketinglandingPageIndexRoute: typeof PublicmarketinglandingPageIndexRoute
   PublicmarketingBlogIndexRoute: typeof PublicmarketingBlogIndexRoute
   PublicmarketingBlogCategorySlugRoute: typeof PublicmarketingBlogCategorySlugRoute
@@ -923,8 +902,6 @@ const PublicRouteRouteChildren: PublicRouteRouteChildren = {
   PubliclegalTermsRoute: PubliclegalTermsRoute,
   PublicmarketingContactRoute: PublicmarketingContactRoute,
   PublicmarketingBlogSlugRoute: PublicmarketingBlogSlugRoute,
-  PublicmarketingTemplatesLandingComposerRoute:
-    PublicmarketingTemplatesLandingComposerRoute,
   PublicmarketinglandingPageIndexRoute: PublicmarketinglandingPageIndexRoute,
   PublicmarketingBlogIndexRoute: PublicmarketingBlogIndexRoute,
   PublicmarketingBlogCategorySlugRoute: PublicmarketingBlogCategorySlugRoute,

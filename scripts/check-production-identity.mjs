@@ -17,6 +17,9 @@ const forbiddenTokens = [
 const sourceArtifacts = [
   "packages/app-config/src/public-runtime.ts",
   "packages/app-config/src/product-config.ts",
+  "packages/i18n/src/messages/web/en.json",
+  "packages/i18n/src/messages/web/zh.json",
+  "packages/i18n/src/messages/web/jp.json",
   "apps/web/public/robots.txt",
   "apps/server/src/app/register-core-routes.ts",
   "apps/web/wrangler.jsonc",

@@ -19,6 +19,11 @@
       "import": "./src/public-runtime.ts",
       "default": "./src/public-runtime.ts"
     },
+    "./content-flags": {
+      "types": "./src/content-flags.ts",
+      "import": "./src/content-flags.ts",
+      "default": "./src/content-flags.ts"
+    },
     "./backoffice-visibility": {
       "types": "./src/backoffice-visibility.ts",
       "import": "./src/backoffice-visibility.ts",

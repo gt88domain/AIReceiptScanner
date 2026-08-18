@@ -1,3 +1,4 @@
+import { contentSurfaceFlags } from "./content-flags";
 import { publicRuntimeConfig, resolvePublicRuntimeConfig } from "./public-runtime";
 import { productMembershipPlans } from "./membership-config";
 import { productStorageConfig } from "./product-storage-config";
@@ -16,6 +17,8 @@ export const productConfig = {
       tickets: resolvedPublicRuntimeConfig.features.tickets,
       jobs: true,
       mobile: false,
+      docs: contentSurfaceFlags.docs,
+      blog: contentSurfaceFlags.blog,
     },
     app: {
       name: publicRuntimeConfig.appName,

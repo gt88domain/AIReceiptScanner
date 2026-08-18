@@ -66,8 +66,8 @@ export const Route = createFileRoute("/_public/(marketing)/blog/$slug")({
   head: ({ loaderData }) => {
     const locale = getCurrentLocale();
     const messages = getMessages(locale);
-    const title = loaderData?.seo.title ?? messages.blog.list.title;
-    const description = loaderData?.seo.description ?? messages.blog.list.description;
+    const title = loaderData?.seo.title ?? messages.contentBlog.title;
+    const description = loaderData?.seo.description ?? messages.contentBlog.description;
 
     return buildSeoHead({
       locale,
@@ -90,6 +90,8 @@ const serverLoader = createServerFn({
 })
   .validator((data: { slug: string; locale: Locale }) => data)
   .handler(async ({ data: { slug, locale } }): Promise<DetailLoaderData> => {
+    if (!webConfig.blogEnabled) throw notFound();
+
     const {
       authorSource,
       categorySource,
@@ -167,7 +169,7 @@ const serverLoader = createServerFn({
 
 function RouteComponent() {
   const locale = useLocale();
-  const t = useTranslations("blog.detail");
+  const t = useTranslations("contentBlog");
   const loaderData = Route.useLoaderData();
   const data = useFumadocsLoader(loaderData);
 

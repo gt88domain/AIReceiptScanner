@@ -8,7 +8,7 @@ const create = server<typeof Config, import("fumadocs-mdx/runtime/types").Intern
   }
 }>({"doc":{"passthroughs":["extractedReferences"]}});
 
-export const author = await create.doc("author", "content/author", import.meta.glob(["./**/*.{mdx,md}"], {
+export const author = await create.doc("author", "content/author", import.meta.glob(["./**/*.mdx"], {
   "base": "./../content/author",
   "query": {
     "collection": "author"
@@ -16,7 +16,7 @@ export const author = await create.doc("author", "content/author", import.meta.g
   "eager": true
 }));
 
-export const blog = await create.doc("blog", "content/blog", import.meta.glob(["./**/*.{mdx,md}"], {
+export const blog = await create.doc("blog", "content/blog", import.meta.glob(["./**/*.mdx"], {
   "base": "./../content/blog",
   "query": {
     "collection": "blog"
@@ -24,7 +24,7 @@ export const blog = await create.doc("blog", "content/blog", import.meta.glob(["
   "eager": true
 }));
 
-export const category = await create.doc("category", "content/category", import.meta.glob(["./**/*.{mdx,md}"], {
+export const category = await create.doc("category", "content/category", import.meta.glob(["./**/*.mdx"], {
   "base": "./../content/category",
   "query": {
     "collection": "category"
@@ -32,14 +32,14 @@ export const category = await create.doc("category", "content/category", import.
   "eager": true
 }));
 
-export const docs = await create.docs("docs", "content/docs", import.meta.glob(["./**/*.{json,yaml}"], {
+export const docs = await create.docs("docs", "content/docs", import.meta.glob(["./**/meta.json"], {
   "base": "./../content/docs",
   "query": {
     "collection": "docs"
   },
   "import": "default",
   "eager": true
-}), import.meta.glob(["./**/*.{mdx,md}"], {
+}), import.meta.glob(["./**/*.mdx"], {
   "base": "./../content/docs",
   "query": {
     "collection": "docs"

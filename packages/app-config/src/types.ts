@@ -258,6 +258,10 @@ export type AppCommonConfig = {
     jobs?: boolean;
     /** Enables optional mobile runtime integrations on the API Worker. */
     mobile?: boolean;
+    /** Enables the optional public documentation collection. */
+    docs?: boolean;
+    /** Enables the optional public blog collection. */
+    blog?: boolean;
     /** Enables the optional user support ticket module. */
     tickets?: boolean;
   };

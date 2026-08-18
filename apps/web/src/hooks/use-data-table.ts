@@ -85,6 +85,12 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
 
   const navigate = useNavigate();
   const search = useSearch({ strict: false }) as SearchRecord;
+  type CurrentSearch = Parameters<
+    Extract<
+      NonNullable<Parameters<typeof navigate>[0]["search"]>,
+      (...args: never[]) => unknown
+    >
+  >[0];
 
   const defaultPageSize = initialState?.pagination?.pageSize ?? 10;
 
@@ -93,7 +99,7 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
     (updates: SearchRecord) => {
       navigate({
         to: ".",
-        search: (prev) => {
+        search: (prev: CurrentSearch) => {
           const next = { ...(prev as SearchRecord) };
           for (const [key, value] of Object.entries(updates)) {
             if (value === undefined || value === null) {

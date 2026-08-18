@@ -42,12 +42,13 @@ export const Route = createFileRoute("/_public/(marketing)/blog/category/$slug")
   head: ({ loaderData }) => {
     const locale = getCurrentLocale();
     const messages = getMessages(locale);
-    const categoryName = loaderData?.selectedCategory.name ?? messages.blog.list.title;
-    const description = loaderData?.selectedCategory.description ?? messages.blog.list.description;
+    const categoryName = loaderData?.selectedCategory.name ?? messages.contentBlog.title;
+    const description =
+      loaderData?.selectedCategory.description ?? messages.contentBlog.description;
 
     return buildSeoHead({
       locale,
-      title: `${categoryName} | ${messages.blog.list.title} | ${webConfig.AppName}`,
+      title: `${categoryName} | ${messages.contentBlog.title} | ${webConfig.AppName}`,
       description,
       canonicalPath: `/blog/category/${loaderData?.selectedCategory.slug ?? ""}`,
       type: "article",
@@ -64,6 +65,8 @@ const serverLoader = createServerFn({
 })
   .validator((data: { slug: string; locale: Locale }) => data)
   .handler(async ({ data: { slug, locale } }): Promise<CategoryLoaderData | null> => {
+    if (!webConfig.blogEnabled) return null;
+
     const {
       authorSource,
       categorySource,
@@ -127,7 +130,7 @@ const serverLoader = createServerFn({
   });
 
 function RouteComponent() {
-  const t = useTranslations("blog.list");
+  const t = useTranslations("contentBlog");
   const locale = useLocale();
   const { selectedCategory, categories, posts } = Route.useLoaderData();
 

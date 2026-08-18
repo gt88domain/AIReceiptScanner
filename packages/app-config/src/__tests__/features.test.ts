@@ -339,4 +339,8 @@ describe("product features", () => {
       }),
     ).toThrow("[email:OTP_CAPABILITY_REQUIRED]");
   });
+
+  it("keeps public content collections disabled by default", () => {
+    expect(resolveCommonConfig().features).toMatchObject({ docs: false, blog: false });
+  });
 });

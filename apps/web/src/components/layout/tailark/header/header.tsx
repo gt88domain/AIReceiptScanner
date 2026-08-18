@@ -33,9 +33,9 @@ export const Header = () => {
       { name: t("menu.integrations"), to: "/", hash: "integrations" },
       { name: t("menu.pricing"), to: "/", hash: "pricing" },
       { name: t("menu.faq"), to: "/", hash: "faq" },
-      { name: t("menu.blog"), to: "/blog" },
+      ...(webConfig.blogPublic ? [{ name: t("menu.blog"), to: "/blog" }] : []),
       ...(webConfig.contactFormEnabled ? [{ name: t("menu.contact"), to: "/contact" }] : []),
-      { name: t("menu.docs"), href: "/docs" },
+      ...(webConfig.docsPublic ? [{ name: t("menu.docs"), href: "/docs" }] : []),
     ],
     [t],
   );

@@ -10,6 +10,21 @@
     "signOut": "ログアウト",
     "dashboard": "ダッシュボード"
   },
+  "contentDocs": {
+    "title": "ドキュメント",
+    "empty": "コンテンツを準備中です。"
+  },
+  "contentBlog": {
+    "title": "記事",
+    "description": "プロダクトの更新と役立つ情報。",
+    "empty": "コンテンツを準備中です。",
+    "allCategories": "すべてのカテゴリ",
+    "selectCategory": "カテゴリを選択",
+    "backToBlog": "記事一覧に戻る",
+    "loading": "記事を読み込んでいます…",
+    "readMore": "続きを読む",
+    "onThisPage": "このページの内容"
+  },
   "dataTable": {
     "viewOptions": {
       "view": "表示",
@@ -107,7 +122,7 @@
     },
     "footer": {
       "description": "スタートアップやサイドプロジェクト向けのコンポーネントコレクションです。",
-      "copyright": "© {year} TanStack Template. All rights reserved.",
+      "copyright": "© {year} {appName}. All rights reserved.",
       "newsletter": {
         "title": "プロダクト更新を受け取る",
         "description": "共有する価値がある更新だけを簡潔にお届けします。",
@@ -146,10 +161,6 @@
       }
     }
   },
-  "landingComposer": {
-    "title": "ランディングページコンポーザー",
-    "description": "ランディングページのセクションとテーマをプレビューして構成します。"
-  },
   "contact": {
     "eyebrow": "お問い合わせ",
     "title": "どのようにお手伝いできますか？",
@@ -169,21 +180,6 @@
       "name": "2 文字以上入力してください。",
       "email": "有効なメールアドレスを入力してください。",
       "message": "10 文字以上入力してください。"
-    }
-  },
-  "blog": {
-    "list": {
-      "title": "ブログ",
-      "description": "プロダクト更新、実践ガイド、開発知見を共有します。",
-      "allCategories": "すべて",
-      "selectCategory": "カテゴリを選択",
-      "empty": "このカテゴリにはまだ記事がありません。"
-    },
-    "detail": {
-      "backToBlog": "ブログに戻る",
-      "onThisPage": "目次",
-      "readMore": "関連記事",
-      "loading": "記事を読み込み中..."
     }
   },
   "auth": {
@@ -639,7 +635,7 @@
         },
         "contactUs": {
           "title": "お問い合わせ",
-          "content": "プライバシーに関するご質問やご要望は support@demo.aiarticles.com までご連絡ください。"
+          "content": "プライバシーに関するご質問やご要望は、サポートチームまでご連絡ください。"
         }
       }
     },
@@ -681,7 +677,7 @@
         },
         "contactUs": {
           "title": "お問い合わせ",
-          "content": "本規約に関するご質問は support@demo.aiarticles.com までご連絡ください。"
+          "content": "本規約に関するご質問は、サポートチームまでご連絡ください。"
         }
       }
     }

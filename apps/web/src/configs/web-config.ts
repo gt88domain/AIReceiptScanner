@@ -2,19 +2,10 @@ import { resolvePublicRuntimeConfig } from "@repo/app-config/public-runtime";
 import { trimTrailingSlash } from "@repo/shared";
 import { getCurrentLocale } from "@/i18n";
 import { defaultLocale } from "@/i18n/config";
-import type { LandingPageComponentKey } from "./landing-page-component/landing-page-component-registry";
 import type { WebConfig, AuthUrls, BillingUrls } from "./types";
 
 const publicRuntime = resolvePublicRuntimeConfig();
 const webRoutes = publicRuntime.routes;
-
-const defaultLandingPageComponents = [
-  "hero-section-23",
-  "features-section-21",
-  "tailark-content",
-  "tailark-faqs",
-  "tailark-call-to-action",
-] as const satisfies readonly LandingPageComponentKey[];
 
 function resolveAppUrl(): string {
   const configuredAppUrl = import.meta.env.VITE_APP_URL;
@@ -51,6 +42,10 @@ export const webConfig: WebConfig = {
   storageEnabled: publicRuntime.features.storage,
   newsletterEnabled: publicRuntime.features.newsletter,
   contactFormEnabled: publicRuntime.features.contactForm,
+  docsEnabled: import.meta.env.VITE_CONTENT_DOCS_ENABLED === "true",
+  blogEnabled: import.meta.env.VITE_CONTENT_BLOG_ENABLED === "true",
+  docsPublic: import.meta.env.VITE_CONTENT_DOCS_PUBLIC === "true",
+  blogPublic: import.meta.env.VITE_CONTENT_BLOG_PUBLIC === "true",
   auth: {
     methods: {
       emailPasswordEnabled: publicRuntime.auth.methods.emailPassword,
@@ -64,7 +59,6 @@ export const webConfig: WebConfig = {
     },
   },
   defaultThemePresetKey: publicRuntime.defaultThemePresetKey,
-  defaultLandingPageComponents,
 };
 
 /**

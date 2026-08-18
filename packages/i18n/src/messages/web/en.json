@@ -10,6 +10,21 @@
     "signOut": "Sign out",
     "dashboard": "Dashboard"
   },
+  "contentDocs": {
+    "title": "Documentation",
+    "empty": "Content is being prepared."
+  },
+  "contentBlog": {
+    "title": "Articles",
+    "description": "Product updates and useful information.",
+    "empty": "Content is being prepared.",
+    "allCategories": "All categories",
+    "selectCategory": "Select a category",
+    "backToBlog": "Back to articles",
+    "loading": "Loading article…",
+    "readMore": "Read more",
+    "onThisPage": "On this page"
+  },
   "dataTable": {
     "viewOptions": {
       "view": "View",
@@ -107,7 +122,7 @@
     },
     "footer": {
       "description": "A collection of components for your startup business or side project.",
-      "copyright": "© {year} TanStack Template. All rights reserved.",
+      "copyright": "© {year} {appName}. All rights reserved.",
       "newsletter": {
         "title": "Get product updates",
         "description": "A short, useful note when we ship something worth sharing.",
@@ -146,10 +161,6 @@
       }
     }
   },
-  "landingComposer": {
-    "title": "Landing page composer",
-    "description": "Preview and compose landing page sections and themes."
-  },
   "contact": {
     "eyebrow": "Contact",
     "title": "How can we help?",
@@ -169,21 +180,6 @@
       "name": "Enter at least 2 characters.",
       "email": "Enter a valid email address.",
       "message": "Enter at least 10 characters."
-    }
-  },
-  "blog": {
-    "list": {
-      "title": "Blog",
-      "description": "News, product updates, and practical engineering guides.",
-      "allCategories": "All",
-      "selectCategory": "Select Category",
-      "empty": "No posts available in this category yet."
-    },
-    "detail": {
-      "backToBlog": "Back to Blog",
-      "onThisPage": "On this page",
-      "readMore": "Read more",
-      "loading": "Loading article..."
     }
   },
   "auth": {
@@ -639,7 +635,7 @@
         },
         "contactUs": {
           "title": "Contact Us",
-          "content": "If you have privacy questions or requests, contact us at support@demo.aiarticles.com."
+          "content": "If you have privacy questions or requests, contact our support team."
         }
       }
     },
@@ -681,7 +677,7 @@
         },
         "contactUs": {
           "title": "Contact Us",
-          "content": "For questions about these terms, please contact support@demo.aiarticles.com."
+          "content": "For questions about these terms, please contact our support team."
         }
       }
     }
