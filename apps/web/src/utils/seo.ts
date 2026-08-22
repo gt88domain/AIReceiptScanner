@@ -12,6 +12,11 @@ type JsonLdObject = {
   [key: string]: JsonLdValue | undefined;
 };
 
+export type BreadcrumbJsonLdItem = {
+  href?: string;
+  name: string;
+};
+
 type SeoMetaTag = React.JSX.IntrinsicElements["meta"] | { title: string };
 
 type SeoLinkTag = React.JSX.IntrinsicElements["link"];
@@ -92,6 +97,29 @@ function resolveOrigin(): string {
   }
 
   return "http://localhost:3000";
+}
+
+/**
+ * Routes pass this value to buildSeoHead({ ldJson }). Breadcrumb labels and
+ * paths remain product-owned so they cannot drift from the visible hierarchy.
+ */
+export function buildBreadcrumbListJsonLd(
+  items: readonly BreadcrumbJsonLdItem[],
+): JsonLdObject | undefined {
+  if (items.length < 2) return undefined;
+
+  const origin = resolveOrigin();
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      ...(item.href ? { item: toAbsoluteUrl(item.href, origin) } : {}),
+    })),
+  };
 }
 
 function resolveCanonicalPath(path: string, locale: Locale): string {

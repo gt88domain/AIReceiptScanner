@@ -206,7 +206,11 @@ export default defineConfig(({ mode }) => {
     plugins: [
       robotsTxtPlugin(sitemapHost),
       cloudflare({ viteEnvironment: { name: "ssr" } }),
-      devtools(),
+      // Two TanStack dev servers on one machine otherwise crash on the fixed
+      // devtools event-bus port (42069); point each extra worktree at its own.
+      devtools({
+        eventBusConfig: { port: Number(process.env.TANSTACK_DEVTOOLS_BUS_PORT ?? 42069) },
+      }),
       tailwindcss(),
       tanstackStart({
         srcDirectory: "src",
