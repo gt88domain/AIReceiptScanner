@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "check-types": "tsc -b",
+    "check-types": "fumadocs-mdx && tsc -b",
     "serve": "vite preview",
     "test:integration": "vitest run",
     "dev": "vite dev --port=3000 --host",
