@@ -87,7 +87,8 @@
 3. 永不合并 spike 分支;永不恢复泛化 Landing、Header/Footer 重设计、假数据、默认目录路由。
 4. Conventional Commits;PR 描述写清提取来源、偏差、行为变更。
 5. 主工作区有所有者的未提交草稿,本任务一律不碰。
-6. CI 必须真绿(auto-merge 生效);若 Actions 再欠费暂停,先通知所有者,不要绕过门禁。
+6. CI 必须真绿;若 Actions 再欠费暂停,先通知所有者,不要绕过门禁。
+7. 开 PR 后**禁止启用 auto-merge**;等待验收方 review 通过并确认 CI 真绿后,由验收方合并。
 
 ## 完成定义
 
