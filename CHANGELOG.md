@@ -3,6 +3,14 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.0.1](https://github.com/gt88domain/easystarter-template/compare/v2.0.0...v2.0.1) (2026-08-22)
+
+
+### Bug Fixes
+
+* **web:** generate fumadocs collections before type checking ([#93](https://github.com/gt88domain/easystarter-template/issues/93)) ([98d41e3](https://github.com/gt88domain/easystarter-template/commit/98d41e3eb11cfec913348439eccb6b19154261c2))
+* **web:** make opt-in content surfaces SEO-ready ([#91](https://github.com/gt88domain/easystarter-template/issues/91)) ([f7aa8f8](https://github.com/gt88domain/easystarter-template/commit/f7aa8f86c12ff376dcd18ce12893d1fde2dda392))
+
 ## [2.0.0](https://github.com/gt88domain/easystarter-template/compare/v1.0.0...v2.0.0) (2026-08-18)
 
 
