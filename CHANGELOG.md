@@ -3,6 +3,13 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.1.0](https://github.com/gt88domain/easystarter-template/compare/v2.0.1...v2.1.0) (2026-08-22)
+
+
+### Features
+
+* **web:** add semantic public-site skin tokens ([#96](https://github.com/gt88domain/easystarter-template/issues/96)) ([94ea80c](https://github.com/gt88domain/easystarter-template/commit/94ea80cd93d435cb44e850049f7238a63bb661b9))
+
 ## [2.0.1](https://github.com/gt88domain/easystarter-template/compare/v2.0.0...v2.0.1) (2026-08-22)
 
 
