@@ -2,6 +2,9 @@
 @import "tw-animate-css";
 @import "./marquee.css";
 @import "./fonts/default.css";
+@import "./skins/saas-neutral.css";
+@import "./skins/catalog-blue.css";
+@import "./skins/dark-entertainment.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -39,6 +42,20 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+  --color-surface: var(--skin-surface);
+  --color-surface-raised: var(--skin-surface-raised);
+  --color-surface-hover: var(--skin-surface-hover);
+  --color-surface-active: var(--skin-surface-active);
+  --color-ink: var(--skin-ink);
+  --color-ink-muted: var(--skin-ink-muted);
+  --color-skin-accent: var(--skin-accent);
+  --color-skin-accent-ink: var(--skin-accent-ink);
+  --color-skin-on-accent: var(--skin-on-accent);
+  --color-line: var(--skin-line);
+  --color-line-strong: var(--skin-line-strong);
+  --background-image-page-skin: var(--skin-page);
+  --background-image-hero-skin: var(--skin-hero);
+
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
@@ -48,6 +65,8 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --radius-card: var(--skin-radius-card);
+  --radius-control: var(--skin-radius-control);
 
   --shadow-2xs: var(--shadow-2xs);
   --shadow-xs: var(--shadow-xs);
@@ -57,12 +76,20 @@
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
+  --shadow-raised: var(--skin-shadow-raised);
+  --shadow-raised-hover: var(--skin-shadow-raised-hover);
 
   --animate-marquee-horizontal: marquee-horizontal var(--marquee-duration) infinite linear;
   --animate-marquee-vertical: marquee-vertical var(--marquee-duration) infinite linear;
 }
 
 @layer base {
+  :root {
+    --header-height: 4rem;
+    --page-top-gap: 3rem;
+    --page-top-offset: calc(var(--header-height) + var(--page-top-gap));
+  }
+
   * {
     @apply border-border outline-ring/50;
   }
