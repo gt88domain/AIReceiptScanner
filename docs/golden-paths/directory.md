@@ -4,6 +4,63 @@ Use this path to connect an existing searchable catalog or content directory to
 EasyStarter. It is a recipe, not a directory framework: the product retains its
 database, URL contract, SEO, taxonomy, cards, filters, and editorial model.
 
+## Presentation primitives and adapter contract
+
+The route-independent components under `apps/web/src/components/listing/`
+provide the reusable presentation frame. They do not register routes, fetch
+data, define a resource schema, choose canonical URLs, or persist saved items.
+Import the component you need from its file; there is no required aggregate
+adapter or preview layer.
+
+The product adapter is the route, loader, and state code that connects these
+components to one product domain. It owns:
+
+- every visible and accessible label passed through component props;
+- validated query and URL state, including search, filters, sort, page, limit,
+  and view mode;
+- result data, item keys, media, cards, actions, and empty/error copy;
+- category, child-category, tag, and select-facet values and their allowlists;
+- default sort and ranking rules, plus the meaning of every rank;
+- pagination URLs, canonical/noindex policy, and server-side data access; and
+- guest sign-in and authenticated persistence for save actions.
+
+The components own rendering and interaction only:
+
+- `ListingShell` arranges an optional desktop rail, mobile `FilterDrawer`,
+  header, toolbar, and result content.
+- `ListingFacetRail`, `ListingSearchInput`, and `ListingSortSelect` are
+  controlled inputs. Their callbacks update product-owned state.
+- `ListingToolbar` lays out search, summary, sort, and actions. Its summary is
+  a polite status region; the result grid is deliberately not live.
+- `ListingGrid` receives items, `getItemKey`, and `renderItem`.
+  `ListingMediaCard` receives product-rendered media, title, description,
+  badge, footer, and actions.
+- `ListingLoadingState`, `ListingEmptyState`, and `ListingErrorState` render
+  product-selected states. `ListingLoadMore` is an interaction-only command;
+  use `ListingPagination` for crawlable anchor pagination when that component
+  is available.
+- `ListingSaveButton` is controlled by `saved`; it does not authenticate or
+  write a user-resource relation.
+- `ListingPage` composes a route-neutral listing frame. `RankingPage` receives
+  an already-ranked slice, `rankStart`, `rankLabel`, and a row renderer; it
+  never calculates ranking policy.
+
+`PublicDetailLayout` from `apps/web/src/components/public/` provides optional
+breadcrumbs, metadata, actions, visual, aside, and related-content slots around
+product content. The route still owns resource fields, data loading, SEO, and
+action behavior. `Prose` from `apps/web/src/components/content/` styles
+already-rendered semantic HTML; compilation, sanitization, embeds, and content
+data remain product responsibilities.
+
+All text reaches these primitives through props or children. The shared
+components do not read product message catalogs. They consume the semantic skin
+tokens from `apps/web/src/styles/index.css`; products may select or override a
+skin without branching component logic.
+
+No component in this kit creates `/domains`, `/rankings`, `/favorites`, detail,
+or any other default route. Add only the URL families your product owns, and
+keep those TanStack route files thin.
+
 ## 1. Freeze the public contract first
 
 Before changing runtime code, record the public URL families, dynamic segments,
