@@ -39,7 +39,8 @@
 - 验收:① 现有页面(landing/dashboard/auth)像素级无变化;② PR 描述必须写明
   `--header-height: 4rem` 首次定义会使 dashboard site-header 从 auto 变固定高度(既有行为变更);
   ③ token 版本规则写进 PR 描述:新增 `--skin-*` = minor,改名/删除 = major。
-- 门禁:fmt / check-types / lint / `pnpm --filter web build` / `pnpm test:content-surface` 全绿。
+- 门禁:fmt / check-types / lint / `pnpm --filter web build` / `pnpm test:content-surface` / **`pnpm profiles:build`** 全绿。
+  (PR3 教训:CI 的 build job 含 profiles:build,CSS gzip 预算只在它能撞上;组件类 PR 本地必跑。)
 
 ### PR2:SEO 导航件 + devtools 端口修复
 
@@ -48,7 +49,7 @@
   `vite.config.ts` 中 devtools `eventBusConfig` hunk(`TANSTACK_DEVTOOLS_BUS_PORT`,默认 42069)。
 - 新写:`getPageNumbers` 与 breadcrumb JSON-LD 的最小单测(少于 2 项不输出、URL/label 原样透传)。
 - 验收:不产生任何新路由;routeTree/sitemap 无变化。
-- 门禁同 PR1。
+- 门禁同 PR1(含 profiles:build)。
 
 ### PR3:目录/详情/阅读原语 + adapter 契约
 
