@@ -3,6 +3,13 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.2.0](https://github.com/gt88domain/easystarter-template/compare/v2.1.0...v2.2.0) (2026-08-22)
+
+
+### Features
+
+* **web:** add public-site navigation primitives ([#98](https://github.com/gt88domain/easystarter-template/issues/98)) ([dc7f6d0](https://github.com/gt88domain/easystarter-template/commit/dc7f6d0ff37a39864aaf6329df1e611542dab6a1))
+
 ## [2.1.0](https://github.com/gt88domain/easystarter-template/compare/v2.0.1...v2.1.0) (2026-08-22)
 
 
