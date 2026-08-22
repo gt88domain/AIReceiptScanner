@@ -14,7 +14,7 @@
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "wrangler:dev": "wrangler dev --port=3000",
-    "deploy": "pnpm --filter server preflight:production && wrangler deploy",
+    "deploy": "node scripts/sync-production-env.mjs && pnpm --filter server preflight:production && wrangler deploy",
     "cf-typegen": "wrangler types",
     "blog:validate": "node ./scripts/validate-blog-content.mjs"
   },

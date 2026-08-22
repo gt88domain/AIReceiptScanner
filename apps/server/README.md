@@ -27,8 +27,9 @@ cp .env.production.example .env.production
 # 3. Declare the exact production resources this checkout may deploy to
 cp .production-safety.example .production-safety.env
 
-# 4. Upload secrets to the configured Worker
-pnpm run secrets:bulk:production
+# 4. Validate plaintext secrets, then upload them to the configured Worker
+#    (rotation/first-setup only; daily deploys do not need this file)
+pnpm run secrets:push:production
 
 # 5. Validate both Workers, then deploy
 pnpm run deploy
@@ -175,21 +176,23 @@ See `src/auth/README.md` for the boundary rules.
 
 ## 📝 Available Scripts
 
-| Script                             | Description                                                 |
-| ---------------------------------- | ----------------------------------------------------------- |
-| `pnpm run setup`                   | One-click environment setup                                 |
-| `pnpm run dev`                     | Start local dev server (port 3001)                          |
-| `pnpm run dev:init-d1`             | Initialize local D1 sqlite without starting server          |
-| `pnpm run deploy`                  | Run the production guard, then deploy the configured Worker |
-| `pnpm run preflight:production`    | Validate production resources and required secrets          |
-| `pnpm run deploy:dev`              | Deploy without the production guard (development only)      |
-| `pnpm run secrets:bulk:production` | Bulk upload production envs from `.env.production`          |
-| `pnpm run db:generate`             | Generate DB migration                                       |
-| `pnpm run db:migrate:local`        | Initialize local D1 if needed, then run migrations          |
-| `pnpm run db:studio:local`         | Initialize local D1 if needed, then open studio             |
-| `pnpm run db:push`                 | Push schema to D1                                           |
-| `pnpm run db:studio`               | Open Drizzle Studio                                         |
-| `pnpm run generate-types`          | Generate Cloudflare types                                   |
+| Script                              | Description                                                                   |
+| ----------------------------------- | ----------------------------------------------------------------------------- |
+| `pnpm run setup`                    | One-click environment setup                                                   |
+| `pnpm run dev`                      | Start local dev server (port 3001)                                            |
+| `pnpm run dev:init-d1`              | Initialize local D1 sqlite without starting server                            |
+| `pnpm run deploy`                   | Run the production guard, then deploy the configured Worker                   |
+| `pnpm run preflight:production`     | Validate production identities and live-secret presence (no plaintext needed) |
+| `pnpm run deploy:dev`               | Deploy without the production guard (development only)                        |
+| `pnpm run secrets:check:production` | Validate plaintext secrets in `.env.production` (rotation path)               |
+| `pnpm run secrets:bulk:production`  | Bulk upload production envs from `.env.production`                            |
+| `pnpm run secrets:push:production`  | `secrets:check` + `secrets:bulk`; use for first setup or rotation             |
+| `pnpm run db:generate`              | Generate DB migration                                                         |
+| `pnpm run db:migrate:local`         | Initialize local D1 if needed, then run migrations                            |
+| `pnpm run db:studio:local`          | Initialize local D1 if needed, then open studio                               |
+| `pnpm run db:push`                  | Push schema to D1                                                             |
+| `pnpm run db:studio`                | Open Drizzle Studio                                                           |
+| `pnpm run generate-types`           | Generate Cloudflare types                                                     |
 
 ## 📚 Related Docs
 

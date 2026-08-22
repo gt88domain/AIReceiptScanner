@@ -30,6 +30,8 @@
     "CONTROL_ACCESS_TEAM_DOMAIN": "",
     "CONTROL_ACCESS_AUD": "",
   },
+  // Base required secrets, unioned with the product-derived list by the
+  // production preflight's live presence check (`wrangler secret list`).
   "secrets": {
     "required": ["ADMIN_EMAILS", "BETTER_AUTH_SECRET"],
   },

@@ -27,12 +27,14 @@
     "preflight:production": "tsx scripts/check-production-safety.ts && node ../../scripts/check-production-identity.mjs",
     "deploy": "pnpm run preflight:production && wrangler deploy",
     "deploy:dev": "wrangler deploy",
-    "secrets:bulk:production": "wrangler secret bulk .dev.vars.production",
+    "secrets:check:production": "tsx scripts/check-production-safety.ts --with-secrets",
+    "secrets:bulk:production": "node scripts/push-production-secrets.mjs",
+    "secrets:push:production": "pnpm run secrets:check:production && pnpm run secrets:bulk:production",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
     "generate-types": "wrangler types",
     "email-preview": "pnpm dlx react-email dev --dir src/emails/templates --port 4000",
     "test:config": "tsx --test src/auth/guards/guards.test.ts src/auth/expo-plugin.test.ts src/storage/__tests__/access.test.ts src/modules/audit/audit.service.test.ts src/modules/jobs/job.registry.test.ts src/modules/jobs/job.retry.test.ts src/jobs-optional.test.ts src/lib/backoffice-preview.test.ts src/lib/contact-delivery.test.ts",
-    "test:production-config": "tsx scripts/check-production-safety.ts --self-check && node ../../scripts/check-production-identity.mjs --self-check",
+    "test:production-config": "tsx scripts/check-production-safety.ts --self-check && node scripts/push-production-secrets.mjs --self-check && node ../../scripts/check-production-identity.mjs --self-check && node ../web/scripts/sync-production-env.mjs --self-check",
     "test:integration": "tsx --test scripts/check-migration-upgrade.ts && tsc --project test/tsconfig.json --noEmit && vitest run --config vitest.config.ts"
   },
   "dependencies": {

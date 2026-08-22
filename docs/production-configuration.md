@@ -8,8 +8,8 @@ EasyStarter deliberately ships with deployable-looking placeholders, not a deplo
 | --- | --- | --- |
 | `apps/server/wrangler.jsonc` | API Worker identity, D1, R2, Queue bindings, public URLs, OAuth client IDs | Yes, after replacing placeholders |
 | `apps/web/wrangler.jsonc` | Web Worker identity, custom domain, API service binding, public URLs | Yes, after replacing placeholders |
-| `apps/server/.env.production` | API Worker secrets and a local copy of resource identities for the preflight | No |
-| `apps/web/.env.production` | Build-time public URLs; must match Web Worker variables | No |
+| `apps/server/.env.production` | API Worker secrets for the rotation/write path only; **not needed for daily deploys** | No |
+| `apps/web/.env.production` | Build-time public URLs; generated from web `wrangler.jsonc` vars at deploy (`apps/web/scripts/sync-production-env.mjs`) — a hand-maintained copy must match those vars | No |
 | `apps/server/.production-safety.env` | Exact deploy target allowlist | No |
 
 For Server local development use `apps/server/.dev.vars` (Wrangler loads it directly). For Web local development use `apps/web/.env.development`. Their `.example` files are safe starter values; production examples contain explicit values that must be replaced.
@@ -18,24 +18,47 @@ For Server local development use `apps/server/.dev.vars` (Wrangler loads it dire
 
 1. Replace every `replace-*`, `*.example`, and all-zero D1 value in both `wrangler.jsonc` files with one production target.
 2. Create the D1 database, R2 bucket, job queue, and DLQ named by the API Worker configuration. The Queue consumer must point to that DLQ.
-3. Create the three untracked files from their examples and give all shared identifiers exactly the same values as the Worker configuration.
+3. Create `apps/server/.production-safety.env` from its example and give it exactly the same Worker and host values as the Worker configurations. Create `apps/server/.env.production` only on the machine that rotates secrets.
 4. Set runtime secrets in `apps/server/.env.production`. `ADMIN_EMAILS` and `BETTER_AUTH_SECRET` are always required. `EMAIL_FROM` is the verified production sender used by Resend.
 5. If app configuration enables a payment provider or OAuth provider, supply its production secrets and client identifiers. Stripe needs an `sk_live_` secret and distinct, non-test production price IDs.
 6. To challenge Contact and Newsletter submissions, set both `VITE_TURNSTILE_SITE_KEY` in the Web Worker/public build config and `TURNSTILE_SECRET_KEY` in the Server Worker secrets. The preflight rejects either value on its own.
 7. Run `pnpm verify:production-config`; only then upload secrets and deploy.
 
 ```bash
-cp apps/server/.env.production.example apps/server/.env.production
 cp apps/server/.production-safety.example apps/server/.production-safety.env
-cp apps/web/.env.production.example apps/web/.env.production
+# Rotation machine only:
+cp apps/server/.env.production.example apps/server/.env.production
 
-# After replacing every placeholder in both Worker configurations and env files:
+# After replacing every placeholder in both Worker configurations:
 pnpm verify:production-config
-pnpm --filter server secrets:bulk:production
+pnpm --filter server secrets:push:production   # validates plaintext, then filtered wrangler secret bulk
 pnpm deploy
 ```
 
 `pnpm deploy:server`, `pnpm deploy:web`, and `pnpm deploy` all run the same validation first. Development deploy commands remain intentionally separate.
+
+## Daily deploys need no local secrets
+
+Wrangler cannot read secret values back — that is a security property, not a
+limitation to work around. The daily preflight therefore checks **presence, not
+plaintext**: it diffs the live Worker's secret names (`wrangler secret list`)
+against the required-secret list derived from the product configuration plus
+the base `secrets.required` declared in `apps/server/wrangler.jsonc`. Missing
+secrets are errors; undeclared live secrets are warnings so removals stay
+deliberate.
+
+A machine that only deploys code needs `git clone`, `pnpm install`,
+`wrangler login`, and the four-value `.production-safety.env` fuse — nothing
+else; the web build env is generated from `apps/web/wrangler.jsonc` during
+`pnpm deploy:web`. `apps/server/.env.production` holds plaintext secrets and is
+required only on the rotation/write path: `pnpm --filter server
+secrets:push:production` runs the plaintext format validation
+(`secrets:check:production`) and then a **filtered** `wrangler secret bulk`
+that skips empty optional keys and the preflight-only `ENVIRONMENT` marker, so
+the next presence check stays clean. Do not use secret bulk as a daily deploy
+step; daily deploys ship code and keep the live secrets untouched. If a local
+`.env.production` happens to exist, the daily preflight validates it too, so
+stale copies fail loudly instead of silently drifting.
 
 ## What the guard rejects
 
@@ -57,7 +80,10 @@ as warnings so removals remain deliberate.
 - Stripe test secrets, test/placeholder production prices, and equal test/production Stripe price IDs.
 - A production Resend sender on a placeholder or local domain.
 
-The check is intentionally local: CI exercises its failure cases without requiring production secrets. Run it from an approved deploy environment that has the real, untracked values.
+The identity checks are intentionally local: CI exercises their failure cases
+without requiring production secrets. The live-secret presence check runs
+through `wrangler secret list` and requires a logged-in Wrangler on the
+deploying machine; plaintext format validation runs only on the rotation path.
 
 ## Public form abuse controls
 

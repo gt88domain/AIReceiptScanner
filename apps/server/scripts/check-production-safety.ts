@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
+import { execFile } from "node:child_process";
 import { access, readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 import { parse as parseEnv } from "dotenv";
 import { parse as parseJsonc } from "jsonc-parser";
 import {
@@ -11,7 +13,14 @@ import {
   resolveCommonConfig,
   resolveWebCommonConfig,
 } from "@repo/app-config";
-import { validateProductionConfigResult, type EnvValues } from "../src/config/production";
+import {
+  listRequiredSecrets,
+  validateProductionConfigResult,
+  type EnvValues,
+  type ProductionConfigInput,
+} from "../src/config/production";
+
+const execFileAsync = promisify(execFile);
 
 type JsonObject = Record<string, unknown>;
 
@@ -28,6 +37,46 @@ async function readRequiredEnv(path: string) {
   }
 
   return parseEnv(await readFile(path));
+}
+
+async function readOptionalEnv(path: string) {
+  try {
+    await access(path);
+  } catch {
+    return undefined;
+  }
+
+  return parseEnv(await readFile(path));
+}
+
+type WranglerSecretEntry = { name: string; type?: string };
+
+async function listLiveSecrets(workerName: string): Promise<string[]> {
+  let stdout: string;
+  try {
+    ({ stdout } = await execFileAsync(
+      "pnpm",
+      ["exec", "wrangler", "secret", "list", "--name", workerName, "--format", "json"],
+      { cwd: serverDir, maxBuffer: 8 * 1024 * 1024 },
+    ));
+  } catch (error) {
+    const detail =
+      error instanceof Error
+        ? (((error as { stderr?: string }).stderr ?? error.message) as string)
+        : String(error);
+    throw new Error(
+      `Failed to list live secrets for ${workerName} via Wrangler. ` +
+        `Run \`pnpm exec wrangler login\` (then \`pnpm exec wrangler whoami\` to verify) and retry. ` +
+        `Wrangler said: ${detail.trim()}`,
+    );
+  }
+  let entries: WranglerSecretEntry[];
+  try {
+    entries = JSON.parse(stdout) as WranglerSecretEntry[];
+  } catch {
+    throw new Error(`Unexpected \`wrangler secret list\` output for ${workerName}.`);
+  }
+  return entries.map((entry) => entry.name);
 }
 
 async function readJsonc(path: string, label: string) {
@@ -94,9 +143,9 @@ function configuredProductionPriceIds(
 }
 
 async function loadProductionConfig(
-  productionEnv: EnvValues,
+  productionEnv: EnvValues | undefined,
   expectedEnv: EnvValues,
-  webProductionEnv: EnvValues,
+  webProductionEnv: EnvValues | undefined,
 ) {
   const [serverConfig, webConfig] = await Promise.all([
     readJsonc(resolve(serverDir, "wrangler.jsonc"), "server wrangler.jsonc"),
@@ -104,6 +153,10 @@ async function loadProductionConfig(
   ]);
   const serverVars = asObject(serverConfig.vars, "server vars");
   const webVars = asObject(webConfig.vars, "web vars");
+  const secretsBlock = asOptionalObject(serverConfig.secrets, "server secrets");
+  const declaredSecrets = Array.isArray(secretsBlock.required)
+    ? secretsBlock.required.map(String)
+    : [];
   const d1 = asArray(serverConfig.d1_databases, "server d1_databases").find(
     (binding) => binding.binding === "DB",
   );
@@ -139,6 +192,7 @@ async function loadProductionConfig(
   return {
     productionEnv,
     expectedEnv,
+    declaredSecrets,
     server: {
       workerName: value(serverConfig, "name"),
       route: value(serverRoute, "pattern"),
@@ -170,8 +224,12 @@ async function loadProductionConfig(
       websiteUrl: value(webVars, "VITE_APP_URL"),
       serverUrl: value(webVars, "VITE_SERVER_URL"),
       turnstileSiteKey: value(webVars, "VITE_TURNSTILE_SITE_KEY"),
-      buildWebsiteUrl: webProductionEnv.VITE_APP_URL?.trim() ?? "",
-      buildServerUrl: webProductionEnv.VITE_SERVER_URL?.trim() ?? "",
+      // Absent build-env file falls back to the wrangler.jsonc vars that the
+      // deploy-time sync generates from, so the mismatch check only fires on
+      // a real hand-maintained drift.
+      buildWebsiteUrl: webProductionEnv?.VITE_APP_URL?.trim() || value(webVars, "VITE_APP_URL"),
+      buildServerUrl:
+        webProductionEnv?.VITE_SERVER_URL?.trim() || value(webVars, "VITE_SERVER_URL"),
     },
     requirements: {
       features,
@@ -187,11 +245,31 @@ async function loadProductionConfig(
   };
 }
 
+/**
+ * Daily deploy preflight (presence mode): verifies Worker/D1/R2/Queue/domain
+ * identities against `.production-safety.env` and diffs the live Worker's
+ * secret names (`wrangler secret list`) against the product configuration's
+ * required secrets. Wrangler cannot read secret values back by design, so no
+ * plaintext secrets are needed on the deploying machine.
+ *
+ * Rotation/write path (`--with-secrets`): additionally validates the plaintext
+ * values in `apps/server/.env.production` before `wrangler secret bulk` pushes
+ * them. This is the only mode that requires local plaintext secrets.
+ */
 async function main() {
-  const productionEnv = await readRequiredEnv(resolve(serverDir, ".env.production"));
+  const withSecrets = process.argv.includes("--with-secrets");
+  const productionEnv = withSecrets
+    ? await readRequiredEnv(resolve(serverDir, ".env.production"))
+    : await readOptionalEnv(resolve(serverDir, ".env.production"));
   const expectedEnv = await readRequiredEnv(resolve(serverDir, ".production-safety.env"));
-  const webProductionEnv = await readRequiredEnv(resolve(rootDir, "apps/web/.env.production"));
+  // Web build URLs are generated from web wrangler.jsonc at deploy time
+  // (scripts/sync-production-env.mjs); a hand-maintained copy, when present,
+  // is still cross-checked. A fresh deploy machine needs neither file.
+  const webProductionEnv = await readOptionalEnv(resolve(rootDir, "apps/web/.env.production"));
   const input = await loadProductionConfig(productionEnv, expectedEnv, webProductionEnv);
+  if (!withSecrets) {
+    input.liveSecrets = await listLiveSecrets(input.server.workerName);
+  }
   const result = validateProductionConfigResult(input);
   if (result.warnings.length > 0) {
     console.warn(
@@ -203,7 +281,14 @@ async function main() {
       `Production safety preflight failed:\n- ${result.errors.map(({ message }) => message).join("\n- ")}`,
     );
   }
-  console.log(`Production safety preflight passed for ${input.server.workerName}.`);
+  console.log(
+    withSecrets
+      ? `Production secrets validation passed for ${input.server.workerName} ` +
+          `(${listRequiredSecrets(input).length} required secrets checked).`
+      : `Production safety preflight passed for ${input.server.workerName} ` +
+          `(${input.liveSecrets?.length ?? 0} live secrets present, ` +
+          `${listRequiredSecrets(input).length} required).`,
+  );
 }
 
 function selfCheck() {
@@ -269,7 +354,7 @@ function selfCheck() {
     },
   };
 
-  const errors = (input: typeof validInput) =>
+  const errors = (input: ProductionConfigInput) =>
     validateProductionConfigResult(input).errors.map(({ message }) => message);
 
   assert.deepEqual(errors(validInput), []);
@@ -507,6 +592,60 @@ function selfCheck() {
   });
   assert.deepEqual(residualJobsResult.errors, []);
   assert.ok(residualJobsResult.warnings.some(({ code }) => code === "DISABLED_JOBS_BINDING"));
+
+  // Presence mode (daily deploy path): no plaintext secrets, live names only.
+  const presenceInput: ProductionConfigInput = {
+    ...validInput,
+    productionEnv: undefined,
+    declaredSecrets: ["ADMIN_EMAILS", "BETTER_AUTH_SECRET"],
+    liveSecrets: listRequiredSecrets({
+      ...validInput,
+      declaredSecrets: ["ADMIN_EMAILS", "BETTER_AUTH_SECRET"],
+    }),
+  };
+  assert.deepEqual(errors(presenceInput), []);
+  assert.match(
+    validateProductionConfigResult({
+      ...presenceInput,
+      liveSecrets: (presenceInput.liveSecrets ?? []).filter((name) => name !== "STRIPE_SECRET_KEY"),
+    })
+      .errors.map(({ code }) => code)
+      .join("\n"),
+    /MISSING_LIVE_SECRET/,
+  );
+  assert.ok(
+    validateProductionConfigResult({
+      ...presenceInput,
+      liveSecrets: [...(presenceInput.liveSecrets ?? []), "STALE_UNUSED_SECRET"],
+    }).warnings.some(({ code }) => code === "UNDECLARED_LIVE_SECRET"),
+  );
+  // Presence mode must not require plaintext-only values.
+  assert.ok(
+    validateProductionConfigResult(presenceInput).errors.every(
+      ({ code }) => code !== "INVALID_ENVIRONMENT",
+    ),
+  );
+  // Waffo presence must include WAFFO_ENVIRONMENT (missing silently means test mode).
+  const waffoInput: ProductionConfigInput = {
+    ...validInput,
+    productionEnv: undefined,
+    requirements: {
+      ...validInput.requirements,
+      paymentProviders: new Set(["waffo"]),
+      productionPriceIds: [],
+    },
+  };
+  const waffoRequired = listRequiredSecrets(waffoInput);
+  assert.ok(waffoRequired.includes("WAFFO_ENVIRONMENT"));
+  assert.match(
+    validateProductionConfigResult({
+      ...waffoInput,
+      liveSecrets: waffoRequired.filter((n) => n !== "WAFFO_ENVIRONMENT"),
+    })
+      .errors.map(({ code }) => code)
+      .join("\n"),
+    /MISSING_LIVE_SECRET/,
+  );
 }
 
 if (process.argv.includes("--self-check")) {

@@ -24,8 +24,13 @@ export type ProductionValidationResult = {
 };
 
 export type ProductionConfigInput = {
-  productionEnv: EnvValues;
+  /** Plaintext secrets from `.env.production`. Present only on the rotation/write path. */
+  productionEnv?: EnvValues;
   expectedEnv: EnvValues;
+  /** Secret names reported by `wrangler secret list`. Present on the daily deploy path. */
+  liveSecrets?: string[];
+  /** Base required-secret list declared in wrangler.jsonc `secrets.required`. */
+  declaredSecrets?: string[];
   server: {
     workerName: string;
     route: string;
@@ -67,6 +72,7 @@ const PLACEHOLDER_VALUE = /(?:^|[-_.])(?:your|replace|placeholder|template)(?:$|
 const PLACEHOLDER_HOSTNAME = /(^|\.)(?:example\.com|localhost|local|invalid)$|\.example$/i;
 const ZERO_D1_ID = "00000000-0000-0000-0000-000000000000";
 const IPV4_ADDRESS = /^\d{1,3}(?:\.\d{1,3}){3}$/;
+const SUPPORTED_PAYMENT_PROVIDERS = new Set(["stripe", "creem", "waffo", "revenuecat"]);
 
 function add(messages: ValidationMessage[], code: string, message: string) {
   messages.push({ code, message });
@@ -248,11 +254,7 @@ function validateProviderSecrets(
         required(values, "REVENUECAT_WEBHOOK_SECRET", errors);
         break;
       default:
-        add(
-          errors,
-          "UNSUPPORTED_PAYMENT_PROVIDER",
-          `Unsupported configured payment provider: ${provider}.`,
-        );
+        break;
     }
   }
 }
@@ -266,6 +268,72 @@ function validateFeatureContract(features: ProductFeatures, errors: ValidationMe
       "INVALID_FEATURE_COMBINATION",
       error instanceof Error ? error.message : String(error),
     );
+  }
+}
+
+/**
+ * Secret names the product configuration requires on the production Worker.
+ * Derived from the same inputs as the plaintext checks so the presence-only
+ * daily preflight (`wrangler secret list`) and the rotation write path agree.
+ */
+export function listRequiredSecrets(input: ProductionConfigInput): string[] {
+  const { requirements, web, declaredSecrets } = input;
+  const features = requirements.features ?? resolveProductFeatures();
+  const names = new Set<string>(["BETTER_AUTH_SECRET", ...(declaredSecrets ?? [])]);
+  if (features.admin) names.add("ADMIN_EMAILS");
+  if (requirements.email.enabled && requirements.email.provider === "resend") {
+    names.add("RESEND_API_KEY");
+    names.add("EMAIL_FROM");
+    if (requirements.email.capabilities.contactForm) names.add("CONTACT_RECIPIENT");
+  }
+  if (web.turnstileSiteKey.trim()) names.add("TURNSTILE_SECRET_KEY");
+  if (requirements.oauth.github) names.add("GITHUB_CLIENT_SECRET");
+  if (requirements.oauth.google) names.add("GOOGLE_CLIENT_SECRET");
+  if (!features.billing) return [...names];
+  for (const provider of requirements.paymentProviders) {
+    switch (provider) {
+      case "stripe":
+        names.add("STRIPE_SECRET_KEY");
+        names.add("STRIPE_WEBHOOK_SECRET");
+        break;
+      case "creem":
+        names.add("CREEM_API_KEY");
+        names.add("CREEM_WEBHOOK_SECRET");
+        break;
+      case "waffo":
+        names.add("WAFFO_MERCHANT_ID");
+        names.add("WAFFO_PRIVATE_KEY");
+        // Delivered as a secret; without it the runtime falls back to test mode.
+        names.add("WAFFO_ENVIRONMENT");
+        break;
+      case "revenuecat":
+        names.add("REVENUECAT_WEBHOOK_SECRET");
+        break;
+    }
+  }
+  return [...names];
+}
+
+function validateLiveSecrets(input: ProductionConfigInput, result: ProductionValidationResult) {
+  const live = new Set(input.liveSecrets);
+  const requiredNames = new Set(listRequiredSecrets(input));
+  for (const name of requiredNames) {
+    if (!live.has(name)) {
+      add(
+        result.errors,
+        "MISSING_LIVE_SECRET",
+        `${name} is required by the product configuration but missing from the live Worker. Set it via the secrets write path (pnpm -F server secrets:push:production).`,
+      );
+    }
+  }
+  for (const name of live) {
+    if (!requiredNames.has(name)) {
+      add(
+        result.warnings,
+        "UNDECLARED_LIVE_SECRET",
+        `${name} exists on the live Worker but is not required by the product configuration. Remove it deliberately if it is stale.`,
+      );
+    }
   }
 }
 
@@ -323,9 +391,10 @@ export function validateProductionConfigResult(
   if (server.nodeEnv !== "production") {
     add(errors, "INVALID_NODE_ENV", "NODE_ENV must be production in server wrangler.jsonc.");
   }
-  if (productionEnv.ENVIRONMENT?.trim() !== "production") {
+  if (productionEnv && productionEnv.ENVIRONMENT?.trim() !== "production") {
     add(errors, "INVALID_ENVIRONMENT", "ENVIRONMENT must be production in .env.production.");
   }
+  if (input.liveSecrets) validateLiveSecrets(input, { errors, warnings });
 
   if (!/^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}$/i.test(server.databaseId)) {
     add(errors, "INVALID_D1_DATABASE_ID", "DB must use a concrete D1 database_id.");
@@ -421,51 +490,57 @@ export function validateProductionConfigResult(
     add(errors, "INVALID_WEB_ROUTE", "Web route must use a non-placeholder production domain.");
   }
 
-  if (features.admin) {
-    const adminEmails = required(productionEnv, "ADMIN_EMAILS", errors);
-    if (
-      adminEmails &&
-      adminEmails.split(",").some((email) => !/^\S+@\S+\.\S+$/.test(email.trim()))
-    ) {
-      add(
-        errors,
-        "INVALID_ADMIN_EMAILS",
-        "ADMIN_EMAILS must contain comma-separated email addresses.",
-      );
+  if (productionEnv) {
+    // Plaintext secret checks: rotation/write path only. The daily deploy
+    // preflight runs presence checks against `wrangler secret list` instead.
+    if (features.admin) {
+      const adminEmails = required(productionEnv, "ADMIN_EMAILS", errors);
+      if (
+        adminEmails &&
+        adminEmails.split(",").some((email) => !/^\S+@\S+\.\S+$/.test(email.trim()))
+      ) {
+        add(
+          errors,
+          "INVALID_ADMIN_EMAILS",
+          "ADMIN_EMAILS must contain comma-separated email addresses.",
+        );
+      }
     }
-  }
-  const authSecret = required(productionEnv, "BETTER_AUTH_SECRET", errors);
-  if (authSecret && authSecret.length < 32) {
-    add(errors, "SHORT_AUTH_SECRET", "BETTER_AUTH_SECRET must be at least 32 characters.");
-  }
+    const authSecret = required(productionEnv, "BETTER_AUTH_SECRET", errors);
+    if (authSecret && authSecret.length < 32) {
+      add(errors, "SHORT_AUTH_SECRET", "BETTER_AUTH_SECRET must be at least 32 characters.");
+    }
 
-  if (requirements.email.enabled && requirements.email.provider === "resend") {
-    required(productionEnv, "RESEND_API_KEY", errors);
-    const emailFrom = required(productionEnv, "EMAIL_FROM", errors);
-    const email = emailFrom?.match(/^[^<>\s]+@([^<>\s]+)$/);
-    if (!email || PLACEHOLDER_HOSTNAME.test(email[1]) || isPlaceholderValue(emailFrom ?? "")) {
+    if (requirements.email.enabled && requirements.email.provider === "resend") {
+      required(productionEnv, "RESEND_API_KEY", errors);
+      const emailFrom = required(productionEnv, "EMAIL_FROM", errors);
+      const email = emailFrom?.match(/^[^<>\s]+@([^<>\s]+)$/);
+      if (!email || PLACEHOLDER_HOSTNAME.test(email[1]) || isPlaceholderValue(emailFrom ?? "")) {
+        add(
+          errors,
+          "INVALID_EMAIL_FROM",
+          "EMAIL_FROM must use a non-placeholder production sender domain.",
+        );
+      }
+      if (requirements.email.capabilities.contactForm) {
+        required(productionEnv, "CONTACT_RECIPIENT", errors);
+      }
+    } else if (productionEnv.RESEND_API_KEY?.trim() || productionEnv.EMAIL_FROM?.trim()) {
       add(
-        errors,
-        "INVALID_EMAIL_FROM",
-        "EMAIL_FROM must use a non-placeholder production sender domain.",
+        warnings,
+        "DISABLED_EMAIL_CONFIGURATION",
+        "Email is disabled but Resend configuration remains.",
       );
     }
-    if (requirements.email.capabilities.contactForm) {
-      required(productionEnv, "CONTACT_RECIPIENT", errors);
-    }
-  } else if (productionEnv.RESEND_API_KEY?.trim() || productionEnv.EMAIL_FROM?.trim()) {
-    add(
-      warnings,
-      "DISABLED_EMAIL_CONFIGURATION",
-      "Email is disabled but Resend configuration remains.",
-    );
   }
 
   const publicFormsEnabled =
     requirements.email.enabled &&
     (requirements.email.capabilities.contactForm || requirements.email.capabilities.newsletter);
   const hasTurnstileSiteKey = Boolean(web.turnstileSiteKey.trim());
-  const hasTurnstileSecret = Boolean(productionEnv.TURNSTILE_SECRET_KEY?.trim());
+  const hasTurnstileSecret = productionEnv
+    ? Boolean(productionEnv.TURNSTILE_SECRET_KEY?.trim())
+    : Boolean(input.liveSecrets?.includes("TURNSTILE_SECRET_KEY"));
   if (hasTurnstileSiteKey !== hasTurnstileSecret) {
     add(
       errors,
@@ -508,7 +583,7 @@ export function validateProductionConfigResult(
         `${clientId} must be configured when its OAuth provider is enabled.`,
       );
     }
-    if (secret !== clientId) required(productionEnv, secret, errors);
+    if (productionEnv && secret !== clientId) required(productionEnv, secret, errors);
   }
 
   const paymentProviders = features.billing ? requirements.paymentProviders : [];
@@ -519,7 +594,16 @@ export function validateProductionConfigResult(
       "Billing is disabled but payment provider configuration remains.",
     );
   }
-  validateProviderSecrets(productionEnv, paymentProviders, errors);
+  for (const provider of paymentProviders) {
+    if (!SUPPORTED_PAYMENT_PROVIDERS.has(provider)) {
+      add(
+        errors,
+        "UNSUPPORTED_PAYMENT_PROVIDER",
+        `Unsupported configured payment provider: ${provider}.`,
+      );
+    }
+  }
+  if (productionEnv) validateProviderSecrets(productionEnv, paymentProviders, errors);
   if (features.web.billing) {
     for (const price of requirements.productionPriceIds) {
       if (

@@ -241,8 +241,12 @@ separate concepts.
 production deploy, create `apps/server/.production-safety.env` from
 `apps/server/.production-safety.example`
 and set the exact Worker, D1, R2, and public URL identities that deployment may
-target. The guard also validates the configured production secrets and live
-payment-provider mode from `apps/server/.env.production`.
+target. The daily guard verifies those identities and checks that every secret
+required by the product configuration is **present** on the live Worker via
+`wrangler secret list`; it never needs local plaintext secrets. Plaintext
+secret validation lives on the rotation path only: run
+`pnpm -F server secrets:push:production` (which requires
+`apps/server/.env.production`) when first configuring or rotating secrets.
 
 ## oRPC And Worker Boundaries
 
