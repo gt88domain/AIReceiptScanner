@@ -24,8 +24,8 @@ const transitionVariants = {
 export function ContentSection() {
   return (
     <Section
-      title="Ask Tailark to Edit anything"
-      description="Efficient content creation is our mission. With Tailark, you can effortlessly edit text, generate code snippets, format documents, create visualizations from data, and seamlessly integrate with your existing workflow."
+      title="Edit anything"
+      description="Effortlessly edit text, generate code snippets, format documents, create visualizations from data, and integrate with your existing workflow."
     >
       <AnimatedGroup
         variants={{

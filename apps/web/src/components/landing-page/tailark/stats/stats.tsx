@@ -20,7 +20,7 @@ const transitionVariants = {
 export function StatsSection() {
   return (
     <Section
-      title="Tailark in numbers"
+      title="Product in numbers"
       description="Our platform continues to grow with developers and businesses using our tools to create innovative solutions and enhance productivity."
     >
       <AnimatedGroup

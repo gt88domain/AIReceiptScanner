@@ -1,5 +1,6 @@
 import { env, exports } from "cloudflare:workers";
 import { createApiClient } from "@repo/api-client";
+import { publicRuntimeConfig } from "@repo/app-config";
 import type { AppRouterClient } from "@/routers";
 import { describe, expect, it } from "vitest";
 import templateVersion from "../../../template-version.json";
@@ -51,7 +52,7 @@ describe("server Worker", () => {
     expect(response.headers.get("X-Frame-Options")).toBeTruthy();
     await expect(response.json()).resolves.toMatchObject({
       status: "ok",
-      service: "TanStack Template",
+      service: publicRuntimeConfig.appName,
       version: templateVersion.version,
       templateVersion: templateVersion.version,
     });

@@ -8,8 +8,8 @@ import type { ProductFeatureOverrides } from "./product-profiles";
  * Keep catalogs, provider price IDs, and native-only settings out of this entry.
  */
 export const publicRuntimeConfig = {
-  appName: "TanStack Template",
-  supportEmail: "support@demo.aiarticles.com",
+  appName: "Your App",
+  supportEmail: "support@example.com",
   defaultThemePresetKey: "clean-slate",
   features: {
     admin: true,
