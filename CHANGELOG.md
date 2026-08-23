@@ -3,6 +3,13 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.4.0](https://github.com/gt88domain/easystarter-template/compare/v2.3.0...v2.4.0) (2026-08-23)
+
+
+### Features
+
+* **web:** add dev-only public component gallery ([#104](https://github.com/gt88domain/easystarter-template/issues/104)) ([35a3292](https://github.com/gt88domain/easystarter-template/commit/35a32921a3330e25f935f779f25e895d6d323550))
+
 ## [2.3.0](https://github.com/gt88domain/easystarter-template/compare/v2.2.0...v2.3.0) (2026-08-22)
 
 
