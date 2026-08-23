@@ -28,6 +28,7 @@ import { Route as AutheddashboardPurchasesRouteImport } from './routes/_authed/(
 import { Route as PubliclegalPrivacyRouteImport } from './routes/_public/(legal)/privacy'
 import { Route as PubliclegalTermsRouteImport } from './routes/_public/(legal)/terms'
 import { Route as PublicmarketingContactRouteImport } from './routes/_public/(marketing)/contact'
+import { Route as PublicmarketingDesignSystemRouteImport } from './routes/_public/(marketing)/design-system'
 import { Route as ApiNewsletterSubscribeRouteImport } from './routes/api/newsletter/subscribe'
 import { Route as authAuthUnauthedForgotPasswordRouteImport } from './routes/(auth)/auth/_unauthed/forgot-password'
 import { Route as authAuthUnauthedSignInRouteImport } from './routes/(auth)/auth/_unauthed/sign-in'
@@ -149,6 +150,12 @@ const PublicmarketingContactRoute = PublicmarketingContactRouteImport.update({
   path: '/contact',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const PublicmarketingDesignSystemRoute =
+  PublicmarketingDesignSystemRouteImport.update({
+    id: '/(marketing)/design-system',
+    path: '/design-system',
+    getParentRoute: () => PublicRouteRoute,
+  } as any)
 const ApiNewsletterSubscribeRoute = ApiNewsletterSubscribeRouteImport.update({
   id: '/api/newsletter/subscribe',
   path: '/api/newsletter/subscribe',
@@ -314,6 +321,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PubliclegalPrivacyRoute
   '/terms': typeof PubliclegalTermsRoute
   '/contact': typeof PublicmarketingContactRoute
+  '/design-system': typeof PublicmarketingDesignSystemRoute
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
   '/auth/forgot-password': typeof authAuthUnauthedForgotPasswordRoute
   '/auth/sign-in': typeof authAuthUnauthedSignInRoute
@@ -355,6 +363,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PubliclegalPrivacyRoute
   '/terms': typeof PubliclegalTermsRoute
   '/contact': typeof PublicmarketingContactRoute
+  '/design-system': typeof PublicmarketingDesignSystemRoute
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
   '/auth/forgot-password': typeof authAuthUnauthedForgotPasswordRoute
   '/auth/sign-in': typeof authAuthUnauthedSignInRoute
@@ -402,6 +411,7 @@ export interface FileRoutesById {
   '/_public/(legal)/privacy': typeof PubliclegalPrivacyRoute
   '/_public/(legal)/terms': typeof PubliclegalTermsRoute
   '/_public/(marketing)/contact': typeof PublicmarketingContactRoute
+  '/_public/(marketing)/design-system': typeof PublicmarketingDesignSystemRoute
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
   '/(auth)/auth/_unauthed/forgot-password': typeof authAuthUnauthedForgotPasswordRoute
   '/(auth)/auth/_unauthed/sign-in': typeof authAuthUnauthedSignInRoute
@@ -448,6 +458,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/terms'
     | '/contact'
+    | '/design-system'
     | '/api/newsletter/subscribe'
     | '/auth/forgot-password'
     | '/auth/sign-in'
@@ -489,6 +500,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/terms'
     | '/contact'
+    | '/design-system'
     | '/api/newsletter/subscribe'
     | '/auth/forgot-password'
     | '/auth/sign-in'
@@ -535,6 +547,7 @@ export interface FileRouteTypes {
     | '/_public/(legal)/privacy'
     | '/_public/(legal)/terms'
     | '/_public/(marketing)/contact'
+    | '/_public/(marketing)/design-system'
     | '/api/newsletter/subscribe'
     | '/(auth)/auth/_unauthed/forgot-password'
     | '/(auth)/auth/_unauthed/sign-in'
@@ -707,6 +720,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof PublicmarketingContactRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/(marketing)/design-system': {
+      id: '/_public/(marketing)/design-system'
+      path: '/design-system'
+      fullPath: '/design-system'
+      preLoaderRoute: typeof PublicmarketingDesignSystemRouteImport
       parentRoute: typeof PublicRouteRoute
     }
     '/api/newsletter/subscribe': {
@@ -891,6 +911,7 @@ interface PublicRouteRouteChildren {
   PubliclegalPrivacyRoute: typeof PubliclegalPrivacyRoute
   PubliclegalTermsRoute: typeof PubliclegalTermsRoute
   PublicmarketingContactRoute: typeof PublicmarketingContactRoute
+  PublicmarketingDesignSystemRoute: typeof PublicmarketingDesignSystemRoute
   PublicmarketingBlogSlugRoute: typeof PublicmarketingBlogSlugRoute
   PublicmarketinglandingPageIndexRoute: typeof PublicmarketinglandingPageIndexRoute
   PublicmarketingBlogIndexRoute: typeof PublicmarketingBlogIndexRoute
@@ -901,6 +922,7 @@ const PublicRouteRouteChildren: PublicRouteRouteChildren = {
   PubliclegalPrivacyRoute: PubliclegalPrivacyRoute,
   PubliclegalTermsRoute: PubliclegalTermsRoute,
   PublicmarketingContactRoute: PublicmarketingContactRoute,
+  PublicmarketingDesignSystemRoute: PublicmarketingDesignSystemRoute,
   PublicmarketingBlogSlugRoute: PublicmarketingBlogSlugRoute,
   PublicmarketinglandingPageIndexRoute: PublicmarketinglandingPageIndexRoute,
   PublicmarketingBlogIndexRoute: PublicmarketingBlogIndexRoute,

@@ -11,6 +11,9 @@ const sitemap = readFileSync(sitemapPath, "utf8");
 if (/\/(?:zh\/|jp\/)?(?:docs|blog)(?:[\/<])/u.test(sitemap)) {
   throw new Error("Default sitemap must not include docs or blog URLs.");
 }
+if (sitemap.includes("design-system")) {
+  throw new Error("The dev-only design-system gallery must not appear in the production sitemap.");
+}
 
 const robotsPath = resolve(import.meta.dirname, "../apps/web/dist/client/robots.txt");
 if (!existsSync(robotsPath)) {

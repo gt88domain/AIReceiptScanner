@@ -114,6 +114,8 @@ const nonPublicPrefixes = [
   "/billing",
   "/credits",
   "/dashboard",
+  // Dev-only component gallery; never a production public page.
+  "/design-system",
   "/settings",
   "/users",
   "/api",
