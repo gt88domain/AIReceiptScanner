@@ -15,6 +15,8 @@
     "fmt:check": "oxfmt --check",
     "wrangler:dev": "wrangler dev --port=3000",
     "deploy": "node scripts/sync-production-env.mjs && pnpm --filter server preflight:production && wrangler deploy",
+    "deploy:preview": "VITE_SERVER_URL=https://easystarter-template-server-preview.gt88hel.workers.dev VITE_APP_URL=https://easystarter-template-preview.gt88hel.workers.dev VITE_TURNSTILE_SITE_KEY='' pnpm run build && wrangler deploy --config wrangler.preview.jsonc",
+    "preview:check": "node scripts/check-template-preview.mjs",
     "cf-typegen": "wrangler types",
     "blog:validate": "node ./scripts/validate-blog-content.mjs"
   },

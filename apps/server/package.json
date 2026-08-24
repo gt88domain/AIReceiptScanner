@@ -27,6 +27,7 @@
     "preflight:production": "tsx scripts/check-production-safety.ts && node ../../scripts/check-production-identity.mjs",
     "deploy": "pnpm run preflight:production && wrangler deploy",
     "deploy:dev": "wrangler deploy",
+    "deploy:preview": "wrangler deploy --config wrangler.preview.jsonc",
     "secrets:check:production": "tsx scripts/check-production-safety.ts --with-secrets",
     "secrets:bulk:production": "node scripts/push-production-secrets.mjs",
     "secrets:push:production": "pnpm run secrets:check:production && pnpm run secrets:bulk:production",

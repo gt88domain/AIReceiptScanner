@@ -1,0 +1,24 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "easystarter-template-preview",
+  "compatibility_date": "2026-07-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "main": "./template-preview-worker.mjs",
+  "assets": {
+    "directory": "./dist/client",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/robots.txt", "/sitemap.xml"],
+  },
+  "services": [
+    {
+      "binding": "API_SERVICE",
+      "service": "easystarter-template-server-preview",
+    },
+  ],
+  "vars": {
+    "VITE_SERVER_URL": "https://easystarter-template-server-preview.gt88hel.workers.dev",
+    "VITE_APP_URL": "https://easystarter-template-preview.gt88hel.workers.dev",
+    "VITE_TURNSTILE_SITE_KEY": "",
+  },
+}
