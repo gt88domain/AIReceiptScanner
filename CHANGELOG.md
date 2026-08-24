@@ -3,6 +3,13 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.5.0](https://github.com/gt88domain/easystarter-template/compare/v2.4.0...v2.5.0) (2026-08-24)
+
+
+### Features
+
+* **template:** add Cloudflare design preview ([#107](https://github.com/gt88domain/easystarter-template/issues/107)) ([e58dbc6](https://github.com/gt88domain/easystarter-template/commit/e58dbc6e123dc026297be7f9792f97cb98d546fd))
+
 ## [2.4.0](https://github.com/gt88domain/easystarter-template/compare/v2.3.0...v2.4.0) (2026-08-23)
 
 
