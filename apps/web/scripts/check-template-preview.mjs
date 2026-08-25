@@ -26,6 +26,9 @@ if ((await robots.text()) !== "User-agent: *\nDisallow: /\n") {
 
 await expectResponse(`${webUrl}/sitemap.xml`, undefined, 404);
 
+// The dev-only gallery is exposed on the preview build via VITE_TEMPLATE_PREVIEW=true.
+await expectResponse(`${webUrl}/design-system`, undefined, 200);
+
 const server = await expectResponse(`${serverUrl}/`, undefined, 200);
 if ((await server.json()).readOnly !== true) {
   throw new Error("Template preview API is not read-only");

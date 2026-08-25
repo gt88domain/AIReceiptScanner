@@ -228,9 +228,9 @@ function CategoryButton({
       type="button"
       aria-pressed={active}
       className={cn(
-        "flex min-h-19 flex-col items-center justify-center gap-1 rounded-control border px-1.5 py-2 text-center text-xs font-semibold transition-[transform,background,border-color] active:translate-y-px",
+        "flex min-h-16 flex-col items-center justify-center gap-1 rounded-control border px-1.5 py-2 text-center text-xs font-semibold transition-[transform,background,border-color] active:translate-y-px",
         active
-          ? "border-line-strong bg-surface-active text-ink"
+          ? "border-skin-accent bg-surface-active text-ink"
           : "border-line bg-surface-raised text-ink-muted hover:border-line-strong hover:bg-surface-hover hover:text-ink",
       )}
       onClick={onClick}

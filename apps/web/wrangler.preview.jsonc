@@ -20,5 +20,6 @@
     "VITE_SERVER_URL": "https://easystarter-template-server-preview.gt88hel.workers.dev",
     "VITE_APP_URL": "https://easystarter-template-preview.gt88hel.workers.dev",
     "VITE_TURNSTILE_SITE_KEY": "",
+    "VITE_TEMPLATE_PREVIEW": "true",
   },
 }

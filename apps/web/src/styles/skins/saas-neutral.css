@@ -14,10 +14,10 @@
     --skin-line: rgb(31 41 51 / 10%);
     --skin-line-strong: rgb(31 41 51 / 24%);
     --skin-hero: linear-gradient(145deg, #f4f1eb 0%, #ffffff 62%, #e7ede9 100%);
-    --skin-radius-card: 0.75rem;
-    --skin-radius-control: 0.5rem;
-    --skin-shadow-raised: 0 1px 2px rgb(31 41 51 / 6%);
-    --skin-shadow-raised-hover: 0 4px 12px rgb(31 41 51 / 8%);
+    --skin-radius-card: 1rem;
+    --skin-radius-control: 0.625rem;
+    --skin-shadow-raised: 0 16px 40px -20px rgb(31 41 51 / 18%);
+    --skin-shadow-raised-hover: 0 24px 56px -20px rgb(31 41 51 / 24%);
   }
 
   :root.dark,
@@ -35,7 +35,8 @@
     --skin-line: rgb(225 236 232 / 14%);
     --skin-line-strong: rgb(225 236 232 / 26%);
     --skin-hero: linear-gradient(145deg, #29343b 0%, #202a31 62%, #26342f 100%);
-    --skin-shadow-raised: 0 1px 2px rgb(0 0 0 / 35%), inset 0 1px 0 rgb(242 250 247 / 7%);
-    --skin-shadow-raised-hover: 0 6px 16px rgb(0 0 0 / 42%), inset 0 1px 0 rgb(242 250 247 / 10%);
+    --skin-shadow-raised: 0 16px 40px -20px rgb(0 0 0 / 55%), inset 0 1px 0 rgb(242 250 247 / 7%);
+    --skin-shadow-raised-hover:
+      0 24px 56px -20px rgb(0 0 0 / 65%), inset 0 1px 0 rgb(242 250 247 / 10%);
   }
 }

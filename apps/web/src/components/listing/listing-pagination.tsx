@@ -32,7 +32,7 @@ export function ListingPagination({
     >
       {currentPage > 1 ? (
         <a
-          className="inline-flex min-h-10 items-center rounded-control border border-line bg-surface px-3 text-sm font-semibold text-ink transition-colors hover:border-line-strong hover:bg-surface-hover"
+          className="inline-flex min-h-10 items-center rounded-full border border-line bg-surface px-4 text-sm font-semibold text-ink transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:border-line-strong hover:bg-surface-hover"
           href={hrefForPage(currentPage - 1)}
         >
           {previousLabel}
@@ -46,9 +46,9 @@ export function ListingPagination({
               <a
                 aria-current={page === currentPage ? "page" : undefined}
                 className={cn(
-                  "inline-flex size-10 items-center justify-center rounded-control border text-sm font-semibold transition-colors",
+                  "inline-flex size-10 items-center justify-center rounded-full border text-sm font-semibold transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
                   page === currentPage
-                    ? "border-skin-accent bg-skin-accent text-skin-on-accent"
+                    ? "border-skin-accent bg-skin-accent text-skin-on-accent shadow-raised"
                     : "border-line bg-surface text-ink hover:border-line-strong hover:bg-surface-hover",
                 )}
                 href={hrefForPage(page)}
@@ -70,7 +70,7 @@ export function ListingPagination({
 
       {currentPage < totalPages ? (
         <a
-          className="inline-flex min-h-10 items-center rounded-control border border-line bg-surface px-3 text-sm font-semibold text-ink transition-colors hover:border-line-strong hover:bg-surface-hover"
+          className="inline-flex min-h-10 items-center rounded-full border border-line bg-surface px-4 text-sm font-semibold text-ink transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:border-line-strong hover:bg-surface-hover"
           href={hrefForPage(currentPage + 1)}
         >
           {nextLabel}

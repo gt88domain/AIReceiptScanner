@@ -8,11 +8,27 @@ type SubmitState = "idle" | "submitting" | "success" | "error";
 
 export function NewsletterForm() {
   const t = useTranslations("landingPage.footer.newsletter");
+  const [expanded, setExpanded] = useState(false);
   const [email, setEmail] = useState("");
   const [state, setState] = useState<SubmitState>("idle");
   const [message, setMessage] = useState("");
   const [turnstileToken, setTurnstileToken] = useState("");
   const [turnstileResetNonce, setTurnstileResetNonce] = useState(0);
+
+  if (!expanded) {
+    return (
+      <div className="pt-2">
+        <Button
+          aria-controls="footer-newsletter-form"
+          aria-expanded="false"
+          onClick={() => setExpanded(true)}
+          type="button"
+        >
+          {t("submit")}
+        </Button>
+      </div>
+    );
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -55,12 +71,13 @@ export function NewsletterForm() {
   }
 
   return (
-    <div className="pt-2">
+    <div className="pt-2" id="footer-newsletter-form">
       <h2 className="text-sm font-semibold text-foreground">{t("title")}</h2>
       <p className="mt-1 text-sm text-muted-foreground">{t("description")}</p>
       <form className="mt-3 flex gap-2" onSubmit={handleSubmit}>
         <Input
           aria-label={t("emailLabel")}
+          autoFocus
           autoComplete="email"
           disabled={state === "submitting"}
           onChange={(event) => setEmail(event.target.value)}

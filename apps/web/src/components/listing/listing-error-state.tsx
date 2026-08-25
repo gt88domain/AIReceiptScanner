@@ -15,7 +15,7 @@ export function ListingErrorState({
   title,
 }: ListingErrorStateProps) {
   return (
-    <section className="flex min-h-56 flex-col items-center justify-center border border-destructive/30 bg-destructive/5 px-6 py-10 text-center">
+    <section className="flex min-h-64 flex-col items-center justify-center rounded-card border border-destructive/30 bg-destructive/5 px-6 py-12 text-center">
       <AlertTriangleIcon aria-hidden="true" className="mb-3 size-6 text-destructive" />
       <h2 className="font-semibold">{title}</h2>
       <p className="mt-2 max-w-md text-sm text-muted-foreground">{description}</p>

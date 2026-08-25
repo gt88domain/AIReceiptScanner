@@ -31,7 +31,7 @@ export function ListingSearchInput({
   return (
     <form
       role="search"
-      className="flex min-h-11 items-center gap-2 rounded-control border border-line bg-surface-raised p-1.5 text-ink-muted"
+      className="flex min-h-12 items-center gap-2 rounded-full border border-line bg-surface-raised py-1.5 pr-1.5 pl-5 text-ink-muted transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] focus-within:border-line-strong"
       onSubmit={handleSubmit}
     >
       <label className="min-w-0 flex-1">
@@ -45,7 +45,7 @@ export function ListingSearchInput({
         />
       </label>
       <Button
-        className="size-8 rounded-control bg-surface-active text-skin-accent-ink hover:bg-surface-hover"
+        className="size-9 rounded-full bg-skin-accent text-skin-on-accent transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-skin-accent/90"
         type="submit"
         size="icon"
         variant="ghost"

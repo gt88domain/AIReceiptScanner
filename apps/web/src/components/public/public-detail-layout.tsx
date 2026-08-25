@@ -44,9 +44,11 @@ export function PublicDetailLayout({
       <header className="mt-5 grid gap-7 border-b pb-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="min-w-0 space-y-4">
           {eyebrow ? (
-            <div className="text-sm font-medium text-muted-foreground">{eyebrow}</div>
+            <div className="font-mono text-xs font-bold tracking-[0.14em] text-skin-accent-ink uppercase">
+              {eyebrow}
+            </div>
           ) : null}
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1>
+          <h1 className="text-4xl font-bold tracking-[-0.045em] sm:text-5xl">{title}</h1>
           {description ? (
             <div className="max-w-3xl text-base leading-7 text-muted-foreground">{description}</div>
           ) : null}

@@ -8,6 +8,7 @@ type ListingShellProps = Omit<ComponentProps<"main">, "children"> & {
   filters?: ReactNode;
   header?: ReactNode;
   mobileFilters?: ReactNode;
+  tabs?: ReactNode;
   toolbar?: ReactNode;
 };
 
@@ -19,6 +20,7 @@ export function ListingShell({
   filters,
   header,
   mobileFilters,
+  tabs,
   toolbar,
   ...props
 }: ListingShellProps) {
@@ -48,6 +50,7 @@ export function ListingShell({
 
           <div className="min-w-0 space-y-5">
             {header ? <header>{header}</header> : null}
+            {tabs}
             {toolbar}
             {children}
           </div>

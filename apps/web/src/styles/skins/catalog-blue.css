@@ -15,10 +15,10 @@
     --skin-line: rgb(20 41 62 / 10%);
     --skin-line-strong: rgb(47 125 211 / 35%);
     --skin-hero: linear-gradient(160deg, #eef6fd, #ffffff);
-    --skin-radius-card: 0.875rem;
-    --skin-radius-control: 0.625rem;
-    --skin-shadow-raised: 0 1px 2px rgb(20 41 62 / 6%);
-    --skin-shadow-raised-hover: 0 4px 12px rgb(20 41 62 / 8%);
+    --skin-radius-card: 1rem;
+    --skin-radius-control: 0.75rem;
+    --skin-shadow-raised: 0 16px 40px -20px rgb(31 93 156 / 22%);
+    --skin-shadow-raised-hover: 0 24px 56px -20px rgb(31 93 156 / 30%);
   }
 
   .dark .skin-catalog-blue {
@@ -37,7 +37,8 @@
     --skin-line: rgb(176 213 246 / 14%);
     --skin-line-strong: rgb(140 193 241 / 40%);
     --skin-hero: linear-gradient(160deg, rgb(28 74 111 / 94%), rgb(19 48 74 / 92%));
-    --skin-shadow-raised: 0 1px 2px rgb(0 12 24 / 40%), inset 0 1px 0 rgb(220 241 255 / 7%);
-    --skin-shadow-raised-hover: 0 6px 16px rgb(0 12 24 / 45%), inset 0 1px 0 rgb(220 241 255 / 10%);
+    --skin-shadow-raised: 0 16px 40px -20px rgb(0 8 20 / 60%), inset 0 1px 0 rgb(220 241 255 / 7%);
+    --skin-shadow-raised-hover:
+      0 24px 56px -18px rgb(0 8 20 / 70%), inset 0 1px 0 rgb(220 241 255 / 10%);
   }
 }

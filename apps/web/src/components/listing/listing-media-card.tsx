@@ -33,7 +33,7 @@ export function ListingMediaCard({
   return (
     <article
       className={cn(
-        "group flex h-full min-w-0 flex-col rounded-card border border-line bg-surface text-ink shadow-raised transition-[transform,border-color,box-shadow] hover:-translate-y-0.5 hover:border-line-strong hover:shadow-raised-hover",
+        "group flex h-full min-w-0 flex-col rounded-card border border-line bg-surface text-ink shadow-raised transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:-translate-y-1 hover:border-line-strong hover:shadow-raised-hover",
         bleedMedia ? "overflow-hidden" : "p-3",
         className,
       )}
@@ -45,7 +45,9 @@ export function ListingMediaCard({
             bleedMedia ? "border-b border-line" : "rounded-control border border-line p-4",
           )}
         >
-          {media}
+          <div className="grid place-items-center transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-[1.03]">
+            {media}
+          </div>
           {mediaAction ? <div className="absolute top-3 right-3">{mediaAction}</div> : null}
         </div>
       ) : null}

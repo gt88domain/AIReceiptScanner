@@ -27,7 +27,8 @@ components to one product domain. It owns:
 The components own rendering and interaction only:
 
 - `ListingShell` arranges an optional desktop rail, mobile `FilterDrawer`,
-  header, toolbar, and result content.
+  header, tabs, toolbar, and result content. `ListingPage.tabs` is absent by
+  default; a product may supply tabs only when the views are true peers.
 - `ListingFacetRail`, `ListingSearchInput`, and `ListingSortSelect` are
   controlled inputs. Their callbacks update product-owned state.
 - `ListingToolbar` lays out search, summary, sort, and actions. Its summary is
@@ -36,9 +37,10 @@ The components own rendering and interaction only:
   `ListingMediaCard` receives product-rendered media, title, description,
   badge, footer, and actions.
 - `ListingLoadingState`, `ListingEmptyState`, and `ListingErrorState` render
-  product-selected states. `ListingLoadMore` is an interaction-only command;
-  use `ListingPagination` for crawlable anchor pagination when that component
-  is available.
+  product-selected states. `ListingLoadMore` is an interaction-only command:
+  the adapter should append the next batch without resetting scroll position,
+  and the primitive imposes no total-item cap. Use `ListingPagination` for
+  crawlable anchor pagination when that component is available.
 - `ListingSaveButton` is controlled by `saved`; it does not authenticate or
   write a user-resource relation.
 - `ListingPage` composes a route-neutral listing frame. `RankingPage` receives
@@ -56,6 +58,12 @@ All text reaches these primitives through props or children. The shared
 components do not read product message catalogs. They consume the semantic skin
 tokens from `apps/web/src/styles/index.css`; products may select or override a
 skin without branching component logic.
+
+Downstream products may select a skin, change that skin's token values, and
+compose their own grid, footer, and product-owned modules. They must not use a
+`className` override to restyle the internals of a shared listing component. If
+a shared component needs a new visual state, add that state upstream or propose
+a new skin instead of building a product-only CSS patch around it.
 
 No component in this kit creates `/domains`, `/rankings`, `/favorites`, detail,
 or any other default route. Add only the URL families your product owns, and

@@ -61,7 +61,10 @@ export function RankingPage<TItem>({
             const rank = rankStart + index;
 
             return (
-              <li key={getItemKey(item)} className="flex items-center gap-4 p-4 sm:gap-6 sm:px-6">
+              <li
+                key={getItemKey(item)}
+                className="flex items-center gap-4 p-4 transition-colors hover:bg-surface-hover sm:gap-6 sm:px-6"
+              >
                 <ListingRank label={rankLabel(rank)} rank={rank} />
                 <div className="min-w-0 flex-1">{renderItem(item, { index, rank })}</div>
               </li>

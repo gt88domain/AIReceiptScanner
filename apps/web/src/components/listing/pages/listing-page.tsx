@@ -10,6 +10,8 @@ type ListingPageProps = {
   filterLabel?: string;
   filters?: ReactNode;
   mobileFilters?: ReactNode;
+  /** Optional product-owned peer views. Omit to render no tabs. */
+  tabs?: ReactNode;
   title: ReactNode;
   toolbar?: ReactNode;
 };
@@ -26,6 +28,7 @@ export function ListingPage({
   filterLabel,
   filters,
   mobileFilters,
+  tabs,
   title,
   toolbar,
   className,
@@ -36,6 +39,7 @@ export function ListingPage({
       filterLabel={filterLabel}
       filters={filters}
       mobileFilters={mobileFilters}
+      tabs={tabs}
       toolbar={toolbar}
       header={
         <>

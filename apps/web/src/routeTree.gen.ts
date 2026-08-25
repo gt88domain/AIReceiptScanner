@@ -28,7 +28,6 @@ import { Route as AutheddashboardPurchasesRouteImport } from './routes/_authed/(
 import { Route as PubliclegalPrivacyRouteImport } from './routes/_public/(legal)/privacy'
 import { Route as PubliclegalTermsRouteImport } from './routes/_public/(legal)/terms'
 import { Route as PublicmarketingContactRouteImport } from './routes/_public/(marketing)/contact'
-import { Route as PublicmarketingDesignSystemRouteImport } from './routes/_public/(marketing)/design-system'
 import { Route as ApiNewsletterSubscribeRouteImport } from './routes/api/newsletter/subscribe'
 import { Route as authAuthUnauthedForgotPasswordRouteImport } from './routes/(auth)/auth/_unauthed/forgot-password'
 import { Route as authAuthUnauthedSignInRouteImport } from './routes/(auth)/auth/_unauthed/sign-in'
@@ -51,6 +50,7 @@ import { Route as AutheddashboardTicketsTicketIdRouteImport } from './routes/_au
 import { Route as PublicmarketinglandingPageIndexRouteImport } from './routes/_public/(marketing)/(landing-page)/index'
 import { Route as PublicmarketingBlogIndexRouteImport } from './routes/_public/(marketing)/blog/index'
 import { Route as PublicmarketingBlogSlugRouteImport } from './routes/_public/(marketing)/blog/$slug'
+import { Route as PublicmarketingDesignSystemIndexRouteImport } from './routes/_public/(marketing)/design-system/index'
 import { Route as AutheddashboardAdminSupportIndexRouteImport } from './routes/_authed/(dashboard)/admin/support/index'
 import { Route as AutheddashboardAdminSupportTicketIdRouteImport } from './routes/_authed/(dashboard)/admin/support/$ticketId'
 import { Route as PublicmarketingBlogCategorySlugRouteImport } from './routes/_public/(marketing)/blog/category/$slug'
@@ -150,12 +150,6 @@ const PublicmarketingContactRoute = PublicmarketingContactRouteImport.update({
   path: '/contact',
   getParentRoute: () => PublicRouteRoute,
 } as any)
-const PublicmarketingDesignSystemRoute =
-  PublicmarketingDesignSystemRouteImport.update({
-    id: '/(marketing)/design-system',
-    path: '/design-system',
-    getParentRoute: () => PublicRouteRoute,
-  } as any)
 const ApiNewsletterSubscribeRoute = ApiNewsletterSubscribeRouteImport.update({
   id: '/api/newsletter/subscribe',
   path: '/api/newsletter/subscribe',
@@ -284,6 +278,12 @@ const PublicmarketingBlogSlugRoute = PublicmarketingBlogSlugRouteImport.update({
   path: '/blog/$slug',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const PublicmarketingDesignSystemIndexRoute =
+  PublicmarketingDesignSystemIndexRouteImport.update({
+    id: '/(marketing)/design-system/',
+    path: '/design-system/',
+    getParentRoute: () => PublicRouteRoute,
+  } as any)
 const AutheddashboardAdminSupportIndexRoute =
   AutheddashboardAdminSupportIndexRouteImport.update({
     id: '/support/',
@@ -321,7 +321,6 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PubliclegalPrivacyRoute
   '/terms': typeof PubliclegalTermsRoute
   '/contact': typeof PublicmarketingContactRoute
-  '/design-system': typeof PublicmarketingDesignSystemRoute
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
   '/auth/forgot-password': typeof authAuthUnauthedForgotPasswordRoute
   '/auth/sign-in': typeof authAuthUnauthedSignInRoute
@@ -343,6 +342,7 @@ export interface FileRoutesByFullPath {
   '/settings/': typeof AutheddashboardSettingsIndexRoute
   '/tickets/': typeof AutheddashboardTicketsIndexRoute
   '/blog/': typeof PublicmarketingBlogIndexRoute
+  '/design-system/': typeof PublicmarketingDesignSystemIndexRoute
   '/admin/support/$ticketId': typeof AutheddashboardAdminSupportTicketIdRoute
   '/blog/category/$slug': typeof PublicmarketingBlogCategorySlugRoute
   '/admin/support/': typeof AutheddashboardAdminSupportIndexRoute
@@ -363,7 +363,6 @@ export interface FileRoutesByTo {
   '/privacy': typeof PubliclegalPrivacyRoute
   '/terms': typeof PubliclegalTermsRoute
   '/contact': typeof PublicmarketingContactRoute
-  '/design-system': typeof PublicmarketingDesignSystemRoute
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
   '/auth/forgot-password': typeof authAuthUnauthedForgotPasswordRoute
   '/auth/sign-in': typeof authAuthUnauthedSignInRoute
@@ -386,6 +385,7 @@ export interface FileRoutesByTo {
   '/tickets': typeof AutheddashboardTicketsIndexRoute
   '/': typeof PublicmarketinglandingPageIndexRoute
   '/blog': typeof PublicmarketingBlogIndexRoute
+  '/design-system': typeof PublicmarketingDesignSystemIndexRoute
   '/admin/support/$ticketId': typeof AutheddashboardAdminSupportTicketIdRoute
   '/blog/category/$slug': typeof PublicmarketingBlogCategorySlugRoute
   '/admin/support': typeof AutheddashboardAdminSupportIndexRoute
@@ -411,7 +411,6 @@ export interface FileRoutesById {
   '/_public/(legal)/privacy': typeof PubliclegalPrivacyRoute
   '/_public/(legal)/terms': typeof PubliclegalTermsRoute
   '/_public/(marketing)/contact': typeof PublicmarketingContactRoute
-  '/_public/(marketing)/design-system': typeof PublicmarketingDesignSystemRoute
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
   '/(auth)/auth/_unauthed/forgot-password': typeof authAuthUnauthedForgotPasswordRoute
   '/(auth)/auth/_unauthed/sign-in': typeof authAuthUnauthedSignInRoute
@@ -434,6 +433,7 @@ export interface FileRoutesById {
   '/_authed/(dashboard)/tickets/': typeof AutheddashboardTicketsIndexRoute
   '/_public/(marketing)/(landing-page)/': typeof PublicmarketinglandingPageIndexRoute
   '/_public/(marketing)/blog/': typeof PublicmarketingBlogIndexRoute
+  '/_public/(marketing)/design-system/': typeof PublicmarketingDesignSystemIndexRoute
   '/_authed/(dashboard)/admin/support/$ticketId': typeof AutheddashboardAdminSupportTicketIdRoute
   '/_public/(marketing)/blog/category/$slug': typeof PublicmarketingBlogCategorySlugRoute
   '/_authed/(dashboard)/admin/support/': typeof AutheddashboardAdminSupportIndexRoute
@@ -458,7 +458,6 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/terms'
     | '/contact'
-    | '/design-system'
     | '/api/newsletter/subscribe'
     | '/auth/forgot-password'
     | '/auth/sign-in'
@@ -480,6 +479,7 @@ export interface FileRouteTypes {
     | '/settings/'
     | '/tickets/'
     | '/blog/'
+    | '/design-system/'
     | '/admin/support/$ticketId'
     | '/blog/category/$slug'
     | '/admin/support/'
@@ -500,7 +500,6 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/terms'
     | '/contact'
-    | '/design-system'
     | '/api/newsletter/subscribe'
     | '/auth/forgot-password'
     | '/auth/sign-in'
@@ -523,6 +522,7 @@ export interface FileRouteTypes {
     | '/tickets'
     | '/'
     | '/blog'
+    | '/design-system'
     | '/admin/support/$ticketId'
     | '/blog/category/$slug'
     | '/admin/support'
@@ -547,7 +547,6 @@ export interface FileRouteTypes {
     | '/_public/(legal)/privacy'
     | '/_public/(legal)/terms'
     | '/_public/(marketing)/contact'
-    | '/_public/(marketing)/design-system'
     | '/api/newsletter/subscribe'
     | '/(auth)/auth/_unauthed/forgot-password'
     | '/(auth)/auth/_unauthed/sign-in'
@@ -570,6 +569,7 @@ export interface FileRouteTypes {
     | '/_authed/(dashboard)/tickets/'
     | '/_public/(marketing)/(landing-page)/'
     | '/_public/(marketing)/blog/'
+    | '/_public/(marketing)/design-system/'
     | '/_authed/(dashboard)/admin/support/$ticketId'
     | '/_public/(marketing)/blog/category/$slug'
     | '/_authed/(dashboard)/admin/support/'
@@ -720,13 +720,6 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof PublicmarketingContactRouteImport
-      parentRoute: typeof PublicRouteRoute
-    }
-    '/_public/(marketing)/design-system': {
-      id: '/_public/(marketing)/design-system'
-      path: '/design-system'
-      fullPath: '/design-system'
-      preLoaderRoute: typeof PublicmarketingDesignSystemRouteImport
       parentRoute: typeof PublicRouteRoute
     }
     '/api/newsletter/subscribe': {
@@ -883,6 +876,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicmarketingBlogSlugRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_public/(marketing)/design-system/': {
+      id: '/_public/(marketing)/design-system/'
+      path: '/design-system'
+      fullPath: '/design-system/'
+      preLoaderRoute: typeof PublicmarketingDesignSystemIndexRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
     '/_authed/(dashboard)/admin/support/': {
       id: '/_authed/(dashboard)/admin/support/'
       path: '/support'
@@ -911,10 +911,10 @@ interface PublicRouteRouteChildren {
   PubliclegalPrivacyRoute: typeof PubliclegalPrivacyRoute
   PubliclegalTermsRoute: typeof PubliclegalTermsRoute
   PublicmarketingContactRoute: typeof PublicmarketingContactRoute
-  PublicmarketingDesignSystemRoute: typeof PublicmarketingDesignSystemRoute
   PublicmarketingBlogSlugRoute: typeof PublicmarketingBlogSlugRoute
   PublicmarketinglandingPageIndexRoute: typeof PublicmarketinglandingPageIndexRoute
   PublicmarketingBlogIndexRoute: typeof PublicmarketingBlogIndexRoute
+  PublicmarketingDesignSystemIndexRoute: typeof PublicmarketingDesignSystemIndexRoute
   PublicmarketingBlogCategorySlugRoute: typeof PublicmarketingBlogCategorySlugRoute
 }
 
@@ -922,10 +922,10 @@ const PublicRouteRouteChildren: PublicRouteRouteChildren = {
   PubliclegalPrivacyRoute: PubliclegalPrivacyRoute,
   PubliclegalTermsRoute: PubliclegalTermsRoute,
   PublicmarketingContactRoute: PublicmarketingContactRoute,
-  PublicmarketingDesignSystemRoute: PublicmarketingDesignSystemRoute,
   PublicmarketingBlogSlugRoute: PublicmarketingBlogSlugRoute,
   PublicmarketinglandingPageIndexRoute: PublicmarketinglandingPageIndexRoute,
   PublicmarketingBlogIndexRoute: PublicmarketingBlogIndexRoute,
+  PublicmarketingDesignSystemIndexRoute: PublicmarketingDesignSystemIndexRoute,
   PublicmarketingBlogCategorySlugRoute: PublicmarketingBlogCategorySlugRoute,
 }
 

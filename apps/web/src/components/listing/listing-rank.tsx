@@ -24,7 +24,9 @@ export function ListingRank({ className, label, rank, ...props }: ListingRankPro
         aria-hidden="true"
         className={cn(
           "font-mono leading-none font-bold tabular-nums",
-          podium ? "text-3xl text-skin-accent-ink" : "text-xl text-ink-muted",
+          podium
+            ? "grid size-10 place-items-center rounded-full border border-line-strong bg-surface-active text-lg text-skin-accent-ink"
+            : "text-xl text-ink-muted",
         )}
       >
         {rank}

@@ -31,7 +31,7 @@ export function ListingSortSelect({
       <SelectTrigger
         aria-label={label}
         className={cn(
-          "h-11 min-w-40 rounded-control border-line bg-surface-raised px-4 text-ink shadow-none",
+          "h-11 min-w-40 rounded-full border-line bg-surface-raised px-4 text-ink shadow-none transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:border-line-strong",
           className,
         )}
       >

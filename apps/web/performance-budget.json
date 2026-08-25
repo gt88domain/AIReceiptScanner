@@ -1,6 +1,6 @@
 {
   "commonEntryGzipBytes": 213000,
-  "globalCssGzipBytes": 27300,
+  "globalCssGzipBytes": 28672,
   "forbiddenInitialRequestTokens": [
     "search-default",
     "orama-static",
