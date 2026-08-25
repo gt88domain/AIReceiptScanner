@@ -3,6 +3,13 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.6.0](https://github.com/gt88domain/easystarter-template/compare/v2.5.0...v2.6.0) (2026-08-25)
+
+
+### Features
+
+* **web:** polish public primitives and design preview ([#109](https://github.com/gt88domain/easystarter-template/issues/109)) ([1054298](https://github.com/gt88domain/easystarter-template/commit/1054298d35fed211350344e4134783fc825ea8ce))
+
 ## [2.5.0](https://github.com/gt88domain/easystarter-template/compare/v2.4.0...v2.5.0) (2026-08-24)
 
 
