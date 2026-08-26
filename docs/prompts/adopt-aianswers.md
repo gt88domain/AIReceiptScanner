@@ -2,8 +2,11 @@
 
 > 目标产品:AI 问答知识库(问题 + AI 生成带引用答案 + 主题/模型/合集 + 语义搜索)。
 > 旧仓库:`/Users/linyan/dev/answer/aianswers`(模版 0.4.0 fork,**只作规格与数据来源,不搬代码**)。
-> 模版基线:`gt88domain/easystarter-template` ≥ v1.0.0(clean-baseline 发布,含 PR #86,已打 tag)。
-> 执行方式:每个 Stage 由执行 AI 一次跑完,**只在验收门禁停下**;监督者只看门禁结果与 diff 摘要。
+> 模版基线:`gt88domain/easystarter-template` ≥ **v2.6.0**(稳定 tag;含公开页原语、模板预览与内容面修复)。
+> 执行方式:**每个 Stage 是路线图切片,不是一次提交。** 实现一律走临时 worktree → Draft PR →
+> 本地与 CI 门禁 → 所有者复审 → 合并 main。涉及生产资源(D1/Queue/R2/Vectorize/外部 AI provider)、
+> 迁移、内容导入或部署/切流时,**须在动作前单独取得授权**;部署仅从 main 精确 SHA 进行,
+> 并把版本 ID、输入 manifest/hash(内容导出/导入行数)与验证结果写入 PR 评论。
 
 ## Stage 0 结论(待所有者签字;以下为预填建议)
 
@@ -26,7 +29,7 @@
 
 ## 前置门(全部满足才允许 Stage 1 开工)
 
-1. 模版 ≥ v1.0.0 tag 已发布(已满足:clean-baseline 即 v1.0.0)。
+1. 模版 ≥ v2.6.0 tag 已发布(已满足)。
 2. 所有者确认内容数据决策(内容迁 or 全重起)。
 3. 完成 playbook 决策:`docs/migration/01-data-owner.md` 与 `04-security-check.md`
    (AI key 仅存 secret;公开读接口限流;生成任务幂等键)。
@@ -74,8 +77,8 @@ packages/app-config/src/product-config.ts、apps/server/src/worker/create-worker
 
 验收门禁(全部通过才停):
 - pnpm test / check-types / lint / fmt:check 全绿
-- wrangler dev 本地起服,/healthCheck 返回 OK
-- 提交:chore(adopt): baseline aianswers rebuild from easystarter v0.13.x
+- wrangler dev 本地起服,`POST /rpc/healthCheck` 返回 OK
+- 提交:chore(adopt): baseline aianswers rebuild from easystarter v2.6.0
 ```
 
 ## Stage 2(v0.2.0):知识域 + 公开只读页 + 内容导入
