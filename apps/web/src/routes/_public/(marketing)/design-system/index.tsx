@@ -42,7 +42,9 @@ export const Route = createFileRoute("/_public/(marketing)/design-system/")({
 
 function DesignSystemPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense
+      fallback={<div aria-busy="true" aria-label="Loading design system" className="min-h-dvh" />}
+    >
       <DesignSystemGallery />
     </Suspense>
   );

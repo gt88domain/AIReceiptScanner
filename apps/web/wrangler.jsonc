@@ -9,7 +9,7 @@
       "custom_domain": true,
     },
   ],
-  "main": "@tanstack/react-start/server-entry",
+  "main": "./src/server.ts",
   "assets": {
     "not_found_handling": "single-page-application",
   },

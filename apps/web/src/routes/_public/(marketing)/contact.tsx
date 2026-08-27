@@ -1,5 +1,5 @@
 import { useForm } from "@tanstack/react-form";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { Loader2Icon, MailIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -15,6 +15,9 @@ import { cn } from "@/lib/utils";
 import { buildSeoHead } from "@/utils/seo";
 
 export const Route = createFileRoute("/_public/(marketing)/contact")({
+  beforeLoad: () => {
+    if (!webConfig.contactFormEnabled) throw notFound();
+  },
   head: () => {
     const locale = getCurrentLocale();
     const messages = getMessages(locale);
@@ -33,7 +36,6 @@ function ContactPage() {
   const t = useTranslations("contact");
   const [turnstileToken, setTurnstileToken] = useState("");
   const [turnstileResetNonce, setTurnstileResetNonce] = useState(0);
-  if (!webConfig.contactFormEnabled) return null;
   const form = useForm({
     defaultValues: { email: "", message: "", name: "", website: "" },
     onSubmit: async ({ value }) => {
