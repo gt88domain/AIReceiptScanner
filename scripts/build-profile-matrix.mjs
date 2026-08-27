@@ -3,6 +3,7 @@ import { mkdtemp, readdir, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
+import { measureHomepageAssets } from "./lib/measure-homepage-assets.mjs";
 
 const root = process.cwd();
 const officialProfiles = ["full-saas", "account-app", "directory", "directory-lite"];
@@ -36,7 +37,8 @@ function descriptor(profileId) {
   return JSON.parse(output);
 }
 
-async function readAssetStats(directory) {
+async function readAssetStats(webOutput) {
+  const directory = join(webOutput, "client", "assets");
   const assets = await readdir(directory);
   const loaded = await Promise.all(
     assets.map(async (name) => ({ name, contents: await readFile(join(directory, name)) })),
@@ -51,22 +53,15 @@ async function readAssetStats(directory) {
     .sort((left, right) => right.contents.length - left.contents.length)[0];
   if (!commonEntry || !globalCss)
     throw new Error("Web build lacks its common entry or global CSS asset.");
-  const byName = new Map(loaded.map((asset) => [asset.name, asset]));
-  const initialRequests = new Set([commonEntry.name, globalCss.name]);
-  function collectStaticImports(name) {
-    const asset = byName.get(name);
-    if (!asset || !name.endsWith(".js")) return;
-    for (const match of asset.contents.toString("utf8").matchAll(/from["']\.\/([^"']+\.js)["']/g)) {
-      if (initialRequests.has(match[1])) continue;
-      initialRequests.add(match[1]);
-      collectStaticImports(match[1]);
-    }
-  }
-  collectStaticImports(commonEntry.name);
+  const homepage = await measureHomepageAssets({
+    clientAssetsDirectory: directory,
+    serverAssetsDirectory: join(webOutput, "server", "assets"),
+  });
   return {
     commonEntryGzipBytes: gzipSync(commonEntry.contents).length,
+    initialJavaScriptGzipBytes: homepage.initialJavaScriptGzipBytes,
     globalCssGzipBytes: gzipSync(globalCss.contents).length,
-    forbiddenAssets: [...initialRequests].filter((name) =>
+    forbiddenAssets: homepage.initialRequests.filter((name) =>
       budget.forbiddenInitialRequestTokens.some((token) => name.includes(token)),
     ),
   };
@@ -138,9 +133,9 @@ try {
       environment,
     );
 
-    const performance = await readAssetStats(join(webOutput, "client", "assets"));
-    if (performance.commonEntryGzipBytes > budget.commonEntryGzipBytes) {
-      throw new Error(`${profileId} common entry exceeds the shared gzip budget.`);
+    const performance = await readAssetStats(webOutput);
+    if (performance.initialJavaScriptGzipBytes > budget.initialJavaScriptGzipBytes) {
+      throw new Error(`${profileId} initial homepage JavaScript exceeds the shared gzip budget.`);
     }
     if (performance.globalCssGzipBytes > budget.globalCssGzipBytes) {
       throw new Error(`${profileId} global CSS exceeds the shared gzip budget.`);

@@ -59,11 +59,13 @@ components do not read product message catalogs. They consume the semantic skin
 tokens from `apps/web/src/styles/index.css`; products may select or override a
 skin without branching component logic.
 
-Downstream products may select a skin, change that skin's token values, and
-compose their own grid, footer, and product-owned modules. They must not use a
-`className` override to restyle the internals of a shared listing component. If
-a shared component needs a new visual state, add that state upstream or propose
-a new skin instead of building a product-only CSS patch around it.
+Downstream products may select a skin, change its token values, compose their
+own layout, or replace these public presentation components in the product
+layer. Prefer composition or a product-owned component over a growing
+`className` patch against shared internals. Keep the shared primitive only when
+its structure and behavior still fit; propose an upstream state when multiple
+products need the same variation. This visual freedom does not extend to auth,
+billing, data ownership, or other protected core behavior.
 
 No component in this kit creates `/domains`, `/rankings`, `/favorites`, detail,
 or any other default route. Add only the URL families your product owns, and

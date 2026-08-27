@@ -426,12 +426,6 @@ importers:
       '@fontsource-variable/outfit':
         specifier: ^5.3.0
         version: 5.3.0
-      '@fontsource-variable/oxanium':
-        specifier: ^5.3.0
-        version: 5.3.0
-      '@fontsource-variable/raleway':
-        specifier: ^5.3.0
-        version: 5.3.0
       '@fontsource/chakra-petch':
         specifier: ^5.3.0
         version: 5.3.0
@@ -1227,12 +1221,6 @@ packages:
 
   '@fontsource-variable/outfit@5.3.0':
     resolution: {integrity: sha512-fPb5XnYK0k7SbR++HEmm4+ZqDszmLKQ+sPRUr8oQ/KNC0vy6r6hazJFe8iYozv4cqlHbvJ/JECkJWrfDodUMVQ==}
-
-  '@fontsource-variable/oxanium@5.3.0':
-    resolution: {integrity: sha512-oVOH5mHRMDLQsxG6h2XAOCxyD+uQL2w5zAjy1FgnAlqt183JDVGPxy9FWK7dDnhEO8huXfP6V2C3QJUj1Ac/Sw==}
-
-  '@fontsource-variable/raleway@5.3.0':
-    resolution: {integrity: sha512-aSV2k+V6Zz+od0dHpBOzkVxEzmgEdiXcxDfant39jLOx+T89dielQRrZylukwK3Fp+FY255gPqz67ruOfs1rqA==}
 
   '@fontsource/chakra-petch@5.3.0':
     resolution: {integrity: sha512-QZvbM/q2R6n1pg2x+TJPftZmBNS+ADU37L4Z4L/6UJIz+JZ/SRaEf8usPFRiP7Ht28sIideMu/Bm1SnGlSrwNw==}
@@ -7275,10 +7263,6 @@ snapshots:
   '@fontsource-variable/jetbrains-mono@5.3.0': {}
 
   '@fontsource-variable/outfit@5.3.0': {}
-
-  '@fontsource-variable/oxanium@5.3.0': {}
-
-  '@fontsource-variable/raleway@5.3.0': {}
 
   '@fontsource/chakra-petch@5.3.0': {}
 

@@ -17,7 +17,7 @@ vi.mock("@/components/security/turnstile", () => ({
 describe("NewsletterForm", () => {
   afterEach(() => vi.restoreAllMocks());
 
-  it("does not render or request subscription controls before the user expands it", () => {
+  it("does not render or request subscription controls before the user expands it", async () => {
     const fetchSpy = vi.spyOn(globalThis, "fetch");
 
     render(createElement(NewsletterForm));
@@ -28,7 +28,7 @@ describe("NewsletterForm", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "submit" }));
 
-    expect(screen.getByRole("textbox", { name: "emailLabel" })).toBeTruthy();
+    expect(await screen.findByRole("textbox", { name: "emailLabel" })).toBeTruthy();
     expect(screen.getByText("description")).toBeTruthy();
     expect(screen.getByTestId("turnstile")).toBeTruthy();
     expect(fetchSpy).not.toHaveBeenCalled();

@@ -38,12 +38,26 @@
   },
   "landingPage": {
     "hero": {
-      "announcement": "推出 AI 模型支持",
-      "title": "现代化客户参与解决方案",
-      "subtitle": "高度可定制的组件，用于构建符合您期望外观和感觉的现代网站和应用程序。",
+      "announcement": "你的产品，你的设计",
+      "title": "底座保持干净，特色由你决定。",
+      "subtitle": "鉴权、计费、数据和部署已经就绪。请把这个起始页面替换成真正适合目标用户的产品体验。",
       "startBuilding": "开始构建",
-      "requestDemo": "申请演示",
-      "appScreenAlt": "应用截图"
+      "requestDemo": "阅读文档",
+      "appScreenAlt": "应用截图",
+      "principlesLabel": "起始原则",
+      "ready": "可随时改造",
+      "foundation": {
+        "title": "保留可靠底座",
+        "description": "安全、数据归属和部署方式保持稳定可预测。"
+      },
+      "product": {
+        "title": "产品层归你所有",
+        "description": "路由、文案、信息架构和视觉方向都由下游决定。"
+      },
+      "performance": {
+        "title": "默认只发送必要内容",
+        "description": "起始页不携带图库图片、展示动画或虚构的产品承诺。"
+      }
     },
     "header": {
       "menu": {
@@ -121,7 +135,7 @@
       }
     },
     "footer": {
-      "description": "为你的创业项目或副业提供的一套组件集合。",
+      "description": "可靠的产品底座，独特的表达由你决定。",
       "copyright": "© {year} {appName}. 保留所有权利。",
       "newsletter": {
         "title": "获取产品更新",

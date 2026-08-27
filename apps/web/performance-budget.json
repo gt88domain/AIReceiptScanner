@@ -1,6 +1,6 @@
 {
-  "commonEntryGzipBytes": 213000,
-  "globalCssGzipBytes": 28672,
+  "initialJavaScriptGzipBytes": 380000,
+  "globalCssGzipBytes": 25600,
   "forbiddenInitialRequestTokens": [
     "search-default",
     "orama-static",
@@ -12,6 +12,7 @@
     "landing-composer",
     "theme-presets",
     "theme-fonts",
+    "turnstile",
     ".lazy-"
   ]
 }

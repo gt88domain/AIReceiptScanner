@@ -11,9 +11,9 @@ const [budget, bundle, homepage] = await Promise.all(
 );
 
 const failures = [];
-if (bundle.commonEntry.gzipBytes > budget.commonEntryGzipBytes) {
+if (homepage.initialJavaScriptGzipBytes > budget.initialJavaScriptGzipBytes) {
   failures.push(
-    `Common entry gzip ${bundle.commonEntry.gzipBytes} exceeds ${budget.commonEntryGzipBytes}.`,
+    `Initial homepage JavaScript gzip ${homepage.initialJavaScriptGzipBytes} exceeds ${budget.initialJavaScriptGzipBytes}.`,
   );
 }
 if (bundle.globalCss.gzipBytes > budget.globalCssGzipBytes) {
@@ -33,7 +33,7 @@ await writeFile(
       schemaVersion: 1,
       budget,
       measured: {
-        commonEntryGzipBytes: bundle.commonEntry.gzipBytes,
+        initialJavaScriptGzipBytes: homepage.initialJavaScriptGzipBytes,
         globalCssGzipBytes: bundle.globalCss.gzipBytes,
         forbiddenInitialRequests: homepage.forbiddenInitialRequests,
       },

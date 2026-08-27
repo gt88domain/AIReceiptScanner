@@ -48,8 +48,8 @@ export const themePresets = {
         "sidebar-accent-foreground": "oklch(0.218 0.008 223.9)",
         "sidebar-border": "oklch(0.925 0.005 214.3)",
         "sidebar-ring": "oklch(0.723 0.014 214.4)",
-        "font-sans": "'Raleway Variable', sans-serif",
-        "font-heading": "'Oxanium Variable', sans-serif",
+        "font-sans": "ui-sans-serif, system-ui, sans-serif",
+        "font-heading": "ui-sans-serif, system-ui, sans-serif",
         "font-serif": 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
         "font-mono":
           'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
@@ -88,8 +88,8 @@ export const themePresets = {
         "sidebar-border": "oklch(1 0 0 / 10%)",
         "sidebar-ring": "oklch(0.56 0.021 213.5)",
         radius: "0.45rem",
-        "font-sans": "'Raleway Variable', sans-serif",
-        "font-heading": "'Oxanium Variable', sans-serif",
+        "font-sans": "ui-sans-serif, system-ui, sans-serif",
+        "font-heading": "ui-sans-serif, system-ui, sans-serif",
         "font-serif": 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
         "font-mono":
           'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',

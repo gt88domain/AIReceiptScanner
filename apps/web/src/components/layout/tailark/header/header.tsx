@@ -29,10 +29,6 @@ export const Header = () => {
 
   const menuItems = React.useMemo<MenuItem[]>(
     () => [
-      { name: t("menu.features"), to: "/", hash: "features" },
-      { name: t("menu.integrations"), to: "/", hash: "integrations" },
-      { name: t("menu.pricing"), to: "/", hash: "pricing" },
-      { name: t("menu.faq"), to: "/", hash: "faq" },
       ...(webConfig.blogPublic ? [{ name: t("menu.blog"), to: "/blog" }] : []),
       ...(webConfig.contactFormEnabled ? [{ name: t("menu.contact"), to: "/contact" }] : []),
       ...(webConfig.docsPublic ? [{ name: t("menu.docs"), href: "/docs" }] : []),

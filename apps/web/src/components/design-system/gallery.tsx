@@ -1,5 +1,6 @@
 import { MoonIcon, SlidersHorizontalIcon, SparklesIcon, SunIcon } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import "./gallery.css";
 import { Prose } from "@/components/content/prose";
 import { ListingEmptyState } from "@/components/listing/listing-empty-state";
 import { ListingErrorState } from "@/components/listing/listing-error-state";

@@ -38,12 +38,26 @@
   },
   "landingPage": {
     "hero": {
-      "announcement": "AIモデルサポートの導入",
-      "title": "顧客エンゲージメントのためのモダンソリューション",
-      "subtitle": "あなたが意図した外観と感覚を持つモダンなウェブサイトやアプリケーションを構築するための高度にカスタマイズ可能なコンポーネント。",
+      "announcement": "プロダクトもデザインも、あなたのもの",
+      "title": "土台はシンプルに。個性は自由に。",
+      "subtitle": "認証、課金、データ、デプロイは準備済みです。このスターター画面を、利用者に合うプロダクト体験へ置き換えてください。",
       "startBuilding": "構築を開始",
-      "requestDemo": "デモをリクエスト",
-      "appScreenAlt": "アプリ画面"
+      "requestDemo": "ドキュメントを読む",
+      "appScreenAlt": "アプリ画面",
+      "principlesLabel": "スターターの原則",
+      "ready": "カスタマイズ可能",
+      "foundation": {
+        "title": "信頼できる土台を保つ",
+        "description": "セキュリティ、データ所有、デプロイを予測可能に保ちます。"
+      },
+      "product": {
+        "title": "プロダクト層は自由",
+        "description": "ルート、コピー、情報設計、ビジュアル方針は各プロダクトが所有します。"
+      },
+      "performance": {
+        "title": "初期配信を最小限に",
+        "description": "ストック画像、ショーケース用アニメーション、架空の訴求を持ち込みません。"
+      }
     },
     "header": {
       "menu": {
@@ -121,7 +135,7 @@
       }
     },
     "footer": {
-      "description": "スタートアップやサイドプロジェクト向けのコンポーネントコレクションです。",
+      "description": "信頼できる土台から、独自の視点を持つプロダクトを構築できます。",
       "copyright": "© {year} {appName}. All rights reserved.",
       "newsletter": {
         "title": "プロダクト更新を受け取る",

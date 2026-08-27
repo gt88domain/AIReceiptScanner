@@ -38,12 +38,26 @@
   },
   "landingPage": {
     "hero": {
-      "announcement": "Introducing Support for AI Models",
-      "title": "Modern Solutions for Customer Engagement",
-      "subtitle": "Highly customizable components for building modern websites and applications that look and feel the way you mean it.",
+      "announcement": "Your product, your design",
+      "title": "A clean foundation. The rest is yours.",
+      "subtitle": "Auth, billing, data, and deployment are ready. Replace this starter surface with an experience made for your audience.",
       "startBuilding": "Start Building",
-      "requestDemo": "Request a demo",
-      "appScreenAlt": "app screen"
+      "requestDemo": "Read the docs",
+      "appScreenAlt": "app screen",
+      "principlesLabel": "Starter principles",
+      "ready": "Ready to adapt",
+      "foundation": {
+        "title": "Keep the foundation",
+        "description": "Security, data ownership, and deployment stay predictable."
+      },
+      "product": {
+        "title": "Own the product layer",
+        "description": "Routes, copy, information architecture, and visual direction belong to you."
+      },
+      "performance": {
+        "title": "Ship less by default",
+        "description": "No stock imagery, showcase animation, or product claims enter the starter page."
+      }
     },
     "header": {
       "menu": {
@@ -121,7 +135,7 @@
       }
     },
     "footer": {
-      "description": "A collection of components for your startup business or side project.",
+      "description": "A dependable starting point for a product with its own point of view.",
       "copyright": "© {year} {appName}. All rights reserved.",
       "newsletter": {
         "title": "Get product updates",

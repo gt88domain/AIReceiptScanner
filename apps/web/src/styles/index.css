@@ -1,10 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "./marquee.css";
-@import "./fonts/default.css";
 @import "./skins/saas-neutral.css";
-@import "./skins/catalog-blue.css";
-@import "./skins/dark-entertainment.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -78,9 +74,6 @@
   --shadow-2xl: var(--shadow-2xl);
   --shadow-raised: var(--skin-shadow-raised);
   --shadow-raised-hover: var(--skin-shadow-raised-hover);
-
-  --animate-marquee-horizontal: marquee-horizontal var(--marquee-duration) infinite linear;
-  --animate-marquee-vertical: marquee-vertical var(--marquee-duration) infinite linear;
 }
 
 @layer base {

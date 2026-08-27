@@ -46,14 +46,6 @@ export const Footer = ({
   const footerT = useTranslations("landingPage.footer");
   const resolvedSections = sections ?? [
     {
-      title: footerT("sections.product.title"),
-      links: [
-        { name: footerT("sections.product.links.overview"), href: "/" },
-        { name: footerT("sections.product.links.pricing"), href: "/#pricing" },
-        { name: footerT("sections.product.links.features"), href: "/#features" },
-      ],
-    },
-    {
       title: footerT("sections.resources.title"),
       links: [
         { name: footerT("sections.resources.links.privacy"), href: "/privacy" },
@@ -83,7 +75,7 @@ export const Footer = ({
   return (
     <section className="border-t py-12 sm:py-16 lg:py-24">
       <div className="container mx-auto px-4">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-12">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-12">
           <div className="flex flex-col gap-4 text-center sm:text-left">
             <div className="flex items-center justify-center gap-2 sm:justify-start">
               <a href={logo.url}>
