@@ -23,8 +23,8 @@ import {
 export * from "./read-models";
 
 /**
- * Internal-only, transport-neutral facade. Transport registration is
- * deliberately absent until Control 2.
+ * Transport-neutral read facade. The Worker exposes it only through the
+ * configured Access-protected HTTP host or service-binding entry point.
  */
 export function createControlReadV1(dependencies: ControlReadDependencies): ControlReadV1 {
   return {

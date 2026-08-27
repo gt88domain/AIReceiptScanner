@@ -1,7 +1,6 @@
 import { Stack, usePathname, useRouter } from "expo-router";
 import { useThemeColor } from "heroui-native";
 import * as React from "react";
-import { useTranslation } from "react-i18next";
 import { ActivityIndicator, View } from "react-native";
 import { useAuth } from "@/providers/auth-provider";
 
@@ -9,7 +8,6 @@ export default function AuthLayout() {
   const { isAuthenticated, isPending } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const { t } = useTranslation();
   const isCallbackRoute = pathname === "/callback" || pathname.endsWith("/callback");
 
   const isResetPasswordRoute =
@@ -47,14 +45,6 @@ export default function AuthLayout() {
       }}
     >
       <Stack.Screen name="sign-in" options={{ headerShown: false, title: "" }} />
-      <Stack.Screen
-        name="email-otp"
-        options={{
-          title: t("auth.verificationCode"),
-          headerShown: true,
-          headerTransparent: true,
-        }}
-      />
       <Stack.Screen
         name="callback"
         options={{ headerShown: false, title: "", presentation: "fullScreenModal" }}

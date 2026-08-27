@@ -62,6 +62,8 @@ export function LocaleSwitcher({ onActionComplete }: LocaleSwitcherProps = {}) {
     router.navigate({ to: newPath, reloadDocument: true });
   };
 
+  if (supportedLocales.length < 2) return null;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

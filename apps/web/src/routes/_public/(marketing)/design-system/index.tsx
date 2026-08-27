@@ -12,7 +12,7 @@ const DesignSystemGallery = lazy(() =>
 /**
  * Dev-only component gallery for template developers. The file-based route
  * exists in every build, but beforeLoad throws notFound() outside development,
- * the path sits in the vite.config.ts nonPublicPrefixes list so it can never
+ * the path sits in the shared non-public path list so it can never
  * enter the sitemap, and the head is noindex,nofollow as a final guard. Copy
  * in the gallery documents components for template developers; it is developer
  * documentation, not product content, so it intentionally skips i18n messages.

@@ -30,23 +30,16 @@ const { provider } = defineI18nUI(fumadocsI18n, {
     displayName: localeDisplayNames.en,
     search: "Search",
   },
-  zh: {
-    displayName: localeDisplayNames.zh,
-    search: "搜索",
-  },
-  jp: {
-    displayName: localeDisplayNames.jp,
-    search: "検索",
-  },
 });
 
 export function getFumadocsI18nProvider(locale: Locale | undefined) {
   const router = useRouter();
+  const activeLocale = isValidLocale(locale) ? locale : defaultLocale;
   return {
-    ...provider(locale),
+    ...provider(activeLocale),
     onLocaleChange(nextLocale: string) {
       if (typeof window === "undefined") return;
-      const newLocale = isValidLocale(nextLocale) ? (nextLocale as Locale) : defaultLocale;
+      const newLocale = isValidLocale(nextLocale) ? nextLocale : defaultLocale;
 
       setLocaleCookie(newLocale);
 

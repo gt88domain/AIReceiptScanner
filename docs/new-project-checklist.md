@@ -6,6 +6,9 @@ criteria. Listing and landing-page composer routes remain absent.
 
 Before the first public deployment:
 
+- define the paid offer, price, collection method, fulfillment, and refund
+  behavior; public preview content may exist, but there is no default free
+  product, signup-credit grant, or subscription trial;
 - set the app name, support email, public URLs, favicon, and Open Graph image;
 - replace the landing-page copy while keeping its components and visual style
   if they suit the product;
@@ -20,3 +23,7 @@ Before the first public deployment:
 
 Do not restore template examples as production content. Blog and docs content,
 authors, and categories must remain product-owned.
+
+Use the local or template-preview `/design-system` gallery to inspect shared
+listing/detail primitives. It is developer documentation, stays noindexed, and
+returns 404 in production.

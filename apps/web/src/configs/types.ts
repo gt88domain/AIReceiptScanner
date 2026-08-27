@@ -1,4 +1,3 @@
-import type { AppCommonConfig } from "@repo/app-config";
 import type { ThemePresetKey } from "./theme-presets";
 
 export interface WebConfig {
@@ -21,13 +20,9 @@ export interface WebConfig {
   auth: {
     methods: {
       emailPasswordEnabled: boolean;
-      emailOtpEnabled: boolean;
       githubEnabled: boolean;
       googleEnabled: boolean;
       appleEnabled: boolean;
-    };
-    otp: {
-      email: AppCommonConfig["auth"]["otp"]["email"];
     };
   };
   defaultThemePresetKey: ThemePresetKey;

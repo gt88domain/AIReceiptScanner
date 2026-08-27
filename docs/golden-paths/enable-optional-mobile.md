@@ -1,6 +1,9 @@
 # Enable optional mobile
 
-Install inside `optional/`, enable `common.features.mobile`, and configure Expo,
-deep-link, mobile auth, RevenueCat, and notifications only when used. Run
-`pnpm mobile:check` plus server type checks. Web-only deployments must retain no
+Run `pnpm --dir optional install`, set
+`productConfig.common.features.mobile: true` in
+`packages/app-config/src/product-config.ts`, and configure Expo identity,
+deep links, mobile auth, RevenueCat, and notifications only when used. Use
+`pnpm mobile:dev` for development. When the user requests verification, the
+focused mobile gate is `pnpm mobile:check`; web-only deployments must retain no
 Expo or RevenueCat environment requirement.

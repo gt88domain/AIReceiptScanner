@@ -6,7 +6,8 @@ fast local start and explicit production adoption.
 ## ✨ Key Principles
 
 - **Explicit Production Adoption**: Example configuration for local work and
-  buyer-owned Worker, D1, R2, Queue, domain, and secret configuration for production
+  buyer-owned Worker, D1, R2, Queue, domain, and secret configuration for
+  production
 - **Subsecond Performance**: Optimized for speed and responsiveness
 - **Maximum Type Safety**: End-to-end type safety across all layers
 - **AI-Friendly**: Clean, consistent code patterns for AI assistance
@@ -21,19 +22,19 @@ auth, payments, credits, jobs, storage, database, shared packages, or CI.
 
 ## 🚀 Tech Stack
 
-| Category         | Technologies                                          |
-| ---------------- | ----------------------------------------------------- |
-| **Frontend**     | React 19 + TanStack Start + TailwindCSS 4 + shadcn/ui |
-| **Backend**      | Hono + Cloudflare Workers                             |
-| **Database**     | Cloudflare D1 (SQLite) + Drizzle ORM                  |
-| **API**          | oRPC (end-to-end type-safe)                           |
-| **Auth**         | Better Auth (Email/Password, GitHub, Google, Apple) |
-| **Payments**     | Stripe + Creem (web), optional RevenueCat mobile payments, credits system |
-| **Mobile**       | Optional React Native + Expo capability               |
-| **Email**        | Resend + React Email templates                        |
-| **i18n**         | use-intl (English/Chinese/Japanese)                   |
-| **Monorepo**     | Turborepo + pnpm workspaces                           |
-| **Code Quality** | OXC (`oxlint` + `oxfmt`) + TypeScript                 |
+| Category         | Technologies                                                    |
+| ---------------- | --------------------------------------------------------------- |
+| **Frontend**     | React 19 + TanStack Start + TailwindCSS 4 + shadcn/ui           |
+| **Backend**      | Hono + Cloudflare Workers                                       |
+| **Database**     | Cloudflare D1 (SQLite) + Drizzle ORM                            |
+| **API**          | oRPC (end-to-end type-safe)                                     |
+| **Auth**         | Better Auth (Email/Password, GitHub, Google, Apple)             |
+| **Payments**     | Stripe, Creem, or Waffo; optional RevenueCat mobile             |
+| **Mobile**       | Optional React Native + Expo capability                         |
+| **Email**        | Resend + React Email templates                                  |
+| **i18n**         | use-intl (English published; Chinese/Japanese catalogs dormant) |
+| **Monorepo**     | Turborepo + pnpm workspaces                                     |
+| **Code Quality** | OXC (`oxlint` + `oxfmt`) + TypeScript                           |
 
 ## 🎯 Features
 
@@ -64,7 +65,7 @@ auth, payments, credits, jobs, storage, database, shared packages, or CI.
 ### Business Features
 
 - Multi-tier pricing system
-- Web payments via Stripe and Creem
+- Web payments via Stripe, Creem, or Waffo
 - Optional native in-app purchases via RevenueCat
 - Built-in credits system (grants, balances, orders)
 - User management dashboard
@@ -94,11 +95,11 @@ pnpm dev
 
 ### Development URLs
 
-| App               | URL                   | Description                   |
-| ----------------- | --------------------- | ----------------------------- |
-| **Web**           | http://localhost:3000 | Main web application          |
-| **Server**        | http://localhost:3001 | API server                    |
-| **Email Preview** | http://localhost:4000 | Email template preview        |
+| App               | URL                   | Description            |
+| ----------------- | --------------------- | ---------------------- |
+| **Web**           | http://localhost:3000 | Main web application   |
+| **Server**        | http://localhost:3001 | API server             |
+| **Email Preview** | http://localhost:4000 | Email template preview |
 
 ## 📁 Project Structure
 
@@ -119,45 +120,32 @@ pnpm dev
 
 ## 📚 Docs
 
-- `docs/config-architecture.md` — Shared configuration architecture
-- `docs/i18n-implementation.md` — Internationalization implementation notes
-- `docs/cross-platform-payment-test-scenarios.md` — Payment test scenarios across web and native
-- `docs/native-revenuecat-payments.md` — Native in-app purchases with RevenueCat
-- `docs/native-local-builds.md` — Building the native app locally
-- `docs/native-email-verification-with-ngrok.md` — Native email verification setup with ngrok
-- `docs/template-adoption.md` — Buyer-owned identifiers and deployment checklist
-- `docs/new-project-checklist.md` — Public content and branding checks before first launch
-- `docs/upstream-sync.md` — Released-tag adoption and downstream modification manifest
-- `docs/product-owned-ledger.md` — New-product D1 ownership and capability-install policy
-- `docs/golden-paths/` — SaaS, Directory, and AI Generator implementation paths
-- `docs/extensions.md` — Stable source-controlled extension points
-- `docs/testing-strategy.md` — Required core-path test coverage and CI gates
-- `docs/migration/00-audit.md` — Required migration Playbook entry point
-- `docs/adr/README.md` — Durable architecture decisions and their rationale
-- `docs/production-migrations.md` — Structural migration production runbook
-- `docs/rate-limiting.md` — Edge, auth, and product-quota rate-limit policy
-- `docs/migration/mobile-package-refactor.md` — Mobile package isolation migration record
+- [`docs/README.md`](docs/README.md) — documentation index and historical policy
+- [`docs/repo-map.md`](docs/repo-map.md) — change ownership and authoritative files
+- [`docs/architecture-map.md`](docs/architecture-map.md) — topology and critical Mermaid sequences
+- [`docs/template-adoption.md`](docs/template-adoption.md) — buyer-owned identifiers and adoption
+- [`docs/production-configuration.md`](docs/production-configuration.md) — fail-closed production setup
 
 ## 🛠️ Available Scripts
 
 ### Development
 
-| Script            | Description                        |
-| ----------------- | ---------------------------------- |
-| `pnpm dev`        | Start all apps in development mode |
-| `pnpm dev:web`    | Start web app only                 |
-| `pnpm dev:server` | Start API server only              |
-| `pnpm mobile:dev` | Start the optional mobile app      |
+| Script              | Description                         |
+| ------------------- | ----------------------------------- |
+| `pnpm dev`          | Start all core apps                 |
+| `pnpm dev:web`      | Start web app only                  |
+| `pnpm dev:server`   | Start API server only               |
+| `pnpm mobile:dev`   | Start the optional mobile app       |
 | `pnpm mobile:check` | Type-check and lint optional mobile |
 
 ### Build & Deploy
 
-| Script               | Description                       |
-| -------------------- | --------------------------------- |
-| `pnpm build`         | Build all applications            |
-| `pnpm deploy`        | Deploy web + server to production |
-| `pnpm deploy:web`    | Deploy web app only               |
-| `pnpm deploy:server` | Deploy API server only            |
+| Script                          | Description                             |
+| ------------------------------- | --------------------------------------- |
+| `pnpm build`                    | Build all core workspaces               |
+| `pnpm deploy`                   | Deploy web + server to production       |
+| `pnpm deploy:web`               | Deploy web app only                     |
+| `pnpm deploy:server`            | Deploy API server only                  |
 | `pnpm verify:production-config` | Validate both production Worker targets |
 
 ### Code Quality
@@ -170,21 +158,21 @@ pnpm dev
 | `pnpm fmt:check`   | Check formatting (`oxfmt --check`)         |
 | `pnpm check-types` | TypeScript type checking                   |
 | `pnpm clean`       | Clean all node_modules and build artifacts |
-| `pnpm commit`      | Conventional commit with auto-push         |
+| `pnpm commit`      | Create a Conventional Commit interactively |
 
 Production Worker setup and the fail-closed deployment guard are documented in
 [`docs/production-configuration.md`](docs/production-configuration.md).
 
 ### Database Management
 
-| Script                  | Description                        |
-| ----------------------- | ---------------------------------- |
-| `pnpm db:generate`      | Generate database migration        |
-| `pnpm db:push`          | Push schema changes to D1          |
-| `pnpm db:migrate`       | Run database migrations            |
-| `pnpm db:migrate:local` | Run migrations on local database   |
-| `pnpm db:studio`        | Open Drizzle Studio (database GUI) |
-| `pnpm db:studio:local`  | Open Drizzle Studio against local D1 |
+| Script                  | Description                         |
+| ----------------------- | ----------------------------------- |
+| `pnpm db:generate`      | Generate database migration         |
+| `pnpm db:check`         | Validate Drizzle migration metadata |
+| `pnpm db:migrate`       | Run local database migrations       |
+| `pnpm db:migrate:local` | Run local database migrations       |
+| `pnpm db:studio`        | Open Drizzle Studio for local D1    |
+| `pnpm db:studio:local`  | Open Drizzle Studio for local D1    |
 
 ### Server Utilities
 
@@ -195,39 +183,22 @@ Production Worker setup and the fail-closed deployment guard are documented in
 
 ## 🚀 Deployment
 
-### Initial Deployment
+Production deployment is intentionally fail-closed. Adopt the Worker names,
+bindings, public URLs, provider configuration, secrets, and local production
+allowlist before the first upload. Then run:
 
 ```bash
-# 1. First deployment to get your URLs
-pnpm deploy
-
-# 2. Update production configuration:
-#    - apps/server/wrangler.jsonc → vars (WEBSITE_URL, SERVER_URL)
-#    - apps/web/.env.production → VITE_SERVER_URL, VITE_APP_URL
-
-# 3. Redeploy with updated configuration
+pnpm verify:production-config
 pnpm deploy
 ```
 
-### Environment Variables
+Use only the repository deploy scripts. Raw `wrangler deploy` bypasses the
+production safety preflight; preview publishing uses the separately configured
+`deploy:preview` scripts.
 
-#### Web App (.env.production)
-
-```bash
-VITE_SERVER_URL=https://your-api.your-domain.workers.dev
-VITE_APP_URL=https://your-app.pages.dev
-```
-
-#### Server (wrangler.jsonc)
-
-```json
-{
-	"vars": {
-		"WEBSITE_URL": "https://your-app.pages.dev",
-		"SERVER_URL": "https://your-api.your-domain.workers.dev"
-	}
-}
-```
+Do not deploy once merely to discover production URLs. Follow
+[`docs/production-configuration.md`](docs/production-configuration.md) for the
+complete setup and safety checks.
 
 ## 🔧 Configuration
 
@@ -270,12 +241,13 @@ Set up Resend for transactional emails:
 
 ```bash
 RESEND_API_KEY=your_resend_api_key
-FROM_EMAIL=noreply@yourdomain.com
+EMAIL_FROM=noreply@yourdomain.com
 ```
 
 ### Payments Setup
 
-Web checkout supports Stripe and Creem; an enabled mobile app uses RevenueCat:
+Web checkout supports Stripe, Creem, and Waffo; an enabled mobile app uses
+RevenueCat:
 
 ```bash
 # Stripe (web)
@@ -286,6 +258,11 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 CREEM_API_KEY=your_creem_api_key
 CREEM_WEBHOOK_SECRET=your_creem_webhook_secret
 
+# Waffo (web)
+WAFFO_MERCHANT_ID=your_merchant_id
+WAFFO_PRIVATE_KEY=your_private_key
+WAFFO_ENVIRONMENT=test
+
 # RevenueCat (optional mobile)
 REVENUECAT_WEBHOOK_SECRET=your_revenuecat_webhook_secret
 ```
@@ -294,25 +271,32 @@ REVENUECAT_WEBHOOK_SECRET=your_revenuecat_webhook_secret
 
 ### Theming
 
-- Modify `apps/web/src/styles/index.css` for global styles and design tokens (TailwindCSS 4 CSS-first config)
+- Modify `apps/web/src/styles/index.css` for global styles and design tokens
+  (TailwindCSS 4 CSS-first config)
 - Customize components in `apps/web/src/components/ui/`
 
 ### Pricing Configuration
 
-- Edit pricing tiers in `packages/shared/src/pricing-config.ts`
-- Configure payment providers/credits in `packages/app-config/src/`
+- Configure provider product/price IDs in `packages/app-config/src/app-config.ts`
+- Define membership semantics in `packages/app-config/src/membership-config.ts`
+- Define credit packages in `packages/app-config/src/product-config.ts`
 - Customize landing UI in `apps/web/src/components/landing-page/`
 
 ### Internationalization
 
-- Add translations in `packages/i18n/src/messages/<surface>/<locale>.json` (surfaces: `common`, `web`, `server`, `native`)
-- Supported languages: English, Chinese, Japanese (registered in `packages/i18n/src/locales.ts`)
+- Add translations in `packages/i18n/src/messages/<surface>/<locale>.json`
+  (`common`, `web`, `server`, or `native`)
+- Published language: English. Chinese and Japanese catalogs remain available
+  but do not produce routes, sitemap entries, alternates, or a locale switcher.
+  Both lists live in `packages/i18n/src/locales.ts`.
 - Use `useTranslations()` hook in components
 
 ## 🧪 Testing
 
 The template's core auth, billing, webhook, credits, admin, and migration checks
-are required. Run the root test gate before review:
+are required. For agent work, plan tests first, implement and review the complete
+requirement, then add the planned tests together. Run automated verification
+only when requested; `pnpm test` remains the release gate.
 
 ```bash
 # Required template gate (runs template and integration checks)

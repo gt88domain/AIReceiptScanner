@@ -33,9 +33,6 @@ export function resolveEmailConfig(common = resolveCommonConfig()): ResolvedEmai
   if (config.enabled && config.provider === "none") {
     throw new Error("[email:PROVIDER_MISSING] Enabled email requires a provider.");
   }
-  if (common.auth.methods.emailOtpEnabled && !config.capabilities.emailOtp) {
-    throw new Error("[email:OTP_CAPABILITY_REQUIRED] Email OTP requires the emailOtp capability.");
-  }
   return config;
 }
 

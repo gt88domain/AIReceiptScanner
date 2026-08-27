@@ -1,6 +1,6 @@
 // https://better-auth.com/docs/integrations/expo#initialize-better-auth-client
 import { createAuthClient } from "better-auth/react";
-import { customSessionClient, emailOTPClient } from "better-auth/client/plugins";
+import { customSessionClient } from "better-auth/client/plugins";
 import { expoClient } from "@better-auth/expo/client";
 import * as SecureStore from "expo-secure-store";
 import { getAuthConfig } from "@/configs/app-config";
@@ -24,7 +24,6 @@ export const authClient = createAuthClient({
       storage: SecureStore,
     }),
     customSessionClient(),
-    emailOTPClient(),
   ],
 });
 

@@ -1,6 +1,4 @@
 // https://www.fumadocs.dev/docs/internationalization/tanstack-start#search
-import { createTokenizer as createJapaneseTokenizer } from "@orama/tokenizers/japanese";
-import { createTokenizer as createMandarinTokenizer } from "@orama/tokenizers/mandarin";
 import { createFileRoute } from "@tanstack/react-router";
 import { createFromSource } from "fumadocs-core/search/server";
 import { parseLocaleCookie } from "@/i18n/client";
@@ -13,25 +11,7 @@ const searchServer = createFromSource(source, {
     en: {
       language: "english",
     },
-    zh: {
-      components: {
-        tokenizer: createMandarinTokenizer(),
-      },
-      search: {
-        threshold: 0,
-        tolerance: 0,
-      },
-    },
-    jp: {
-      components: {
-        tokenizer: createJapaneseTokenizer(),
-      },
-      search: {
-        threshold: 0,
-        tolerance: 0,
-      },
-    },
-  } satisfies Record<Locale, object>,
+  },
 });
 
 function getSearchLocale(request: Request): Locale {

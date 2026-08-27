@@ -43,7 +43,6 @@ const disabledEmail: ResolvedEmailConfig = {
   capabilities: {
     verification: false,
     passwordReset: false,
-    emailOtp: false,
     newsletter: false,
     contactForm: false,
     operationalAlerts: false,

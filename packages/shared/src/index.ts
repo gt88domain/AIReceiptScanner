@@ -18,10 +18,8 @@ export { formatCurrency, formatFileSize } from "./format";
 export { getContentTypeFromKey } from "./storage";
 
 export { toError } from "./error";
-export { buildDefaultEmailUserName } from "./email";
 export { hashNamespacedValue, toHex } from "./hash";
 export { getClientIp, normalizeHeaderValue } from "./ip";
-export { computeOtpRemainingSeconds } from "./otp";
 export {
   CN_DIAL_PREFIX,
   CN_LOCAL_PHONE_DIGITS,

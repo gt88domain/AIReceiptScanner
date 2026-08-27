@@ -43,9 +43,9 @@ For a normal in-place adoption, consume a released tag, not `template/main`:
 ```bash
 git remote add template https://github.com/gt88domain/easystarter-template.git
 git fetch template --tags
-pnpm template:upgrade-check --from <current-tag> --to v0.11.0
-git checkout -b chore/adopt-easystarter-v0.11.0
-git merge --no-ff v0.11.0
+pnpm template:upgrade-check --from <current-tag> --to <target-tag>
+git checkout -b chore/adopt-easystarter-<target-version>
+git merge --no-ff <target-tag>
 ```
 
 `template:upgrade-check` is read-only. A missing manifest or migration conflict
@@ -133,17 +133,11 @@ product module routes, and conditional Payments or Support. See
 Production cutover is separately owner-approved: run the downstream safety
 preflight, reconcile real data, and have a rollback/forward-fix plan.
 
-## Template delivery record
+## Historical delivery records
 
-The tracked template execution packages are complete at `v0.11.0`:
-
-| Milestone | Outcome |
-| --- | --- |
-| v0.9 Backoffice preview | Isolated local D1 acceptance flow |
-| v1.0 Backoffice IA | User/admin navigation and visibility decisions |
-| v1.1 Tickets | Optional capability-gated ticket workflow |
-| v1.2 Apps/Modules | Build-time product navigation and guarded admin routes |
-
-Downstream adoption prompts are separate planning inputs. This guide introduces
-no Central work, runtime plugins, remote module loading, generic write proxy,
-RBAC system, or observability product.
+Versioned rollout notes and prompts record how earlier milestones were built;
+they are evidence, not the current adoption baseline. Use a released target tag,
+its `template-version.json`, current source, and the upgrade check when adopting.
+Downstream adoption prompts remain separate planning inputs. This guide
+introduces no Central work, runtime plugins, remote module loading, generic
+write proxy, RBAC system, or observability product.

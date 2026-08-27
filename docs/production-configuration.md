@@ -4,13 +4,13 @@ EasyStarter deliberately ships with deployable-looking placeholders, not a deplo
 
 ## Files and ownership
 
-| File | Purpose | Commit it? |
-| --- | --- | --- |
-| `apps/server/wrangler.jsonc` | API Worker identity, D1, R2, Queue bindings, public URLs, OAuth client IDs | Yes, after replacing placeholders |
-| `apps/web/wrangler.jsonc` | Web Worker identity, custom domain, API service binding, public URLs | Yes, after replacing placeholders |
-| `apps/server/.env.production` | API Worker secrets for the rotation/write path only; **not needed for daily deploys** | No |
-| `apps/web/.env.production` | Build-time public URLs; generated from web `wrangler.jsonc` vars at deploy (`apps/web/scripts/sync-production-env.mjs`) — a hand-maintained copy must match those vars | No |
-| `apps/server/.production-safety.env` | Exact deploy target allowlist | No |
+| File                                 | Purpose                                                                                                                                                                | Commit it?                        |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| `apps/server/wrangler.jsonc`         | API Worker identity, D1, R2, Queue bindings, public URLs, OAuth client IDs                                                                                             | Yes, after replacing placeholders |
+| `apps/web/wrangler.jsonc`            | Web Worker identity, custom domain, API service binding, public URLs                                                                                                   | Yes, after replacing placeholders |
+| `apps/server/.env.production`        | API Worker secrets for the rotation/write path only; **not needed for daily deploys**                                                                                  | No                                |
+| `apps/web/.env.production`           | Build-time public URLs; generated from web `wrangler.jsonc` vars at deploy (`apps/web/scripts/sync-production-env.mjs`) — a hand-maintained copy must match those vars | No                                |
+| `apps/server/.production-safety.env` | Exact deploy target allowlist                                                                                                                                          | No                                |
 
 For Server local development use `apps/server/.dev.vars` (Wrangler loads it directly). For Web local development use `apps/web/.env.development`. Their `.example` files are safe starter values; production examples contain explicit values that must be replaced.
 
@@ -35,7 +35,15 @@ pnpm --filter server secrets:push:production   # validates plaintext, then filte
 pnpm deploy
 ```
 
-`pnpm deploy:server`, `pnpm deploy:web`, and `pnpm deploy` all run the same validation first. Development deploy commands remain intentionally separate.
+`pnpm deploy:server`, `pnpm deploy:web`, and `pnpm deploy` all run the same
+validation first. These package scripts are the only approved production
+deployment entry points; do not run raw `wrangler deploy`, because it bypasses
+the repository preflight. Preview deployment remains isolated behind the
+explicit `deploy:preview` scripts and preview Wrangler configurations. There is
+no generic development deploy command.
+
+Before the first production launch, adopt the owner, retention, export, and
+restore-rehearsal policy in [D1 backup and recovery](./d1-backup-recovery.md).
 
 ## Daily deploys need no local secrets
 
@@ -74,6 +82,7 @@ The preflight is feature-aware. Disabled Storage does not require R2; disabled
 Jobs does not require Queue, DLQ, Cron, or `JOB_QUEUE_DLQ_NAME`; disabled Email
 does not require Resend values. Residual disabled resource bindings are reported
 as warnings so removals remain deliberate.
+
 - `http`, localhost, `.example`, `example.com`, and `replace-*` production identities.
 - All-zero or malformed D1 IDs, template queue/bucket/Worker names, and missing DLQ consumers.
 - Web/API public URL disagreement or an `API_SERVICE` that does not target the configured API Worker.

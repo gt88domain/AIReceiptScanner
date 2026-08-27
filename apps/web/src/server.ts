@@ -1,31 +1,12 @@
 import handler from "@tanstack/react-start/server-entry";
-import { extractLocaleFromPath } from "./i18n/config";
+import { shouldNoIndexResponse } from "./configs/publication-paths";
+import { supportedLocales } from "./i18n/config";
 import { applyLocaleMiddleware, handleLocaleMiddleware } from "./i18n/server";
 import { applySecurityHeaders } from "./server/security-headers";
 
-const noIndexPathRegex = /^\/(?:auth|billing|credits|dashboard|settings|users)(?:\/|$)/;
-
-function stripLocalePrefix(pathname: string): string {
-  const locale = extractLocaleFromPath(pathname);
-  if (!locale) {
-    return pathname;
-  }
-
-  const prefix = `/${locale}`;
-  if (pathname === prefix) {
-    return "/";
-  }
-
-  return pathname.startsWith(`${prefix}/`) ? pathname.slice(prefix.length) : pathname;
-}
-
-function shouldApplyNoIndex(pathname: string): boolean {
-  return noIndexPathRegex.test(stripLocalePrefix(pathname));
-}
-
 function applyResponseHeaders(response: Response, pathname: string): Response {
   const nextResponse = applySecurityHeaders(response);
-  if (shouldApplyNoIndex(pathname)) {
+  if (shouldNoIndexResponse(response.status, pathname, supportedLocales)) {
     nextResponse.headers.set("X-Robots-Tag", "noindex, nofollow");
   }
 

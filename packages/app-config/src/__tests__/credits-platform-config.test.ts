@@ -58,4 +58,17 @@ describe("platform credit config", () => {
     expect(creditPackage).not.toHaveProperty("titleKey");
     expect(creditPackage).not.toHaveProperty("descriptionKey");
   });
+
+  it("keeps signup grants and web subscription trials off in the paid baseline", () => {
+    const web = resolveWebCommonConfig();
+    const native = resolveNativeCommonConfig();
+
+    expect(web.credits.signupGrant?.enabled).toBe(false);
+    expect(native.credits.signupGrant?.enabled).toBe(false);
+    expect(
+      web.payments?.plans
+        .flatMap((plan) => plan.prices ?? [])
+        .every((price) => price.trialDays == null),
+    ).toBe(true);
+  });
 });

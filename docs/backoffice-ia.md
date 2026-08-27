@@ -1,6 +1,8 @@
 # Backoffice information architecture
 
-This is the current template IA at `v0.11.0`. “v1.0”, “v1.1”, and “v1.2” are completed backoffice milestone names, not semantic-release version numbers.
+This is the current template information architecture. Historical “v1.0”,
+“v1.1”, and “v1.2” labels refer to completed backoffice milestones, not
+semantic-release version numbers.
 
 ## Account workspace
 

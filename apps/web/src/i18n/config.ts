@@ -6,6 +6,7 @@ import {
   defaultLocale as sharedDefaultLocale,
   supportedLocales,
 } from "@repo/i18n";
+import { isNonPublicPath } from "@/configs/non-public-paths";
 
 /**
  * i18n configuration
@@ -17,14 +18,8 @@ export const LOCALE_COOKIE = localeCookieName;
 
 export { isValidLocale, localeDisplayNames, supportedLocales, type Locale };
 
-/**
- * Paths that should ignore locale prefix (read from cookie instead)
- * e.g., /dashboard, /api, /rpc
- */
-export const ignoredPathsRegex = /^\/(?:api|rpc|dashboard|users)(?:\/|$)/;
-
 export function shouldIgnorePath(pathname: string): boolean {
-  return ignoredPathsRegex.test(pathname);
+  return isNonPublicPath(pathname);
 }
 
 /**

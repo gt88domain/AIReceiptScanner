@@ -1,5 +1,8 @@
 # Production migration runbook
 
+Before a production migration, confirm the recovery window and most recent
+usable export according to [D1 backup and recovery](./d1-backup-recovery.md).
+
 This runbook applies to structural D1 migrations. Data migrations, seeds,
 backfills, and repairs follow their separate directories and must not be folded
 into generated Drizzle SQL.

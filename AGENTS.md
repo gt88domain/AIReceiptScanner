@@ -1,289 +1,214 @@
-## Project Overview
+# EasyStarter agent instructions
 
-TanStack Template is a TypeScript monorepo built with Turborepo and pnpm workspaces.
+EasyStarter is a governed TypeScript template used to ship multiple paid products.
+Optimize for repeatable solo-maintainer delivery: reuse the platform, keep
+product changes outside core, and write the minimum code that proves the need.
 
-- `apps/web`: React 19 + TanStack Start web app, Vite dev server on port 3000.
-- `apps/server`: Hono + Cloudflare Workers API server, Wrangler dev server on port 3001.
-- `optional/mobile`: opt-in Expo + React Native app using Expo Router.
-- `packages/api-client`: shared type-safe API client.
-- `packages/app-config`: shared app, payments, credits, and storage configuration.
-- `packages/i18n`: shared messages and i18n helpers.
-- `packages/shared`: shared utilities and types.
+## Start here
 
-TanStack Start routes live in `apps/web/src/routes`. Server code lives in
-`apps/server/src`, with database schemas in `apps/server/src/db/schema` and
-oRPC routers in `apps/server/src/routers`.
+Before editing, classify the request:
 
-## Core Commands
+- Product/site behavior: define the paid offer and delivery path, then work in
+  `apps/*/src/modules/<domain>`, product config, content, or theme; read this
+  file and the closest module README.
+- Reusable template/platform: before changing auth, payments, credits, Jobs,
+  storage, DB lifecycle, packages, or CI, read `GOVERNANCE.md`,
+  `docs/architecture-boundaries.md`, and the current baseline audit.
+- Existing-app/provider migration: create `docs/migration/00-audit.md` through
+  `05-cutover.md` in their documented order before feature code.
+- Production operation: read the relevant runbook and require explicit user
+  authorization for migrations, secrets, Cloudflare resources, and deploys.
 
-- `pnpm install`: install workspace dependencies.
-- `pnpm dev`: run all apps through Turbo.
-- `pnpm dev:web`: run the web app.
-- `pnpm dev:server`: run the API server.
-- `pnpm mobile:dev`: run the opt-in Expo app after installing its workspace.
-- `pnpm dev:web+server`: run web and server together.
-- `pnpm build`: build all packages/apps that define `build`.
-- `pnpm check-types`: run Turbo type checks for workspaces that define `check-types`.
-- `pnpm lint` / `pnpm lint:fix`: run or fix OXC lint checks for core web, server, and packages.
-- `pnpm fmt` / `pnpm fmt:check`: run or check OXC formatting for core web, server, and packages.
+Use [the repository map](docs/repo-map.md) for change navigation and
+[the architecture map](docs/architecture-map.md) for topology and critical
+flows. `template-kit/repository-facts.json` is the only machine-readable source
+for repository facts and enforced import boundaries; do not create a second
+hard-coded rule set or generated repo map.
 
-Database and deployment commands:
+## Working style
 
-- `pnpm db:generate`: generate Drizzle migrations.
-- `pnpm db:migrate`: run configured migrations.
-- `pnpm db:migrate:local`: run local D1 migrations.
-- `pnpm db:studio` / `pnpm db:studio:local`: open Drizzle Studio.
-- `pnpm deploy`: deploy server and web.
-- `pnpm deploy:server` / `pnpm deploy:web`: deploy one side.
+- Ask whether the feature is needed, then prefer the standard library, a native
+  platform feature, or an installed dependency before writing new code.
+- Search with `rg` / `rg --files` before adding a public helper, dependency, or
+  parallel implementation.
+- Prefer deletion, direct functions, object literals, and existing extension
+  points. Do not add a framework, registry, service locator, event bus, or
+  provider abstraction for one implementation.
+- Validate untrusted input and protect data, money, authorization,
+  accessibility, and external effects. Do not add defensive ceremony inside
+  trusted code for impossible states.
+- Mark an intentional shortcut with `ponytail:` and name both its ceiling and
+  upgrade path.
+- Preserve unrelated user changes. Remove only code made unused by this task.
+- Leave each milestone uncommitted and undeployed for user review unless the
+  user explicitly asks for a commit, push, migration, or deployment.
 
-`pnpm test` is the default template gate. It runs template and integration
-checks; packages may also define focused Vitest commands such as
-`pnpm -F @repo/shared test` and `pnpm -F @repo/app-config test`.
+## Repository map
 
-## TypeScript Verification
+- `apps/web`: React 19 + TanStack Start. Routes are under `src/routes`.
+- `apps/server`: Hono + oRPC API Worker. It is the sole business-data owner.
+- `optional/mobile`: opt-in Expo app with its own workspace install.
+- `packages/api-client`: shared typed oRPC client.
+- `packages/app-config`: product configuration and protected composition rules.
+- `packages/i18n`: shared locale contracts and messages.
+- `packages/shared`: platform-neutral utilities and types.
+- `template-kit`: profiles, adoption manifests, repository facts, and checks.
 
-This is a TypeScript project. After small code edits, type checking is not
-required unless a problem appears. After large changes, run `pnpm check-types`
-and keep fixing issues until type checking passes completely.
+New product settings belong in the explicitly product-owned files under
+`packages/app-config`, especially `product-config.ts`. Resolver types,
+dependency rules, and provider-independent composition remain platform code.
 
-Do not run type checks for documentation-only edits.
+## Code placement and dependency direction
 
-## Coding Guidelines
+- Server product code belongs in `apps/server/src/modules/<domain>`.
+  `routers/` mounts public routers; `lib/` is shared technical infrastructure.
+- Web product code belongs in `apps/web/src/modules/<domain>`. Keep route files
+  thin and do not add new domains to legacy `apps/web/src/custom`.
+- A server module normally flows `router -> service -> repository -> db`, but
+  small modules should omit unused layers.
+- Shared workspace code is justified only when at least two runtimes genuinely
+  need it. Core packages never import product or optional-mobile code.
+- Add public product routers through `apps/server/src/modules/index.ts`.
+- Do not edit generated route trees manually.
 
-Prioritize sound, maintainable solutions over tiny diffs. Keep changes scoped to
-the request, but do not preserve awkward structure, duplication, or poor
-boundaries just to touch fewer lines.
+Plan `pnpm check:boundaries` after changing an ownership or import boundary;
+run it only when the user requests verification.
 
-Do not keep adding logic to the same file indefinitely. When a file exceeds 500
-lines, extract cohesive code into appropriate modules. Before writing public
-functions or reusable/common logic, search the repository for existing reusable
-functions, utilities, and patterns. If existing code can be reused, use it; if
-the logic should become shared, extract it into an appropriate shared file.
+## Runtime boundaries
 
-Do not over-abstract:
+- Browser, Web Worker, and mobile clients access business data through the API
+  Worker. The Web Worker may use `API_SERVICE`; it must not receive D1 or write
+  business SQL.
+- oRPC owns bounded request/response work. Use persisted Jobs + Queues for
+  retryable work, Workflows for long-lived/sleeping/approval flows, and a
+  dedicated Durable Object design for coordinated WebSockets.
+- Queue delivery is at least once. Job handlers and their external effects must
+  be idempotent.
+- Product files require an asset record and Asset Service authorization. Never
+  expose a raw storage key as the authorization decision.
+- Feature availability comes from the source-controlled composition in
+  `packages/app-config`; do not add a second flag system or compare plan names
+  in application code.
 
-- Do not create interfaces, protocols, builders, or public helper files for a
-  single implementation or one-time operation.
-- Keep implementation details private when only one module needs them.
-- Prefer simple constructors, object literals, functions, callbacks, and
-  composable rules over heavyweight configuration objects or fixed boolean
-  toggles.
+See `docs/orpc-worker-boundaries.md`, `docs/async-reliability.md`, and
+`docs/rate-limiting.md` before changing those respective boundaries.
 
-Do not over-defend:
+## Authorization and money
 
-- Add validation and type guards at true system boundaries that accept external
-  or untrusted input.
-- Avoid defensive checks, defensive copies, or impossible-case handling inside
-  trusted internal code unless the surrounding code already does so for a clear
-  reason.
+Authentication, administrator access, capability access, and paid entitlement
+are separate decisions:
 
-Use modern, idiomatic TypeScript and React. Prefer `import type` / `export type`
-for type-only imports and exports. Use structured APIs and parsers instead of
-ad hoc string manipulation when practical.
-
-## Existing Project Patterns
-
-- Formatting and linting use OXC (`oxlint` and `oxfmt`), not Prettier.
-- The web app uses TanStack Start file-based routing under `apps/web/src/routes`.
-- Shared UI components live in `apps/web/src/components/ui`; prefer existing
-  components before adding new ones.
-- Server API routes are built with Hono and oRPC under `apps/server/src`.
-- New product-domain server code belongs in `apps/server/src/modules/<domain>`.
-  `routers/` mounts public routers and `lib/` contains shared technical
-  infrastructure; neither is a home for product business logic. Follow
-  `apps/server/src/modules/README.md` for layer and import-direction rules.
-- New product-domain web code belongs in `apps/web/src/modules/<domain>`.
-  Keep TanStack route files thin and do not add new domains to the legacy
-  `apps/web/src/custom` directory.
-- Gate product features through `context.capabilities.can(user, capability)`;
-  do not compare plan names in application code. Put product-owned settings in
-  `packages/app-config/src/product-config.ts`; keep resolver and dependency code protected.
-- Put retryable background work in `apps/server/src/modules/jobs`. Job handlers
-  must be idempotent because queue delivery is at least once. Use Cloudflare
-  Workflows directly for long-lived, multi-step, or human-approval work.
-- Persist an asset record for each product file and enforce its visibility via
-  `apps/server/src/modules/assets`; do not expose a raw storage key as a public
-  authorization decision.
-- Database schema changes belong in `apps/server/src/db/schema` and use
-  Drizzle migrations. Keep structural migrations, data migrations, seeds,
-  backfills, and repairs separate as defined in `apps/server/src/db/README.md`.
-- Cross-platform code should live in workspace packages only when both web and
-  mobile or server genuinely need it. Core packages must not import mobile code.
-- `template-kit/repository-facts.json` is the single machine-readable source
-  for repository facts and enforced import boundaries. Run
-  `pnpm check:boundaries` after changing an ownership boundary; do not add a
-  second hard-coded rule set in documentation or CI.
-- i18n messages live under `packages/i18n/src/messages`; implementation notes
-  are in `docs/i18n-implementation.md`.
-
-## Migration Playbook
-
-For any migration from an existing app, site, database, or provider, read
-`docs/migration-guide.md` for the adoption decision, then follow the documents
-in `docs/migration/` in this exact order:
-
-1. `00-audit.md`
-2. `01-data-owner.md`
-3. `02-domain-model.md`
-4. `03-schema-plan.md`
-5. `04-security-check.md`
-6. `05-cutover.md`
-
-The required engineering sequence is **Audit → Architecture → Schema →
-Migration → Feature**. Do not copy old code, repair pages, or add features
-until the audit, data-owner decision, domain model, schema plan, and security
-check for the migration slice exist and are reviewable. Treat legacy code as
-evidence, not the target architecture.
-
-Structural migrations, data migrations, seeds, backfills, and repairs remain
-separate as defined in `apps/server/src/db/README.md`. Each migration slice must
-have a named owner, source-of-truth decision, validation method, and rollback or
-forward-fix plan before cutover.
-
-Use `docs/production-migrations.md` for structural D1 rollout. Applied
-migrations are immutable history: recover with a forward fix, compatible traffic
-rollback, or approved repair, never by deleting migration files.
-
-## Testing Guidelines
-
-The template's core trust and money paths are mandatory test coverage. Keep
-focused automated checks for authentication, administrator authorization,
-billing and entitlement resolution, verified webhook idempotency, credits,
-and migration application. When changing one of those paths, add or update the
-smallest focused test that proves the behavior. `pnpm test` is the default
-template gate; it runs both `pnpm test:template` and `pnpm test:integration`
-before review or release.
-
-UI behavior and marketing pages are optional: add tests when their interaction
-or regression risk justifies the maintenance cost. Use `*.test.ts(x)` or
-`*.spec.ts(x)` and keep tests focused on meaningful behavior, edge cases, and
-error conditions. If a package needs a new test runner script, document it in
-that package's `package.json`.
-
-## Git And Changes
-
-Before changing upstream core, read `GOVERNANCE.md`,
-`docs/architecture-boundaries.md`, and the current audit. Identify the
-ownership class and use a dedicated PR; do not add product behavior to core.
-
-The worktree may already contain user changes. Never revert or overwrite changes
-you did not make unless the user explicitly asks. Ignore unrelated dirty files.
-When your own changes make imports, variables, or functions unused, remove only
-that newly orphaned code.
-
-Commit messages should follow Conventional Commits. Use `pnpm commit` when the
-user asks to create a commit.
-
-## 执行红线（每次会话必读）
-
-- 合并上游采用类 PR（含 tag 合并 / `source.json` 变更）必须用 merge commit；禁止 squash / rebase / auto-merge —— squash 会断祖先链，Manifest 检查必挂。
-- 禁止直接 push `main`；一切走 PR，留下出处。
-- 生产部署只从与 `main` 一致的干净工作区发出；部署前必须过 `pnpm verify:production-config`（需要 `apps/server/.production-safety.env`）。
-- 禁止擅自执行生产 D1 迁移、改 secret、删 worktree / 分支。
-- Release Please 的 release PR 由仓库自动化合并，不要手动干预；它只改 3 个记账文件。
-- 每个里程碑结束停在「未提交 / 未部署」checkpoint，等用户验收。
-
-## Demo Page Deployment
-
-For a completed change that affects a user-facing page or visual web UI:
-
-1. Run focused page verification appropriate to the change.
-2. Create a Git checkpoint commit and push the current branch to `origin`.
-3. Run `pnpm deploy:web` to update the production web domain configured for the project.
-4. Verify the affected production URL and report the commit and URL.
-
-Do not run page verification or deploy for non-page changes (for example,
-server-only code, refactors, configuration, documentation, or tests) unless the
-user explicitly requests it.
-
-## Configuration And Secrets
-
-Use env examples such as `apps/web/.env.development.example` and
-`apps/web/.env.production.example` when setting up local env files. Server
-runtime configuration is in `apps/server/wrangler.jsonc`. Do not commit real
-secrets.
-
-## Authorization And Billing Boundaries
-
-Keep administrator access, authenticated-user access, and paid entitlement as
-separate concepts.
-
-- Administrators are determined only by a production-only `ADMIN_EMAILS` secret
-  allowlist. Normalize email addresses before comparison and perform the check
-  on the server for every administrative procedure.
-- A logged-in user is ordinary unless their session email is in that allowlist.
-  Do not add `user.role`, `user_roles`, role management, or a database-backed
-  admin grant without an explicit product decision.
-- Free versus paid is an entitlement, not a role. Resolve it only from verified
-  payment-provider webhook records such as successful purchases and active
-  subscriptions.
-- Frontend plan badges and hidden navigation are presentation only. They must
-  never grant paid features or administrative access.
-- Administrative user and billing data must be exposed only by server-side
-  admin procedures. A `protectedProcedure` alone is not an admin check.
-- Do not let a payment event grant administrator access, and do not let an
-  administrator flag synthesize a paid entitlement.
 - Use `requireUser`, `requireAdmin`, `requireCapability`, and
-  `requireEntitlement` from `apps/server/src/auth/guards` for new server
-  authorization checks. Do not create project-specific session/header guards
-  or database-backed roles without an explicit product decision.
-- Only `apps/server/src/auth/adapter.ts` may expose authentication-provider
-  operations to the server. Product modules use `Context.session` and the
-  standard guards; they must not import Better Auth or provider cookie/session
-  APIs directly.
-- Authorization or webhook changes require focused tests for ordinary-user
-  denial, admin allowlist access, paid-user non-admin denial, and webhook
-  idempotency.
+  `requireEntitlement` from `apps/server/src/auth/guards`.
+- Admin is a normalized-email match against the production-only `ADMIN_EMAILS`
+  secret. Do not add roles or database-backed admin grants without an explicit
+  product decision.
+- Paid entitlement comes only from verified provider webhook records. UI
+  badges, hidden navigation, redirects, and admin status do not grant it.
+- Only `apps/server/src/auth/adapter.ts` may expose auth-provider operations.
+  Product modules consume `Context.session` and standard guards.
+- A `protectedProcedure` is not an administrator check.
+- Webhook handlers and credit effects must preserve idempotency and recovery.
 
-## Production Deployment Guard
+Changes to auth, admin, billing, entitlements, credits, or webhooks require the
+smallest focused tests proving denial and allow paths, plus webhook or ledger
+idempotency where applicable. Add those tests in the final test phase after the
+implementation has passed its core-goal review.
 
-`pnpm -F server deploy` runs the production safety preflight first. Before a
-production deploy, create `apps/server/.production-safety.env` from
-`apps/server/.production-safety.example`
-and set the exact Worker, D1, R2, and public URL identities that deployment may
-target. The daily guard verifies those identities and checks that every secret
-required by the product configuration is **present** on the live Worker via
-`wrangler secret list`; it never needs local plaintext secrets. Plaintext
-secret validation lives on the rotation path only: run
-`pnpm -F server secrets:push:production` (which requires
-`apps/server/.env.production`) when first configuring or rotating secrets.
+## Database and migrations
 
-## oRPC And Worker Boundaries
+- Drizzle schema and structural migrations live in `apps/server/src/db`.
+- Structural migrations, data migrations, seeds, backfills, and repairs are
+  separate lifecycles; follow `apps/server/src/db/README.md`.
+- Applied migrations are immutable. Recover with a forward fix, compatible
+  traffic rollback, or approved repair—never by deleting migration history.
+- For an existing-app/provider migration, follow this exact sequence:
+  Audit → data owner → domain model → schema plan → security check → cutover.
+  Legacy code is evidence, not the target architecture.
+- Every migration slice needs an owner, source of truth, validation method, and
+  rollback or forward-fix plan before cutover.
 
-oRPC is the bounded HTTP API on the Server Worker. Web server actions may call
-it but may not own D1 or write business data. Use Jobs/Queues for retryable
-work, Workflows for multi-step or long-lived work, and a dedicated Durable
-Object design for coordinated WebSockets. See `docs/orpc-worker-boundaries.md`.
+## Implementation, test planning, and verification
 
-## Rate Limiting
+For every non-trivial implementation, keep one change-local plan document.
+Prefer the task's existing spec or plan; otherwise create
+`docs/plans/<task-slug>.md`. The plan must record:
 
-Follow `docs/rate-limiting.md`. Do not treat a per-isolate map or Workers KV as
-a strict global limiter, and do not add a global Durable Object counter. Choose
-an edge, provider, credit, or subject-sharded application policy only after the
-operation and subject are specified.
+- the core goal and observable acceptance criteria;
+- implementation phases and the files or boundaries each phase owns;
+- a deferred test plan covering behaviors, edge cases, trust boundaries,
+  expected test files, and recommended commands; and
+- explicit statuses for implementation review, test authoring, and test
+  execution so planned coverage is not mistaken for completed coverage.
 
-## Skills
+Use this order unless the user explicitly requests TDD or another sequence:
 
-Local skills live in `.agents/skills` and `.codex/skills`. If the user names a
-skill, or the task clearly matches a skill's description, read that skill's
-`SKILL.md` and follow it for the turn. Do not carry skill instructions across
-turns unless the user mentions the skill again.
+1. Record the test plan, but do not write tests yet.
+2. Implement the complete requirement.
+3. Review the implementation against the core goal, acceptance criteria,
+   architecture boundaries, and the actual diff. Fix implementation problems
+   before encoding the behavior in tests.
+4. After the core-goal review passes, add all planned automated tests together
+   as the final implementation phase. Keep them focused on behavior rather than
+   implementation details.
+5. Do not run tests, builds, type checks, browser verification, or other
+   verification commands unless the user explicitly asks for automated
+   verification. Report the recommended commands and clearly mark them as not
+   run.
 
-Use only the minimal set of skills that fits the task. If a skill cannot be
-applied cleanly because files or instructions are missing, state the issue
-briefly and continue with the best fallback.
+Trivial one-line and documentation-only changes do not need a task plan or new
+tests. Mandatory trust and money coverage still applies, but test authoring is
+deferred until after implementation review like all other tests.
 
-## Figma MCP Rules
+Recommended verification when requested:
 
-For Figma-driven work:
+- Guidance or repository facts: `pnpm docs:facts-check`.
+- Small implementation: the focused test or self-check that would catch it.
+- Ownership/config boundary: `pnpm docs:facts-check` and
+  `pnpm check:boundaries`.
+- Auth, money, webhook, or migration: focused trust-path tests, then
+  `pnpm test`.
+- Large cross-workspace change: `pnpm check-types`, `pnpm test`, and
+  `pnpm build`.
+- Visual page: focused local page verification; production verification only
+  after an explicitly requested deploy.
 
-1. Fetch structured design context for the exact node before implementation.
-2. If the response is too large, fetch metadata first and then re-fetch only the
-   required node.
-3. Fetch a screenshot for visual reference before coding.
-4. Use provided localhost asset URLs directly when the Figma MCP returns them.
-5. Do not import new icon packages for Figma assets.
-6. Translate generated React/Tailwind into this project's conventions and
-   existing components.
-7. Validate the final UI against the Figma screenshot before marking the work
-   complete.
+Formatting and linting use OXC (`pnpm fmt`, `pnpm fmt:check`, `pnpm lint`), not
+Prettier. `pnpm test` is the default release/review gate, not an automatic
+per-task action.
+
+Common commands:
+
+- `pnpm dev:web+server`, `pnpm dev:web`, `pnpm dev:server`
+- `pnpm mobile:dev`, `pnpm mobile:check`
+- `pnpm db:generate`, `pnpm db:migrate:local`, `pnpm db:check`
+- `pnpm profiles:check`, `pnpm profiles:build`
+- `pnpm verify:production-config`
+
+## Git and production safety
+
+- Never push directly to `main`; use a PR.
+- Upstream-adoption PRs, tag merges, and `source.json` changes require a merge
+  commit. Do not squash, rebase, or auto-merge them because ancestry is part of
+  the manifest contract.
+- Use Conventional Commits and `pnpm commit` only when asked to commit.
+- Do not run a production D1 migration, change secrets, delete a worktree or
+  branch, or deploy without explicit authorization.
+- Production deploys must start from a clean workspace matching `main` and pass
+  `pnpm verify:production-config` using
+  `apps/server/.production-safety.env`.
+- Daily production preflight verifies required secret names on the live Worker
+  with `wrangler secret list`; it does not require local plaintext secrets.
+  `apps/server/.env.production` is used only for first setup or rotation through
+  `pnpm --filter server secrets:push:production`.
+- Release Please owns its release PR and three accounting files; do not merge
+  or edit that PR manually.
+
+## Task-specific guidance
+
+- Skills live in `.agents/skills` and `.codex/skills`. If a task names or
+  clearly matches one, read its `SKILL.md` and use only the minimal applicable
+  set for that turn.
+- For Figma work, fetch exact-node design context and a screenshot before
+  coding; reuse returned assets, avoid new icon packages, translate output into
+  project conventions, and validate the result against the screenshot.

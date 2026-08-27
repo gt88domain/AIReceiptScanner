@@ -32,18 +32,9 @@ export const productConfig = {
       allowedRemoteAvatarHosts: ["avatars.githubusercontent.com", "lh3.googleusercontent.com"],
       methods: {
         emailPasswordEnabled: publicRuntimeConfig.auth.methods.emailPassword,
-        emailOtpEnabled: publicRuntimeConfig.auth.methods.emailOtp,
         githubEnabled: publicRuntimeConfig.auth.methods.github,
         googleEnabled: publicRuntimeConfig.auth.methods.google,
         appleEnabled: publicRuntimeConfig.auth.methods.apple,
-      },
-      otp: {
-        email: {
-          otpLength: publicRuntimeConfig.auth.emailOtp.otpLength,
-          expiresInSeconds: publicRuntimeConfig.auth.emailOtp.expiresInSeconds,
-          allowedAttempts: publicRuntimeConfig.auth.emailOtp.allowedAttempts,
-          resendCooldownSeconds: publicRuntimeConfig.auth.emailOtp.resendCooldownSeconds,
-        },
       },
     },
     email: {
@@ -52,7 +43,6 @@ export const productConfig = {
       capabilities: {
         verification: true,
         passwordReset: true,
-        emailOtp: false,
         newsletter: true,
         contactForm: true,
         operationalAlerts: true,
@@ -62,7 +52,7 @@ export const productConfig = {
     storage: productStorageConfig,
   } satisfies Pick<AppCommonConfig, "features" | "app" | "auth" | "email" | "storage">,
   creditSignupGrant: {
-    enabled: true,
+    enabled: false,
     amount: 100,
     expiresInDays: 30,
   } satisfies NonNullable<AppCreditsConfig["signupGrant"]>,

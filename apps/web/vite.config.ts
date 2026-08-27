@@ -10,9 +10,15 @@ import mdx from "fumadocs-mdx/vite";
 import { frontmatter } from "fumadocs-core/content/md/frontmatter";
 import { parse } from "jsonc-parser";
 import { defineConfig, loadEnv, type Plugin } from "vite";
-import { defaultLocale, isValidLocale } from "../../packages/i18n/src/locales.ts";
+import { defaultLocale, isValidLocale, supportedLocales } from "../../packages/i18n/src/locales.ts";
 import * as MdxConfig from "./source.config";
 import { createRobotsTxt } from "./scripts/robots.mjs";
+import { nonPublicPathPrefixes } from "./src/configs/non-public-paths";
+import {
+  createPublishedPublicPages,
+  isPrerenderablePath,
+  stripPublishedLocalePrefix,
+} from "./src/configs/publication-paths";
 
 const appDirectory = dirname(fileURLToPath(import.meta.url));
 
@@ -59,7 +65,7 @@ function robotsTxtPlugin(sitemapHost: string | undefined): Plugin {
       this.emitFile({
         type: "asset",
         fileName: "robots.txt",
-        source: createRobotsTxt(sitemapHost),
+        source: createRobotsTxt(sitemapHost, nonPublicPathPrefixes),
       });
     },
   };
@@ -76,18 +82,7 @@ const docsPages = docsEnabled ? getPublishedContentPages("docs") : [];
 const blogPages = blogEnabled ? getPublishedContentPages("blog") : [];
 const docsPublic = docsPages.length > 0;
 const blogPublic = blogPages.length > 0;
-
-const publicPages = [
-  "/",
-  "/privacy",
-  "/terms",
-  "/zh",
-  "/zh/privacy",
-  "/zh/terms",
-  "/jp",
-  "/jp/privacy",
-  "/jp/terms",
-];
+const publishedPublicPages = createPublishedPublicPages({ defaultLocale, supportedLocales });
 
 const blogIndexPages = [...new Set(blogPages.map(({ locale }) => locale))].map((locale) => ({
   path: `${locale === defaultLocale ? "" : `/${locale}`}/blog`,
@@ -97,7 +92,7 @@ const contentPageEntries = [...docsPages, ...blogPages].map(({ path, lastmod }) 
   sitemap: { lastmod },
 }));
 const publicPageEntries = [
-  ...publicPages.map((path) => ({
+  ...publishedPublicPages.map((path) => ({
     path,
     prerender: {
       crawlLinks: false,
@@ -107,35 +102,8 @@ const publicPageEntries = [
   ...contentPageEntries,
 ];
 
-const devOptimizeDeps = ["@unpic/react"];
-
-const nonPublicPrefixes = [
-  "/auth",
-  "/billing",
-  "/credits",
-  "/dashboard",
-  // Dev-only component gallery; never a production public page.
-  "/design-system",
-  "/settings",
-  "/users",
-  "/api",
-  "/rpc",
-];
-
-function isPrerenderablePath(path: string): boolean {
-  if (path.includes("#")) {
-    return false;
-  }
-
-  const normalizedPath = (path.split(/[?#]/)[0] || "/").replace(/\/+$/, "") || "/";
-
-  return !nonPublicPrefixes.some(
-    (prefix) => normalizedPath === prefix || normalizedPath.startsWith(`${prefix}/`),
-  );
-}
-
 function isContentSurfaceEnabled(path: string): boolean {
-  const normalizedPath = (path.split(/[?#]/)[0] || "/").replace(/^\/(?:zh|jp)(?=\/|$)/, "");
+  const normalizedPath = stripPublishedLocalePrefix(path, supportedLocales);
   if (normalizedPath === "/docs" || normalizedPath.startsWith("/docs/")) {
     return docsPublic;
   }
@@ -202,9 +170,6 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
     },
-    optimizeDeps: {
-      include: devOptimizeDeps,
-    },
     plugins: [
       robotsTxtPlugin(sitemapHost),
       cloudflare({ viteEnvironment: { name: "ssr" } }),
@@ -223,7 +188,8 @@ export default defineConfig(({ mode }) => {
           autoStaticPathsDiscovery: false,
           filter: (page) => {
             const isPublicPath =
-              isPrerenderablePath(page.path) && isContentSurfaceEnabled(page.path);
+              isPrerenderablePath(page.path, supportedLocales) &&
+              isContentSurfaceEnabled(page.path);
             if (!isPublicPath) {
               page.sitemap = {
                 ...page.sitemap,
@@ -253,10 +219,5 @@ export default defineConfig(({ mode }) => {
       }),
       mdx(MdxConfig),
     ],
-    ssr: {
-      optimizeDeps: {
-        include: devOptimizeDeps,
-      },
-    },
   };
 });

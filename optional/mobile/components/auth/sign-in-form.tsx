@@ -1,51 +1,19 @@
 import { Image } from "expo-image";
 import { Link } from "expo-router";
-import { Tabs } from "heroui-native";
 import { useTranslation } from "react-i18next";
 import { Pressable, View } from "react-native";
 import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
-import * as React from "react";
-import Animated, {
-  FadeIn,
-  FadeInDown,
-  FadeInUp,
-  FadeOut,
-  LinearTransition,
-} from "react-native-reanimated";
+import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from "react-native-reanimated";
 import { Text } from "@/components/ui/text";
 import { appConfig } from "@/configs/app-config";
-import { EmailOtpRequestForm } from "./email/email-otp-request-form";
 import { EmailSignInForm } from "./email/email-sign-in-form";
 import { hasVisibleSocialSignInMethods, SocialSignInButtons } from "./social-sign-in-buttons";
 
-type SignInMethod = "email" | "otp";
-
-const enabledSignInMethods = [
-  appConfig.auth.methods.emailPasswordEnabled ? "email" : null,
-  appConfig.auth.methods.emailOtpEnabled ? "otp" : null,
-].filter((method): method is SignInMethod => method !== null);
-const defaultSignInMethod = enabledSignInMethods[0] ?? "email";
 const hasSocialSignInMethods = hasVisibleSocialSignInMethods();
 
 export function SignInForm() {
-  const [activeMethod, setActiveMethod] = React.useState<SignInMethod>(defaultSignInMethod);
   const { t } = useTranslation();
-  const hasAuthMethods = enabledSignInMethods.length > 0;
-  const shouldShowAuthTabs = enabledSignInMethods.length > 1;
-
-  function handleMethodChange(value: string) {
-    if (!enabledSignInMethods.includes(value as SignInMethod)) return;
-    setActiveMethod(value as SignInMethod);
-  }
-
-  function renderSignInMethodContent(method: SignInMethod) {
-    switch (method) {
-      case "email":
-        return <EmailSignInForm />;
-      case "otp":
-        return <EmailOtpRequestForm />;
-    }
-  }
+  const hasEmailSignIn = appConfig.auth.methods.emailPasswordEnabled;
 
   return (
     <>
@@ -61,7 +29,6 @@ export function SignInForm() {
                 style={{ width: 72, height: 72 }}
                 contentFit="contain"
               />
-
               <View className="mb-2">
                 <Text className="mb-2 text-3xl font-bold tracking-tight text-foreground">
                   {t("auth.signInTitle")}
@@ -69,45 +36,15 @@ export function SignInForm() {
               </View>
             </Animated.View>
 
-            {hasAuthMethods && shouldShowAuthTabs ? (
+            {hasEmailSignIn ? (
               <Animated.View className="mb-8" entering={FadeInDown.delay(200)}>
-                <Tabs value={activeMethod} onValueChange={handleMethodChange} variant="primary">
-                  <Tabs.List className="mb-6">
-                    <Tabs.Indicator />
-                    {appConfig.auth.methods.emailPasswordEnabled ? (
-                      <Tabs.Trigger value="email" className="flex-1">
-                        <Tabs.Label>{t("auth.emailTab")}</Tabs.Label>
-                      </Tabs.Trigger>
-                    ) : null}
-                    {appConfig.auth.methods.emailOtpEnabled ? (
-                      <Tabs.Trigger value="otp" className="flex-1">
-                        <Tabs.Label>{t("auth.emailOtpMode")}</Tabs.Label>
-                      </Tabs.Trigger>
-                    ) : null}
-                  </Tabs.List>
-
-                  <Animated.View layout={LinearTransition.duration(200)}>
-                    {appConfig.auth.methods.emailPasswordEnabled ? (
-                      <Tabs.Content value="email">
-                        {renderSignInMethodContent("email")}
-                      </Tabs.Content>
-                    ) : null}
-                    {appConfig.auth.methods.emailOtpEnabled ? (
-                      <Tabs.Content value="otp">{renderSignInMethodContent("otp")}</Tabs.Content>
-                    ) : null}
-                  </Animated.View>
-                </Tabs>
-              </Animated.View>
-            ) : null}
-            {hasAuthMethods && !shouldShowAuthTabs ? (
-              <Animated.View className="mb-8" entering={FadeInDown.delay(200)}>
-                {renderSignInMethodContent(activeMethod)}
+                <EmailSignInForm />
               </Animated.View>
             ) : null}
 
             {hasSocialSignInMethods ? (
               <>
-                {hasAuthMethods ? (
+                {hasEmailSignIn ? (
                   <View className="mb-6 flex-row items-center">
                     <View className="h-px flex-1 bg-border" />
                     <Text className="mx-4 text-xs font-medium uppercase tracking-wider text-muted">
@@ -116,16 +53,14 @@ export function SignInForm() {
                     <View className="h-px flex-1 bg-border" />
                   </View>
                 ) : null}
-
                 <Animated.View className="mb-6" entering={FadeInUp.delay(300)}>
                   <SocialSignInButtons />
                 </Animated.View>
               </>
             ) : null}
 
-            {activeMethod === "email" && appConfig.auth.methods.emailPasswordEnabled ? (
+            {hasEmailSignIn ? (
               <Animated.View
-                key="signup-link"
                 className="items-center"
                 entering={FadeIn.duration(200).delay(100)}
                 exiting={FadeOut.duration(150)}

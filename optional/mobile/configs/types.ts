@@ -1,5 +1,3 @@
-import type { AppCommonConfig } from "@repo/app-config";
-
 export interface AppConfig {
   appName: string;
   supportEmail: string;
@@ -15,13 +13,9 @@ export interface AppConfig {
   auth: {
     methods: {
       emailPasswordEnabled: boolean;
-      emailOtpEnabled: boolean;
       githubEnabled: boolean;
       googleEnabled: boolean;
       appleEnabled: boolean;
-    };
-    otp: {
-      email: AppCommonConfig["auth"]["otp"]["email"];
     };
   };
   safeAreaTop: number;

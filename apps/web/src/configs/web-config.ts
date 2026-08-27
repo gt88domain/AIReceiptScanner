@@ -49,13 +49,9 @@ export const webConfig: WebConfig = {
   auth: {
     methods: {
       emailPasswordEnabled: publicRuntime.auth.methods.emailPassword,
-      emailOtpEnabled: publicRuntime.auth.methods.emailOtp,
       githubEnabled: publicRuntime.auth.methods.github,
       googleEnabled: publicRuntime.auth.methods.google,
       appleEnabled: publicRuntime.auth.methods.apple,
-    },
-    otp: {
-      email: publicRuntime.auth.emailOtp,
     },
   },
   defaultThemePresetKey: publicRuntime.defaultThemePresetKey,

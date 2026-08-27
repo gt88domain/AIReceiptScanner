@@ -16,14 +16,6 @@
       "body": "点击下方按钮重置你的密码",
       "button": "重置密码",
       "ignore": "如果你没有请求重置密码，可以忽略此邮件。"
-    },
-    "otp": {
-      "subject": "你的 {appName} 验证码",
-      "preview": "使用此验证码继续访问 {appName}",
-      "title": "验证码",
-      "body": "使用此一次性验证码继续访问 {appName}。",
-      "expires": "该验证码将在 {minutes} 分钟后过期。",
-      "ignore": "如果你没有请求此验证码，可以忽略此邮件。"
     }
   },
   "errors": {

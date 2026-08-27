@@ -18,14 +18,14 @@ the source of truth.
 
 | Capability | Source of truth | Dependency |
 | --- | --- | --- |
-| Admin | `common.features.admin` | Auth is core and always enabled |
-| Mobile runtime | `common.features.mobile` | Enables the Server's Expo auth, mobile deep links, and native payment checks |
-| Web Billing | `web.payments.enabled` | `common.features.jobs` |
-| Native Billing | `common.features.mobile` + `native.payments.enabled` | `common.features.jobs` |
-| Credits | `web.credits.enabled` / `native.credits.enabled` | None for grants and usage |
+| Admin | `productConfig.common.features.admin` | Auth is core and always enabled |
+| Mobile runtime | `productConfig.common.features.mobile` | Enables the Server's Expo auth, mobile deep links, and native payment checks |
+| Web Billing | `appConfig.web.payments.enabled` | `productConfig.common.features.jobs` |
+| Native Billing | Mobile runtime + `appConfig.native.payments.enabled` | `productConfig.common.features.jobs` |
+| Credits | `appConfig.web.credits.enabled` / `appConfig.native.credits.enabled` | None for grants and usage |
 | Credit purchases | platform `credits.purchasesEnabled` | Billing on the same platform |
-| Storage | `common.storage.enabled` | Public-content policy may be anonymous; private attachments require product auth rules |
-| Jobs | `common.features.jobs` | Required while Billing is enabled for webhook recovery and outbox delivery |
+| Storage | `productConfig.common.storage.enabled` | Public-content policy may be anonymous; private attachments require product auth rules |
+| Jobs | `productConfig.common.features.jobs` | Required while Billing is enabled for webhook recovery and outbox delivery |
 
 `credits.purchasesEnabled: false` is valid when a product grants or consumes credits without
 selling them. Keep it explicit when configured packages remain in the file for later use.
@@ -36,11 +36,12 @@ selling them. Keep it explicit when configured packages remain in the file for l
 | --- | --- |
 | oRPC procedure | Stable `FEATURE_DISABLED` code with a not-found response |
 | Public HTTP storage endpoint | 404 before a storage adapter is created |
-| Payment webhook | 204 no-op before request body, context, or provider initialization |
+| Payment webhook | 404 because a disabled provider's route is not registered |
 | Scheduled handler | No-op before D1 is opened; Billing and Credits work are independently skipped |
 
-Provider dashboards should also disable or remove webhook endpoints for a disabled module. The
-204 fallback deliberately prevents a stale provider configuration from retrying indefinitely.
+Provider dashboards should also disable or remove webhook endpoints for a disabled module. A
+stale endpoint receives an unregistered-route response and must not be treated as an active
+integration.
 
 ## Feature verification rule
 
@@ -66,25 +67,28 @@ Migrations remain one ordered, immutable application history under
 | Core/Auth | `apps/server/src/db/schema/auth.ts` | Auth tables and session indexes |
 | Billing | `apps/server/src/db/schema/payments.ts` | Customers, checkout, purchase, subscription, webhook, and outbox state |
 | Credits | `apps/server/src/db/schema/credits.ts` | Ledger, grants, billable operations, disputes, and invariants |
-| Storage | No table in the starter | Object-provider binding only; add a table only for product metadata/ACL needs |
-| Jobs | Billing and Credits schemas above | Retry, outbox, and maintenance state live with the owning domain |
+| Storage | `apps/server/src/db/schema/assets.ts` | Product-file ownership and visibility metadata |
+| Jobs | `apps/server/src/db/schema/jobs.ts` | Retry, lease, delivery, and dead-letter state |
 
 Avoid documenting a hand-maintained list of migration numbers. It becomes stale after every
 schema evolution. The current migration directory and schema ownership are the source of truth.
 
 ## Pre-deploy check
 
-Run the check with the runtime-secret file that will be deployed. It validates only secrets for
-enabled modules; it never prints them.
+For first setup or secret rotation, validate the plaintext rotation file against
+the enabled modules; it never prints secret values. Daily deploys instead use
+the production preflight, which checks required secret names on the live Worker.
 
 ```bash
-pnpm --filter server module:check -- /absolute/path/to/.dev.vars.production
-pnpm db:migrate:production
+pnpm --filter server module:check -- /absolute/path/to/.env.production
+pnpm verify:production-config
 ```
 
-Wrangler validates Worker bindings during deployment. Applied D1 migration state belongs to the
-target database, so verify it with the production migration command or `wrangler d1 migrations
-list`; a local script must not claim that it inspected a remote database when it has not.
+Production D1 migration is a separate, explicitly approved operation. Applied
+migration state belongs to the target database, so inspect it with `wrangler d1
+migrations list` and use the production migration command only after the owner
+approves the reviewed migration. A local script must not claim that it inspected
+a remote database when it has not.
 
 ## Adding a module
 

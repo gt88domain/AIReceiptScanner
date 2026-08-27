@@ -1,16 +1,13 @@
-/**
- * Single source of truth for supported locales across all apps.
- *
- * To add a new locale:
- * 1. Add it to the supportedLocales array below
- * 2. Add corresponding translation files in each app's messages folder
- * 3. TypeScript will enforce that all apps implement the new locale
- */
-export const supportedLocales = ["en", "zh", "jp"] as const;
+/** Translation catalogs kept in the repository. */
+export const availableLocales = ["en", "zh", "jp"] as const;
 
-export type Locale = (typeof supportedLocales)[number];
+export type Locale = (typeof availableLocales)[number];
 
-export const defaultLocale: Locale = "en";
+/** Locales published by the current product. Keep dormant catalogs out of routes and SEO. */
+export const supportedLocales = ["en"] as const satisfies readonly Locale[];
+export type PublishedLocale = (typeof supportedLocales)[number];
+
+export const defaultLocale = "en" satisfies PublishedLocale;
 export const localeCookieName = "locale";
 
 /**
@@ -43,8 +40,8 @@ export const localeToDateFormat: LocaleRecord<string> = {
   jp: "ja-JP",
 };
 
-export function isValidLocale(locale: string | undefined): locale is Locale {
-  return supportedLocales.includes(locale as Locale);
+export function isValidLocale(locale: string | undefined): locale is PublishedLocale {
+  return supportedLocales.includes(locale as PublishedLocale);
 }
 
 /**

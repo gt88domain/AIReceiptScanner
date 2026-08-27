@@ -8,6 +8,22 @@ Do not run a blind repository-wide replacement. Domains, Worker names, database 
 and payment product IDs have different formats and must be replaced with values from the buyer's
 own accounts.
 
+## Define the paid offer first
+
+Every downstream product must state what it sells, the price, how payment is
+collected, how fulfillment happens, and how a refund is handled before choosing
+a technical profile. Public preview content is fine, but the template does not
+enable a free product, signup-credit grant, or subscription trial by default.
+A product with no paid offer is not an adoption target for this template; any
+future promotion is an explicit downstream pricing decision.
+
+- Use the built-in Billing + Jobs path when a verified webhook must grant
+  subscription, lifetime, credit, or other automatic digital entitlement.
+- For sponsored placement, paid links, listing review, or another manually
+  fulfilled service, start with a provider payment link or invoice plus a small
+  product-owned order record. Do not enable Credits, Storage, or multiple
+  payment-provider state machines merely because the product charges money.
+
 Start by finding the preview domain:
 
 ```bash
@@ -22,7 +38,8 @@ Review and replace the following groups together:
 | Product name, support email, website and app links | `packages/app-config/src/product-config.ts` |
 | Cloudflare Worker, D1, R2, and service-binding names | both `wrangler.jsonc` files |
 | Native bundle identifier and deep-link scheme | `optional/mobile/app.json`, `packages/app-config/src/product-config.ts` |
-| Stripe, Creem, Waffo, and RevenueCat product IDs | `packages/app-config/src/app-config.ts` (provider policy) |
+| Stripe, Creem, Waffo, and RevenueCat membership product/price IDs | `packages/app-config/src/app-config.ts` |
+| Membership tiers and credit-package product IDs | `packages/app-config/src/membership-config.ts`, `packages/app-config/src/product-config.ts` |
 | Transactional-email sender and production secrets | `apps/server/.env.production.example` and Worker secrets |
 
 The newsletter proxy deliberately uses the Web Worker's `API_SERVICE` binding and no longer embeds
@@ -31,17 +48,6 @@ the preview API hostname. Buyers should still update the binding's `service` nam
 
 The public `/contact` form uses the same `API_SERVICE` binding and sends messages to the configured
 `supportEmail`. It requires the transactional-email sender and `RESEND_API_KEY` listed above.
-
-## Account deletion policy
-
-The template's recommended default is to block account deletion while a paid subscription is
-active. The customer first cancels through the provider billing portal, then can delete the account
-after the subscription ends. The implementation must also define the retention period for billing
-records and a retryable process for deleting user-owned storage objects.
-
-This is an application behavior and a legal policy; it cannot be satisfied by adding a standalone
-`/policy` page. Once the buyer's legal copy is approved, reflect the chosen retention and deletion
-terms in the privacy policy and terms pages.
 
 ## New SaaS project workflow
 
@@ -52,14 +58,19 @@ terms in the privacy policy and terms pages.
    record optional platform-schema installs in
    `template-capabilities.lock.json`. See
    [product-owned D1 ledger and capability installs](./product-owned-ledger.md).
-3. Choose source-controlled capabilities in `packages/app-config`: auth is
+3. Record the paid offer and choose the smallest delivery path: built-in
+   Billing for automatic entitlement, or a product-owned order plus manual
+   fulfillment for services such as sponsored links.
+4. Choose source-controlled capabilities in `packages/app-config`: auth is
    core; enable Billing, Credits, Storage, Jobs, and native/mobile support only
    when the product needs them. Mobile additionally requires
-   `common.features.mobile: true`; this activates only its Server integrations,
-   not Expo dependencies in the root workspace. See [platform modules](./modules.md).
-4. Create business domains in `apps/server/src/modules/<domain>` and
+   `productConfig.common.features.mobile: true` in `product-config.ts`; this
+   activates only its Server integrations, not Expo dependencies in the root
+   workspace. See [platform modules](./modules.md).
+5. Create business domains in `apps/server/src/modules/<domain>` and
    `apps/web/src/modules/<domain>`; do not customize core modules for the first
    product feature.
-5. Before deployment, run `pnpm install --frozen-lockfile`, `pnpm lint`,
+6. Record verification in the change plan. Before deployment, explicitly run
+   `pnpm install --frozen-lockfile`, `pnpm lint`,
    `pnpm check-types`, `pnpm test`, and `pnpm build`, then complete the
    production configuration preflight.

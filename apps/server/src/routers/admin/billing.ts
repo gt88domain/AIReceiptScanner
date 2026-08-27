@@ -29,7 +29,7 @@ const paymentOperationSchema = z.object({
   updatedAt: z.date(),
 });
 
-/** Static billing administration boundary; its physical omission is a v0.4.5 concern. */
+/** Static billing administration boundary; runtime composition omits it when Billing is disabled. */
 export const adminBillingRouter = {
   listPaymentOperations: adminProcedure
     .input(

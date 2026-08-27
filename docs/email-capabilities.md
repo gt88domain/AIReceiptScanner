@@ -10,7 +10,6 @@ email: {
   capabilities: {
     verification: true,
     passwordReset: true,
-    emailOtp: false,
     newsletter: true,
     contactForm: true,
     operationalAlerts: true,
@@ -18,9 +17,10 @@ email: {
 }
 ```
 
-`enabled: false` requires `provider: "none"` and every capability false.
-Enabling email OTP also requires the `emailOtp` capability. Email has no
-dependency on Jobs, R2, Billing, Credits, or Mobile.
+`enabled: false` requires `provider: "none"` and every capability false. The
+template supports verified email/password registration, email verification,
+and password reset; it has no email-OTP capability or client/server plugin.
+Email has no dependency on Jobs, R2, Billing, Credits, or Mobile.
 
 When email is disabled, no Resend service is created, `/api/newsletter/subscribe`
 and `/api/contact` are absent, and Auth mail operations reject with a client-safe

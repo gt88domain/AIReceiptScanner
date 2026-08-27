@@ -1,7 +1,9 @@
-# Cross-Platform Payment Test Scenarios
+# Stripe and RevenueCat Cross-Platform Scenarios
 
-Web (Stripe) and Native (RevenueCat/IAP) share a unified entitlement system on the server.
-This document lists every scenario that must be verified.
+This focused matrix covers Web Stripe and native RevenueCat/IAP interactions
+through the shared server entitlement model. It is not the complete web-provider
+matrix: Creem and Waffo use the same verified-state rules but retain focused
+provider-adapter and webhook scenarios alongside their implementations.
 
 ## Legend
 

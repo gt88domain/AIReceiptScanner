@@ -56,9 +56,13 @@ The current recommended release is recorded in
 [`template-kit/recommended-baseline.json`](../template-kit/recommended-baseline.json).
 The portfolio inventory in
 [`template-kit/adopters.json`](../template-kit/adopters.json) is evidence, not
-a control plane: it does not open PRs, fetch remotes, or change a downstream.
-See the dated [v0.9.0 dry-run record](./upstream/adoption-dry-run-2026-08-15-v0.9.0.md)
-for each product's current bootstrap state and required decisions.
+a control plane: its `evaluatedBaseline` is the historical release used by the
+dated inventory, not the current recommendation, and it does not open PRs,
+fetch remotes, or change a downstream. See the dated
+[v0.9.0 dry-run record](./upstream/adoption-dry-run-2026-08-15-v0.9.0.md) for
+each product's recorded bootstrap state and required decisions. Downstream
+adoption remains deferred until the mother-template hardening change is
+reviewed; updating the recommendation does not claim that any adopter moved.
 
 An adopter must have the current `template:upgrade-check` command, a complete
 source manifest, and a named template remote before the check can produce an

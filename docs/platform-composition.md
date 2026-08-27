@@ -12,8 +12,9 @@ the worktree.
 The stable `platformContractRouter` is a compatibility contract for the default
 Web client. It is deliberately broader than a profile runtime. The Server uses
 `buildRuntimeAppRouter(composition)`, which physically omits disabled namespaces
-before the RPC and OpenAPI handlers are created. Exact per-profile Web clients
-and route trees are deferred to v0.5.
+before the RPC and OpenAPI handlers are created. The Web keeps one typed client
+contract and guards capability-owned pages at their route/layout boundary; it
+does not generate a separate route tree for every profile.
 
 - Core owns health, session, safety middleware, CORS, i18n, and RPC transport.
 - Auth owns Better Auth HTTP and the verified-email page.

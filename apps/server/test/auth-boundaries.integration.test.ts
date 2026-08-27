@@ -54,6 +54,19 @@ function authOptionsFor(runtimeEnv: AuthRuntimeOverrides) {
 }
 
 describe("identity boundaries", () => {
+  it("does not expose an email OTP endpoint", async () => {
+    const response = await exports.default.fetch(
+      "https://server.test/api/auth/email-otp/send-verification-otp",
+      {
+        body: JSON.stringify({ email: "otp-disabled@example.test", type: "sign-in" }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+      },
+    );
+
+    expect(response.status).toBe(404);
+  });
+
   it("normalizes untrusted avatar URLs on profile writes", async () => {
     const { client } = await signUp(`avatar-write-${crypto.randomUUID()}@example.test`);
 

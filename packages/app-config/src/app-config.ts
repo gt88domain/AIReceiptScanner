@@ -31,7 +31,7 @@ const appConfig: AppConfig = {
       enabled: publicRuntimeConfig.features.credits,
       // Allows web checkout for credit packages. Disable to keep grants/usage without sales.
       purchasesEnabled: publicRuntimeConfig.features.creditPurchases,
-      // Optional free credit grant for new web users.
+      // Optional signup grant; disabled in the paid-product baseline.
       signupGrant: creditSignupGrant,
       // Credit packages available through web checkout.
       packages: webCreditPackages,
@@ -58,7 +58,7 @@ const appConfig: AppConfig = {
       // Web provider price IDs are split by environment to avoid using test IDs in production.
       plans: [
         {
-          // Free plan available without provider prices.
+          // Internal no-entitlement state; this is not a public free product offer.
           id: "free",
         },
         {
@@ -79,7 +79,6 @@ const appConfig: AppConfig = {
               amountCents: 1000,
               priceType: "subscription",
               interval: "month",
-              trialDays: 7,
               status: "active",
             },
             {
@@ -96,7 +95,6 @@ const appConfig: AppConfig = {
               amountCents: 10000,
               priceType: "subscription",
               interval: "year",
-              trialDays: 7,
               status: "active",
             },
           ],
@@ -133,7 +131,7 @@ const appConfig: AppConfig = {
       enabled: true,
       // Allows native store purchases for credit packages.
       purchasesEnabled: true,
-      // Optional free credit grant for new native users.
+      // Optional signup grant; disabled in the paid-product baseline.
       signupGrant: creditSignupGrant,
       // Credit packages available through native in-app purchases.
       packages: nativeCreditPackages,

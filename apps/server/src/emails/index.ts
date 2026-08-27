@@ -7,7 +7,6 @@ type EmailBindings = Pick<Cloudflare.Env, "RESEND_API_KEY" | "EMAIL_FROM">;
 export type { EmailProvider, EmailService, SendEmailParams } from "./types";
 export { sendResetPasswordEmailFromRequest } from "./senders/forgot-password-email";
 export { sendVerificationEmailFromRequest } from "./senders/sign-up-verify-email";
-export { sendSignInOtpEmailFromRequest } from "./senders/email-otp-email";
 
 /** Creates a provider only after the explicit runtime email contract enables it. */
 export function createEmailService(

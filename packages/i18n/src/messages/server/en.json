@@ -16,14 +16,6 @@
       "body": "Click the button below to reset your password",
       "button": "Reset Password",
       "ignore": "If you didn't request a password reset, you can safely ignore this email."
-    },
-    "otp": {
-      "subject": "Your {appName} verification code",
-      "preview": "Use this code to continue with {appName}",
-      "title": "Your verification code",
-      "body": "Use this one-time code to continue with {appName}.",
-      "expires": "This code expires in {minutes} minutes.",
-      "ignore": "If you didn't request this code, you can safely ignore this email."
     }
   },
   "errors": {

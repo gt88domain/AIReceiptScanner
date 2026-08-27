@@ -315,7 +315,7 @@ describe("product features", () => {
     ).toEqual(["stripe"]);
   });
 
-  it("fails closed for invalid optional email capability combinations", () => {
+  it("fails closed for invalid disabled email capability combinations", () => {
     const common = resolveCommonConfig();
     expect(() =>
       resolveEmailConfig({
@@ -328,16 +328,18 @@ describe("product features", () => {
         },
       }),
     ).toThrow("[email:DISABLED_CONFIG]");
-    expect(() =>
-      resolveEmailConfig({
-        ...common,
-        auth: {
-          ...common.auth,
-          methods: { ...common.auth.methods, emailOtpEnabled: true },
-        },
-        email: { ...common.email, capabilities: { ...common.email.capabilities, emailOtp: false } },
-      }),
-    ).toThrow("[email:OTP_CAPABILITY_REQUIRED]");
+  });
+
+  it("advertises only the implemented email and password auth path", () => {
+    const common = resolveCommonConfig();
+
+    expect(common.auth.methods.emailPasswordEnabled).toBe(true);
+    expect("emailOtpEnabled" in common.auth.methods).toBe(false);
+    expect(common.email.capabilities).toMatchObject({
+      verification: true,
+      passwordReset: true,
+    });
+    expect("emailOtp" in common.email.capabilities).toBe(false);
   });
 
   it("keeps public content collections disabled by default", () => {

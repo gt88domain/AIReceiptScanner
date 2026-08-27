@@ -24,16 +24,9 @@ export const publicRuntimeConfig = {
   auth: {
     methods: {
       emailPassword: true,
-      emailOtp: false,
       github: false,
       google: false,
       apple: false,
-    },
-    emailOtp: {
-      otpLength: 6,
-      expiresInSeconds: 300,
-      allowedAttempts: 3,
-      resendCooldownSeconds: 60,
     },
   },
   routes: {

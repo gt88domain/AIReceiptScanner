@@ -18,3 +18,10 @@ describe("webConfig content surface flags", () => {
     expect(webConfig.blogPublic).toBe(false);
   });
 });
+
+describe("webConfig auth methods", () => {
+  it("exposes email and password without a dormant OTP switch", () => {
+    expect(webConfig.auth.methods.emailPasswordEnabled).toBe(true);
+    expect("emailOtpEnabled" in webConfig.auth.methods).toBe(false);
+  });
+});

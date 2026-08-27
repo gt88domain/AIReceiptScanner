@@ -25,7 +25,6 @@ export type EmailProviderKey = (typeof SUPPORTED_EMAIL_PROVIDERS)[number];
 export type EmailCapabilities = {
   verification: boolean;
   passwordReset: boolean;
-  emailOtp: boolean;
   newsletter: boolean;
   contactForm: boolean;
   operationalAlerts: boolean;
@@ -288,28 +287,12 @@ export type AppCommonConfig = {
     methods: {
       /** Toggle that controls email/password auth UI entry points. */
       emailPasswordEnabled?: boolean;
-      /** Toggle that controls email OTP auth UI entry points. */
-      emailOtpEnabled?: boolean;
       /** Toggle that controls GitHub sign-in UI entry points. */
       githubEnabled?: boolean;
       /** Toggle that controls Google sign-in UI entry points. */
       googleEnabled?: boolean;
       /** Toggle that controls Apple sign-in UI entry points. */
       appleEnabled?: boolean;
-    };
-    /** One-time code settings shared by auth flows. */
-    otp: {
-      /** Email one-time sign-in code settings. */
-      email: {
-        /** One-time code length. */
-        otpLength: number;
-        /** One-time code expiry in seconds. */
-        expiresInSeconds: number;
-        /** Maximum failed verification attempts per issued code. */
-        allowedAttempts: number;
-        /** Client-side resend cooldown in seconds. */
-        resendCooldownSeconds: number;
-      };
     };
   };
   /** Outbound email configuration. */

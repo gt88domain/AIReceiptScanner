@@ -1,64 +1,71 @@
-# Config Architecture
+# Configuration architecture
 
-## Goals
+Configuration is split by ownership and exposure. There is no single mutable
+runtime config object and no remote feature-flag system.
 
-- Provide a single source of truth for cross-platform business configuration.
-- Keep secrets out of source-controlled config.
-- Reuse the same typed config in server, web, and shared domain packages.
+## Sources of truth
 
-## Single Config Source
+| Concern | Owner |
+| --- | --- |
+| Product identity, auth choices, email/storage selection, credit packages | `packages/app-config/src/product-config.ts` and product-owned siblings |
+| Membership tiers and semantics | `packages/app-config/src/membership-config.ts` |
+| Provider plan/price catalogs and platform payment policy | `packages/app-config/src/app-config.ts` |
+| Browser-safe app metadata, routes, and feature switches | `packages/app-config/src/public-runtime.ts` |
+| Feature dependency rules and required resource types | `packages/app-config/src/features.ts` |
+| Physical module/resource composition | `packages/app-config/src/platform-composition.ts` |
+| Build profile definitions and product overrides | `packages/app-config/src/profile-definitions.ts`, `product-feature-overrides.ts`, and profile build env |
+| Runtime secrets and Cloudflare bindings | untracked env files and `apps/*/wrangler.jsonc` |
 
-The compatible assembled config is exported as `appConfig` from
-`packages/app-config/src/app-config.ts`. Product-owned metadata, auth selection,
-Email capabilities, Storage selection, membership, and Credits catalogs live in
-`packages/app-config/src/product-config.ts`; resolvers, types, and dependency
-rules remain in the protected config modules.
+`appConfig` remains the compatible assembled cross-platform catalog. Runtime
+code should prefer the narrow resolver or export matching its exposure boundary.
 
-This config includes non-sensitive settings such as:
+## Runtime assembly
 
-- Application name
-- Auth callback paths
-- Email provider metadata (non-secret)
-- Payment provider defaults and plan catalog (under `appConfig.web.payments` and `appConfig.native.payments`)
-- Storage provider defaults and upload rules
-- Route paths used for URL construction
+- The browser imports `@repo/app-config/public-runtime`. It must not receive
+  provider price catalogs, native-only settings, or secrets.
+- `apps/web/src/configs/web-config.ts` combines public runtime configuration
+  with build/runtime URLs and the current locale.
+- The API Worker derives its immutable capability/resource contract through
+  `apps/server/src/lib/runtime-config.ts`.
+- `resolveOriginConfig()` combines the Server Worker's `WEBSITE_URL` and
+  `SERVER_URL` bindings without changing product capability decisions.
+- The optional mobile app uses `resolveNativeCommonConfig()` and adapts it in
+  `optional/mobile/configs/app-config.ts`.
 
-`appConfig.common` is strictly shared across platforms. Platform-specific config lives in
-`appConfig.web` and `appConfig.native`, including payments configuration.
+The resolved feature contract is descriptive. It controls which routes,
+handlers, providers, and resources the runtime expects; it does not create
+Cloudflare resources or mutate source files.
 
-Use `resolveWebCommonConfig()` / `resolveNativeCommonConfig()` in platform code.
-They return merged common values for that platform; the web resolver also includes
-web routing/payment fields for convenience.
+## Secret and public-value boundary
 
-## Runtime Assembly
+Never store secrets in `packages/app-config` or an `EXPO_PUBLIC_*`/`VITE_*`
+variable.
 
-Runtime values are assembled inside each app:
+- Local Server secrets: `apps/server/.dev.vars`
+- Production secret rotation input: `apps/server/.env.production`
+- Daily production preflight: required secret names read from the live Worker;
+  no local plaintext secret file is required
+- Web build/public values: `apps/web/.env.*` and safe Worker vars
+- Mobile public values: `optional/mobile/.env.*`
 
-- `apps/server/src/configs/server-config.ts`: combines `resolveWebCommonConfig()` with `env.SERVER_URL`
-- `apps/web/src/configs/web-config.ts`: reads merged web config from `resolveWebCommonConfig()`, including `routes`, then combines with `appUrl` and current locale
+Provider secret keys, webhook secrets, `BETTER_AUTH_SECRET`, `ADMIN_EMAILS`, and
+OAuth client secrets belong only in the Server runtime secret path. Public OAuth
+client IDs and public application URLs may live in Worker/build configuration.
+Use `pnpm --filter server secrets:push:production` only for first setup or
+rotation; daily deploys preserve the live secret values.
 
-This keeps `@repo/app-config` focused on static, non-secret business configuration.
+## Change rules
 
-## Secrets Boundary
+- Add product-owned values to the existing product-owned files; do not edit
+  resolver semantics for a one-site customization.
+- Add a dependency rule only for a real impossible capability combination.
+- Use `resolveWebCommonConfig()` or `resolveNativeCommonConfig()` for trusted
+  cross-platform configuration; use the public-runtime export in browser code.
+- Keep provider-specific details in provider catalogs/adapters and keep domain
+  policy based on stable plan, tier, and capability identifiers.
+- `template-kit/repository-facts.json` owns machine-readable repository facts;
+  configuration documentation must not duplicate its enforced rule set.
 
-Secrets must **not** be stored in `appConfig`.
-
-Keep secrets in runtime env systems:
-
-- Local: `apps/server/.dev.vars`
-- Deploy: `wrangler secret put ...`
-- Web public env: `apps/web/.env.*` (non-secret public values only)
-
-Examples of secrets that stay outside unified config:
-
-- `BETTER_AUTH_SECRET`
-- `STRIPE_SECRET_KEY`
-- `STRIPE_WEBHOOK_SECRET`
-- `RESEND_API_KEY`
-- OAuth client secrets
-
-## Adoption Rules
-
-- Use `@repo/app-config` for business configuration constants.
-- Do not hardcode duplicated config literals in app modules.
-- Use `@repo/app-config/payments/web`, `@repo/app-config/payments/native`, and `@repo/app-config/storage` for domain-facing config helpers.
+See [the architecture map](./architecture-map.md) for the configuration-to-
+runtime flow and [production configuration](./production-configuration.md) for
+deployment ownership.

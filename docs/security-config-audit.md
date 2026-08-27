@@ -1,5 +1,10 @@
 # Security configuration audit
 
+> Historical audit from 2026-08-01. Its gaps were implementation inputs, not
+> current operating instructions. Use
+> [`production-configuration.md`](./production-configuration.md) and the current
+> preflight source for production setup.
+
 Date: 2026-08-01
 Scope: reusable EasyStarter deployment configuration only. No product code, data, providers, or schema changes are included.
 
