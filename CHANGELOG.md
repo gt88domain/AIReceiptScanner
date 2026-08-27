@@ -3,6 +3,18 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.0.0](https://github.com/gt88domain/easystarter-template/compare/v2.6.0...v3.0.0) (2026-08-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* **template:** Email OTP configuration, client APIs, and UI are removed; use verified email/password.
+
+### Features
+
+* **template:** harden the solo paid baseline ([2602135](https://github.com/gt88domain/easystarter-template/commit/26021355cdd0b9161974c50611046ed5665c574d))
+* **web:** slim the default public surface ([#111](https://github.com/gt88domain/easystarter-template/issues/111)) ([21b382a](https://github.com/gt88domain/easystarter-template/commit/21b382a1b6b8829cbbf6701267faf17add8f0207))
+
 ## [2.6.0](https://github.com/gt88domain/easystarter-template/compare/v2.5.0...v2.6.0) (2026-08-25)
 
 
