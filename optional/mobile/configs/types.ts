@@ -11,6 +11,7 @@ export interface AppConfig {
   creditsEnabled: boolean;
   storageEnabled: boolean;
   auth: {
+    publicSignupEnabled: boolean;
     methods: {
       emailPasswordEnabled: boolean;
       githubEnabled: boolean;

@@ -23,6 +23,7 @@ export const appConfig: AppConfig = {
   creditsEnabled: commonConfig.credits.enabled ?? false,
   storageEnabled: commonConfig.storage.enabled ?? false,
   auth: {
+    publicSignupEnabled: commonConfig.auth.publicSignupEnabled !== false,
     methods: {
       emailPasswordEnabled: commonConfig.auth.methods.emailPasswordEnabled ?? false,
       githubEnabled: commonConfig.auth.methods.githubEnabled ?? false,

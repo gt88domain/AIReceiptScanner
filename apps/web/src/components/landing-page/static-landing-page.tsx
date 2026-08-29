@@ -24,12 +24,14 @@ export function StaticLandingPage() {
           </h1>
           <p className="mt-8 max-w-[60ch] text-lg leading-8 text-ink-muted">{t("subtitle")}</p>
           <div className="mt-10 flex flex-wrap items-center gap-3">
-            <Button asChild size="lg" className="active:translate-y-px">
-              <Link to="/auth/sign-up">
-                {t("startBuilding")}
-                <ArrowRight aria-hidden="true" />
-              </Link>
-            </Button>
+            {webConfig.auth.publicSignupEnabled ? (
+              <Button asChild size="lg" className="active:translate-y-px">
+                <Link to="/auth/sign-up">
+                  {t("startBuilding")}
+                  <ArrowRight aria-hidden="true" />
+                </Link>
+              </Button>
+            ) : null}
             {webConfig.docsPublic ? (
               <Button asChild size="lg" variant="ghost" className="active:translate-y-px">
                 <a href="/docs">{t("requestDemo")}</a>

@@ -59,7 +59,7 @@ export function SignInForm() {
               </>
             ) : null}
 
-            {hasEmailSignIn ? (
+            {hasEmailSignIn && appConfig.auth.publicSignupEnabled ? (
               <Animated.View
                 className="items-center"
                 entering={FadeIn.duration(200).delay(100)}

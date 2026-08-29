@@ -10,6 +10,7 @@ import { drizzle } from "drizzle-orm/d1";
 import { createT, getLocaleFromHeaders, getLocaleFromRequest } from "@/i18n";
 import { getAppleProviderConfig } from "@/lib/apple-auth";
 import { createExpoAuthPlugin } from "@/auth/expo-plugin";
+import { resolveSignupPolicy } from "@/auth/signup-policy";
 import {
   normalizeAvatarForOutput,
   normalizeAvatarUrl,
@@ -98,6 +99,11 @@ export function createAuth(
   const db = drizzle(d1);
   const runtimeNodeEnv = runtimeEnv.NODE_ENV;
   const backofficePreview = isBackofficePreview(runtimeEnv);
+  const signupPolicy = resolveSignupPolicy({
+    backofficePreview,
+    emailPasswordEnabled: commonConfig.auth.methods.emailPasswordEnabled,
+    publicSignupEnabled: commonConfig.auth.publicSignupEnabled,
+  });
   const origins = resolveOriginConfig(runtimeEnv);
   const { cookieDomain, sameSite, secure } = resolveCookiePolicy(
     runtimeNodeEnv,
@@ -207,8 +213,8 @@ export function createAuth(
         : []),
     ],
     emailAndPassword: {
-      enabled: true,
-      disableSignUp: backofficePreview,
+      enabled: signupPolicy.emailPasswordEnabled,
+      disableSignUp: signupPolicy.signupDisabled,
       requireEmailVerification: backofficePreview
         ? false
         : runtimeConfig.email.capabilities.verification,
@@ -262,6 +268,7 @@ export function createAuth(
     socialProviders: {
       github: {
         enabled: commonConfig.auth.methods.githubEnabled ?? false,
+        disableSignUp: signupPolicy.signupDisabled,
         clientId: runtimeEnv.GITHUB_CLIENT_ID || "",
         clientSecret: runtimeEnv.GITHUB_CLIENT_SECRET || "",
         redirectURI: joinUrl(runtimeEnv.SERVER_URL, "/api/auth/callback/github"),
@@ -270,6 +277,7 @@ export function createAuth(
       google: {
         prompt: "select_account",
         enabled: commonConfig.auth.methods.googleEnabled ?? false,
+        disableSignUp: signupPolicy.signupDisabled,
         clientId: runtimeEnv.GOOGLE_CLIENT_ID || "",
         clientSecret: runtimeEnv.GOOGLE_CLIENT_SECRET || "",
         redirectURI: joinUrl(runtimeEnv.SERVER_URL, "/api/auth/callback/google"),
@@ -278,6 +286,7 @@ export function createAuth(
       apple: {
         ...getAppleProviderConfig(),
         enabled: commonConfig.auth.methods.appleEnabled ?? false,
+        disableSignUp: signupPolicy.signupDisabled,
       },
     },
     rateLimit: {

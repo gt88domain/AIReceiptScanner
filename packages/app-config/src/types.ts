@@ -283,6 +283,8 @@ export type AppCommonConfig = {
   auth: {
     /** Exact remote hosts allowed to supply user avatar images. */
     allowedRemoteAvatarHosts?: readonly string[];
+    /** Whether anonymous visitors may create new accounts. Defaults to enabled. */
+    publicSignupEnabled?: boolean;
     /** Login method UI switches. */
     methods: {
       /** Toggle that controls email/password auth UI entry points. */

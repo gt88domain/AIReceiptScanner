@@ -22,6 +22,7 @@ export const publicRuntimeConfig = {
     contactForm: true,
   },
   auth: {
+    publicSignupEnabled: true,
     methods: {
       emailPassword: true,
       github: false,

@@ -333,6 +333,7 @@ describe("product features", () => {
   it("advertises only the implemented email and password auth path", () => {
     const common = resolveCommonConfig();
 
+    expect(common.auth.publicSignupEnabled).toBe(true);
     expect(common.auth.methods.emailPasswordEnabled).toBe(true);
     expect("emailOtpEnabled" in common.auth.methods).toBe(false);
     expect(common.email.capabilities).toMatchObject({

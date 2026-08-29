@@ -30,6 +30,7 @@ export const productConfig = {
     },
     auth: {
       allowedRemoteAvatarHosts: ["avatars.githubusercontent.com", "lh3.googleusercontent.com"],
+      publicSignupEnabled: publicRuntimeConfig.auth.publicSignupEnabled,
       methods: {
         emailPasswordEnabled: publicRuntimeConfig.auth.methods.emailPassword,
         githubEnabled: publicRuntimeConfig.auth.methods.github,

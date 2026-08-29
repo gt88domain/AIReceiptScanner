@@ -18,6 +18,7 @@ export interface WebConfig {
   docsPublic: boolean;
   blogPublic: boolean;
   auth: {
+    publicSignupEnabled: boolean;
     methods: {
       emailPasswordEnabled: boolean;
       githubEnabled: boolean;

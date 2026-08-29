@@ -21,6 +21,7 @@ describe("webConfig content surface flags", () => {
 
 describe("webConfig auth methods", () => {
   it("exposes email and password without a dormant OTP switch", () => {
+    expect(webConfig.auth.publicSignupEnabled).toBe(true);
     expect(webConfig.auth.methods.emailPasswordEnabled).toBe(true);
     expect("emailOtpEnabled" in webConfig.auth.methods).toBe(false);
   });

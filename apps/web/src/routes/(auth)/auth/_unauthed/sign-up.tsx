@@ -4,7 +4,7 @@ import { webConfig } from "@/configs/web-config";
 
 export const Route = createFileRoute("/(auth)/auth/_unauthed/sign-up")({
   beforeLoad: () => {
-    if (!webConfig.auth.methods.emailPasswordEnabled) {
+    if (!webConfig.auth.publicSignupEnabled || !webConfig.auth.methods.emailPasswordEnabled) {
       throw redirect({ to: "/auth/sign-in" });
     }
   },

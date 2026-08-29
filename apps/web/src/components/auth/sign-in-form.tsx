@@ -91,7 +91,7 @@ export function SignInForm({ className, ...props }: SignInFormProps) {
                 </Field>
               </>
             ) : null}
-            {hasEmailSignIn ? (
+            {hasEmailSignIn && webConfig.auth.publicSignupEnabled ? (
               <FieldDescription className="text-center">
                 {t("signIn.noAccount")} <Link to="/auth/sign-up">{t("signIn.signUp")}</Link>
               </FieldDescription>
