@@ -3,6 +3,14 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.0.2](https://github.com/gt88domain/easystarter-template/compare/v3.0.1...v3.0.2) (2026-08-29)
+
+
+### Bug Fixes
+
+* **template:** guard adoption merges and exclude production devtools ([#118](https://github.com/gt88domain/easystarter-template/issues/118)) ([c3a71f6](https://github.com/gt88domain/easystarter-template/commit/c3a71f6f406f154494ccf41921f65c6fc806d132))
+* **template:** record completed verification gates ([#121](https://github.com/gt88domain/easystarter-template/issues/121)) ([4d89215](https://github.com/gt88domain/easystarter-template/commit/4d89215e5a76a514cec45ef8e75b5196782f11a5))
+
 ## [3.0.1](https://github.com/gt88domain/easystarter-template/compare/v3.0.0...v3.0.1) (2026-08-27)
 
 
