@@ -1,6 +1,6 @@
 # Template governance and Devtools fixes
 
-Status: implementation and core-goal review passed; focused checks authored but not run
+Status: implementation, core-goal review, test authoring, and authorized verification complete
 
 ## Core goal
 
@@ -38,9 +38,9 @@ downstream repository or introducing product configuration:
 
 | Behavior | Edge or trust boundary | Expected check | Recommended command | Status |
 | --- | --- | --- | --- | --- |
-| Adoption PR skips squash automation | Path detection and label detection both fail closed | Extended `scripts/check-auto-merge-sha.mjs` source assertions | `node scripts/check-auto-merge-sha.mjs` | Authored, not run |
-| Ordinary PR keeps squash behavior | Adoption guard must not replace the existing merge call | Same focused source assertion | `node scripts/check-auto-merge-sha.mjs` | Authored, not run |
-| Production excludes Devtools | Development import must be compile-time unreachable in production | `apps/web/scripts/check-production-devtools.mjs` checks source and built assets | `pnpm --filter web build && node apps/web/scripts/check-production-devtools.mjs` | Authored, not run |
+| Adoption PR skips squash automation | Path detection and label detection both fail closed | Extended `scripts/check-auto-merge-sha.mjs` source assertions | `node scripts/check-auto-merge-sha.mjs` | Passed in PR #120 Quality through `pnpm test` |
+| Ordinary PR keeps squash behavior | Adoption guard must not replace the existing merge call | Same focused source assertion | `node scripts/check-auto-merge-sha.mjs` | Passed in PR #120 Quality through `pnpm test` |
+| Production excludes Devtools | Development import must be compile-time unreachable in production | `apps/web/scripts/check-production-devtools.mjs` checks source and built assets | `pnpm --filter web build && node apps/web/scripts/check-production-devtools.mjs` | Passed locally after the authorized verification request |
 | Development retains Devtools | Dynamic module remains importable in development | Focused local browser check | `pnpm dev:web` | Planned |
 
 ## Status
@@ -48,4 +48,9 @@ downstream repository or introducing product configuration:
 - Implementation: complete
 - Core-goal review: passed — only the two product-independent upstream defects changed
 - Test authoring: complete for the stable workflow and production-bundle signals
-- Test execution: not run; requires explicit user request
+- Test execution: authorized and complete for automated coverage — PR #120 passed OSV,
+  static, build, and test; the focused production build/bundle check also passed
+  locally. The optional development browser check was not run.
+- Follow-up: PR #118 initially reached `main` while GitHub Actions was blocked by
+  account billing. The restored Quality run found one OXC formatting issue in the
+  new bundle-check script; PR #120 fixed it and passed the complete gate.
