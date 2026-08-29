@@ -31,5 +31,19 @@ for (const workflow of workflows) {
 if (checked === 0) {
   console.log("Auto-merge workflows not present; SHA verification checks skipped.");
 } else {
+  try {
+    const autoMergeSource = await readFile(
+      new URL(".github/workflows/auto-merge.yml", `file://${root}/`),
+      "utf8",
+    );
+    const adoptionGuard = autoMergeSource.indexOf("const isUpstreamAdoption =");
+    const squashMerge = autoMergeSource.indexOf('merge_method: "squash"');
+    assert.ok(adoptionGuard >= 0 && adoptionGuard < squashMerge);
+    assert.match(autoMergeSource, /filenames\.includes\("\.template\/source\.json"\)/);
+    assert.match(autoMergeSource, /labels\.has\("upstream-adoption"\)/);
+    assert.match(autoMergeSource, /if \(isUpstreamAdoption\) return;/);
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+  }
   console.log("Auto-merge SHA verification checks passed.");
 }

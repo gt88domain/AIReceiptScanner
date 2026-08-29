@@ -58,6 +58,9 @@ jobs:
               path.endsWith("/") ? filename.startsWith(path) : filename === path,
             ));
             const labels = new Set(pull.labels.map(({ name }) => name));
+            const isUpstreamAdoption =
+              filenames.includes(".template/source.json") || labels.has("upstream-adoption");
+            if (isUpstreamAdoption) return;
             if (!isGeneratedRelease && touchesSensitivePath && !labels.has("maintainer-approved")) return;
 
             const { data } = await github.rest.checks.listForRef({
