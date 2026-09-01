@@ -4,6 +4,7 @@ import { type AppConfig, type AuthConfig } from "./types";
 
 const commonConfig = resolveNativeCommonConfig();
 const nativeRoutes = commonConfig.routes;
+const secureStoragePrefix = commonConfig.app.nativeScheme;
 
 function createDeepLinkURL(scheme: string, path: string) {
   const normalizedPath = path.replace(/^\/+/, "");
@@ -16,7 +17,7 @@ export const appConfig: AppConfig = {
   websiteUrl: commonConfig.app.websiteUrl,
   socialUrl: commonConfig.app.socialUrl,
   appStoreUrl: commonConfig.app.appStoreUrl,
-  storagePrefix: commonConfig.app.name,
+  storagePrefix: secureStoragePrefix,
   themePreferenceStorageKey: `${commonConfig.app.name}_theme_preference`,
   themeFamilyStorageKey: `${commonConfig.app.name}_theme_family`,
   onboardingCompletedStorageKey: `${commonConfig.app.name}_onboarding_completed`,
@@ -37,13 +38,12 @@ export const appConfig: AppConfig = {
 };
 
 export function getAuthConfig(): AuthConfig {
-  const storagePrefix = commonConfig.app.name;
   const scheme = commonConfig.app.nativeScheme;
 
   return {
     scheme,
-    storagePrefix,
-    cookieStorageKey: `${storagePrefix}_cookie`,
+    storagePrefix: secureStoragePrefix,
+    cookieStorageKey: `${secureStoragePrefix}_cookie`,
     callbackURL: createDeepLinkURL(scheme, nativeRoutes.authSignIn),
     resetPasswordURL: createDeepLinkURL(scheme, nativeRoutes.resetPassword),
   };

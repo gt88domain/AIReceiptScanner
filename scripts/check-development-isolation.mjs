@@ -28,6 +28,25 @@ assert.equal(
   "The optional Mobile workspace must retain its own Expo TypeScript config.",
 );
 
+const mobilePackage = await readJson("optional/mobile/package.json");
+assert.equal(
+  typeof mobilePackage.dependencies?.clsx,
+  "string",
+  "The isolated Mobile workspace must declare its direct clsx import.",
+);
+
+const mobileAppConfig = await readFile(resolve(root, "optional/mobile/configs/app-config.ts"), "utf8");
+assert.match(
+  mobileAppConfig,
+  /const secureStoragePrefix = commonConfig\.app\.nativeScheme;/u,
+  "Mobile SecureStore keys must use the stable native scheme instead of the display name.",
+);
+assert.doesNotMatch(
+  mobileAppConfig,
+  /storagePrefix:\s*commonConfig\.app\.name/u,
+  "A human-readable display name is not a valid SecureStore key prefix.",
+);
+
 const turbo = await readJson("turbo.json");
 assert.ok(
   turbo.tasks?.dev?.passThroughEnv?.includes("TANSTACK_DEVTOOLS_BUS_PORT"),

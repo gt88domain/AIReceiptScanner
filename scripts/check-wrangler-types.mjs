@@ -33,7 +33,19 @@ async function typesFor(name, config) {
 
 await execFileAsync(
   "pnpm",
-  ["--filter", "server", "exec", "wrangler", "types", "worker-configuration.d.ts", "--check"],
+  [
+    "--filter",
+    "server",
+    "exec",
+    "wrangler",
+    "types",
+    "worker-configuration.d.ts",
+    "--config",
+    "wrangler.jsonc",
+    "--env-interface",
+    "CloudflareBindings",
+    "--check",
+  ],
   { cwd: server },
 );
 
