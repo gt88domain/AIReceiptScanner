@@ -3,6 +3,13 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.1.2](https://github.com/gt88domain/easystarter-template/compare/v3.1.1...v3.1.2) (2026-09-01)
+
+
+### Bug Fixes
+
+* **template:** fetch history for downstream audit ([#130](https://github.com/gt88domain/easystarter-template/issues/130)) ([cf2400e](https://github.com/gt88domain/easystarter-template/commit/cf2400e79d6d36031acbbcc19ca9890173b63bb7))
+
 ## [3.1.1](https://github.com/gt88domain/easystarter-template/compare/v3.1.0...v3.1.1) (2026-09-01)
 
 
