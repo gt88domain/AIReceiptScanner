@@ -1,40 +1,43 @@
 # Mobile Quick Launch Walkthrough
 
-Step-by-step guide from fresh clone to working native build.
+This walkthrough takes the optional mobile package from a fresh clone to a
+native build connected to the API Worker. Mobile lives at `optional/mobile` and
+has its own dependency graph.
 
 ## Prerequisites
 
-Before starting, confirm you have:
+- Xcode or Android Studio for the target platform
+- Node.js and pnpm versions supported by the repository
+- Expo account; run `pnpm dlx eas-cli login` when cloud builds are needed
+- Apple Developer or Google Play account for store builds
+- A reachable API Worker for physical-device and cloud-build testing
 
-- [ ] Xcode installed (latest stable) with iOS simulator
-- [ ] Node.js 18+ and pnpm installed
-- [ ] EAS CLI installed: `npm install -g eas-cli`
-- [ ] Expo account: sign up at expo.dev and run `eas login`
-- [ ] Apple Developer account (for iOS builds and App Store submission)
-- [ ] Cloudflare account with Workers and D1 enabled (for server deployment)
-- [ ] Server already deployed (or ready to deploy with `pnpm deploy:server`)
+## 1. Enable and install mobile
 
-## Step 1: Install Dependencies
-
-From the repository root:
+Set `productConfig.common.features.mobile` to `true` in
+`packages/app-config/src/product-config.ts`, then install both workspaces:
 
 ```bash
 pnpm install
+pnpm --dir optional install
 ```
 
-## Step 2: Configure App Identity
+The first command installs the default Web/API workspace. The second installs
+the separate optional workspace; neither command replaces the other.
 
-Edit `apps/native/app.json` with your app's identity:
+## 2. Configure app identity
+
+Replace the placeholders in `optional/mobile/app.json`:
 
 ```json
 {
   "expo": {
-    "name": "YourAppName",
+    "name": "Your App Name",
     "slug": "your-app-slug",
     "scheme": "your-app-scheme",
     "ios": {
-      "bundleIdentifier": "com.yourcompany.yourapp",
-      "appleTeamId": "YOUR_TEAM_ID"
+      "appleTeamId": "YOUR_APPLE_TEAM_ID",
+      "bundleIdentifier": "com.yourcompany.yourapp"
     },
     "android": {
       "package": "com.yourcompany.yourapp"
@@ -43,140 +46,84 @@ Edit `apps/native/app.json` with your app's identity:
 }
 ```
 
-Then update `packages/app-config/src/app-config.ts` to match:
+Set the same scheme in `packages/app-config/src/app-config.ts` at
+`appConfig.native.app.nativeScheme`. When Apple sign-in is enabled, set the
+server's `APPLE_APP_BUNDLE_IDENTIFIER` to the iOS bundle identifier.
 
-```typescript
-native: {
-  app: {
-    name: "your-app-scheme",           // MUST match app.json scheme
-    nativeScheme: "your-app-scheme",   // MUST match app.json scheme
-  },
-},
-```
-
-And on the server side, ensure `APPLE_APP_BUNDLE_IDENTIFIER` matches `app.json` `ios.bundleIdentifier`.
-
-## Step 3: Link EAS Project
+## 3. Link the EAS project
 
 ```bash
-cd apps/native
-npx eas init
+cd optional/mobile
+pnpm dlx eas-cli init
 ```
 
-This writes `extra.eas.projectId` into `app.json`. Verify it was added.
+Verify that `optional/mobile/app.json` now contains the assigned EAS project ID
+and that `expo.updates.url` uses the same ID.
 
-## Step 4: Configure Environment Variables
+## 4. Configure environments
 
-Edit `apps/native/eas.json` and update env blocks for each build profile:
+Replace the `your-*` URLs and public provider identifiers in each required
+profile under `optional/mobile/eas.json`. For local Expo development, create the
+gitignored `optional/mobile/.env.development.local`:
 
-```json
-{
-  "build": {
-    "development": {
-      "env": {
-        "EXPO_PUBLIC_SERVER_API_URL": "https://your-server.example.com",
-        "EXPO_PUBLIC_WEB_APP_URL": "https://your-web-app.example.com",
-        "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY": "appl_YOUR_KEY",
-        "EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID": "pro",
-        "EXPO_PUBLIC_OPENPANEL_CLIENT_ID": "your-openpanel-client-id",
-        "EXPO_PUBLIC_OPENPANEL_CLIENT_SECRET": "your-openpanel-client-secret"
-      }
-    },
-    "preview": {
-      "env": { "..." : "same as development or your staging URLs" }
-    },
-    "production": {
-      "env": { "..." : "your production URLs and keys" }
-    }
-  }
-}
-```
-
-For local simulator development, create `apps/native/.env.development.local`:
-
-```
+```dotenv
 EXPO_PUBLIC_SERVER_API_URL=http://localhost:3001
 EXPO_PUBLIC_WEB_APP_URL=http://localhost:3000
 ```
 
-## Step 5: Deploy the Server
+Use HTTPS URLs reachable from the internet for physical devices and EAS builds.
+All `EXPO_PUBLIC_*` values are client-visible; never put server secrets there.
 
-The native app needs a running server. For production:
+## 5. Run locally
 
-```bash
-pnpm deploy:server
-```
-
-For local development, the dev command starts both:
+Use separate terminals so API and mobile failures remain easy to diagnose:
 
 ```bash
-pnpm dev:native+server
-```
-
-## Step 6: Create a Development Build
-
-Development builds include the Expo dev client for hot reloading:
-
-```bash
-# iOS simulator
-pnpm dev:native+server
-
-# Or build a dev client for physical device
-cd apps/native
-npx eas build --profile development --platform ios
-```
-
-## Step 7: Test on Physical Device
-
-Physical devices cannot reach `localhost`. Options:
-
-**Option A: Use deployed server**
-Set `EXPO_PUBLIC_SERVER_API_URL` in `.env.development.local` to your deployed server URL.
-
-**Option B: Use ngrok**
-```bash
-# Terminal 1: start server
+# Terminal 1, from the repository root
 pnpm dev:server
 
-# Terminal 2: expose with ngrok
-ngrok http 3001
-
-# Terminal 3: update .env.development.local with ngrok URL, then start native
-pnpm dev:native
+# Terminal 2, from the repository root
+pnpm mobile:dev
 ```
 
-Then run:
-```bash
-pnpm dev:ios-device+server
-```
-
-## Step 8: Production Build
-
-When ready for App Store:
+For a connected physical device:
 
 ```bash
-# Build
-pnpm -F native eas:build:ios:production
-
-# Submit
-pnpm -F native eas:submit:ios:production
+pnpm mobile:ios-device
+# or
+pnpm mobile:android-device
 ```
 
-## Step 9: OTA Updates
+A physical device cannot use your computer's `localhost`. Point
+`EXPO_PUBLIC_SERVER_API_URL` at a deployed API or an HTTPS tunnel.
 
-After the initial binary is on the App Store, push JS-only changes without a new build:
+## 6. Build and submit
+
+Only after identity, environment, authentication, and enabled purchases work:
 
 ```bash
-pnpm -F native eas:update:production
+pnpm mobile:eas:build:ios:production
+pnpm mobile:eas:build:android:production
+
+pnpm --dir optional --filter mobile run eas:submit:ios:production
+pnpm --dir optional --filter mobile run eas:submit:android:production
 ```
 
-## Post-Launch Checklist
+For a JavaScript-only update compatible with the installed runtime:
 
-- [ ] App identity in `app.json` matches your Apple Developer account
-- [ ] `app-config.ts` `nativeScheme` matches `app.json` `scheme`
-- [ ] `APPLE_APP_BUNDLE_IDENTIFIER` on server matches `app.json` `ios.bundleIdentifier`
-- [ ] All `eas.json` env blocks have correct production URLs
-- [ ] Server is deployed and reachable at `EXPO_PUBLIC_SERVER_API_URL`
-- [ ] At least one auth method works end-to-end
-- [ ] RevenueCat key set if payments are enabled
-- [ ] `pnpm check-types` passes
+```bash
+pnpm --dir optional --filter mobile run eas:update:production
+```
+
+## Recommended verification
+
+Run these only when automated verification was requested:
+
+```bash
+pnpm mobile:doctor
+pnpm mobile:check
+```
+
+Then manually verify one enabled authentication path against the target API. If
+native billing is enabled, also confirm that RevenueCat returns the exact
+product-owned catalog rather than template placeholders.

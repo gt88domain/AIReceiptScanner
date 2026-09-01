@@ -9,6 +9,17 @@ const execFileAsync = promisify(execFile);
 const root = resolve(import.meta.dirname, "..");
 const server = resolve(root, "apps/server");
 const temporaryDirectory = await mkdtemp(join(tmpdir(), "easystarter-wrangler-types-"));
+const serverPackage = JSON.parse(await readFile(resolve(server, "package.json"), "utf8"));
+const webPackage = JSON.parse(await readFile(resolve(root, "apps/web/package.json"), "utf8"));
+
+for (const [workspace, command] of [
+  ["server", serverPackage.scripts["cf-typegen:preview"]],
+  ["web", webPackage.scripts["cf-typegen:preview"]],
+]) {
+  assert.match(command, /wrangler\.preview\.jsonc/u, `${workspace} preview typegen needs its config`);
+  assert.match(command, /\.wrangler\/types\//u, `${workspace} preview types must stay isolated`);
+  assert.match(command, /--strict-vars=false/u, `${workspace} preview vars must not become literals`);
+}
 
 async function typesFor(name, config) {
   const output = join(temporaryDirectory, `${name}.d.ts`);

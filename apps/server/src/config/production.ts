@@ -65,6 +65,7 @@ export type ProductionConfigInput = {
     email: ResolvedEmailConfig;
     oauth: { github: boolean; google: boolean; apple: boolean };
     productionPriceIds: Array<{ label: string; production: string; test: string }>;
+    productionProductIds: Array<{ label: string; value: string }>;
   };
 };
 
@@ -620,6 +621,17 @@ export function validateProductionConfigResult(
           errors,
           "SAME_TEST_AND_PRODUCTION_PRICE",
           `${price.label} production price ID must differ from its test price ID.`,
+        );
+      }
+    }
+  }
+  if (features.native.billing || features.native.creditPurchases) {
+    for (const product of requirements.productionProductIds) {
+      if (isPlaceholderValue(product.value)) {
+        add(
+          errors,
+          "INVALID_PRODUCTION_PRODUCT_ID",
+          `${product.label} must replace the template placeholder with a production product ID.`,
         );
       }
     }

@@ -18,6 +18,7 @@
     "deploy:preview": "VITE_SERVER_URL=https://easystarter-template-server-preview.gt88hel.workers.dev VITE_APP_URL=https://easystarter-template-preview.gt88hel.workers.dev VITE_TURNSTILE_SITE_KEY='' VITE_TEMPLATE_PREVIEW=true pnpm run build && wrangler deploy --config wrangler.preview.jsonc",
     "preview:check": "node scripts/check-template-preview.mjs",
     "cf-typegen": "wrangler types",
+    "cf-typegen:preview": "wrangler types .wrangler/types/template-preview.d.ts --config wrangler.preview.jsonc --strict-vars=false",
     "blog:validate": "node ./scripts/validate-blog-content.mjs"
   },
   "dependencies": {

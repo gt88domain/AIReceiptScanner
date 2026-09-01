@@ -34,6 +34,7 @@ export const webConfig: WebConfig = {
   AppName: publicRuntime.appName,
   AppUrl: resolveAppUrl(),
   supportEmail: publicRuntime.supportEmail,
+  publicNavigation: publicRuntime.publicNavigation,
   adminEnabled: publicRuntime.features.admin,
   billingEnabled: publicRuntime.features.billing,
   creditsEnabled: publicRuntime.features.credits,

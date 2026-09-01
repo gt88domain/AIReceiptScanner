@@ -18,10 +18,10 @@ test("product policy and Backoffice Preview deny signup without disabling sign-i
     { backofficePreview: false, publicSignupEnabled: false },
     { backofficePreview: true, publicSignupEnabled: true },
   ]) {
-    assert.deepEqual(
-      resolveSignupPolicy({ ...input, emailPasswordEnabled: true }),
-      { emailPasswordEnabled: true, signupDisabled: true },
-    );
+    assert.deepEqual(resolveSignupPolicy({ ...input, emailPasswordEnabled: true }), {
+      emailPasswordEnabled: true,
+      signupDisabled: true,
+    });
   }
 });
 

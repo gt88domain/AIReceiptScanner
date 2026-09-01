@@ -5,7 +5,7 @@ export {
 } from "./app-config";
 export { publicRuntimeConfig, resolvePublicRuntimeConfig } from "./public-runtime";
 export { productConfig } from "./product-config";
-export type { PublicRuntimeConfig } from "./public-runtime";
+export type { PublicNavigationItem, PublicRuntimeConfig } from "./public-runtime";
 export { resolveEmailConfig } from "./email-config";
 export type { ResolvedEmailConfig } from "./email-config";
 export { resolveStorageConfig } from "./storage-config";

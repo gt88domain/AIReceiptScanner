@@ -14,9 +14,20 @@ async function expectResponse(url, options, expectedStatus) {
   return response;
 }
 
-const root = await expectResponse(`${webUrl}/`, undefined, 200);
+const root = await expectResponse(
+  `${webUrl}/`,
+  { headers: { Authorization: "Bearer must-not-reach-preview", Cookie: "session=blocked" } },
+  200,
+);
 if (!root.headers.get("content-type")?.includes("text/html")) {
   throw new Error("Template preview root did not return HTML");
+}
+if (root.headers.has("set-cookie")) {
+  throw new Error("Template preview returned a session cookie");
+}
+const rootHtml = await root.text();
+if (/©\s*1970\b/.test(rootHtml)) {
+  throw new Error("Template preview Footer rendered the Worker epoch year");
 }
 
 const robots = await expectResponse(`${webUrl}/robots.txt`, undefined, 200);
@@ -26,6 +37,9 @@ if ((await robots.text()) !== "User-agent: *\nDisallow: /\n") {
 
 await expectResponse(`${webUrl}/sitemap.xml`, undefined, 404);
 await expectResponse(`${webUrl}/does-not-exist`, undefined, 404);
+await expectResponse(`${webUrl}/auth/sign-in`, undefined, 404);
+await expectResponse(`${webUrl}/dashboard`, undefined, 404);
+await expectResponse(`${webUrl}/blogger`, undefined, 404);
 
 // The dev-only gallery is exposed on the preview build via VITE_TEMPLATE_PREVIEW=true.
 await expectResponse(`${webUrl}/design-system`, undefined, 200);

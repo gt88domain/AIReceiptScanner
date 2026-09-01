@@ -63,8 +63,8 @@ export const productConfig = {
       amount: 100,
       web: {
         provider: "stripe",
-        test: { providerPriceId: "price_1TciCP4uQgMehpGv3EK50HN9" },
-        prod: { providerPriceId: "price_1TciCP4uQgMehpGv3EK50HN9" },
+        test: { providerPriceId: "replace-with-stripe-test-starter-credits-price-id" },
+        prod: { providerPriceId: "replace-with-stripe-live-starter-credits-price-id" },
         currency: "usd",
         amountCents: 499,
         status: "active",
@@ -75,8 +75,8 @@ export const productConfig = {
       amount: 500,
       web: {
         provider: "stripe",
-        test: { providerPriceId: "price_1TciCw4uQgMehpGvxyfhVKud" },
-        prod: { providerPriceId: "price_1TciCw4uQgMehpGvxyfhVKud" },
+        test: { providerPriceId: "replace-with-stripe-test-growth-credits-price-id" },
+        prod: { providerPriceId: "replace-with-stripe-live-growth-credits-price-id" },
         currency: "usd",
         amountCents: 1999,
         status: "active",
@@ -90,14 +90,14 @@ export const productConfig = {
       native: {
         ios: {
           provider: "revenuecat",
-          providerProductId: "tanstack_template_credits_starter_ios",
+          providerProductId: "replace-with-revenuecat-ios-starter-credits-product-id",
           currency: "usd",
           amountCents: 499,
           status: "active",
         },
         android: {
           provider: "revenuecat",
-          providerProductId: "tanstack_template_credits_starter_android",
+          providerProductId: "replace-with-revenuecat-android-starter-credits-product-id",
           currency: "usd",
           amountCents: 499,
           status: "active",
@@ -110,14 +110,14 @@ export const productConfig = {
       native: {
         ios: {
           provider: "revenuecat",
-          providerProductId: "tanstack_template_credits_growth_ios",
+          providerProductId: "replace-with-revenuecat-ios-growth-credits-product-id",
           currency: "usd",
           amountCents: 1999,
           status: "active",
         },
         android: {
           provider: "revenuecat",
-          providerProductId: "tanstack_template_credits_growth_android",
+          providerProductId: "replace-with-revenuecat-android-growth-credits-product-id",
           currency: "usd",
           amountCents: 1999,
           status: "active",

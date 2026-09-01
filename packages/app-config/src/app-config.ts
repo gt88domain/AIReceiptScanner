@@ -70,10 +70,10 @@ const appConfig: AppConfig = {
               id: "monthly",
               provider: "stripe",
               test: {
-                providerPriceId: "price_1SwIdZ4uQgMehpGvGlktz1NL",
+                providerPriceId: "replace-with-stripe-test-pro-monthly-price-id",
               },
               prod: {
-                providerPriceId: "price_1SwIdZ4uQgMehpGvGlktz1NL",
+                providerPriceId: "replace-with-stripe-live-pro-monthly-price-id",
               },
               currency: "usd",
               amountCents: 1000,
@@ -86,10 +86,10 @@ const appConfig: AppConfig = {
               id: "yearly",
               provider: "stripe",
               test: {
-                providerPriceId: "price_1SwIg44uQgMehpGvlW6FVytH",
+                providerPriceId: "replace-with-stripe-test-pro-yearly-price-id",
               },
               prod: {
-                providerPriceId: "price_1SwIg44uQgMehpGvlW6FVytH",
+                providerPriceId: "replace-with-stripe-live-pro-yearly-price-id",
               },
               currency: "usd",
               amountCents: 10000,
@@ -108,10 +108,10 @@ const appConfig: AppConfig = {
               id: "lifetime",
               provider: "stripe",
               test: {
-                providerPriceId: "price_1SwIgs4uQgMehpGvFYBteVsk",
+                providerPriceId: "replace-with-stripe-test-lifetime-price-id",
               },
               prod: {
-                providerPriceId: "price_1SwIgs4uQgMehpGvFYBteVsk",
+                providerPriceId: "replace-with-stripe-live-lifetime-price-id",
               },
               currency: "usd",
               amountCents: 200000,
@@ -171,7 +171,7 @@ const appConfig: AppConfig = {
                 // Monthly iOS subscription product.
                 id: "monthly",
                 provider: "revenuecat",
-                providerPriceId: "tanstack_template_native_10_1m",
+                providerPriceId: "replace-with-revenuecat-ios-pro-monthly-product-id",
                 currency: "usd",
                 amountCents: 1000,
                 priceType: "subscription",
@@ -182,7 +182,7 @@ const appConfig: AppConfig = {
                 // Yearly iOS subscription product.
                 id: "yearly",
                 provider: "revenuecat",
-                providerPriceId: "tanstack_template_native_100_1y",
+                providerPriceId: "replace-with-revenuecat-ios-pro-yearly-product-id",
                 currency: "usd",
                 amountCents: 10000,
                 priceType: "subscription",
@@ -199,7 +199,7 @@ const appConfig: AppConfig = {
                 // Lifetime iOS product.
                 id: "lifetime",
                 provider: "revenuecat",
-                providerPriceId: "tanstack_template_native_299_lifetime",
+                providerPriceId: "replace-with-revenuecat-ios-lifetime-product-id",
                 currency: "usd",
                 amountCents: 299,
                 priceType: "lifetime",
@@ -220,7 +220,7 @@ const appConfig: AppConfig = {
                 // Monthly Android subscription product.
                 id: "monthly",
                 provider: "revenuecat",
-                providerPriceId: "pro_monthly_android",
+                providerPriceId: "replace-with-revenuecat-android-pro-monthly-product-id",
                 currency: "usd",
                 amountCents: 800,
                 priceType: "subscription",
@@ -231,7 +231,7 @@ const appConfig: AppConfig = {
                 // Yearly Android subscription product.
                 id: "yearly",
                 provider: "revenuecat",
-                providerPriceId: "pro_yearly_android",
+                providerPriceId: "replace-with-revenuecat-android-pro-yearly-product-id",
                 currency: "usd",
                 amountCents: 8000,
                 priceType: "subscription",

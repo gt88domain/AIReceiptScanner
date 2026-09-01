@@ -4,6 +4,12 @@ import path from "node:path";
 const root = process.cwd();
 const facts = JSON.parse(await readFile(path.join(root, "template-kit/repository-facts.json"), "utf8"));
 const packageJson = JSON.parse(await readFile(path.join(root, "package.json"), "utf8"));
+const templateVersion = JSON.parse(
+  await readFile(path.join(root, "template-version.json"), "utf8"),
+);
+const recommendedBaseline = JSON.parse(
+  await readFile(path.join(root, "template-kit/recommended-baseline.json"), "utf8"),
+);
 const workspace = await readFile(path.join(root, "pnpm-workspace.yaml"), "utf8");
 const serverWrangler = await readFile(path.join(root, "apps/server/wrangler.jsonc"), "utf8");
 const webWrangler = await readFile(path.join(root, "apps/web/wrangler.jsonc"), "utf8");
@@ -13,6 +19,13 @@ const errors = [];
 
 if (packageJson.packageManager !== facts.packageManager) {
   errors.push(`packageManager must be ${facts.packageManager}.`);
+}
+
+if (recommendedBaseline.upstream?.release !== `v${templateVersion.version}`) {
+  errors.push("Recommended baseline release must match the current stable template version.");
+}
+if (!/^[0-9a-f]{40}$/u.test(recommendedBaseline.upstream?.commit ?? "")) {
+  errors.push("Recommended baseline commit must be a full Git SHA.");
 }
 
 for (const workspacePattern of facts.workspacePatterns) {
@@ -115,6 +128,16 @@ for (const guidanceFile of facts.guidanceFiles) {
   }
   if (guidance.includes("There is no root `test` script")) {
     errors.push(`${guidanceFile} incorrectly says the root test script does not exist.`);
+  }
+}
+
+for (const guidanceFile of facts.mobileGuidanceFiles ?? []) {
+  const guidance = await readFile(path.join(root, guidanceFile), "utf8");
+  for (const required of [facts.applications.mobile, "pnpm --dir optional install", "pnpm mobile:dev"]) {
+    if (!guidance.includes(required)) errors.push(`${guidanceFile} must mention ${required}.`);
+  }
+  for (const retired of ["apps/native", "pnpm -F native", "dev:native"]) {
+    if (guidance.includes(retired)) errors.push(`${guidanceFile} still references retired mobile guidance: ${retired}.`);
   }
 }
 

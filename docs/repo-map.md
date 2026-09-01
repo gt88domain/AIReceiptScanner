@@ -25,7 +25,7 @@ available; browser and mobile clients use HTTPS oRPC.
 | --- | --- | --- |
 | Product identity, auth choices, email, storage, credit packages | `packages/app-config/src/product-config.ts` and product-owned sibling files | `docs/config-architecture.md` |
 | Public feature switches, routes, theme preset | `packages/app-config/src/public-runtime.ts` | `packages/app-config/src/features.ts` |
-| Starter landing page and public navigation | `apps/web/src/components/landing-page`, `apps/web/src/components/layout/tailark` | `apps/web/src/routes/_public`, semantic skin tokens in `styles/index.css` |
+| Starter landing page and public navigation | `apps/web/src/components/landing-page`, `apps/web/src/components/layout/tailark` | `_public/route.tsx` owns the single Header/Footer shell; semantic skin tokens live in `styles/index.css` |
 | Product listing, ranking, or detail page | `apps/web/src/components/listing`, `apps/web/src/components/public` | `docs/golden-paths/directory.md`; product owns data, URLs, SEO, and copy |
 | Inspect shared public components | Dev/preview-only `/design-system` route | `apps/web/src/components/design-system`, `wrangler.preview.jsonc`; production returns 404 |
 | Membership tiers and presentation semantics | `packages/app-config/src/membership-config.ts` | `apps/server/src/payments/domain/policy.ts` |
@@ -42,10 +42,11 @@ available; browser and mobile clients use HTTPS oRPC.
 | Admin-only operation | Server admin procedure + standard guard | `docs/admin-access.md`, audit service when mutation is material |
 | Public copy or translations | `packages/i18n/src/messages/<surface>` | `docs/i18n-implementation.md` |
 | Blog/docs content | `apps/web/content` | Content README in the matching directory |
+| Sitemap/gallery build verification | `apps/web/content-surface.profile.json` | `scripts/check-content-surface.mjs`; runtime sitemap output needs a product-owned live check |
 | Production configuration | both `wrangler.jsonc` files, `.production-safety.env`, and the secret-rotation path | `docs/production-configuration.md` |
-| Template design preview | `apps/web` and `apps/server` preview Wrangler configs | `deploy:preview` / `preview:check`; never reuse preview identities downstream |
+| Template design preview | `apps/web/template-preview-worker.mjs` and both preview Wrangler configs | Build-output wrapper; anonymous public-route allowlist; `deploy:preview` / `preview:check`; never reuse preview identities downstream |
 | Optional Expo app | `optional/mobile` | `docs/mobile-package.md` and mobile runbooks |
-| Upstream template change | Path classified by `GOVERNANCE.md` | current audit, architecture boundaries, focused PR |
+| Upstream template change | Path classified by `GOVERNANCE.md` | latest relevant dated audit, live configuration, architecture boundaries, focused PR |
 
 ## Server request path
 
@@ -70,6 +71,7 @@ technical infrastructure; neither is a product-business-logic directory.
 | Workspace layout, runtimes, import rules | `template-kit/repository-facts.json` |
 | Root commands | root `package.json` |
 | Product configuration | product-owned files under `packages/app-config/src` |
+| Web content-surface verification shape | `apps/web/content-surface.profile.json` |
 | Resolved feature dependencies | `packages/app-config/src/features.ts` |
 | Physical runtime composition | `packages/app-config/src/platform-composition.ts` |
 | API surface | `apps/server/src/routers/runtime-router.ts` and registered Hono routes |

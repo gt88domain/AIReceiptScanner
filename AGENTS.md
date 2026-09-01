@@ -13,7 +13,9 @@ Before editing, classify the request:
   file and the closest module README.
 - Reusable template/platform: before changing auth, payments, credits, Jobs,
   storage, DB lifecycle, packages, or CI, read `GOVERNANCE.md`,
-  `docs/architecture-boundaries.md`, and the current baseline audit.
+  `docs/architecture-boundaries.md`, and the latest relevant dated audit.
+  Audits are historical evidence; verify current facts in executable
+  configuration.
 - Existing-app/provider migration: create `docs/migration/00-audit.md` through
   `05-cutover.md` in their documented order before feature code.
 - Production operation: read the relevant runbook and require explicit user

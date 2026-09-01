@@ -29,6 +29,7 @@ export const Header = () => {
 
   const menuItems = React.useMemo<MenuItem[]>(
     () => [
+      ...webConfig.publicNavigation.map(({ label, href }) => ({ name: label, href })),
       ...(webConfig.blogPublic ? [{ name: t("menu.blog"), to: "/blog" }] : []),
       ...(webConfig.contactFormEnabled ? [{ name: t("menu.contact"), to: "/contact" }] : []),
       ...(webConfig.docsPublic ? [{ name: t("menu.docs"), href: "/docs" }] : []),

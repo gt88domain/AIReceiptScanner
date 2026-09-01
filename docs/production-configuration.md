@@ -16,11 +16,18 @@ For Server local development use `apps/server/.dev.vars` (Wrangler loads it dire
 
 ## Setup
 
-1. Replace every `replace-*`, `*.example`, and all-zero D1 value in both `wrangler.jsonc` files with one production target.
+1. Replace every `replace-*`, `*.example`, and all-zero D1 value in both
+   `wrangler.jsonc` files and the enabled payment catalogs under
+   `packages/app-config/src` with one production target.
 2. Create the D1 database, R2 bucket, job queue, and DLQ named by the API Worker configuration. The Queue consumer must point to that DLQ.
 3. Create `apps/server/.production-safety.env` from its example and give it exactly the same Worker and host values as the Worker configurations. Create `apps/server/.env.production` only on the machine that rotates secrets.
 4. Set runtime secrets in `apps/server/.env.production`. `ADMIN_EMAILS` and `BETTER_AUTH_SECRET` are always required. `EMAIL_FROM` is the verified production sender used by Resend.
-5. If app configuration enables a payment provider or OAuth provider, supply its production secrets and client identifiers. Stripe needs an `sk_live_` secret and distinct, non-test production price IDs.
+5. If app configuration enables a payment provider or OAuth provider, supply
+   its production secrets and client identifiers. Stripe needs an `sk_live_`
+   secret and distinct, non-test production price IDs. Enabled native billing
+   and credit purchases need product-owned RevenueCat IDs in
+   `app-config.ts` and `product-config.ts`; preflight errors name the unresolved
+   path.
 6. To challenge Contact and Newsletter submissions, set both `VITE_TURNSTILE_SITE_KEY` in the Web Worker/public build config and `TURNSTILE_SECRET_KEY` in the Server Worker secrets. The preflight rejects either value on its own.
 7. Run `pnpm verify:production-config`; only then upload secrets and deploy.
 
@@ -87,6 +94,7 @@ as warnings so removals remain deliberate.
 - All-zero or malformed D1 IDs, template queue/bucket/Worker names, and missing DLQ consumers.
 - Web/API public URL disagreement or an `API_SERVICE` that does not target the configured API Worker.
 - Stripe test secrets, test/placeholder production prices, and equal test/production Stripe price IDs.
+- Template RevenueCat product IDs when native billing or native credit purchases are enabled.
 - A production Resend sender on a placeholder or local domain.
 
 The identity checks are intentionally local: CI exercises their failure cases

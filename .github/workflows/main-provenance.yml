@@ -27,8 +27,6 @@ jobs:
               ...context.repo,
               commit_sha: sha,
             });
-            if (pulls.some((pull) => pull.merged_at)) return;
-
             const shortSha = sha.slice(0, 7);
             const title = `warning: unprovenanced main push ${shortSha}`;
             const { data: issues } = await github.rest.issues.listForRepo({
@@ -37,7 +35,26 @@ jobs:
               labels: "main-provenance-warning",
               per_page: 100,
             });
-            if (issues.some((issue) => issue.title === title)) return;
+            const warning = issues.find((issue) => issue.title === title);
+            const mergedPulls = pulls.filter((pull) => pull.merged_at);
+            if (mergedPulls.length > 0) {
+              if (!warning) return;
+              const pullLinks = mergedPulls.map((pull) => `#${pull.number}`).join(", ");
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: warning.number,
+                body: `Reconciled: GitHub now associates this commit with merged PR ${pullLinks}. Closing the stale provenance warning.`,
+              });
+              await github.rest.issues.update({
+                ...context.repo,
+                issue_number: warning.number,
+                state: "closed",
+                state_reason: "completed",
+              });
+              return;
+            }
+
+            if (warning) return;
 
             const { data: commit } = await github.rest.repos.getCommit({
               ...context.repo,

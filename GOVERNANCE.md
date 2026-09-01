@@ -27,8 +27,10 @@ contracts, but do not change core semantics or embed product conditions in core.
 
 ## Required change process
 
-1. Read the [baseline audit](docs/audits/upstream-governance-baseline.md) and
-   [architecture boundaries](docs/architecture-boundaries.md).
+1. Read the [dated baseline audit](docs/audits/upstream-governance-baseline.md)
+   as historical evidence and the
+   [architecture boundaries](docs/architecture-boundaries.md). Verify current
+   facts against executable configuration before editing.
 2. Identify the ownership class. Prefer a product module or existing static
    extension point before editing core.
 3. Give each core or public-contract change a focused PR, tests, and an ADR

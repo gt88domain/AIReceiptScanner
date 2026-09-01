@@ -54,11 +54,18 @@ For change routing and critical flows, use
 | `pnpm --filter server db:migrate:local`     | Apply migrations to local D1          |
 | `pnpm --filter server db:studio:local`      | Open Drizzle Studio for local D1      |
 | `pnpm --filter server email-preview`        | Preview React Email templates         |
+| `pnpm --filter server cf-typegen`           | Refresh production Worker bindings    |
+| `pnpm --filter server cf-typegen:preview`   | Inspect isolated preview bindings     |
 | `pnpm --filter server preflight:production` | Validate the production target        |
 | `pnpm --filter server deploy`               | Preflight, then deploy the API Worker |
 
 Do not invoke raw `wrangler deploy`; it bypasses the fail-closed preflight.
 Use `deploy:preview` only for the checked-in preview configuration.
+
+Preview type generation writes under ignored `.wrangler/types` and disables
+literal variable types. It must not overwrite the committed production
+`worker-configuration.d.ts`, whose declarations are included by the Server
+TypeScript project.
 
 ## Production configuration
 
