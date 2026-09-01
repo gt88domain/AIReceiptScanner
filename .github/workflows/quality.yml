@@ -36,6 +36,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Downstream adoption checks verify that a recorded release commit is
+          # an ancestor of HEAD. The default shallow checkout cannot see it.
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
         with:
           version: 11.13.1
