@@ -70,4 +70,4 @@ Tests are authored only after Phase 3 passes.
 - Core-goal review: passed
 - Test authoring: complete
 - Test execution: passed
-- Release: pending
+- Release: complete (`v3.1.1`)
