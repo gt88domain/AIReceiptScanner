@@ -3,6 +3,13 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.1.1](https://github.com/gt88domain/easystarter-template/compare/v3.1.0...v3.1.1) (2026-09-01)
+
+
+### Bug Fixes
+
+* **template:** unblock default startup checks ([#127](https://github.com/gt88domain/easystarter-template/issues/127)) ([1983aaf](https://github.com/gt88domain/easystarter-template/commit/1983aafe777cdb67932c56ceb244be9bd2c6799e))
+
 ## [3.1.0](https://github.com/gt88domain/easystarter-template/compare/v3.0.2...v3.1.0) (2026-09-01)
 
 
