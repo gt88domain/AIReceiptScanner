@@ -2,11 +2,10 @@ import { access, readFile } from "node:fs/promises";
 import path from "node:path";
 
 const root = process.cwd();
-const facts = JSON.parse(await readFile(path.join(root, "template-kit/repository-facts.json"), "utf8"));
-const packageJson = JSON.parse(await readFile(path.join(root, "package.json"), "utf8"));
-const templateVersion = JSON.parse(
-  await readFile(path.join(root, "template-version.json"), "utf8"),
+const facts = JSON.parse(
+  await readFile(path.join(root, "template-kit/repository-facts.json"), "utf8"),
 );
+const packageJson = JSON.parse(await readFile(path.join(root, "package.json"), "utf8"));
 const recommendedBaseline = JSON.parse(
   await readFile(path.join(root, "template-kit/recommended-baseline.json"), "utf8"),
 );
@@ -21,8 +20,8 @@ if (packageJson.packageManager !== facts.packageManager) {
   errors.push(`packageManager must be ${facts.packageManager}.`);
 }
 
-if (recommendedBaseline.upstream?.release !== `v${templateVersion.version}`) {
-  errors.push("Recommended baseline release must match the current stable template version.");
+if (!/^v\d+\.\d+\.\d+$/u.test(recommendedBaseline.upstream?.release ?? "")) {
+  errors.push("Recommended baseline release must be a semantic release tag.");
 }
 if (!/^[0-9a-f]{40}$/u.test(recommendedBaseline.upstream?.commit ?? "")) {
   errors.push("Recommended baseline commit must be a full Git SHA.");
@@ -36,15 +35,19 @@ for (const workspacePattern of facts.workspacePatterns) {
 
 for (const [name, directory] of Object.entries(facts.applications)) {
   if (typeof directory !== "string") continue;
-  await access(path.join(root, directory)).catch(() => errors.push(`Missing application directory: ${name} (${directory}).`));
+  await access(path.join(root, directory)).catch(() =>
+    errors.push(`Missing application directory: ${name} (${directory}).`),
+  );
 }
 
 for (const script of facts.requiredRootScripts) {
-  if (!packageJson.scripts?.[script]) errors.push(`Root package.json is missing script: ${script}.`);
+  if (!packageJson.scripts?.[script])
+    errors.push(`Root package.json is missing script: ${script}.`);
 }
 
 for (const script of facts.optionalRootScripts ?? []) {
-  if (!packageJson.scripts?.[script]) errors.push(`Root package.json is missing optional script: ${script}.`);
+  if (!packageJson.scripts?.[script])
+    errors.push(`Root package.json is missing optional script: ${script}.`);
 }
 
 const applicationNames = Object.entries(facts.applications)
@@ -62,7 +65,11 @@ if (!Array.isArray(boundaryRules) || boundaryRules.length === 0) {
   errors.push("Governance must define at least one architecture boundary rule.");
 } else {
   for (const rule of boundaryRules) {
-    if (!rule.id || !Array.isArray(rule.directories) || !Array.isArray(rule.forbiddenImportPatterns)) {
+    if (
+      !rule.id ||
+      !Array.isArray(rule.directories) ||
+      !Array.isArray(rule.forbiddenImportPatterns)
+    ) {
       errors.push("Each architecture boundary rule needs an id, directories, and import patterns.");
       continue;
     }
@@ -78,14 +85,16 @@ const coreRoots = facts.governance?.coreRoots ?? [];
 const platformRoots = facts.governance?.platformModuleRoots ?? [];
 const productRoots = facts.governance?.productRoots ?? [];
 const declaredOverlaps = facts.governance?.declaredOverlaps ?? [];
-const overlaps = (left, right) => left === right || left.startsWith(`${right}/`) || right.startsWith(`${left}/`);
+const overlaps = (left, right) =>
+  left === right || left.startsWith(`${right}/`) || right.startsWith(`${left}/`);
 for (const [leftName, leftRoots, rightName, rightRoots] of [
   ["core", coreRoots, "platform", platformRoots],
   ["core", coreRoots, "product", productRoots],
 ]) {
   for (const left of leftRoots) {
     for (const right of rightRoots) {
-      if (overlaps(left, right)) errors.push(`${leftName} root ${left} overlaps ${rightName} root ${right}.`);
+      if (overlaps(left, right))
+        errors.push(`${leftName} root ${left} overlaps ${rightName} root ${right}.`);
     }
   }
 }
@@ -102,7 +111,8 @@ for (const platformRoot of platformRoots) {
 }
 
 for (const name of optionalApplications) {
-  if (defaultApplications.includes(name)) errors.push(`${name} cannot be both default and optional.`);
+  if (defaultApplications.includes(name))
+    errors.push(`${name} cannot be both default and optional.`);
   const directory = facts.applications[name];
   if (typeof directory === "string" && packageJson.workspaces?.includes(directory)) {
     errors.push(`${name} is optional but remains in the root workspace.`);
@@ -133,11 +143,16 @@ for (const guidanceFile of facts.guidanceFiles) {
 
 for (const guidanceFile of facts.mobileGuidanceFiles ?? []) {
   const guidance = await readFile(path.join(root, guidanceFile), "utf8");
-  for (const required of [facts.applications.mobile, "pnpm --dir optional install", "pnpm mobile:dev"]) {
+  for (const required of [
+    facts.applications.mobile,
+    "pnpm --dir optional install",
+    "pnpm mobile:dev",
+  ]) {
     if (!guidance.includes(required)) errors.push(`${guidanceFile} must mention ${required}.`);
   }
   for (const retired of ["apps/native", "pnpm -F native", "dev:native"]) {
-    if (guidance.includes(retired)) errors.push(`${guidanceFile} still references retired mobile guidance: ${retired}.`);
+    if (guidance.includes(retired))
+      errors.push(`${guidanceFile} still references retired mobile guidance: ${retired}.`);
   }
 }
 

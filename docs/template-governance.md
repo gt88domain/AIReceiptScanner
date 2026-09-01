@@ -51,6 +51,13 @@ architecture or contract change. Release Please creates the release PR, updates
 Every architectural change records its reason in an ADR and uses a Conventional
 Commit so the release level is explicit.
 
+`template-kit/recommended-baseline.json` points to the latest released commit
+that has been reviewed for downstream adoption. It can legitimately lag the
+prospective version inside a generated Release Please PR because that release
+commit and tag do not exist yet. Update the baseline after the tag exists; the
+facts checker validates its tag and full-SHA shape without creating a circular
+release dependency.
+
 ## Merge gate
 
 For this single-maintainer template, every ready (non-Draft) PR is squash merged
