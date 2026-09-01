@@ -3,6 +3,19 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.1.0](https://github.com/gt88domain/easystarter-template/compare/v3.0.2...v3.1.0) (2026-09-01)
+
+
+### Features
+
+* **template:** harden downstream adoption ([#123](https://github.com/gt88domain/easystarter-template/issues/123)) ([19b88d7](https://github.com/gt88domain/easystarter-template/commit/19b88d7624ad2147e796911b666c39dd43cafdfb))
+
+
+### Bug Fixes
+
+* **auth:** enforce public signup policy ([#122](https://github.com/gt88domain/easystarter-template/issues/122)) ([e1bff86](https://github.com/gt88domain/easystarter-template/commit/e1bff868a9546ac864128a423071a18fecc2b216))
+* **release:** allow baseline to lag release PR ([#125](https://github.com/gt88domain/easystarter-template/issues/125)) ([5df223b](https://github.com/gt88domain/easystarter-template/commit/5df223ba043e036329ee3467cfbbdca71eb88390))
+
 ## [3.0.2](https://github.com/gt88domain/easystarter-template/compare/v3.0.1...v3.0.2) (2026-08-29)
 
 
