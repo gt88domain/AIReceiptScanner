@@ -32,3 +32,4 @@ the standard Quality workflow.
 - Test authoring: covered by the existing end-to-end modification audit.
 - Test execution: passed — Quality, build, static, and OSV checks passed on
   PR #130.
+- Release: complete (`v3.1.2`).

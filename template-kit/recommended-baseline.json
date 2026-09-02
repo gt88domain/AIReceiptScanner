@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "upstream": {
     "repository": "https://github.com/gt88domain/easystarter-template",
-    "release": "v3.1.1",
-    "commit": "792afe043001073846bfccf152db62fc09d47557"
+    "release": "v3.1.2",
+    "commit": "06123b417d010ae40e617d891e79210bdea19f18"
   },
   "adoption": {
     "mode": "manual",
