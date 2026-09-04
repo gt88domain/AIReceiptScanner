@@ -4,10 +4,8 @@ import type { Database } from "@/db";
 import { billingEvent } from "@/db/schema/payments";
 import { logSafeError } from "@/lib/safe-error";
 import { getPaymentProvider } from "../providers";
-import { handleCreemEvent } from "../providers/creem/webhook/handle-event";
 import { handleRevenueCatEvent } from "../providers/revenuecat/webhook/handle-event";
 import { handleStripeEvent } from "../providers/stripe/webhook/handle-event";
-import { handleWaffoEvent } from "../providers/waffo/webhook/handle-event";
 import { claimWebhookEvent, releaseWebhookEventClaim } from "./webhook-observability";
 import type { HandleWebhookInput } from "./types";
 
@@ -83,12 +81,6 @@ async function dispatchWebhookPayload(
   switch (provider) {
     case "stripe":
       await handleStripeEvent(db, payload);
-      break;
-    case "creem":
-      await handleCreemEvent(db, payload);
-      break;
-    case "waffo":
-      await handleWaffoEvent(db, payload);
       break;
     case "revenuecat":
       await handleRevenueCatEvent(db, payload);

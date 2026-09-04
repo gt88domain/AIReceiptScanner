@@ -4,7 +4,7 @@ import type { DeepPartial } from "@repo/shared";
 export const SUPPORTED_EMAIL_PROVIDERS = ["none", "resend"] as const;
 
 /** Supported web payment providers available in app configuration. */
-export const SUPPORTED_WEB_PAYMENT_PROVIDERS = ["stripe", "creem", "waffo"] as const;
+export const SUPPORTED_WEB_PAYMENT_PROVIDERS = ["stripe"] as const;
 
 /** Supported native payment providers available in app configuration. */
 export const SUPPORTED_NATIVE_PAYMENT_PROVIDERS = ["revenuecat"] as const;

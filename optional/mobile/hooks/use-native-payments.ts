@@ -32,8 +32,8 @@ type NativePaymentsState = {
 
 /** Normalized shape of the server-side billing status used for entitlement reconciliation. */
 type ServerBillingStatusLike = {
-  /** Payment provider: Stripe or Creem (web), RevenueCat (native), or null if none */
-  billingProvider: "stripe" | "creem" | "revenuecat" | null;
+  /** Payment provider: Stripe (web), RevenueCat (native), or null if none */
+  billingProvider: "stripe" | "revenuecat" | null;
   /** Whether the user can access a billing management portal */
   canManageBilling: boolean;
   /** Current entitlement tier and source as determined by the server */

@@ -48,7 +48,6 @@
     "@repo/app-config": "workspace:*",
     "@repo/i18n": "workspace:*",
     "@repo/shared": "workspace:*",
-    "@waffo/pancake-ts": "0.11.0",
     "better-auth": "1.6.26",
     "better-auth-localization": "^3.0.0",
     "dotenv": "^17.4.2",

@@ -701,28 +701,6 @@ function selfCheck() {
       ({ code }) => code !== "INVALID_ENVIRONMENT",
     ),
   );
-  // Waffo presence must include WAFFO_ENVIRONMENT (missing silently means test mode).
-  const waffoInput: ProductionConfigInput = {
-    ...validInput,
-    productionEnv: undefined,
-    requirements: {
-      ...validInput.requirements,
-      paymentProviders: new Set(["waffo"]),
-      productionPriceIds: [],
-      productionProductIds: [],
-    },
-  };
-  const waffoRequired = listRequiredSecrets(waffoInput);
-  assert.ok(waffoRequired.includes("WAFFO_ENVIRONMENT"));
-  assert.match(
-    validateProductionConfigResult({
-      ...waffoInput,
-      liveSecrets: waffoRequired.filter((n) => n !== "WAFFO_ENVIRONMENT"),
-    })
-      .errors.map(({ code }) => code)
-      .join("\n"),
-    /MISSING_LIVE_SECRET/,
-  );
 }
 
 if (process.argv.includes("--self-check")) {

@@ -11,15 +11,11 @@ import type { ServerRuntimeConfig } from "./runtime-config";
 type ServerRuntimeEnv = {
   ADMIN_EMAILS?: unknown;
   BETTER_AUTH_SECRET?: unknown;
-  CREEM_API_KEY?: unknown;
-  CREEM_WEBHOOK_SECRET?: unknown;
   REVENUECAT_WEBHOOK_SECRET?: unknown;
   RESEND_API_KEY?: unknown;
   STORAGE?: unknown;
   STRIPE_SECRET_KEY?: unknown;
   STRIPE_WEBHOOK_SECRET?: unknown;
-  WAFFO_MERCHANT_ID?: unknown;
-  WAFFO_PRIVATE_KEY?: unknown;
 };
 
 const requiredString = z.string().trim().min(1);
@@ -35,19 +31,9 @@ function requireValue(env: ServerRuntimeEnv, name: keyof ServerRuntimeEnv, missi
 
 function validateWebBillingEnvironment(env: ServerRuntimeEnv, missing: string[]) {
   const provider = resolveWebCommonConfig().payments?.provider;
-  switch (provider) {
-    case "stripe":
-      requireValue(env, "STRIPE_SECRET_KEY", missing);
-      requireValue(env, "STRIPE_WEBHOOK_SECRET", missing);
-      return;
-    case "creem":
-      requireValue(env, "CREEM_API_KEY", missing);
-      requireValue(env, "CREEM_WEBHOOK_SECRET", missing);
-      return;
-    case "waffo":
-      requireValue(env, "WAFFO_MERCHANT_ID", missing);
-      requireValue(env, "WAFFO_PRIVATE_KEY", missing);
-      return;
+  if (provider === "stripe") {
+    requireValue(env, "STRIPE_SECRET_KEY", missing);
+    requireValue(env, "STRIPE_WEBHOOK_SECRET", missing);
   }
 }
 

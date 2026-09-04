@@ -18,8 +18,6 @@ export function registerBillingRoutes(app: ServerApp, runtimeConfig: ServerRunti
   );
   for (const [path, provider, header] of [
     ["/api/webhooks/stripe", "stripe", "stripe-signature"],
-    ["/api/webhooks/creem", "creem", "creem-signature"],
-    ["/api/webhooks/waffo", "waffo", "x-waffo-signature"],
   ] as const) {
     if (!providers.has(provider)) continue;
     app.post(path, async (c) => {

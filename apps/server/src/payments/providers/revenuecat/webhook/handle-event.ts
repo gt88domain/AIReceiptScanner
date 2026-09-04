@@ -356,5 +356,4 @@ export async function handleRevenueCatEvent(db: Database, payload: unknown) {
   if (applied) {
     await reconcileActivatedPriceWithExistingSubscriptions(db, { userId }, mappedPrice.price.id);
   }
-  await reconcileActivatedPriceWithExistingSubscriptions(db, { userId }, mappedPrice.price.id);
 }
