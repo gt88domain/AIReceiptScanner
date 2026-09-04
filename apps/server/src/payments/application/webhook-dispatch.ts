@@ -85,6 +85,8 @@ async function dispatchWebhookPayload(
     case "revenuecat":
       await handleRevenueCatEvent(db, payload);
       break;
+    default:
+      throw new Error(`Payment provider is not active: ${String(provider)}`);
   }
 }
 

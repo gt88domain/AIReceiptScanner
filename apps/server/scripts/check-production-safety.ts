@@ -344,6 +344,7 @@ function selfCheck() {
       CONTACT_RECIPIENT: "support@acme.test",
       STRIPE_SECRET_KEY: "sk_live_test",
       STRIPE_WEBHOOK_SECRET: "whsec_test",
+      TURNSTILE_SECRET_KEY: "turnstile_secret",
     },
     expectedEnv: {
       EXPECTED_SERVER_WORKER: "acme-api",
@@ -377,7 +378,7 @@ function selfCheck() {
       serverUrl: "https://api.acme.test",
       buildWebsiteUrl: "https://app.acme.test",
       buildServerUrl: "https://api.acme.test",
-      turnstileSiteKey: "",
+      turnstileSiteKey: "turnstile_site_key",
     },
     requirements: {
       features: createProductFeatures({
@@ -483,17 +484,21 @@ function selfCheck() {
   assert.match(
     validateProductionConfigResult({
       ...validInput,
-      productionEnv: { ...validInput.productionEnv, TURNSTILE_SECRET_KEY: "secret" },
+      productionEnv: { ...validInput.productionEnv, TURNSTILE_SECRET_KEY: "" },
     })
       .errors.map(({ code }) => code)
       .join("\n"),
     /PARTIAL_TURNSTILE_CONFIGURATION/,
   );
   assert.match(
-    validateProductionConfigResult(validInput)
-      .warnings.map(({ code }) => code)
+    validateProductionConfigResult({
+      ...validInput,
+      productionEnv: { ...validInput.productionEnv, TURNSTILE_SECRET_KEY: "" },
+      web: { ...validInput.web, turnstileSiteKey: "" },
+    })
+      .errors.map(({ code }) => code)
       .join("\n"),
-    /PUBLIC_FORM_PROTECTION_DISABLED/,
+    /MISSING_PUBLIC_FORM_PROTECTION/,
   );
   assert.match(
     errors({

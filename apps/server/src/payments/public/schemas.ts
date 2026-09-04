@@ -3,13 +3,17 @@ import {
   PRICE_TYPES,
   SUBSCRIPTION_STATUSES,
 } from "@repo/app-config/payments/web";
-import { SUPPORTED_SERVER_PAYMENT_PROVIDERS } from "@repo/app-config";
+import {
+  PERSISTED_SERVER_PAYMENT_PROVIDERS,
+  SUPPORTED_SERVER_PAYMENT_PROVIDERS,
+} from "@repo/app-config";
 import { z } from "zod";
 
 /**
  * Supported provider enum schema.
  */
 export const providerEnum = z.enum(SUPPORTED_SERVER_PAYMENT_PROVIDERS);
+const persistedProviderEnum = z.enum(PERSISTED_SERVER_PAYMENT_PROVIDERS);
 
 /**
  * Price type enum schema.
@@ -68,7 +72,7 @@ export const planSchema = z.object({
  */
 export const billingStatusSchema = z.object({
   userId: z.string(),
-  billingProvider: providerEnum.nullable(),
+  billingProvider: persistedProviderEnum.nullable(),
   canManageBilling: z.boolean(),
   activePlan: z
     .object({
@@ -93,7 +97,7 @@ export const billingStatusSchema = z.object({
     .object({
       id: z.string(),
       userId: z.string(),
-      provider: providerEnum,
+      provider: persistedProviderEnum,
       providerSubscriptionId: z.string(),
       providerCustomerId: z.string(),
       planId: z.string(),
@@ -111,7 +115,7 @@ export const billingStatusSchema = z.object({
     .object({
       id: z.string(),
       userId: z.string(),
-      provider: providerEnum,
+      provider: persistedProviderEnum,
       providerPaymentIntentId: z.string(),
       planId: z.string(),
       priceId: z.string(),
@@ -127,7 +131,7 @@ export const billingStatusSchema = z.object({
 export const purchaseHistoryItemSchema = z.object({
   type: z.enum(["subscription", "membership", "credits"]),
   label: z.string(),
-  provider: providerEnum,
+  provider: persistedProviderEnum,
   status: z.string(),
   amountCents: z.number().int().nullable(),
   currency: z.string().nullable(),

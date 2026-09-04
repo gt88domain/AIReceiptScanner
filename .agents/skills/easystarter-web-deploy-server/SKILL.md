@@ -133,8 +133,6 @@ Full list from `apps/server/.env.production.example`:
 | `STRIPE_SECRET_KEY` | If Stripe enabled | Stripe API |
 | `STRIPE_WEBHOOK_SECRET` | If Stripe enabled | Webhook signature verification |
 | `REVENUECAT_WEBHOOK_SECRET` | If native IAP enabled | RevenueCat webhook auth |
-| `ALIBABA_CLOUD_ACCESS_KEY_ID` | If SMS enabled | Aliyun API |
-| `ALIBABA_CLOUD_ACCESS_KEY_SECRET` | If SMS enabled | Aliyun API |
 
 ## Post-Deploy URL Sync
 

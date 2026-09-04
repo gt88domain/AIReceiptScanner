@@ -1,6 +1,6 @@
 ---
 name: easystarter-web-auth
-description: Configure EasyStarter Web authentication end-to-end. Use whenever the user mentions login, sign-in, sign-up, OAuth, Google login, GitHub login, Apple sign-in, email OTP, email password, phone SMS login, auth callbacks, Better Auth, trusted origins, CORS auth issues, session cookies, or wants to enable/disable any Web login method. Also use when the user says "configure auth", "set up login", "add Google sign-in", "disable GitHub", or asks why login redirects fail.
+description: Configure EasyStarter Web authentication end-to-end. Use whenever the user mentions login, sign-in, sign-up, OAuth, Google login, GitHub login, Apple sign-in, email OTP, email password, auth callbacks, Better Auth, trusted origins, CORS auth issues, session cookies, or wants to enable/disable any Web login method. Also use when the user says "configure auth", "set up login", "add Google sign-in", "disable GitHub", or asks why login redirects fail.
 ---
 
 # EasyStarter Web Auth
@@ -17,7 +17,6 @@ Before editing files, figure out what the user actually needs:
 - **Fix broken OAuth redirect** → Section 4 (callback URLs and trusted origins)
 - **Set up auth from scratch** → Read `references/full-setup-guide.md`
 - **Cookie / session issues across subdomains** → Section 5 (cookie policy)
-- **Phone SMS OTP (China)** → Read `references/aliyun-phone-setup.md`
 
 ## Section 1: Auth Config Switches
 
@@ -29,7 +28,6 @@ auth: {
   methods: {
     emailPasswordEnabled: true,   // email + password form
     emailOtpEnabled: true,        // email one-time code
-    smsEnabled: true,             // phone SMS OTP (Aliyun)
     githubEnabled: true,          // GitHub OAuth button
     googleEnabled: true,          // Google OAuth button
     appleEnabled: true,           // Apple Sign-In button
@@ -39,11 +37,6 @@ auth: {
       otpLength: 6,
       expiresInSeconds: 300,
       allowedAttempts: 3,
-      resendCooldownSeconds: 60,
-    },
-    sms: {
-      otpLength: 6,
-      expiresInSeconds: 300,
       resendCooldownSeconds: 60,
     },
   },
@@ -58,7 +51,6 @@ auth: {
   methods: {
     emailPasswordEnabled: commonConfig.auth.methods.emailPasswordEnabled ?? false,
     emailOtpEnabled: commonConfig.auth.methods.emailOtpEnabled ?? false,
-    smsEnabled: commonConfig.auth.methods.smsEnabled ?? false,
     githubEnabled: commonConfig.auth.methods.githubEnabled ?? false,
     googleEnabled: commonConfig.auth.methods.googleEnabled ?? false,
     appleEnabled: commonConfig.auth.methods.appleEnabled ?? false,
@@ -72,7 +64,6 @@ The sign-in form (`apps/web/src/components/auth/sign-in-form.tsx`) reads these s
 // apps/web/src/components/auth/sign-in-form.tsx — lines 24-31
 const enabledSignInMethods = [
   webConfig.auth.methods.emailPasswordEnabled ? "email" : null,
-  webConfig.auth.methods.smsEnabled ? "phone" : null,
   webConfig.auth.methods.emailOtpEnabled ? "otp" : null,
 ].filter((method): method is SignInMethod => method !== null);
 
@@ -87,7 +78,6 @@ const hasSocialSignInMethods =
 methods: {
   emailPasswordEnabled: false,
   emailOtpEnabled: false,
-  smsEnabled: false,
   githubEnabled: false,
   googleEnabled: true,
   appleEnabled: false,

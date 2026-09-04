@@ -107,7 +107,6 @@ auth: {
     googleEnabled: true,       // needs GOOGLE_CLIENT_ID + SECRET
     githubEnabled: true,       // needs GITHUB_CLIENT_ID + SECRET
     appleEnabled: true,        // needs Apple developer setup
-    smsEnabled: true,          // needs Aliyun SMS credentials
   },
 },
 

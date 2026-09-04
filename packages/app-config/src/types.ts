@@ -15,6 +15,15 @@ export const SUPPORTED_SERVER_PAYMENT_PROVIDERS = [
   ...SUPPORTED_NATIVE_PAYMENT_PROVIDERS,
 ] as const;
 
+/** Retired provider identifiers accepted only when reading historical billing records. */
+export const HISTORICAL_SERVER_PAYMENT_PROVIDERS = ["creem", "waffo"] as const;
+
+/** Provider identifiers that may already exist in persisted billing rows. */
+export const PERSISTED_SERVER_PAYMENT_PROVIDERS = [
+  ...SUPPORTED_SERVER_PAYMENT_PROVIDERS,
+  ...HISTORICAL_SERVER_PAYMENT_PROVIDERS,
+] as const;
+
 /** Supported storage providers available in app configuration. */
 export const SUPPORTED_STORAGE_PROVIDERS = ["r2"] as const;
 
@@ -32,6 +41,10 @@ export type EmailCapabilities = {
 
 /** Union type of all supported server payment provider keys. */
 export type ServerPaymentProviderKey = (typeof SUPPORTED_SERVER_PAYMENT_PROVIDERS)[number];
+
+/** Active and retired identifiers that can be returned by historical billing reads. */
+export type PersistedServerPaymentProviderKey =
+  (typeof PERSISTED_SERVER_PAYMENT_PROVIDERS)[number];
 
 /** Union type of all supported web payment provider keys. */
 export type WebPaymentProviderKey = (typeof SUPPORTED_WEB_PAYMENT_PROVIDERS)[number];

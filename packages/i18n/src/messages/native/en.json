@@ -122,16 +122,6 @@
     "deleteAccountConfirmDescription": "Your account will be marked for deletion. You will be signed out and unable to sign in again.",
     "deleteAccountSuccess": "Account deleted successfully",
     "deleteAccountError": "Failed to delete account",
-    "phoneNumberDescription": "Use a mainland China phone number format, for example 13800138000.",
-    "sendCode": "Send Code",
-    "sendingCode": "Sending...",
-    "verifyCode": "Verify Code",
-    "verifyingCode": "Verifying...",
-    "resendCode": "Resend Code",
-    "resendCodeIn": "Resend in {{seconds}}s",
-    "changePhoneNumber": "Change Number",
-    "phoneCodeSent": "Verification code sent to {{phoneNumber}}",
-    "phoneOtpSentDescription": "We sent a verification code to {{phoneNumber}}.",
     "providers": {
       "apple": "Apple",
       "github": "GitHub",
@@ -140,8 +130,6 @@
     "validation": {
       "nameRequired": "Name is required",
       "invalidEmail": "Invalid email address",
-      "invalidPhone": "Enter a valid mainland China phone number",
-      "invalidVerificationCode": "Enter the 6-digit verification code",
       "passwordRequired": "Password is required",
       "passwordMinLength": "Must be at least {{min}} characters long"
     }
@@ -378,13 +366,13 @@
     },
     "socialLoginSecurity": "Your account is secured by {{providers}}. Use that provider to manage account security settings.",
     "phone": {
-      "title": "Phone sign-in",
+      "title": "Legacy phone account",
       "verified": "Verified",
       "verifiedNumber": "Verified number: {{phoneNumber}}",
       "passwordEnabledTitle": "Password is also enabled",
-      "passwordEnabledDescription": "This phone-only account already has a password set. You can continue signing in with SMS codes, and email reset remains unavailable.",
-      "otpOnlyTitle": "OTP-only sign-in",
-      "otpOnlyDescription": "This phone-only account signs in with SMS verification codes. Email reset is unavailable until a real email is linked."
+      "passwordEnabledDescription": "This migrated phone-era account already has a password set. Email reset remains unavailable.",
+      "otpOnlyTitle": "Legacy sign-in unavailable",
+      "otpOnlyDescription": "SMS sign-in is no longer available for this migrated phone-era account."
     }
   },
   "onboarding": {

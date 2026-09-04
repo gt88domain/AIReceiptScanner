@@ -112,8 +112,6 @@ export function PricingSection({ title, subtitle }: PricingSectionProps) {
         }
 
         const decision = getCheckoutDecision(priceMeta);
-        const targetProvider = findPriceProvider(plans, priceMeta.priceId);
-        const billingProvider = statusQuery.data?.billingProvider ?? null;
 
         if (decision.reason === "current_price") {
           return tBilling("currentPlanCta");
