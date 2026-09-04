@@ -3,16 +3,16 @@ import { SUPPORTED_STORAGE_PROVIDERS } from "@repo/app-config";
 import { z } from "zod";
 import { storageProcedure } from "@/lib/orpc";
 import { requireStorageService } from "@/lib/storage-access";
+import { backfillCurrentAvatarAsset, createAsset, deleteAsset } from "@/modules/assets/service";
+import { listOwnedAssets } from "@/modules/assets/repository";
 import {
   generateStorageKey,
   getMaxFileSize,
   getPublicUrl,
   getStoragePublicBaseUrl,
   getUserStoragePrefix,
-  getUserStoragePrefixes,
   isAllowedFileSize,
   isAllowedFileType,
-  parseStoragePublicUrl,
   resolveStorageProviderKey,
   sniffImageContentType,
 } from "@/storage";
@@ -28,12 +28,14 @@ const uploadInputSchema = z.object({
 
 const listInputSchema = z
   .object({
+    limit: z.number().int().min(1).max(100).default(100),
     provider: storageProviderSchema.optional(),
     purpose: uploadPurposeSchema.optional(),
   })
   .optional();
 
 const uploadOutputSchema = z.object({
+  assetId: z.string(),
   url: z.string(),
   key: z.string(),
   size: z.number(),
@@ -83,8 +85,12 @@ export const storageRouter = {
 
       // Generate storage key
       const key = generateStorageKey(purpose, userId, file.name, contentType);
-      await storageProvider.put(key, file, {
-        contentType,
+      const assetRecord = await createAsset(context.db, storageProvider, {
+        ownerId: userId,
+        visibility: "public",
+        storageKey: key,
+        mimeType: contentType,
+        data: file,
       });
 
       // Build the public URL
@@ -92,6 +98,7 @@ export const storageRouter = {
       const url = getPublicUrl(publicBaseUrl, key, provider);
 
       return {
+        assetId: assetRecord.id,
         url,
         key,
         size: file.size,
@@ -115,41 +122,38 @@ export const storageRouter = {
         });
       }
 
-      const prefixes = input?.purpose
-        ? [getUserStoragePrefix(input.purpose, userId)]
-        : getUserStoragePrefixes(userId);
-
       const publicBaseUrl = getStoragePublicBaseUrl(context.env.SERVER_URL);
-      const objects = (
-        await Promise.all(prefixes.map((prefix) => storageProvider.list({ prefix })))
-      )
-        .flat()
-        .sort((left, right) => {
-          const leftTime = left.uploaded?.getTime() ?? 0;
-          const rightTime = right.uploaded?.getTime() ?? 0;
-          return rightTime - leftTime;
-        });
+      await backfillCurrentAvatarAsset(context.db, storageProvider, {
+        ownerId: userId,
+        publicBaseUrl,
+      });
+      const records = await listOwnedAssets(context.db, {
+        ownerId: userId,
+        storagePrefix: input?.purpose
+          ? getUserStoragePrefix(input.purpose, userId)
+          : undefined,
+        limit: input?.limit ?? 100,
+      });
 
       return {
-        files: objects.map((object) => ({
-          url: getPublicUrl(publicBaseUrl, object.key, provider),
-          key: object.key,
-          size: object.size,
-          contentType: object.httpMetadata?.contentType ?? "application/octet-stream",
+        files: records.map((record) => ({
+          assetId: record.id,
+          url: getPublicUrl(publicBaseUrl, record.storageKey, provider),
+          key: record.storageKey,
+          size: record.size,
+          contentType: record.mimeType,
           provider,
-          uploadedAt: object.uploaded?.toISOString() ?? null,
+          uploadedAt: record.createdAt.toISOString(),
         })),
       };
     }),
 
   delete: storageProcedure
-    .input(z.object({ url: z.string() }))
+    .input(z.object({ assetId: z.string().min(1) }))
     .output(z.object({ success: z.boolean() }))
     .handler(async ({ context, input }) => {
       const storageProvider = requireStorageService(context);
       const { session, t } = context;
-      const { url } = input;
-
       const userId = session?.user.id;
       if (!userId) {
         throw new ORPCError("UNAUTHORIZED", {
@@ -157,26 +161,15 @@ export const storageRouter = {
         });
       }
 
-      // Extract key from URL
-      const publicBaseUrl = getStoragePublicBaseUrl(context.env.SERVER_URL);
-      const parsedStorageUrl = parseStoragePublicUrl(publicBaseUrl, url);
-      if (!parsedStorageUrl) {
-        throw new ORPCError("BAD_REQUEST", {
-          message: t("errors.invalidUrl"),
-        });
-      }
-      const { key } = parsedStorageUrl;
-
-      // Verify the file belongs to the user (key starts with purpose/userId/)
-      const isOwner = getUserStoragePrefixes(userId).some((prefix) => key.startsWith(prefix));
-
-      if (!isOwner) {
+      const deleted = await deleteAsset(context.db, storageProvider, {
+        assetId: input.assetId,
+        ownerId: userId,
+      });
+      if (!deleted) {
         throw new ORPCError("FORBIDDEN", {
           message: t("errors.forbidden"),
         });
       }
-
-      await storageProvider.delete(key);
 
       return { success: true };
     }),
