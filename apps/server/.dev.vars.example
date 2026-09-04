@@ -46,6 +46,10 @@ CONTACT_RECIPIENT=
 # Public URL for accessing R2 stored files (e.g., https://pub-xxx.r2.dev or your custom domain)
 R2_PUBLIC_URL=
 
+# Alibaba Cloud Dypnsapi
+ALIBABA_CLOUD_ACCESS_KEY_ID=
+ALIBABA_CLOUD_ACCESS_KEY_SECRET=
+
 # Stripe - https://www.easystarter.dev/zh/docs/web/integrations/stripe
 # Provider docs: https://stripe.com/docs/keys
 STRIPE_SECRET_KEY=

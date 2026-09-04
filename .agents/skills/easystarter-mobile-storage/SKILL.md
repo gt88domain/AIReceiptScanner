@@ -92,11 +92,6 @@ storage: {
 },
 ```
 
-| Variable | Where | Scope |
-|----------|-------|-------|
-| `ALIYUN_OSS_REGION` | `apps/server/.dev.vars` | e.g. `oss-cn-hangzhou` |
-| `ALIYUN_OSS_ENDPOINT` | `apps/server/.dev.vars` | e.g. `oss-cn-hangzhou.aliyuncs.com` |
-
 ## Section 4: Native Upload Flow
 
 Native uploads use `expo-image-picker` to select files, then POST to the server storage API. The upload is authenticated -- the user must be signed in.

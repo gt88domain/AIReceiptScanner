@@ -2,6 +2,8 @@ declare namespace Cloudflare {
   interface Env {
     BACKOFFICE_PREVIEW?: string;
     BACKOFFICE_PREVIEW_TICKETS?: string;
+    ALIBABA_CLOUD_ACCESS_KEY_ID: string;
+    ALIBABA_CLOUD_ACCESS_KEY_SECRET: string;
     CREEM_API_KEY: string;
     CREEM_WEBHOOK_SECRET: string;
     CONTACT_RECIPIENT: string;
