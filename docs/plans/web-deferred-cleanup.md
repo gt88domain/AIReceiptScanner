@@ -46,3 +46,11 @@ pnpm check:brand-safety
 Manual verification with real non-production keys remains required for
 Turnstile, GA, and OpenPanel. No test, build, browser check, or deployment is
 authorized in this phase.
+
+## Review and test-authoring status
+
+- Core-goal review: passed by two independent static reviewers.
+- Review findings: no actionable defects; CSP nonce/hash hardening remains a
+  future option rather than part of this finding.
+- Test authoring: implemented after core review.
+- Test execution: not authorized and not run.
