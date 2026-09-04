@@ -303,7 +303,9 @@ export type NewBillableOperation = typeof billableOperation.$inferInsert;
 /** Internal non-payment provider source type. */
 export type CreditInternalSourceProvider = (typeof CREDIT_INTERNAL_SOURCE_PROVIDERS)[number];
 /** Ledger source provider type, including configured payment providers. */
-export type CreditSourceProvider = CreditInternalSourceProvider | ServerPaymentProviderKey;
+export type CreditSourceProvider =
+  | CreditInternalSourceProvider
+  | PersistedServerPaymentProviderKey;
 /** Ledger transaction source type. */
 export type CreditSourceType = (typeof CREDIT_SOURCE_TYPES)[number];
 /** Credit order payment lifecycle status. */
