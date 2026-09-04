@@ -43,8 +43,7 @@ export type EmailCapabilities = {
 export type ServerPaymentProviderKey = (typeof SUPPORTED_SERVER_PAYMENT_PROVIDERS)[number];
 
 /** Active and retired identifiers that can be returned by historical billing reads. */
-export type PersistedServerPaymentProviderKey =
-  (typeof PERSISTED_SERVER_PAYMENT_PROVIDERS)[number];
+export type PersistedServerPaymentProviderKey = (typeof PERSISTED_SERVER_PAYMENT_PROVIDERS)[number];
 
 /** Union type of all supported web payment provider keys. */
 export type WebPaymentProviderKey = (typeof SUPPORTED_WEB_PAYMENT_PROVIDERS)[number];
