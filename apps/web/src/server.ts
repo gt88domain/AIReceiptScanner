@@ -14,7 +14,7 @@ function applyResponseHeaders(response: Response, pathname: string, serverUrl: s
 }
 
 export default {
-  async fetch(req: Request, env: CloudflareBindings): Promise<Response> {
+  async fetch(req: Request, env: CloudflareEnv): Promise<Response> {
     const pathname = new URL(req.url).pathname;
     const localeResult = handleLocaleMiddleware(req);
 
