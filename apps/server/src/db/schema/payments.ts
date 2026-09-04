@@ -1,4 +1,7 @@
-import { PERSISTED_SERVER_PAYMENT_PROVIDERS } from "@repo/app-config";
+import {
+  PERSISTED_SERVER_PAYMENT_PROVIDERS,
+  SUPPORTED_SERVER_PAYMENT_PROVIDERS,
+} from "@repo/app-config";
 import { SUBSCRIPTION_STATUSES } from "@repo/app-config/payments/web";
 import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { user } from "./auth";
@@ -148,7 +151,7 @@ export const paymentOperation = sqliteTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    provider: text("provider", { enum: PERSISTED_SERVER_PAYMENT_PROVIDERS }).notNull(),
+    provider: text("provider", { enum: SUPPORTED_SERVER_PAYMENT_PROVIDERS }).notNull(),
     operationType: text("operation_type", { enum: PAYMENT_OPERATION_TYPES }).notNull(),
     requestVersion: integer("request_version").notNull().default(1),
     requestHash: text("request_hash").notNull(),
@@ -246,7 +249,7 @@ export const billingOutbox = sqliteTable(
   {
     id: text("id").primaryKey(),
     jobType: text("job_type", { enum: ["cancel_previous_subscription"] }).notNull(),
-    provider: text("provider", { enum: PERSISTED_SERVER_PAYMENT_PROVIDERS }).notNull(),
+    provider: text("provider", { enum: SUPPORTED_SERVER_PAYMENT_PROVIDERS }).notNull(),
     deduplicationKey: text("deduplication_key").notNull(),
     payloadJson: text("payload_json").notNull(),
     processingStatus: text("processing_status", {

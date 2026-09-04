@@ -1,5 +1,5 @@
 import { and, asc, eq, isNull, lte, or } from "drizzle-orm";
-import type { ServerPaymentProviderKey } from "@repo/app-config";
+import type { PersistedServerPaymentProviderKey } from "@repo/app-config";
 import type { Database } from "@/db";
 import { billingEvent } from "@/db/schema/payments";
 import { logSafeError } from "@/lib/safe-error";
@@ -60,7 +60,7 @@ export async function handleWebhookEvent(db: Database, input: HandleWebhookInput
 
 async function findWebhookEventId(
   db: Database,
-  provider: ServerPaymentProviderKey,
+  provider: PersistedServerPaymentProviderKey,
   providerEventId: string,
 ) {
   const [existing] = await db
@@ -75,7 +75,7 @@ async function findWebhookEventId(
 
 async function dispatchWebhookPayload(
   db: Database,
-  provider: ServerPaymentProviderKey,
+  provider: PersistedServerPaymentProviderKey,
   payload: unknown,
 ) {
   switch (provider) {
@@ -92,7 +92,7 @@ async function dispatchWebhookPayload(
 
 async function dispatchClaimedWebhookEvent(
   db: Database,
-  provider: ServerPaymentProviderKey,
+  provider: PersistedServerPaymentProviderKey,
   payload: unknown,
   eventRowId: string,
   claim: NonNullable<Awaited<ReturnType<typeof claimWebhookEvent>>>,

@@ -1,4 +1,4 @@
-import type { ServerPaymentProviderKey } from "@repo/app-config";
+import type { PersistedServerPaymentProviderKey } from "@repo/app-config";
 import { integer, sqliteTable, text, uniqueIndex, index } from "drizzle-orm/sqlite-core";
 import { user } from "./auth";
 
@@ -112,7 +112,7 @@ export const creditPurchaseRecoveryEvent = sqliteTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    provider: text("provider").$type<ServerPaymentProviderKey>().notNull(),
+    provider: text("provider").$type<PersistedServerPaymentProviderKey>().notNull(),
     recoveryType: text("recovery_type", { enum: CREDIT_PURCHASE_RECOVERY_TYPES }).notNull(),
     providerRecoveryId: text("provider_recovery_id").notNull(),
     providerPaymentId: text("provider_payment_id").notNull(),
@@ -147,7 +147,7 @@ export const creditPaymentDispute = sqliteTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    provider: text("provider").$type<ServerPaymentProviderKey>().notNull(),
+    provider: text("provider").$type<PersistedServerPaymentProviderKey>().notNull(),
     providerDisputeId: text("provider_dispute_id").notNull(),
     providerPaymentId: text("provider_payment_id"),
     status: text("status", { enum: CREDIT_PAYMENT_DISPUTE_STATUSES }).notNull(),
@@ -176,7 +176,7 @@ export const creditOrder = sqliteTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     packageId: text("package_id").notNull(),
-    provider: text("provider").$type<ServerPaymentProviderKey>().notNull(),
+    provider: text("provider").$type<PersistedServerPaymentProviderKey>().notNull(),
     providerSessionId: text("provider_session_id"),
     providerPaymentId: text("provider_payment_id"),
     status: text("status", { enum: CREDIT_ORDER_STATUSES }).notNull().default("pending"),
