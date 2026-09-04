@@ -4,7 +4,12 @@ import type { AppRouterClient } from "@/routers";
 import { createDb } from "@/db";
 import { creditOrder } from "@/db/schema/credits";
 import { failedJobEvent, job, jobOutbox } from "@/db/schema/jobs";
-import { billingEvent, billingPurchase, billingSubscription } from "@/db/schema/payments";
+import {
+  billingEvent,
+  billingPurchase,
+  billingSubscription,
+  paymentOperation,
+} from "@/db/schema/payments";
 import { recordAdminAuditLog } from "@/modules/audit";
 import { describe, expect, it } from "vitest";
 
@@ -66,6 +71,19 @@ describe("administrator RPC authorization", () => {
       code: "FORBIDDEN",
       status: 403,
     });
+    await expect(client.admin.listDeadLetterWebhooks({ limit: 1 })).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      status: 403,
+    });
+    await expect(
+      client.admin.acknowledgeDeadLetterWebhook({ eventId: crypto.randomUUID() }),
+    ).rejects.toMatchObject({ code: "FORBIDDEN", status: 403 });
+    await expect(
+      client.admin.resolvePaymentOperationManualReview({
+        operationId: crypto.randomUUID(),
+        resolution: "mark_failed",
+      }),
+    ).rejects.toMatchObject({ code: "FORBIDDEN", status: 403 });
   });
 
   it("permits only the Worker-secret allowlisted email", async () => {
@@ -99,6 +117,26 @@ describe("administrator RPC authorization", () => {
         deadLetteredAt,
       })),
     );
+    const manualOperationId = crypto.randomUUID();
+    await db.insert(paymentOperation).values({
+      id: manualOperationId,
+      operationKey: `${actor!.id}:checkout:${manualOperationId}`,
+      scopeKey: null,
+      userId: actor!.id,
+      provider: "stripe",
+      operationType: "checkout",
+      requestVersion: 1,
+      requestHash: "admin-manual-review",
+      requestJson: '{"version":1,"payload":{}}',
+      status: "manual_review",
+      idempotencyMode: "local_only",
+      attemptCount: 1,
+      retryable: false,
+      lastError: "provider result ambiguous",
+      manualReviewCode: "PAYMENT_OPERATION_PROVIDER_AMBIGUOUS",
+      createdAt: deadLetteredAt,
+      updatedAt: deadLetteredAt,
+    });
     const jobId = crypto.randomUUID();
     const failedJobEventId = crypto.randomUUID();
     const now = new Date();
@@ -185,12 +223,27 @@ describe("administrator RPC authorization", () => {
       cursor: firstDeadLetterPage.nextCursor!,
     });
     expect(secondDeadLetterPage.items).toHaveLength(1);
-    expect(secondDeadLetterPage.items[0]?.id).not.toBe(firstDeadLetterPage.items[0]?.id);
+    expect(secondDeadLetterPage.nextCursor).toBeNull();
+    expect(
+      new Set([
+        firstDeadLetterPage.items[0]?.id,
+        secondDeadLetterPage.items[0]?.id,
+      ]),
+    ).toEqual(new Set(deadLetterIds));
+    await expect(
+      client.admin.acknowledgeDeadLetterWebhook({ eventId: deadLetterIds[0]! }),
+    ).resolves.toEqual({ acknowledged: true });
+    await expect(
+      client.admin.resolvePaymentOperationManualReview({
+        operationId: manualOperationId,
+        resolution: "mark_failed",
+      }),
+    ).resolves.toEqual({ resolved: true, reason: null });
     await expect(client.admin.retryFailedJob({ id: failedJobEventId })).resolves.toEqual({
       retried: true,
     });
     const auditLog = await client.admin.listAuditLog({ page: 1, perPage: 10 });
-    expect(auditLog.total).toBe(2);
+    expect(auditLog.total).toBe(4);
     expect(auditLog.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -208,6 +261,28 @@ describe("administrator RPC authorization", () => {
           entityId: failedJobEventId,
           before: null,
           after: { resolution: "retried" },
+        }),
+        expect.objectContaining({
+          action: "billing.webhook.dead-letter-acknowledged",
+          entityType: "billing_event",
+          entityId: deadLetterIds[0],
+          before: expect.objectContaining({
+            processingStatus: "dead_letter",
+            lastError: "manual review",
+          }),
+          after: { resolution: "acknowledged_without_replay" },
+        }),
+        expect.objectContaining({
+          action: "billing.payment-operation.manual-review-resolved",
+          entityType: "payment_operation",
+          entityId: manualOperationId,
+          before: {
+            status: "manual_review",
+            attemptCount: 1,
+            manualReviewCode: "PAYMENT_OPERATION_PROVIDER_AMBIGUOUS",
+            lastError: "provider result ambiguous",
+          },
+          after: { resolution: "mark_failed" },
         }),
       ]),
     );
@@ -330,6 +405,9 @@ describe("purchase history", () => {
       cursor: firstPage.nextCursor!,
     });
     expect(secondPage.items).toHaveLength(1);
-    expect([...firstPage.items, ...secondPage.items]).toHaveLength(3);
+    expect(secondPage.nextCursor).toBeNull();
+    expect(
+      [...firstPage.items, ...secondPage.items].map((item) => `${item.type}:${item.label}`),
+    ).toEqual(["subscription:pro", "membership:lifetime", "credits:starter"]);
   });
 });

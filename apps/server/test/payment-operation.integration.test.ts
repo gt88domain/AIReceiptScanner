@@ -375,5 +375,68 @@ describe("payment operation scope ownership", () => {
     await expect(
       resolvePaymentOperationManualReview(db, localOnly.id, "requeue", now),
     ).resolves.toEqual({ resolved: false, reason: "UNSAFE_NON_IDEMPOTENT_RETRY" });
+    await expect(
+      resolvePaymentOperationManualReview(db, localOnly.id, "mark_failed", now),
+    ).resolves.toMatchObject({ resolved: true, reason: null });
+    const [closed] = await db
+      .select()
+      .from(paymentOperation)
+      .where(eq(paymentOperation.id, localOnly.id));
+    expect(closed).toMatchObject({
+      status: "failed",
+      manualReviewCode: "AMBIGUOUS",
+      retryable: false,
+    });
+
+    const expired = await getOrCreatePaymentOperation(db, {
+      userId,
+      provider: "stripe",
+      operationType: "checkout",
+      operationId: crypto.randomUUID(),
+      requestHash: "manual-expired-hash",
+      requestJson: '{"version":1,"payload":{}}',
+      idempotencyMode: "native",
+    });
+    await db
+      .update(paymentOperation)
+      .set({
+        status: "manual_review",
+        createdAt: new Date(now.getTime() - 24 * 60 * 60 * 1000),
+      })
+      .where(eq(paymentOperation.id, expired.id));
+    await expect(
+      resolvePaymentOperationManualReview(db, expired.id, "requeue", now),
+    ).resolves.toEqual({ resolved: false, reason: "IDEMPOTENCY_WINDOW_EXPIRED" });
+
+    const scopeKey = `subscription:stripe:${crypto.randomUUID()}`;
+    const reviewedScope = await getOrCreatePaymentOperation(db, {
+      userId,
+      provider: "stripe",
+      operationType: "subscription_upgrade",
+      operationId: crypto.randomUUID(),
+      requestHash: "reviewed-scope-hash",
+      requestJson: '{"version":1,"payload":{}}',
+      idempotencyMode: "native",
+      scopeKey,
+      relatedResourceType: "subscription",
+    });
+    await db
+      .update(paymentOperation)
+      .set({ status: "manual_review" })
+      .where(eq(paymentOperation.id, reviewedScope.id));
+    await getOrCreatePaymentOperation(db, {
+      userId,
+      provider: "stripe",
+      operationType: "subscription_upgrade",
+      operationId: crypto.randomUUID(),
+      requestHash: "active-scope-hash",
+      requestJson: '{"version":1,"payload":{}}',
+      idempotencyMode: "native",
+      scopeKey,
+      relatedResourceType: "subscription",
+    });
+    await expect(
+      resolvePaymentOperationManualReview(db, reviewedScope.id, "requeue", now),
+    ).resolves.toEqual({ resolved: false, reason: "ACTIVE_SCOPE_CONFLICT" });
   });
 });

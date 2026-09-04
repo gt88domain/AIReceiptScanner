@@ -118,6 +118,43 @@ describe("webhook observability", () => {
     }
   });
 
+  it("dead-letters a dispute that has no PaymentIntent instead of silently processing it", async () => {
+    const db = createDb(env.DB);
+    const eventId = crypto.randomUUID();
+    const provider = getPaymentProvider("stripe");
+    const parse = vi.spyOn(provider, "parseWebhookEvent").mockResolvedValue({
+      providerEventId: eventId,
+      type: "charge.dispute.created",
+      createdAt: new Date("2026-08-06T00:00:00.000Z"),
+      payload: {
+        id: eventId,
+        type: "charge.dispute.created",
+        created: 1_786_032_000,
+        data: {
+          object: {
+            id: "dp_without_intent",
+            amount: 1000,
+            currency: "usd",
+            status: "needs_response",
+            payment_intent: null,
+          },
+        },
+      },
+    });
+    try {
+      await expect(
+        handleWebhookEvent(db, { provider: "stripe", rawBody: "verified" }),
+      ).rejects.toThrow("DISPUTE_WITHOUT_PAYMENT_INTENT_REQUIRES_MANUAL_REVIEW");
+      const [event] = await db
+        .select()
+        .from(billingEvent)
+        .where(eq(billingEvent.providerEventId, eventId));
+      expect(event).toMatchObject({ processingStatus: "dead_letter", attemptCount: 1 });
+    } finally {
+      parse.mockRestore();
+    }
+  });
+
   it("atomically claims an event once and releases failures for retry", async () => {
     const db = createDb(env.DB);
     const id = crypto.randomUUID();
