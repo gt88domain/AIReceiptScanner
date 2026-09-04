@@ -1,6 +1,11 @@
 # Final validation plan
 
-Status: implementation and static topic reviews complete; integrated review findings remediated and follow-up review pending; no command in this document has been run.
+Status: implementation, topic review, and integrated static review complete;
+tests are authored but no validation gate in this document has been run.
+
+Preparation note: `pnpm install --lockfile-only` was run once to remove the
+archived i18n workspace importer. It updated dependency metadata without
+installing dependencies or running project scripts/tests.
 
 Branch: `review/integration-final`
 
