@@ -11,6 +11,7 @@ import {
   upsertBillingPurchaseIfNewer,
 } from "../../../infrastructure/repositories/billing-store";
 import { NonRetryableWebhookError } from "../../../application/webhook-observability";
+import { findPriceById } from "../../../domain/plan-catalog";
 import { reconcileActivatedPriceWithExistingSubscriptions } from "../../shared/activated-price-effects";
 import { resolveUserFromMetadata } from "./owner-resolver";
 
@@ -194,6 +195,12 @@ async function upsertPurchaseFromPaymentIntent(
     return;
   }
 
+  const recordedPlanId = metadata.planId ?? existing?.planId;
+  const recordedPriceId = metadata.priceId ?? existing?.priceId;
+  if (input.status === "succeeded" && recordedPlanId && recordedPriceId) {
+    assertStripePurchaseMatchesCatalog(input.paymentIntent, recordedPlanId, recordedPriceId);
+  }
+
   if (!existing) {
     if (metadata.kind === "credit_purchase") {
       console.error("Stripe credit payment skipped because it has no immutable credit order", {
@@ -249,6 +256,29 @@ async function upsertPurchaseFromPaymentIntent(
       db,
       { userId: existing.userId },
       existing.priceId,
+    );
+  }
+}
+
+function assertStripePurchaseMatchesCatalog(
+  paymentIntent: Stripe.PaymentIntent,
+  planId: string,
+  priceId: string,
+) {
+  const price = findPriceById(priceId);
+  if (!price || price.planId !== planId || price.provider !== "stripe") {
+    throw new NonRetryableWebhookError(
+      `Stripe purchase ${paymentIntent.id} does not match the configured billing catalog.`,
+    );
+  }
+  // Subscription invoices can contain prorations and discounts. One-time purchases cannot.
+  if (price.priceType !== "lifetime") return;
+  if (
+    paymentIntent.amount_received !== price.amountCents ||
+    paymentIntent.currency.toLowerCase() !== price.currency.toLowerCase()
+  ) {
+    throw new NonRetryableWebhookError(
+      `Stripe purchase ${paymentIntent.id} amount or currency does not match price ${priceId}.`,
     );
   }
 }

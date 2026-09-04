@@ -19,6 +19,7 @@
   ],
   "vars": {
     "NODE_ENV": "production",
+    "PAYMENTS_PRICE_ENV": "prod",
     "WEBSITE_URL": "https://replace-domain.example",
     "SERVER_URL": "https://api.replace-domain.example",
     "JOB_QUEUE_DLQ_NAME": "replace-job-queue-dlq",
@@ -66,7 +67,7 @@
   },
   "triggers": {
     // "* * * * *" pumps billing webhook/outbox recovery and the job outbox.
-    // "10 16 * * *" runs daily credit maintenance; keep both when Credits are enabled.
+    // "10 16 * * *" runs daily billing retention and credit maintenance.
     "crons": ["* * * * *", "10 16 * * *"],
   },
   "observability": {

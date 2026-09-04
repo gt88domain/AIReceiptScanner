@@ -10,6 +10,8 @@ import {
   nativePaymentsConfig,
 } from "@repo/app-config/payments/native";
 import type { PersistedServerPaymentProviderKey, ServerPaymentProviderKey } from "@repo/app-config";
+import { env } from "cloudflare:workers";
+import { resolveProviderPriceEnvironment } from "@/lib/provider-price-environment";
 
 type WebCatalogPrice = NormalizedPlan["prices"][number];
 type NativeCatalogPrice = NormalizedNativePlan["prices"][number];
@@ -23,7 +25,10 @@ type BillingCatalogPlan = {
 /**
  * Normalized web checkout plans are loaded once and reused as read-only catalog data.
  */
-const webConfig = normalizePaymentsConfig(paymentsConfig as PaymentsConfig);
+const webConfig = normalizePaymentsConfig(
+  paymentsConfig as PaymentsConfig,
+  resolveProviderPriceEnvironment(env),
+);
 const nativeConfig = listNormalizedNativePlansByPlatform(nativePaymentsConfig);
 
 // Native catalog entries are used only for persisted billing state. Web checkout

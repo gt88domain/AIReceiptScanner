@@ -62,7 +62,6 @@ export async function createCheckoutSession(db: Database, input: CreateCheckoutS
     price.priceType === "subscription" && price.trialDays
       ? await hasTrialConsumingSubscriptionHistory(db, {
           userId: input.user.userId,
-          provider: resolvedProviderKey,
         })
       : false;
   const canApplyStripeTrial =

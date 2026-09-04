@@ -59,15 +59,6 @@ export type NormalizedPlan = {
   prices: NormalizedPrice[];
 };
 
-/**
- * Resolves the default web payment price environment from the runtime.
- */
-function resolveProviderPriceEnvironment(): ProviderPriceEnvironment {
-  const nodeEnv = (globalThis as { process?: { env?: { NODE_ENV?: string } } }).process?.env
-    ?.NODE_ENV;
-  return nodeEnv === "production" ? "prod" : "test";
-}
-
 function buildMembershipCatalogIndex(input: MembershipCatalogConfig) {
   const planById = new Map<string, NormalizedMembershipPlan>();
   const priceByKey = new Map<string, NormalizedMembershipPrice>();
@@ -219,7 +210,7 @@ function selectProviderPriceEnvironment(
  */
 export function normalizePaymentsConfig(
   input: PaymentsConfig,
-  providerPriceEnvironment: ProviderPriceEnvironment = resolveProviderPriceEnvironment(),
+  providerPriceEnvironment: ProviderPriceEnvironment,
   membershipCatalog: MembershipCatalogConfig = membershipCatalogConfig,
 ): NormalizedPlan[] {
   const membershipIndex = buildMembershipCatalogIndex(membershipCatalog);

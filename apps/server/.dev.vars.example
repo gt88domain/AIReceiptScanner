@@ -3,6 +3,7 @@
 # Copy this file to .dev.vars and fill in your actual values
 
 NODE_ENV=development
+PAYMENTS_PRICE_ENV=test
 # EasyStarter Server URLs guide: https://www.easystarter.dev/zh/docs/web/deploy-server
 WEBSITE_URL=http://localhost:3000
 

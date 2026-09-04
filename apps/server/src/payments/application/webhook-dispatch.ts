@@ -11,6 +11,7 @@ import type { HandleWebhookInput } from "./types";
 
 const WEBHOOK_HANDLER_VERSION = 1;
 const SCHEDULED_WEBHOOK_BATCH_SIZE = 20;
+const PROCESSED_WEBHOOK_RETENTION_DAYS = 400;
 
 export async function handleWebhookEvent(db: Database, input: HandleWebhookInput) {
   const provider = getPaymentProvider(input.provider);
@@ -165,4 +166,20 @@ export async function processPendingWebhookEvents(db: Database, now = new Date()
     }
   }
   return processed;
+}
+
+/** Deletes only successfully processed webhook inbox rows after the audit window. */
+export async function purgeProcessedWebhookEvents(db: Database, now = new Date()) {
+  const cutoff = new Date(now.getTime() - PROCESSED_WEBHOOK_RETENTION_DAYS * 24 * 60 * 60 * 1000);
+  await db
+    .delete(billingEvent)
+    .where(
+      and(
+        eq(billingEvent.processingStatus, "processed"),
+        or(
+          lte(billingEvent.firstReceivedAt, cutoff),
+          and(isNull(billingEvent.firstReceivedAt), lte(billingEvent.processedAt, cutoff)),
+        ),
+      ),
+    );
 }

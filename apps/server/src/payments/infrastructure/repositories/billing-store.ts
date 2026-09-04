@@ -242,7 +242,6 @@ async function hasTrialConsumingSubscriptionHistory(
   db: DbLike,
   input: {
     userId: string;
-    provider: ServerPaymentProviderKey;
   },
 ) {
   const [subscription] = await db
@@ -253,7 +252,6 @@ async function hasTrialConsumingSubscriptionHistory(
     .where(
       and(
         eq(billingSubscription.userId, input.userId),
-        eq(billingSubscription.provider, input.provider),
         inArray(billingSubscription.status, [
           "trialing",
           "active",
