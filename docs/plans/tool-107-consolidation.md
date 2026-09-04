@@ -23,8 +23,8 @@ weakening CI, release, security, product-profile, or upstream-adoption guards.
 | Skill archival | Implemented, review pending | Active EasyStarter skills and recoverable dormant references |
 | Script inventory | Implemented, review pending | Explicit guarded-object inventory and duplicate command alias removal |
 | Release consolidation | Implemented, review pending | One merge implementation with a release-check dispatch path |
-| Core-goal review | Pending | Static review of authority, rollback, and merge behavior |
-| Test authoring | Deferred | Update focused workflow source assertions after core review |
+| Core-goal review | Passed with one permission finding corrected; follow-up review pending | Two independent static reviews of authority, rollback, and merge behavior |
+| Test authoring | Implemented, execution pending | Focused workflow source assertions updated after core review |
 | Test execution | Not authorized | No tests, builds, type checks, or workflow runs performed |
 
 ## Deferred test plan
