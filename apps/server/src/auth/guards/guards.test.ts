@@ -8,6 +8,7 @@ function contextWithCapability(allowed: boolean) {
   const calls: Array<{ userId: string; capability: string }> = [];
   const context = {
     session: { user: { id: "user-1", email: "member@example.com" } },
+    authenticatedUser: { id: "user-1", email: "member@example.com" },
     db: {
       select: () => ({ from: () => ({ where: async () => [] }) }),
     },
