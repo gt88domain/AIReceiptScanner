@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { beforeEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
 const toastError = vi.hoisted(() => vi.fn());
 
@@ -11,7 +11,12 @@ vi.mock("sonner", () => ({
 import { getWebRequestContext } from "./orpc";
 
 beforeEach(() => {
+  vi.stubEnv("VITE_SERVER_URL", "https://api.example.test");
   toastError.mockClear();
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 
 it("retries only the query that raised the cache error", async () => {
