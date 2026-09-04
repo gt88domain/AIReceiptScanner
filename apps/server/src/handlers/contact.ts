@@ -50,7 +50,7 @@ export function createContactHandler(
     try {
       await emailService.send({
         to: recipient,
-        subject: `[Contact] ${parsed.data.name}`,
+        subject: `[Contact] ${parsed.data.name.replace(/[\r\n]+/g, " ")}`,
         text: `From: ${parsed.data.name} <${parsed.data.email}>\n\n${parsed.data.message}`,
       });
     } catch (error) {

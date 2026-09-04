@@ -16,7 +16,7 @@ export const SUPPORTED_SERVER_PAYMENT_PROVIDERS = [
 ] as const;
 
 /** Supported storage providers available in app configuration. */
-export const SUPPORTED_STORAGE_PROVIDERS = ["r2", "aliyun-oss"] as const;
+export const SUPPORTED_STORAGE_PROVIDERS = ["r2"] as const;
 
 /** Union type of all supported email provider keys. */
 export type EmailProviderKey = (typeof SUPPORTED_EMAIL_PROVIDERS)[number];

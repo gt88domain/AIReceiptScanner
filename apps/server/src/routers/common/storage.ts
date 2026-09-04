@@ -14,6 +14,7 @@ import {
   isAllowedFileType,
   parseStoragePublicUrl,
   resolveStorageProviderKey,
+  sniffImageContentType,
 } from "@/storage";
 
 const uploadPurposeSchema = z.literal("avatar");
@@ -61,10 +62,11 @@ export const storageRouter = {
         });
       }
 
-      const contentType = file.type || "application/octet-stream";
+      const contentType = sniffImageContentType(
+        new Uint8Array(await file.slice(0, 16).arrayBuffer()),
+      );
 
-      // Validate file type
-      if (!isAllowedFileType(purpose, contentType)) {
+      if (!contentType || !isAllowedFileType(purpose, contentType)) {
         throw new ORPCError("BAD_REQUEST", {
           message: t("errors.invalidFileType"),
         });

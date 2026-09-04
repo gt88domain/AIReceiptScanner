@@ -175,7 +175,7 @@ export const ticketsRouter = {
         if (owner)
           await context.email.send({
             to: owner.email,
-            subject: `Reply: ${item.subject}`,
+            subject: `Reply: ${item.subject.replace(/[\r\n]+/g, " ")}`,
             text: input.body,
           });
       }
