@@ -26,7 +26,6 @@
     "check:boundaries": "node scripts/check-architecture-boundaries.mjs",
     "check:brand-safety": "node scripts/check-brand-safety.mjs",
     "template:check-modifications": "node scripts/check-template-modifications.mjs",
-    "template:audit-modifications": "pnpm template:check-modifications",
     "profiles:check": "node scripts/check-product-profiles.mjs",
     "profiles:build": "node scripts/build-profile-matrix.mjs",
     "check:wrangler-types": "node scripts/check-wrangler-types.mjs",

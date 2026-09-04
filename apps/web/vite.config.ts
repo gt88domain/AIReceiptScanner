@@ -146,9 +146,9 @@ export default defineConfig(({ mode }) => {
   ] as const;
   const clientBuildEnv = Object.fromEntries(
     publicClientEnvKeys.map((key) => [
-        `import.meta.env.${key}`,
-        JSON.stringify(resolveBuildEnvValue(key, [process.env, env, wranglerVars]) ?? ""),
-      ]),
+      `import.meta.env.${key}`,
+      JSON.stringify(resolveBuildEnvValue(key, [process.env, env, wranglerVars]) ?? ""),
+    ]),
   );
   clientBuildEnv.__EASYSTARTER_PROFILE_BUILD__ = JSON.stringify(
     process.env.EASYSTARTER_PROFILE_BUILD ?? "",
