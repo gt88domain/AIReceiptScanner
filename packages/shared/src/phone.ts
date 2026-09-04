@@ -5,15 +5,6 @@ type UserIdentityLike = {
   phoneNumber?: string | null;
 };
 
-// Mainland-China-only narrowing used by both client and server (aliyun-dypnsapi only delivers CN).
-export const CN_PHONE_NUMBER_REGEX = /^\+86\d{11}$/;
-export const CN_DIAL_PREFIX = "+86";
-export const CN_LOCAL_PHONE_DIGITS = 11;
-
-export function toCnE164PhoneNumber(localDigits: string): string {
-  return `${CN_DIAL_PREFIX}${localDigits}`;
-}
-
 // Compatibility matchers remain only for historical phone-era rows. Phone
 // login is not registered and no production path creates these addresses.
 export const PHONE_COMPATIBILITY_EMAIL_DOMAIN = "phone-auth.invalid";
@@ -24,10 +15,6 @@ const PHONE_COMPATIBILITY_EMAIL_REGEX = new RegExp(
   `^${PHONE_COMPATIBILITY_EMAIL_PREFIX}[0-9a-f]{${PHONE_COMPATIBILITY_EMAIL_DIGEST_LENGTH}}@${PHONE_COMPATIBILITY_EMAIL_DOMAIN.replaceAll(".", "\\.")}$`,
   "i",
 );
-
-export function normalizePhoneDigits(phoneNumber: string): string {
-  return phoneNumber.replace(/\D/g, "");
-}
 
 export function isPhoneCompatibilityEmail(email: string | null | undefined): boolean {
   if (!email) return false;
