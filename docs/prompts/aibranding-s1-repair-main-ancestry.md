@@ -63,7 +63,7 @@ pnpm check-types
 pnpm lint
 pnpm fmt:check
 pnpm build
-pnpm template:audit-modifications         # Modification Manifest 检查，必须转绿
+pnpm template:check-modifications         # Modification Manifest 检查，必须转绿
 ```
 
 任何一项失败：停止、保留现场、报告失败输出，不要尝试绕过。

@@ -79,7 +79,11 @@ export const ticketsRouter = {
     .input(createSchema)
     .output(ticketDetailSchema)
     .handler(async ({ context, input }) => {
-      if (isRequestRateLimited(context.request, `tickets:${context.session!.user.id}`, 60_000)) {
+      if (
+        isRequestRateLimited(context.request, `tickets:${context.session!.user.id}`, 60_000, {
+          cloudflareOnly: true,
+        })
+      ) {
         throw new ORPCError("TOO_MANY_REQUESTS", {
           message: "Please wait a minute before creating another ticket",
         });
@@ -175,7 +179,7 @@ export const ticketsRouter = {
         if (owner)
           await context.email.send({
             to: owner.email,
-            subject: `Reply: ${item.subject}`,
+            subject: `Reply: ${item.subject.replace(/[\r\n]+/g, " ")}`,
             text: input.body,
           });
       }

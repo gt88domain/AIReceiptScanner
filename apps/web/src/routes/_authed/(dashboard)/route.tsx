@@ -1,16 +1,10 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { AuthenticatedLayout } from "@/components/dashboard/authed-layout";
 import { AuthenticatedQueryCacheGuard } from "@/components/providers/authenticated-query-cache-guard";
-import { getCurrentUser } from "@/lib/auth/auth-server";
+import { requireAuthenticatedUser } from "@/lib/auth/require-user";
 
 export const Route = createFileRoute("/_authed/(dashboard)")({
-  beforeLoad: async () => {
-    const user = await getCurrentUser();
-    if (!user) {
-      throw redirect({ to: "/auth/sign-in" });
-    }
-    return { user };
-  },
+  beforeLoad: ({ location }) => requireAuthenticatedUser(location.href),
   component: () => (
     <>
       <AuthenticatedQueryCacheGuard />

@@ -223,22 +223,6 @@ export function getAdminIntegrationsReadModel({
       ),
     },
     {
-      id: "creem",
-      category: "payments" as const,
-      status: configurationStatus(
-        features.web.billing && paymentProvider === "creem",
-        Boolean(env.CREEM_API_KEY && env.CREEM_WEBHOOK_SECRET),
-      ),
-    },
-    {
-      id: "waffo",
-      category: "payments" as const,
-      status: configurationStatus(
-        features.web.billing && paymentProvider === "waffo",
-        Boolean(env.WAFFO_MERCHANT_ID && env.WAFFO_PRIVATE_KEY),
-      ),
-    },
-    {
       id: "revenuecat",
       category: "payments" as const,
       status: configurationStatus(features.native.billing, Boolean(env.REVENUECAT_WEBHOOK_SECRET)),

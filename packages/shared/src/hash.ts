@@ -16,7 +16,7 @@ export async function hashNamespacedValue(
   const payload = encoder.encode(`${namespace}:${normalized}`);
   const trimmedSecret = secret?.trim();
   if (!trimmedSecret) {
-    return toHex(await crypto.subtle.digest("SHA-256", payload));
+    throw new Error("hashNamespacedValue requires a non-empty secret");
   }
 
   const key = await crypto.subtle.importKey(

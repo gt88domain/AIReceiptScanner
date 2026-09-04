@@ -7,10 +7,10 @@ Important areas:
 - `src/routes`: file-based routes.
 - `src/modules`: product-domain UI, loaders, copy, and view models.
 - `src/components`: shared UI and feature components.
-- `src/components/listing`: route-neutral listing, ranking, filter, and state
-  primitives; product adapters own data, URL state, SEO, and copy.
 - `src/components/public`: shared public-detail layout primitives.
 - `src/components/landing-page`: the deliberately small starter landing page.
+- `src/components/design-system`: preview-only examples composed from the
+  existing UI primitives; it is not a product listing framework.
 - `src/configs`: web config, nav, landing page registry.
 - `src/lib`: browser/server utilities.
 - `src/utils/orpc.ts`: typed API client wiring.

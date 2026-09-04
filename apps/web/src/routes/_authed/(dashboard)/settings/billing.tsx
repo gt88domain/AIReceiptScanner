@@ -62,7 +62,7 @@ function RouteComponent() {
   const createPortal = useMutation({
     ...orpc.web.payments.createPortalSession.mutationOptions(),
     onSuccess: ({ url }) => {
-      openProviderCheckoutUrl(url, { newTab: billingProvider === "waffo" });
+      openProviderCheckoutUrl(url);
     },
     onError: (error: Error) => {
       toast.error(`${t("portalError")}: ${error.message}`);
@@ -110,7 +110,7 @@ function RouteComponent() {
     const targetProvider = findPriceProvider(plansQuery.data!, priceMeta.priceId);
     const canUseDirectProviderUpgrade =
       decision.action === "upgrade" &&
-      (billingProvider === "stripe" || billingProvider === "creem") &&
+      billingProvider === "stripe" &&
       targetProvider === billingProvider;
 
     if (canUseDirectProviderUpgrade) {
@@ -157,10 +157,6 @@ function RouteComponent() {
       return t("currentPlanCta");
     }
     if (decision.reason === "subscription_upgrade") {
-      const targetProvider = findPriceProvider(plansQuery.data!, priceMeta.priceId);
-      if (billingProvider === "waffo" && targetProvider === billingProvider) {
-        return t("upgradeUnavailable");
-      }
       return t("upgradeSubscription");
     }
     if (decision.reason === "already_lifetime") {
@@ -187,15 +183,6 @@ function RouteComponent() {
       priceType: priceMeta.priceType,
       interval: priceMeta.interval,
     });
-    const targetProvider = findPriceProvider(plansQuery.data!, priceMeta.priceId);
-    if (
-      decision.reason === "subscription_upgrade" &&
-      billingProvider === "waffo" &&
-      targetProvider === billingProvider
-    ) {
-      return true;
-    }
-
     return decision.action === "disabled";
   };
 

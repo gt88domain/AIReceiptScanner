@@ -1,6 +1,6 @@
 ---
 name: easystarter-web-stripe-payments
-description: Configure Stripe payments for EasyStarter Web end-to-end. Use whenever the user mentions Stripe, payments, subscriptions, checkout, billing portal, pricing plans, webhook secret, price IDs, test cards, lifetime purchase, or wants to set up, debug, or switch Web payment providers. Also use when the user says "set up Stripe", "configure payments", "add subscription plans", "fix webhook", "switch from Creem to Stripe", or asks why checkout fails or webhook returns errors.
+description: Configure Stripe payments for EasyStarter Web end-to-end. Use whenever the user mentions Stripe, payments, subscriptions, checkout, billing portal, pricing plans, webhook secret, price IDs, test cards, lifetime purchase, or asks why checkout fails or webhook returns errors.
 ---
 
 # EasyStarter Web Stripe Payments
@@ -12,7 +12,6 @@ Stripe integration connects four pieces: the **payment plans in `app-config.ts`*
 - **Set up Stripe from scratch** → Read `references/stripe-setup-guide.md` for the full walkthrough
 - **Add or change a plan/price** → Section 1 (plan config) + create the Price in Stripe first
 - **Fix checkout/webhook errors** → Section 3 (webhook) + Section 5 (common mistakes)
-- **Switch from Creem to Stripe** → Section 2 (provider switch)
 - **Production go-live** → Section 4 (production setup)
 
 ## Section 1: Payment Plan Configuration
@@ -23,7 +22,7 @@ All plans are defined in `packages/app-config/src/app-config.ts` under `web.paym
 // packages/app-config/src/app-config.ts — lines ~261-334
 payments: {
   enabled: true,
-  provider: "stripe",   // or "creem"
+  provider: "stripe",
   plans: [
     {
       id: "free",
@@ -94,7 +93,7 @@ The provider is set in one place:
 // packages/app-config/src/app-config.ts
 web: {
   payments: {
-    provider: "stripe",   // switch to "creem" to use Creem instead
+    provider: "stripe",
   },
 },
 ```
@@ -104,7 +103,7 @@ The server payment router automatically uses the matching provider implementatio
 - Webhook handler: `apps/server/src/payments/providers/stripe/webhook/handle-event.ts`
 - Web payment routes: `apps/server/src/routers/web/payments.ts`
 
-**Switching providers**: change `provider` to `"creem"`, update env vars, and update price IDs. Keep the old provider code — don't delete it.
+Stripe is the only active Web payment provider. Update its price IDs and environment variables for each deployment.
 
 ## Section 3: Environment Variables
 

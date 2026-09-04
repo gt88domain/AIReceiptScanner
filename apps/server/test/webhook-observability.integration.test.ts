@@ -11,6 +11,7 @@ import {
 import { getPaymentProvider } from "@/payments/providers";
 import { handleWebhookEvent } from "@/payments/application/webhook-dispatch";
 import {
+  acknowledgeWebhookEvent,
   alertPendingWebhookEvents,
   claimWebhookEvent,
   replayWebhookEvent,
@@ -76,6 +77,83 @@ describe("webhook observability", () => {
       await expect(alertPendingWebhookEvents(db, "admin@example.test", { send })).resolves.toBe(0);
       expect(sent).toEqual([event!.id]);
     } finally {
+      await db.delete(billingEvent).where(eq(billingEvent.providerEventId, eventId));
+      parse.mockRestore();
+    }
+  });
+
+  it("dead-letters a refund that has no PaymentIntent instead of silently processing it", async () => {
+    const db = createDb(env.DB);
+    const eventId = crypto.randomUUID();
+    const provider = getPaymentProvider("stripe");
+    const parse = vi.spyOn(provider, "parseWebhookEvent").mockResolvedValue({
+      providerEventId: eventId,
+      type: "charge.refunded",
+      createdAt: new Date("2026-08-06T00:00:00.000Z"),
+      payload: {
+        id: eventId,
+        type: "charge.refunded",
+        created: 1_786_032_000,
+        data: {
+          object: {
+            id: "ch_without_intent",
+            amount: 1000,
+            amount_refunded: 1000,
+            refunded: true,
+            payment_intent: null,
+          },
+        },
+      },
+    });
+    try {
+      await expect(
+        handleWebhookEvent(db, { provider: "stripe", rawBody: "verified" }),
+      ).rejects.toThrow("REFUND_WITHOUT_PAYMENT_INTENT_REQUIRES_MANUAL_REVIEW");
+      const [event] = await db
+        .select()
+        .from(billingEvent)
+        .where(eq(billingEvent.providerEventId, eventId));
+      expect(event).toMatchObject({ processingStatus: "dead_letter", attemptCount: 1 });
+    } finally {
+      await db.delete(billingEvent).where(eq(billingEvent.providerEventId, eventId));
+      parse.mockRestore();
+    }
+  });
+
+  it("dead-letters a dispute that has no PaymentIntent instead of silently processing it", async () => {
+    const db = createDb(env.DB);
+    const eventId = crypto.randomUUID();
+    const provider = getPaymentProvider("stripe");
+    const parse = vi.spyOn(provider, "parseWebhookEvent").mockResolvedValue({
+      providerEventId: eventId,
+      type: "charge.dispute.created",
+      createdAt: new Date("2026-08-06T00:00:00.000Z"),
+      payload: {
+        id: eventId,
+        type: "charge.dispute.created",
+        created: 1_786_032_000,
+        data: {
+          object: {
+            id: "dp_without_intent",
+            amount: 1000,
+            currency: "usd",
+            status: "needs_response",
+            payment_intent: null,
+          },
+        },
+      },
+    });
+    try {
+      await expect(
+        handleWebhookEvent(db, { provider: "stripe", rawBody: "verified" }),
+      ).rejects.toThrow("DISPUTE_WITHOUT_PAYMENT_INTENT_REQUIRES_MANUAL_REVIEW");
+      const [event] = await db
+        .select()
+        .from(billingEvent)
+        .where(eq(billingEvent.providerEventId, eventId));
+      expect(event).toMatchObject({ processingStatus: "dead_letter", attemptCount: 1 });
+    } finally {
+      await db.delete(billingEvent).where(eq(billingEvent.providerEventId, eventId));
       parse.mockRestore();
     }
   });
@@ -185,6 +263,34 @@ describe("webhook observability", () => {
 
     const [replayed] = await db.select().from(billingEvent).where(eq(billingEvent.id, id));
     expect(replayed).toMatchObject({ processingStatus: "pending", attemptCount: 0 });
+  });
+
+  it("acknowledges a reviewed dead letter without replaying its payload", async () => {
+    const db = createDb(env.DB);
+    const id = crypto.randomUUID();
+    const now = new Date("2026-07-17T02:30:00.000Z");
+    await insertPendingEvent(id, now);
+    await db
+      .update(billingEvent)
+      .set({
+        processingStatus: "dead_letter",
+        attemptCount: 8,
+        lastError: "manual decision required",
+        deadLetteredAt: now,
+      })
+      .where(eq(billingEvent.id, id));
+
+    await expect(acknowledgeWebhookEvent(db, id)).resolves.toMatchObject({
+      processingStatus: "dead_letter",
+      lastError: "manual decision required",
+    });
+    await expect(acknowledgeWebhookEvent(db, id)).resolves.toBeNull();
+    const [acknowledged] = await db.select().from(billingEvent).where(eq(billingEvent.id, id));
+    expect(acknowledged).toMatchObject({
+      processingStatus: "processed",
+      lastError: "manual decision required",
+      deadLetteredAt: now,
+    });
   });
 
   it("does not let an expired webhook claim release a newer claim", async () => {

@@ -300,7 +300,7 @@ describe("product features", () => {
               amount: 1,
               status: "archived",
               web: {
-                provider: "creem",
+                provider: "stripe",
                 test: { providerPriceId: "test" },
                 prod: { providerPriceId: "prod" },
                 currency: "usd",

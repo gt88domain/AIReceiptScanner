@@ -3,7 +3,6 @@ import { extname, relative, resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
 const reusableComponentRoots = [
-  "apps/web/src/components/listing",
   "apps/web/src/components/public",
   "apps/web/src/components/content",
 ].map((path) => resolve(root, path));

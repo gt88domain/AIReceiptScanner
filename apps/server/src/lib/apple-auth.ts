@@ -79,7 +79,9 @@ export async function getAppleUserInfoFromIdentityToken(token: {
     return null;
   }
 
-  const email = token.user?.email || profile.email;
+  // Identity claims must come from the verified idToken. Apple's unsigned
+  // callback user object is used only to recover the first-login display name.
+  const email = profile.email;
   if (!email) {
     return null;
   }
@@ -100,7 +102,6 @@ export function getAppleProviderConfig() {
   return {
     appBundleIdentifier: env.APPLE_APP_BUNDLE_IDENTIFIER || "",
     clientId: env.APPLE_APP_BUNDLE_IDENTIFIER || "",
-    enabled: true,
     getUserInfo: getAppleUserInfoFromIdentityToken,
     verifyIdToken: verifyAppleIdentityToken,
   };

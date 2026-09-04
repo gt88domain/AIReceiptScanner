@@ -27,6 +27,7 @@ export interface PutOptions {
  * Options for list operations
  */
 export interface ListOptions {
+  limit?: number;
   prefix: string;
 }
 

@@ -1,9 +1,14 @@
 import type { Database } from "@/db";
+import { eq } from "drizzle-orm";
+import { user } from "@/db/schema/auth";
 import type { StorageData, StorageProvider } from "@/storage";
+import { getUserStoragePrefix, parseStoragePublicUrl } from "@/storage";
 import {
   createAsset as createAssetRecord,
+  createAssetIfAbsent,
   deleteAssetRecord,
   findAssetById,
+  findAssetByStorageKey,
   findOwnedAsset,
 } from "./repository";
 
@@ -60,6 +65,41 @@ export async function createAsset(
     }
     throw error;
   }
+}
+
+/**
+ * Adopts only the avatar URL persisted on this user record. The database user
+ * relation, not a key prefix, is the ownership proof for this legacy backfill.
+ */
+export async function backfillCurrentAvatarAsset(
+  db: Database,
+  storage: StorageProvider,
+  input: { ownerId: string; publicBaseUrl: string },
+) {
+  const [owner] = await db
+    .select({ image: user.image })
+    .from(user)
+    .where(eq(user.id, input.ownerId))
+    .limit(1);
+  if (!owner?.image) return null;
+
+  const parsed = parseStoragePublicUrl(input.publicBaseUrl, owner.image);
+  if (!parsed || !parsed.key.startsWith(getUserStoragePrefix("avatar", input.ownerId))) return null;
+
+  const existing = await findAssetByStorageKey(db, parsed.key);
+  if (existing) return existing.ownerId === input.ownerId ? existing : null;
+
+  const object = await storage.head(parsed.key);
+  if (!object) return null;
+  const record = await createAssetIfAbsent(db, {
+    ownerId: input.ownerId,
+    visibility: "public",
+    storageKey: object.key,
+    mimeType: object.httpMetadata?.contentType ?? "application/octet-stream",
+    size: object.size,
+    createdAt: object.uploaded,
+  });
+  return record?.ownerId === input.ownerId ? record : null;
 }
 
 /** Returns a storage object only after ownership/public-visibility authorization. */

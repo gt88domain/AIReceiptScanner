@@ -39,18 +39,6 @@ export async function handleStripeInvoiceMarkedUncollectible(
 }
 
 /**
- * Handles invoice.voided.
- */
-export async function handleStripeInvoiceVoided(
-  db: Database,
-  invoice: Stripe.Invoice,
-  providerEventAt: Date,
-  providerEventId: string,
-) {
-  await updateSubscriptionFromInvoice(db, invoice, "unpaid", providerEventAt, providerEventId);
-}
-
-/**
  * Updates local subscription rows from invoice lifecycle events.
  */
 async function updateSubscriptionFromInvoice(

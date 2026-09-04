@@ -1,13 +1,11 @@
 import { and, asc, eq, isNull, lte, or } from "drizzle-orm";
-import type { ServerPaymentProviderKey } from "@repo/app-config";
+import type { PersistedServerPaymentProviderKey } from "@repo/app-config";
 import type { Database } from "@/db";
 import { billingEvent } from "@/db/schema/payments";
 import { logSafeError } from "@/lib/safe-error";
 import { getPaymentProvider } from "../providers";
-import { handleCreemEvent } from "../providers/creem/webhook/handle-event";
 import { handleRevenueCatEvent } from "../providers/revenuecat/webhook/handle-event";
 import { handleStripeEvent } from "../providers/stripe/webhook/handle-event";
-import { handleWaffoEvent } from "../providers/waffo/webhook/handle-event";
 import { claimWebhookEvent, releaseWebhookEventClaim } from "./webhook-observability";
 import type { HandleWebhookInput } from "./types";
 
@@ -62,7 +60,7 @@ export async function handleWebhookEvent(db: Database, input: HandleWebhookInput
 
 async function findWebhookEventId(
   db: Database,
-  provider: ServerPaymentProviderKey,
+  provider: PersistedServerPaymentProviderKey,
   providerEventId: string,
 ) {
   const [existing] = await db
@@ -77,28 +75,24 @@ async function findWebhookEventId(
 
 async function dispatchWebhookPayload(
   db: Database,
-  provider: ServerPaymentProviderKey,
+  provider: PersistedServerPaymentProviderKey,
   payload: unknown,
 ) {
   switch (provider) {
     case "stripe":
       await handleStripeEvent(db, payload);
       break;
-    case "creem":
-      await handleCreemEvent(db, payload);
-      break;
-    case "waffo":
-      await handleWaffoEvent(db, payload);
-      break;
     case "revenuecat":
       await handleRevenueCatEvent(db, payload);
       break;
+    default:
+      throw new Error(`Payment provider is not active: ${String(provider)}`);
   }
 }
 
 async function dispatchClaimedWebhookEvent(
   db: Database,
-  provider: ServerPaymentProviderKey,
+  provider: PersistedServerPaymentProviderKey,
   payload: unknown,
   eventRowId: string,
   claim: NonNullable<Awaited<ReturnType<typeof claimWebhookEvent>>>,

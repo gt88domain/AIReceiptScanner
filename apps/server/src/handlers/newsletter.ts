@@ -36,7 +36,11 @@ export function createNewsletterHandler(
     if (!challenge.ok) {
       return c.json({ error: challenge.error, code: challenge.code }, challenge.status);
     }
-    if (isRequestRateLimited(c.req.raw, "newsletter", retryAfterMs)) {
+    if (
+      isRequestRateLimited(c.req.raw, "newsletter", retryAfterMs, {
+        cloudflareOnly: true,
+      })
+    ) {
       return c.json({ error: "Please wait a minute before trying again" }, 429, {
         "Retry-After": String(retryAfterMs / 1_000),
       });

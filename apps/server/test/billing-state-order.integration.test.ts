@@ -7,6 +7,7 @@ import {
   upsertBillingPurchaseIfNewer,
   upsertBillingSubscriptionIfNewer,
 } from "@/payments/infrastructure/repositories/billing-store";
+import { handleStripeEvent } from "@/payments/providers/stripe/webhook/handle-event";
 
 describe("billing state event ordering", () => {
   it("does not let an older subscription event overwrite a newer cancellation", async () => {
@@ -100,5 +101,47 @@ describe("billing state event ordering", () => {
         ),
       );
     expect(purchase).toMatchObject({ status: "refunded", providerEventId: "evt-z" });
+  });
+
+  it("does not change subscription access when an invoice is voided", async () => {
+    const db = createDb(env.DB);
+    const now = new Date("2026-08-12T00:00:00.000Z");
+    const providerSubscriptionId = crypto.randomUUID();
+    await upsertBillingSubscriptionIfNewer(db, {
+      userId: "voided-invoice-user",
+      provider: "stripe",
+      providerSubscriptionId,
+      providerCustomerId: "voided-invoice-customer",
+      planId: "pro",
+      priceId: "monthly",
+      status: "active",
+      currentPeriodEnd: null,
+      cancelAtPeriodEnd: false,
+      startedAt: now,
+      endedAt: null,
+      providerEventAt: now,
+      providerEventId: "evt_subscription_active",
+    });
+
+    await handleStripeEvent(db, {
+      id: "evt_invoice_voided",
+      type: "invoice.voided",
+      created: Math.floor((now.getTime() + 1000) / 1000),
+      data: {
+        object: {
+          id: "in_voided",
+          parent: { subscription_details: { subscription: providerSubscriptionId } },
+        },
+      },
+    });
+
+    const [subscription] = await db
+      .select()
+      .from(billingSubscription)
+      .where(eq(billingSubscription.providerSubscriptionId, providerSubscriptionId));
+    expect(subscription).toMatchObject({
+      status: "active",
+      providerEventId: "evt_subscription_active",
+    });
   });
 });

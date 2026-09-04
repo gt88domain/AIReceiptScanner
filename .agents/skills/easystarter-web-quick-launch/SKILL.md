@@ -107,14 +107,13 @@ auth: {
     googleEnabled: true,       // needs GOOGLE_CLIENT_ID + SECRET
     githubEnabled: true,       // needs GITHUB_CLIENT_ID + SECRET
     appleEnabled: true,        // needs Apple developer setup
-    smsEnabled: true,          // needs Aliyun SMS credentials
   },
 },
 
 // Web payments -- update providerPriceId values from your Stripe dashboard
 payments: {
   enabled: true,
-  provider: "stripe",          // or "creem"
+  provider: "stripe",
   plans: [
     { id: "free" },
     { id: "pro", prices: [

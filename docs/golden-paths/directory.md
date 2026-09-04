@@ -4,13 +4,13 @@ Use this path to connect an existing searchable catalog or content directory to
 EasyStarter. It is a recipe, not a directory framework: the product retains its
 database, URL contract, SEO, taxonomy, cards, filters, and editorial model.
 
-## Presentation primitives and adapter contract
+## Product-owned presentation and adapter contract
 
-The route-independent components under `apps/web/src/components/listing/`
-provide the reusable presentation frame. They do not register routes, fetch
-data, define a resource schema, choose canonical URLs, or persist saved items.
-Import the component you need from its file; there is no required aggregate
-adapter or preview layer.
+EasyStarter intentionally does not ship a generic listing framework. Build the
+directory presentation inside the product module by composing the existing
+controls under `apps/web/src/components/ui/` and, for detail pages, the layout
+under `apps/web/src/components/public/`. The preview-only design-system gallery
+shows compositions but is not an application API.
 
 The product adapter is the route, loader, and state code that connects these
 components to one product domain. It owns:
@@ -24,28 +24,10 @@ components to one product domain. It owns:
 - pagination URLs, canonical/noindex policy, and server-side data access; and
 - guest sign-in and authenticated persistence for save actions.
 
-The components own rendering and interaction only:
-
-- `ListingShell` arranges an optional desktop rail, mobile `FilterDrawer`,
-  header, tabs, toolbar, and result content. `ListingPage.tabs` is absent by
-  default; a product may supply tabs only when the views are true peers.
-- `ListingFacetRail`, `ListingSearchInput`, and `ListingSortSelect` are
-  controlled inputs. Their callbacks update product-owned state.
-- `ListingToolbar` lays out search, summary, sort, and actions. Its summary is
-  a polite status region; the result grid is deliberately not live.
-- `ListingGrid` receives items, `getItemKey`, and `renderItem`.
-  `ListingMediaCard` receives product-rendered media, title, description,
-  badge, footer, and actions.
-- `ListingLoadingState`, `ListingEmptyState`, and `ListingErrorState` render
-  product-selected states. `ListingLoadMore` is an interaction-only command:
-  the adapter should append the next batch without resetting scroll position,
-  and the primitive imposes no total-item cap. Use `ListingPagination` for
-  crawlable anchor pagination when that component is available.
-- `ListingSaveButton` is controlled by `saved`; it does not authenticate or
-  write a user-resource relation.
-- `ListingPage` composes a route-neutral listing frame. `RankingPage` receives
-  an already-ranked slice, `rankStart`, `rankLabel`, and a row renderer; it
-  never calculates ranking policy.
+The product component owns rendering and interaction as well as its data
+contract. Prefer direct composition over introducing a shared abstraction for
+one directory. Extract a new shared primitive only after multiple independent
+products prove the same behavior and substantially the same props.
 
 `PublicDetailLayout` from `apps/web/src/components/public/` provides optional
 breadcrumbs, metadata, actions, visual, aside, and related-content slots around
@@ -54,18 +36,15 @@ action behavior. `Prose` from `apps/web/src/components/content/` styles
 already-rendered semantic HTML; compilation, sanitization, embeds, and content
 data remain product responsibilities.
 
-All text reaches these primitives through props or children. The shared
-components do not read product message catalogs. They consume the semantic skin
-tokens from `apps/web/src/styles/index.css`; products may select or override a
-skin without branching component logic.
+All product text remains in the product module or message catalog. Reused UI
+controls consume semantic skin tokens from `apps/web/src/styles/index.css`;
+products may select or override a skin without branching shared component
+logic.
 
-Downstream products may select a skin, change its token values, compose their
-own layout, or replace these public presentation components in the product
-layer. Prefer composition or a product-owned component over a growing
-`className` patch against shared internals. Keep the shared primitive only when
-its structure and behavior still fit; propose an upstream state when multiple
-products need the same variation. This visual freedom does not extend to auth,
-billing, data ownership, or other protected core behavior.
+Downstream products may select a skin, change its token values, and compose
+their own layout in the product layer. Prefer a product-owned component over a
+growing `className` patch against shared internals. This visual freedom does not
+extend to auth, billing, data ownership, or other protected core behavior.
 
 No component in this kit creates `/domains`, `/rankings`, `/favorites`, detail,
 or any other default route. Add only the URL families your product owns, and

@@ -131,6 +131,11 @@ export function createAuth(
       provider: "sqlite",
       schema,
     }),
+    user: {
+      // Admin authorization is email-based, so self-service email changes are
+      // disabled rather than creating a second privilege-sensitive workflow.
+      changeEmail: { enabled: false },
+    },
     account: {
       encryptOAuthTokens: true,
       accountLinking: {
@@ -143,8 +148,7 @@ export function createAuth(
     },
     session: {
       cookieCache: {
-        enabled: true,
-        maxAge: 60 * 60,
+        enabled: false,
       },
       expiresIn: 60 * 60 * 24 * 7,
       updateAge: 60 * 60 * 24,

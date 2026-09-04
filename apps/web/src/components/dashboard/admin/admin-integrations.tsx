@@ -28,8 +28,6 @@ const integrationDetails = {
   google: { name: "Google", description: "OAuth sign-in provider", icon: KeyRoundIcon },
   apple: { name: "Apple", description: "OAuth sign-in provider", icon: KeyRoundIcon },
   stripe: { name: "Stripe", description: "Web billing provider", icon: CreditCardIcon },
-  creem: { name: "Creem", description: "Web billing provider", icon: CreditCardIcon },
-  waffo: { name: "Waffo", description: "Web billing provider", icon: CreditCardIcon },
   revenuecat: { name: "RevenueCat", description: "Native billing provider", icon: CreditCardIcon },
   resend: { name: "Resend", description: "Transactional email delivery", icon: MailIcon },
 } as const;

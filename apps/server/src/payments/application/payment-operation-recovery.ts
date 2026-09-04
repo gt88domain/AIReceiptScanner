@@ -127,13 +127,28 @@ async function executeClaimedOperation(
     await completePaymentOperation(db, operation.id, now);
     return;
   }
+  const metadata: Record<string, string> = {
+    paymentOperationId: operation.id,
+    userId: operation.userId,
+    provider: operation.provider,
+  };
+  if (operation.operationType === "credit_checkout") {
+    if (!operation.relatedResourceId) throw new Error("Credit checkout order missing");
+    metadata.kind = "credit_purchase";
+    metadata.creditPackageId = stringField(request, "packageId");
+    metadata.creditOrderId = operation.relatedResourceId;
+  } else {
+    metadata.checkoutSessionId = operation.id;
+    metadata.planId = stringField(request, "planId");
+    metadata.priceId = stringField(request, "priceId");
+  }
   const result = await provider.createCheckoutSession({
     mode: stringField(request, "mode") === "subscription" ? "subscription" : "payment",
     lineItems: [{ priceId: stringField(request, "providerPriceId"), quantity: 1 }],
     currency: stringField(request, "currency"),
     successUrl: stringField(request, "successUrl", false) ?? stringField(request, "returnUrl"),
     cancelUrl: stringField(request, "cancelUrl", false) ?? stringField(request, "returnUrl"),
-    metadata: { paymentOperationId: operation.id, userId: operation.userId },
+    metadata,
     idempotencyKey: operation.operationKey,
   });
   const updated = await savePaymentOperationProviderResult(

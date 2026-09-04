@@ -1,6 +1,7 @@
 // Cloudflare Workers environment types
 interface CloudflareEnv {
   API_SERVICE: Fetcher;
+  VITE_SERVER_URL: string;
   // Add other bindings as needed
 }
 

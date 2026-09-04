@@ -8,6 +8,7 @@ import {
   claimPaymentOperation,
   failPaymentOperation,
   getOrCreatePaymentOperation,
+  resolvePaymentOperationManualReview,
   retryPaymentOperation,
 } from "@/payments/application/payment-operation";
 import { reconcilePaymentOperations } from "@/payments/application/payment-operation-recovery";
@@ -249,5 +250,195 @@ describe("payment operation scope ownership", () => {
       .where(eq(paymentOperation.id, operation.id));
     expect(failed).toMatchObject({ status: "failed", retryable: false, nextRetryAt: null });
     await expect(retryPaymentOperation(db, operation.id, now)).resolves.toBe(false);
+  });
+
+  it("isolates expired provider retries without aborting later recovery work", async () => {
+    const db = createDb(env.DB);
+    const userId = crypto.randomUUID();
+    const now = new Date("2026-08-10T12:00:00.000Z");
+    await db.insert(user).values({
+      id: userId,
+      name: "Expired Retry Test",
+      email: `${userId}@example.test`,
+      emailVerified: true,
+      phoneNumber: null,
+      phoneNumberVerified: false,
+      image: null,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+    });
+    const expired = await getOrCreatePaymentOperation(db, {
+      userId,
+      provider: "stripe",
+      operationType: "checkout",
+      operationId: crypto.randomUUID(),
+      requestHash: "expired-retry-hash",
+      requestJson:
+        '{"version":1,"payload":{"planId":"pro","priceId":"monthly","mode":"subscription"}}',
+      idempotencyMode: "native",
+      relatedResourceType: "checkout_session",
+    });
+    await db
+      .update(paymentOperation)
+      .set({
+        createdAt: new Date(now.getTime() - 24 * 60 * 60 * 1000),
+        updatedAt: new Date(now.getTime() - 24 * 60 * 60 * 1000),
+      })
+      .where(eq(paymentOperation.id, expired.id));
+    const finalizable = await getOrCreatePaymentOperation(db, {
+      userId,
+      provider: "stripe",
+      operationType: "checkout",
+      operationId: crypto.randomUUID(),
+      requestHash: "later-finalization-hash",
+      requestJson:
+        '{"version":1,"payload":{"planId":"pro","priceId":"monthly","mode":"subscription"}}',
+      idempotencyMode: "native",
+      relatedResourceType: "checkout_session",
+    });
+    await db
+      .update(paymentOperation)
+      .set({
+        status: "provider_succeeded",
+        providerResourceId: "cs_later",
+        resultJson:
+          '{"providerSessionId":"cs_later","url":"https://checkout.example.test/later","expiresAt":null}',
+      })
+      .where(eq(paymentOperation.id, finalizable.id));
+
+    await expect(reconcilePaymentOperations(db, now)).resolves.toBe(1);
+    const [isolated] = await db
+      .select()
+      .from(paymentOperation)
+      .where(eq(paymentOperation.id, expired.id));
+    const [completed] = await db
+      .select()
+      .from(paymentOperation)
+      .where(eq(paymentOperation.id, finalizable.id));
+    expect(isolated).toMatchObject({
+      status: "manual_review",
+      manualReviewCode: "PAYMENT_OPERATION_IDEMPOTENCY_WINDOW_EXPIRED",
+    });
+    expect(completed).toMatchObject({ status: "completed" });
+  });
+
+  it("resolves manual review only within safe idempotency and scope boundaries", async () => {
+    const db = createDb(env.DB);
+    const userId = crypto.randomUUID();
+    const now = new Date();
+    await db.insert(user).values({
+      id: userId,
+      name: "Manual Review Test",
+      email: `${userId}@example.test`,
+      emailVerified: true,
+      phoneNumber: null,
+      phoneNumberVerified: false,
+      image: null,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+    });
+    const native = await getOrCreatePaymentOperation(db, {
+      userId,
+      provider: "stripe",
+      operationType: "checkout",
+      operationId: crypto.randomUUID(),
+      requestHash: "manual-native-hash",
+      requestJson: '{"version":1,"payload":{}}',
+      idempotencyMode: "native",
+    });
+    await db
+      .update(paymentOperation)
+      .set({ status: "manual_review", attemptCount: 4, manualReviewCode: "MAX_ATTEMPTS" })
+      .where(eq(paymentOperation.id, native.id));
+    await expect(
+      resolvePaymentOperationManualReview(db, native.id, "requeue", now),
+    ).resolves.toMatchObject({ resolved: true, reason: null });
+    const [requeued] = await db
+      .select()
+      .from(paymentOperation)
+      .where(eq(paymentOperation.id, native.id));
+    expect(requeued).toMatchObject({ status: "pending", attemptCount: 0 });
+
+    const localOnly = await getOrCreatePaymentOperation(db, {
+      userId,
+      provider: "stripe",
+      operationType: "checkout",
+      operationId: crypto.randomUUID(),
+      requestHash: "manual-local-hash",
+      requestJson: '{"version":1,"payload":{}}',
+      idempotencyMode: "local_only",
+    });
+    await db
+      .update(paymentOperation)
+      .set({ status: "manual_review", manualReviewCode: "AMBIGUOUS" })
+      .where(eq(paymentOperation.id, localOnly.id));
+    await expect(
+      resolvePaymentOperationManualReview(db, localOnly.id, "requeue", now),
+    ).resolves.toEqual({ resolved: false, reason: "UNSAFE_NON_IDEMPOTENT_RETRY" });
+    await expect(
+      resolvePaymentOperationManualReview(db, localOnly.id, "mark_failed", now),
+    ).resolves.toMatchObject({ resolved: true, reason: null });
+    const [closed] = await db
+      .select()
+      .from(paymentOperation)
+      .where(eq(paymentOperation.id, localOnly.id));
+    expect(closed).toMatchObject({
+      status: "failed",
+      manualReviewCode: "AMBIGUOUS",
+      retryable: false,
+    });
+
+    const expired = await getOrCreatePaymentOperation(db, {
+      userId,
+      provider: "stripe",
+      operationType: "checkout",
+      operationId: crypto.randomUUID(),
+      requestHash: "manual-expired-hash",
+      requestJson: '{"version":1,"payload":{}}',
+      idempotencyMode: "native",
+    });
+    await db
+      .update(paymentOperation)
+      .set({
+        status: "manual_review",
+        createdAt: new Date(now.getTime() - 24 * 60 * 60 * 1000),
+      })
+      .where(eq(paymentOperation.id, expired.id));
+    await expect(
+      resolvePaymentOperationManualReview(db, expired.id, "requeue", now),
+    ).resolves.toEqual({ resolved: false, reason: "IDEMPOTENCY_WINDOW_EXPIRED" });
+
+    const scopeKey = `subscription:stripe:${crypto.randomUUID()}`;
+    const reviewedScope = await getOrCreatePaymentOperation(db, {
+      userId,
+      provider: "stripe",
+      operationType: "subscription_upgrade",
+      operationId: crypto.randomUUID(),
+      requestHash: "reviewed-scope-hash",
+      requestJson: '{"version":1,"payload":{}}',
+      idempotencyMode: "native",
+      scopeKey,
+      relatedResourceType: "subscription",
+    });
+    await db
+      .update(paymentOperation)
+      .set({ status: "manual_review" })
+      .where(eq(paymentOperation.id, reviewedScope.id));
+    await getOrCreatePaymentOperation(db, {
+      userId,
+      provider: "stripe",
+      operationType: "subscription_upgrade",
+      operationId: crypto.randomUUID(),
+      requestHash: "active-scope-hash",
+      requestJson: '{"version":1,"payload":{}}',
+      idempotencyMode: "native",
+      scopeKey,
+      relatedResourceType: "subscription",
+    });
+    await expect(
+      resolvePaymentOperationManualReview(db, reviewedScope.id, "requeue", now),
+    ).resolves.toEqual({ resolved: false, reason: "ACTIVE_SCOPE_CONFLICT" });
   });
 });

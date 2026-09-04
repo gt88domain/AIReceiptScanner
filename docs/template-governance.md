@@ -1,7 +1,8 @@
 # Template governance
 
-`GOVERNANCE.md` is the concise root entry point for contributors and AI agents.
-This document provides the operational detail for that policy.
+`AGENTS.md` is the sole normative instruction source for contributors and AI
+agents. `GOVERNANCE.md` is a stable root pointer; this document explains the
+ownership and release rationale without creating a second instruction source.
 
 EasyStarter is a governed upstream template, not a product. Its job is to keep
 the infrastructure that every downstream SaaS relies on stable, secure, and
@@ -61,9 +62,9 @@ release dependency.
 ## Merge gate
 
 For this single-maintainer template, every ready (non-Draft) PR is squash merged
-automatically only after `Quality` (`static`, `test`, and `build`), OSV, and—when
-the changed paths require it—the optional Mobile check have succeeded on its
-current head commit. Draft PRs are never merged automatically.
+automatically only after `Quality` (`static`, `test`, and `build`), OSV, and,
+when the changed paths require it, the optional Mobile check have succeeded on
+its current head commit. Draft PRs are never merged automatically.
 
 Fork PRs never merge automatically. Changes to CI, scripts, template tooling,
 dependency manifests, or server auth, payments, credits, database, and server
@@ -75,11 +76,11 @@ may change only `CHANGELOG.md`, `.release-please-manifest.json`, and
 Release Please PRs use the identical gate. GitHub does not emit a
 `pull_request` event for a PR created with `GITHUB_TOKEN`, so the release
 workflow explicitly dispatches Quality and OSV (and Mobile when relevant).
-For the generated release branch, the dispatched Quality workflow performs the
-same final OSV/Mobile check and squash merge itself; GitHub suppresses the
-following `workflow_run` event from that token chain. Because a `GITHUB_TOKEN`
-merge also does not produce a new `push` workflow run, each successful merge
-explicitly dispatches Release Please.
+After dispatched Quality succeeds, it emits a repository event to the sole
+merge implementation in `auto-merge.yml`; that implementation waits briefly
+for the other required checks and revalidates the exact head SHA before merge.
+Because a `GITHUB_TOKEN` merge also does not produce a new `push` workflow run,
+each successful merge explicitly dispatches Release Please.
 
 ## Main provenance audit
 

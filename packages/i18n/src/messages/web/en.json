@@ -198,34 +198,18 @@
   },
   "auth": {
     "email": "Email",
-    "phoneNumber": "Phone number",
     "password": "Password",
-    "verificationCode": "Verification code",
     "emailPasswordMode": "Password",
     "orContinueWith": "Or continue with",
     "loginWithGithub": "Login with Github",
     "loginWithGoogle": "Login with Google",
     "enterEmail": "Enter your email",
-    "enterPhoneNumber": "Enter your phone number",
     "enterPassword": "Enter your password",
-    "enterVerificationCode": "Enter the 6-digit code",
-    "phoneNumberDescription": "Use a mainland China phone number format, for example 13800138000.",
-    "sendCode": "Send Code",
-    "sendingCode": "Sending...",
-    "verifyCode": "Verify Code",
-    "verifyingCode": "Verifying...",
-    "resendCode": "Resend Code",
-    "resendCodeIn": "Resend in {seconds}s",
-    "changePhoneNumber": "Change Number",
-    "phoneCodeSent": "Verification code sent to {phoneNumber}",
-    "phoneOtpSentDescription": "We sent a verification code to {phoneNumber}.",
     "termsAgreement": "By clicking continue, you agree to our <termsLink>Terms of Service</termsLink> and <privacyLink>Privacy Policy</privacyLink>.",
     "termsOfService": "Terms of Service",
     "privacyPolicy": "Privacy Policy",
     "validation": {
       "invalidEmail": "Invalid email address",
-      "invalidPhone": "Enter a valid mainland China phone number",
-      "invalidVerificationCode": "Enter the 6-digit verification code",
       "passwordRequired": "Password is required",
       "nameMinLength": "Name must be at least 2 characters",
       "passwordMinLength": "Password must be at least 8 characters",
@@ -235,10 +219,7 @@
   "signIn": {
     "title": "Welcome back",
     "description": "Sign in with your email and password",
-    "phoneDescription": "Use your phone number to receive a one-time verification code",
-    "phoneOtpDescription": "Enter the verification code we sent to your phone",
     "emailTab": "Email",
-    "phoneTab": "Phone",
     "login": "Login",
     "loggingIn": "Logging in...",
     "forgotPassword": "Forgot your password?",
@@ -527,7 +508,7 @@
         "email": "Email",
         "emailDescription": "Your email address is used for sign in and notifications.",
         "phone": "Phone number",
-        "phoneDescription": "Your verified phone number is available for sign in.",
+        "phoneDescription": "A legacy phone number may be shown for migrated accounts. SMS sign-in is unavailable.",
         "notLinked": "Not linked",
         "avatar": "Avatar",
         "avatarDescription": "This is your profile picture.",
@@ -567,7 +548,7 @@
         "statusError": "Unable to load password status."
       },
       "phone": {
-        "title": "Phone sign-in",
+        "title": "Legacy phone account",
         "verified": "Verified",
         "verifiedNumber": "Verified number: {phoneNumber}"
       }
@@ -591,7 +572,7 @@
   },
   "seo": {
     "home": {
-      "description": "TanStack Template is a modern full-stack TypeScript SaaS template with auth, billing, i18n, and deployment workflows built in."
+      "description": "EasyStarter is a production-ready foundation for paid web products, with authentication, billing, i18n, and Cloudflare deployment built in."
     },
     "noIndex": {
       "descriptionTemplate": "{page} pages are private workflows and are excluded from search indexing.",

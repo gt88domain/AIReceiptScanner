@@ -7,7 +7,9 @@ import type { Context } from "@/lib/context";
 import { buildDeletedAccountUserUpdate } from "@/lib/auth-session-guard";
 import { isContactDeliveryAvailable } from "@/lib/contact-delivery";
 import { protectedProcedure, publicProcedure } from "@/lib/orpc";
-import { getStoragePublicBaseUrl, getUserStoragePrefix, parseStoragePublicUrl } from "@/storage";
+import { getStoragePublicBaseUrl, parseStoragePublicUrl } from "@/storage";
+import { findOwnedAssetByStorageKey } from "@/modules/assets/repository";
+import { backfillCurrentAvatarAsset, deleteAsset } from "@/modules/assets/service";
 import {
   normalizeAvatarForOutput,
   normalizeAvatarUrl,
@@ -32,21 +34,23 @@ function normalizeUserForOutput(userItem: z.infer<typeof userSchema>, serverUrl:
   return { ...normalized, name: getVisibleUserName(normalized) };
 }
 
-async function deleteOwnedAvatar(context: Context, userId: string, image: string) {
+async function deleteTrackedAvatar(context: Context, userId: string, image: string) {
   if (!context.storage) return;
   const publicBaseUrl = getStoragePublicBaseUrl(context.env.SERVER_URL);
   const parsedStorageUrl = parseStoragePublicUrl(publicBaseUrl, image);
-  if (!parsedStorageUrl?.key.startsWith(getUserStoragePrefix("avatar", userId))) {
-    return;
-  }
+  if (!parsedStorageUrl) return;
+  const record = await findOwnedAssetByStorageKey(context.db, parsedStorageUrl.key, userId);
+  if (!record) return;
 
-  await context.storage.delete(parsedStorageUrl.key).catch((error) => {
-    console.error("Failed to delete unused avatar", {
-      error: error instanceof Error ? error.message : "Unknown error",
-      key: parsedStorageUrl.key,
-      userId,
-    });
-  });
+  await deleteAsset(context.db, context.storage, { assetId: record.id, ownerId: userId }).catch(
+    (error) => {
+      console.error("Failed to delete unused avatar", {
+        error: error instanceof Error ? error.message : "Unknown error",
+        assetId: record.id,
+        userId,
+      });
+    },
+  );
 }
 
 export const usersRouter = {
@@ -180,6 +184,13 @@ export const usersRouter = {
           : null;
       let updatedUser: typeof user.$inferSelect | undefined;
       try {
+        if (currentUser?.image && currentUser.image !== normalizedInput.image && context.storage) {
+          await backfillCurrentAvatarAsset(context.db, context.storage, {
+            ownerId: userId,
+            publicBaseUrl: getStoragePublicBaseUrl(context.env.SERVER_URL),
+          });
+        }
+
         [updatedUser] = await db
           .update(user)
           .set({
@@ -196,13 +207,13 @@ export const usersRouter = {
         }
       } catch (error) {
         if (stagedAvatar) {
-          await deleteOwnedAvatar(context, userId, stagedAvatar);
+          await deleteTrackedAvatar(context, userId, stagedAvatar);
         }
         throw error;
       }
 
       if (currentUser?.image && currentUser.image !== updatedUser.image) {
-        await deleteOwnedAvatar(context, userId, currentUser.image);
+        await deleteTrackedAvatar(context, userId, currentUser.image);
       }
 
       return normalizeUserForOutput(updatedUser, context.env.SERVER_URL);

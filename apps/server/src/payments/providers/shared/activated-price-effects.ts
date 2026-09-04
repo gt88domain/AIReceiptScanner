@@ -55,6 +55,9 @@ async function cancelLowerTierSubscriptionsAtPeriodEnd(
     if (!cancellableStatuses.has(subscription.status) || subscription.cancelAtPeriodEnd) {
       continue;
     }
+    if (subscription.provider !== "stripe") {
+      continue;
+    }
 
     const price = findPriceById(subscription.priceId);
     if (!price) {

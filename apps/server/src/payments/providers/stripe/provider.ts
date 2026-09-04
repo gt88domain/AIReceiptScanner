@@ -1,4 +1,5 @@
 import { env } from "cloudflare:workers";
+import { HTTPException } from "hono/http-exception";
 import Stripe from "stripe";
 import type {
   CreateCheckoutInput,
@@ -195,14 +196,16 @@ export function createStripePaymentProvider(): PaymentProvider {
     async parseWebhookEvent(input: WebhookInput): Promise<ParsedWebhookEvent> {
       const signature = input.signature ?? undefined;
       if (!signature) {
-        throw new Error("Missing Stripe webhook signature");
+        throw new HTTPException(400, { message: "Invalid Stripe webhook signature" });
       }
 
-      const event = await stripe.webhooks.constructEventAsync(
-        input.rawBody,
-        signature,
-        requireWebhookSecret(),
-      );
+      let event: Stripe.Event;
+      const webhookSecret = requireWebhookSecret();
+      try {
+        event = await stripe.webhooks.constructEventAsync(input.rawBody, signature, webhookSecret);
+      } catch {
+        throw new HTTPException(400, { message: "Invalid Stripe webhook signature" });
+      }
 
       return {
         providerEventId: event.id,

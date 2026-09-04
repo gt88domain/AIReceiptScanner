@@ -1,14 +1,8 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { getCurrentUser } from "@/lib/auth/auth-server";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { requireAuthenticatedUser } from "@/lib/auth/require-user";
 
 export const Route = createFileRoute("/billing")({
-  beforeLoad: async () => {
-    const user = await getCurrentUser();
-    if (!user) {
-      throw redirect({ to: "/auth/sign-in" });
-    }
-    return { user };
-  },
+  beforeLoad: ({ location }) => requireAuthenticatedUser(location.href),
   component: RouteComponent,
 });
 

@@ -21,8 +21,11 @@ historical records as dated evidence, not as instructions for the current tree.
 
 ## Architecture and governance
 
-- [Governance](../GOVERNANCE.md) and
+- [Normative repository instructions](../AGENTS.md), the stable
+  [governance pointer](../GOVERNANCE.md), and
   [architecture boundaries](./architecture-boundaries.md)
+- [Tooling governance](./tooling-governance.md): active checks, archived skills,
+  and the guarded object owned by each script
 - [Platform composition](./platform-composition.md) and
   [platform modules](./modules.md)
 - [Configuration architecture](./config-architecture.md)

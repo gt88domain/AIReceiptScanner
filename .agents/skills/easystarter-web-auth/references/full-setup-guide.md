@@ -32,7 +32,6 @@ auth: {
   methods: {
     emailPasswordEnabled: true,   // needs RESEND_API_KEY for verification emails
     emailOtpEnabled: false,       // needs RESEND_API_KEY
-    smsEnabled: false,            // needs ALIBABA_CLOUD_ACCESS_KEY_*
     githubEnabled: true,          // needs GITHUB_CLIENT_ID + SECRET
     googleEnabled: true,          // needs GOOGLE_CLIENT_ID + SECRET
     appleEnabled: false,          // needs APPLE_APP_BUNDLE_IDENTIFIER

@@ -29,7 +29,7 @@ auth, payments, credits, jobs, storage, database, shared packages, or CI.
 | **Database**     | Cloudflare D1 (SQLite) + Drizzle ORM                            |
 | **API**          | oRPC (end-to-end type-safe)                                     |
 | **Auth**         | Better Auth (Email/Password, GitHub, Google, Apple)             |
-| **Payments**     | Stripe, Creem, or Waffo; optional RevenueCat mobile             |
+| **Payments**     | Stripe; optional RevenueCat mobile                              |
 | **Mobile**       | Optional React Native + Expo capability                         |
 | **Email**        | Resend + React Email templates                                  |
 | **i18n**         | use-intl (English published; Chinese/Japanese catalogs dormant) |
@@ -65,7 +65,7 @@ auth, payments, credits, jobs, storage, database, shared packages, or CI.
 ### Business Features
 
 - Multi-tier pricing system
-- Web payments via Stripe, Creem, or Waffo
+- Web payments via Stripe
 - Optional native in-app purchases via RevenueCat
 - Built-in credits system (grants, balances, orders)
 - User management dashboard
@@ -246,22 +246,12 @@ EMAIL_FROM=noreply@yourdomain.com
 
 ### Payments Setup
 
-Web checkout supports Stripe, Creem, and Waffo; an enabled mobile app uses
-RevenueCat:
+Web checkout uses Stripe; an enabled mobile app uses RevenueCat:
 
 ```bash
 # Stripe (web)
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
-
-# Creem (web)
-CREEM_API_KEY=your_creem_api_key
-CREEM_WEBHOOK_SECRET=your_creem_webhook_secret
-
-# Waffo (web)
-WAFFO_MERCHANT_ID=your_merchant_id
-WAFFO_PRIVATE_KEY=your_private_key
-WAFFO_ENVIRONMENT=test
 
 # RevenueCat (optional mobile)
 REVENUECAT_WEBHOOK_SECRET=your_revenuecat_webhook_secret

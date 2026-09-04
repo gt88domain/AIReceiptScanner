@@ -5,6 +5,7 @@
 
 import { createIsomorphicFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
+import { parseLocaleCookieString } from "@repo/i18n";
 
 import {
   defaultLocale,
@@ -37,13 +38,7 @@ function resolvePublicLocale(pathname: string, cookieString: string | null): Loc
 /**
  * Parse locale from cookie string (works on both server and client)
  */
-export function parseLocaleCookie(cookieString: string | null): Locale | null {
-  if (!cookieString) return null;
-
-  const match = new RegExp(`${LOCALE_COOKIE}=([^;]+)`).exec(cookieString);
-  const locale = match?.[1];
-  return locale && isValidLocale(locale) ? locale : null;
-}
+export const parseLocaleCookie = parseLocaleCookieString;
 
 /**
  * Set locale cookie (client-side)

@@ -1,5 +1,5 @@
 import { ACTIVE_SUBSCRIPTION_STATUSES, type NormalizedPlan } from "@repo/app-config/payments/web";
-import { SUPPORTED_WEB_PAYMENT_PROVIDERS, type ServerPaymentProviderKey } from "@repo/app-config";
+import { SUPPORTED_WEB_PAYMENT_PROVIDERS } from "@repo/app-config";
 import { toNullable } from "@repo/shared";
 import { and, desc, eq } from "drizzle-orm";
 import type { Database } from "@/db";
@@ -109,9 +109,7 @@ export async function getBillingStatus(db: Database, user: BillingUser): Promise
   const canManageBilling =
     (currentEntitlement.source === "subscription" || currentEntitlement.source === "lifetime") &&
     billingProvider !== null &&
-    (SUPPORTED_WEB_PAYMENT_PROVIDERS as readonly ServerPaymentProviderKey[]).includes(
-      billingProvider,
-    );
+    (SUPPORTED_WEB_PAYMENT_PROVIDERS as readonly string[]).includes(billingProvider);
 
   return {
     userId: user.userId,

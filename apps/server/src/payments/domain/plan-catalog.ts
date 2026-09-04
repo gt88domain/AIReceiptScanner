@@ -9,7 +9,7 @@ import {
   type NormalizedNativePlan,
   nativePaymentsConfig,
 } from "@repo/app-config/payments/native";
-import type { ServerPaymentProviderKey } from "@repo/app-config";
+import type { PersistedServerPaymentProviderKey, ServerPaymentProviderKey } from "@repo/app-config";
 
 type WebCatalogPrice = NormalizedPlan["prices"][number];
 type NativeCatalogPrice = NormalizedNativePlan["prices"][number];
@@ -100,7 +100,7 @@ function findBillingPriceById(priceId: string): BillingCatalogPrice | undefined 
  * Finds the billing price that matches a persisted provider billing record.
  */
 function findBillingPriceForRecord(input: {
-  provider: ServerPaymentProviderKey;
+  provider: PersistedServerPaymentProviderKey;
   planId: string;
   priceId: string;
 }): BillingCatalogPrice | undefined {
