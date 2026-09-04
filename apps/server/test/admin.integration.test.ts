@@ -270,7 +270,10 @@ describe("administrator RPC authorization", () => {
       }),
     ]);
     expect(concurrentResolutions.filter((result) => result.resolved)).toHaveLength(1);
-    expect(concurrentResolutions.filter((result) => !result.resolved)).toHaveLength(1);
+    const failedResolution = concurrentResolutions.find((result) => !result.resolved);
+    expect(failedResolution?.reason).toEqual(
+      expect.stringMatching(/^(NOT_IN_MANUAL_REVIEW|STATUS_CHANGED)$/),
+    );
     await expect(client.admin.retryFailedJob({ id: failedJobEventId })).resolves.toEqual({
       retried: true,
     });
