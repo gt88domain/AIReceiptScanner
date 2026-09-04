@@ -20,7 +20,6 @@
     "test:content-surface": "pnpm --filter web build && pnpm check:brand-safety && node scripts/check-content-surface.mjs",
     "preview:backoffice": "BACKOFFICE_PREVIEW=1 node apps/server/scripts/preview-backoffice.mjs",
     "docs:facts-check": "node scripts/check-repository-facts.mjs && node scripts/check-module-feature-todo.mjs",
-    "docs:todo-check": "node scripts/check-module-feature-todo.mjs",
     "check:expo-auth-compatibility": "node scripts/check-expo-auth-compatibility.mjs",
     "check:development-isolation": "node scripts/check-development-isolation.mjs",
     "check:boundaries": "node scripts/check-architecture-boundaries.mjs",
