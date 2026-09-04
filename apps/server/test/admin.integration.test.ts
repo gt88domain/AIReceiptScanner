@@ -4,7 +4,7 @@ import type { AppRouterClient } from "@/routers";
 import { createDb } from "@/db";
 import { creditOrder } from "@/db/schema/credits";
 import { failedJobEvent, job, jobOutbox } from "@/db/schema/jobs";
-import { billingPurchase, billingSubscription } from "@/db/schema/payments";
+import { billingEvent, billingPurchase, billingSubscription } from "@/db/schema/payments";
 import { recordAdminAuditLog } from "@/modules/audit";
 import { describe, expect, it } from "vitest";
 
@@ -82,6 +82,23 @@ describe("administrator RPC authorization", () => {
       after: { status: "published" },
     });
     const db = createDb(env.DB);
+    const deadLetteredAt = new Date();
+    const deadLetterIds = [crypto.randomUUID(), crypto.randomUUID()];
+    await db.insert(billingEvent).values(
+      deadLetterIds.map((id) => ({
+        id,
+        provider: "stripe" as const,
+        providerEventId: `provider-${id}`,
+        eventType: "charge.refunded",
+        processedAt: deadLetteredAt,
+        payloadJson: "{}",
+        processingStatus: "dead_letter" as const,
+        firstReceivedAt: deadLetteredAt,
+        attemptCount: 1,
+        lastError: "manual review",
+        deadLetteredAt,
+      })),
+    );
     const jobId = crypto.randomUUID();
     const failedJobEventId = crypto.randomUUID();
     const now = new Date();
@@ -160,6 +177,15 @@ describe("administrator RPC authorization", () => {
     await expect(client.admin.overview()).resolves.toMatchObject({
       stats: { users: expect.any(Number) },
     });
+    const firstDeadLetterPage = await client.admin.listDeadLetterWebhooks({ limit: 1 });
+    expect(firstDeadLetterPage.items).toHaveLength(1);
+    expect(firstDeadLetterPage.nextCursor).not.toBeNull();
+    const secondDeadLetterPage = await client.admin.listDeadLetterWebhooks({
+      limit: 1,
+      cursor: firstDeadLetterPage.nextCursor!,
+    });
+    expect(secondDeadLetterPage.items).toHaveLength(1);
+    expect(secondDeadLetterPage.items[0]?.id).not.toBe(firstDeadLetterPage.items[0]?.id);
     await expect(client.admin.retryFailedJob({ id: failedJobEventId })).resolves.toEqual({
       retried: true,
     });
@@ -296,5 +322,14 @@ describe("purchase history", () => {
       ]),
     );
     expect(JSON.stringify(history)).not.toContain("private_history");
+    const firstPage = await client.payments.listPurchaseHistoryPage({ limit: 2 });
+    expect(firstPage.items).toHaveLength(2);
+    expect(firstPage.nextCursor).not.toBeNull();
+    const secondPage = await client.payments.listPurchaseHistoryPage({
+      limit: 2,
+      cursor: firstPage.nextCursor!,
+    });
+    expect(secondPage.items).toHaveLength(1);
+    expect([...firstPage.items, ...secondPage.items]).toHaveLength(3);
   });
 });
