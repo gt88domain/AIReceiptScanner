@@ -30,6 +30,13 @@ const listInputSchema = z
   .object({
     provider: storageProviderSchema.optional(),
     purpose: uploadPurposeSchema.optional(),
+    limit: z.number().int().min(1).max(1000).default(100),
+    cursor: z
+      .object({
+        prefixIndex: z.number().int().min(0),
+        providerCursor: z.string().min(1).optional(),
+      })
+      .optional(),
   })
   .optional();
 
@@ -43,6 +50,12 @@ const uploadOutputSchema = z.object({
 
 const listOutputSchema = z.object({
   files: z.array(uploadOutputSchema.extend({ uploadedAt: z.string().nullable() })),
+  nextCursor: z
+    .object({
+      prefixIndex: z.number().int().min(0),
+      providerCursor: z.string().min(1).optional(),
+    })
+    .nullable(),
 });
 
 export const storageRouter = {
@@ -120,15 +133,29 @@ export const storageRouter = {
         : getUserStoragePrefixes(userId);
 
       const publicBaseUrl = getStoragePublicBaseUrl(context.env.SERVER_URL);
-      const objects = (
-        await Promise.all(prefixes.map((prefix) => storageProvider.list({ prefix })))
-      )
-        .flat()
-        .sort((left, right) => {
-          const leftTime = left.uploaded?.getTime() ?? 0;
-          const rightTime = right.uploaded?.getTime() ?? 0;
-          return rightTime - leftTime;
+      const limit = input?.limit ?? 100;
+      const objects = [];
+      let prefixIndex = input?.cursor?.prefixIndex ?? 0;
+      let providerCursor = input?.cursor?.providerCursor;
+      let nextCursor: { prefixIndex: number; providerCursor?: string } | null = null;
+
+      while (prefixIndex < prefixes.length && objects.length < limit) {
+        const result = await storageProvider.list({
+          prefix: prefixes[prefixIndex],
+          limit: limit - objects.length,
+          cursor: providerCursor,
         });
+        objects.push(...result.objects);
+
+        if (result.cursor) {
+          nextCursor = { prefixIndex, providerCursor: result.cursor };
+          break;
+        }
+
+        prefixIndex += 1;
+        providerCursor = undefined;
+        nextCursor = prefixIndex < prefixes.length ? { prefixIndex } : null;
+      }
 
       return {
         files: objects.map((object) => ({
@@ -139,6 +166,7 @@ export const storageRouter = {
           provider,
           uploadedAt: object.uploaded?.toISOString() ?? null,
         })),
+        nextCursor,
       };
     }),
 

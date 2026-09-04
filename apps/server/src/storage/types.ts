@@ -29,6 +29,12 @@ export interface PutOptions {
 export interface ListOptions {
   prefix: string;
   limit?: number;
+  cursor?: string;
+}
+
+export interface ListResult {
+  objects: StorageObjectMeta[];
+  cursor?: string;
 }
 
 /**
@@ -140,7 +146,7 @@ export interface StorageProvider {
    * @param options - List options containing an owner-scoped prefix
    * @returns Object metadata list
    */
-  list(options: ListOptions): Promise<StorageObjectMeta[]>;
+  list(options: ListOptions): Promise<ListResult>;
 
   /**
    * Delete data at the specified key

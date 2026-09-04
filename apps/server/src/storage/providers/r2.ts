@@ -79,23 +79,14 @@ export function createR2StorageProvider({ bucket }: { bucket: R2Bucket }): Stora
       }
     },
 
-    async list({ prefix, limit }) {
+    async list({ prefix, limit, cursor }) {
       const maxObjects = Math.min(Math.max(1, Math.floor(limit ?? 100)), 1000);
       try {
-        const objects: StorageObject[] = [];
-        let cursor: string | undefined;
-
-        do {
-          const result = await bucket.list({
-            prefix,
-            cursor,
-            limit: Math.min(1000, maxObjects - objects.length),
-          });
-          objects.push(...result.objects.map(mapR2ObjectToStorageObject));
-          cursor = result.truncated && objects.length < maxObjects ? result.cursor : undefined;
-        } while (cursor);
-
-        return objects.slice(0, maxObjects);
+        const result = await bucket.list({ prefix, cursor, limit: maxObjects });
+        return {
+          objects: result.objects.map(mapR2ObjectToStorageObject),
+          cursor: result.truncated ? result.cursor : undefined,
+        };
       } catch (error) {
         throw new Error(
           `Failed to list files: ${error instanceof Error ? error.message : "Unknown error"}`,

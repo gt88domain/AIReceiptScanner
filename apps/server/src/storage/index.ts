@@ -24,6 +24,7 @@ export {
 // Types
 export type {
   ListOptions,
+  ListResult,
   PutOptions,
   StorageData,
   StorageHttpMetadata,

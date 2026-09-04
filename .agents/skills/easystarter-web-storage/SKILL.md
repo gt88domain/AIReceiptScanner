@@ -13,7 +13,6 @@ Storage uses Cloudflare R2 as the default provider, bound to the server Worker v
 - **Change allowed file types or size limits** -> Section 3 (app-config storage)
 - **Fix "file upload not working"** -> Section 5 (common mistakes)
 - **Use R2 public URL for production** -> Section 2 (R2_PUBLIC_URL)
-- **Switch to Aliyun OSS** -> Change `common.storage.provider` to `"aliyun-oss"` in app-config; see `apps/server/src/storage/providers/aliyun-oss.ts` for required env vars
 
 ## Section 1: Create the R2 Bucket
 
@@ -63,7 +62,7 @@ All storage settings are centralized in `packages/app-config/src/app-config.ts`:
 // packages/app-config/src/app-config.ts
 storage: {
   enabled: true,            // Controls storage-backed UI entry points
-  provider: "r2",           // "r2" or "aliyun-oss"
+  provider: "r2",           // Active storage provider
   publicPath: "/api/storage", // API path for serving files
   keyPrefixes: {
     avatar: "avatars",       // R2 key prefix for avatar uploads
@@ -97,14 +96,11 @@ The server resolves the storage provider at runtime based on the config:
 ```typescript
 // apps/server/src/storage/index.ts
 export function getStorageProvider({
-  storage, provider, aliyunOss, aliyunOssEnv,
+  storage, provider,
 }: StorageProviderOptions): StorageProvider {
   const providerKey = resolveStorageProviderKey(provider);
   if (providerKey === "r2") {
     return createR2StorageProvider({ bucket: storage });
-  }
-  if (providerKey === "aliyun-oss") {
-    // ... Aliyun OSS setup
   }
 }
 ```

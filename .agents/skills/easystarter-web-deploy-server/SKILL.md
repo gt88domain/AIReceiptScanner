@@ -135,8 +135,8 @@ Full list from `apps/server/.env.production.example`:
 | `CREEM_API_KEY` | If Creem enabled | Creem API |
 | `CREEM_WEBHOOK_SECRET` | If Creem enabled | Webhook signature verification |
 | `REVENUECAT_WEBHOOK_SECRET` | If native IAP enabled | RevenueCat webhook auth |
-| `ALIBABA_CLOUD_ACCESS_KEY_ID` | If SMS/Aliyun OSS enabled | Aliyun API |
-| `ALIBABA_CLOUD_ACCESS_KEY_SECRET` | If SMS/Aliyun OSS enabled | Aliyun API |
+| `ALIBABA_CLOUD_ACCESS_KEY_ID` | If SMS enabled | Aliyun API |
+| `ALIBABA_CLOUD_ACCESS_KEY_SECRET` | If SMS enabled | Aliyun API |
 
 ## Post-Deploy URL Sync
 
