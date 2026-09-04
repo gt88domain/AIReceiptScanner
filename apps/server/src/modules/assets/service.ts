@@ -2,10 +2,7 @@ import type { Database } from "@/db";
 import { eq } from "drizzle-orm";
 import { user } from "@/db/schema/auth";
 import type { StorageData, StorageProvider } from "@/storage";
-import {
-  getUserStoragePrefix,
-  parseStoragePublicUrl,
-} from "@/storage";
+import { getUserStoragePrefix, parseStoragePublicUrl } from "@/storage";
 import {
   createAsset as createAssetRecord,
   createAssetIfAbsent,

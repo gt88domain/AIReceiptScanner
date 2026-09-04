@@ -244,12 +244,9 @@ describe("administrator RPC authorization", () => {
     });
     expect(secondDeadLetterPage.items).toHaveLength(1);
     expect(secondDeadLetterPage.nextCursor).toBeNull();
-    expect(
-      new Set([
-        firstDeadLetterPage.items[0]?.id,
-        secondDeadLetterPage.items[0]?.id,
-      ]),
-    ).toEqual(new Set(deadLetterIds));
+    expect(new Set([firstDeadLetterPage.items[0]?.id, secondDeadLetterPage.items[0]?.id])).toEqual(
+      new Set(deadLetterIds),
+    );
     await expect(
       client.admin.acknowledgeDeadLetterWebhook({ eventId: deadLetterIds[0]! }),
     ).resolves.toEqual({ acknowledged: true });

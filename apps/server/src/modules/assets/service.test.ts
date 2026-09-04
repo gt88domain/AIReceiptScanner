@@ -1,11 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { Database } from "@/db";
-import {
-  getPublicUrl,
-  getStoragePublicBaseUrl,
-  type StorageProvider,
-} from "@/storage";
+import { getPublicUrl, getStoragePublicBaseUrl, type StorageProvider } from "@/storage";
 import { backfillCurrentAvatarAsset, deleteAsset } from "./service";
 
 function selectOnlyDatabase(results: readonly (readonly unknown[])[]): Database {

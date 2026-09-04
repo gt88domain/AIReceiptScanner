@@ -109,9 +109,7 @@ export async function getBillingStatus(db: Database, user: BillingUser): Promise
   const canManageBilling =
     (currentEntitlement.source === "subscription" || currentEntitlement.source === "lifetime") &&
     billingProvider !== null &&
-    (SUPPORTED_WEB_PAYMENT_PROVIDERS as readonly string[]).includes(
-      billingProvider,
-    );
+    (SUPPORTED_WEB_PAYMENT_PROVIDERS as readonly string[]).includes(billingProvider);
 
   return {
     userId: user.userId,

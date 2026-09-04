@@ -361,10 +361,7 @@ export function DesignSystemGallery() {
               ) : null}
             </>
           ) : (
-            <DemoState
-              description="Try another query, tab, or filter."
-              title="No results"
-            />
+            <DemoState description="Try another query, tab, or filter." title="No results" />
           )}
 
           <div className="rounded-card border border-dashed border-line p-4">
@@ -485,10 +482,7 @@ export function DesignSystemGallery() {
 
         <GallerySection description="Empty, error, and loading." index="06" title="States">
           <div className="grid gap-4 lg:grid-cols-3">
-            <DemoState
-              description="Try changing the query or filters."
-              title="No results"
-            />
+            <DemoState description="Try changing the query or filters." title="No results" />
             <DemoState
               action={
                 <Button onClick={() => undefined} size="sm" variant="outline">
@@ -577,13 +571,7 @@ function GallerySection({
   );
 }
 
-function DemoCard({
-  item,
-  tone,
-}: {
-  item: (typeof demoItems)[number];
-  tone: number;
-}) {
+function DemoCard({ item, tone }: { item: (typeof demoItems)[number]; tone: number }) {
   return (
     <article className="overflow-hidden rounded-card border border-line bg-surface shadow-raised">
       <div className="relative aspect-[4/3] bg-hero-skin">

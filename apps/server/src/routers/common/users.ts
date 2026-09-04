@@ -44,11 +44,11 @@ async function deleteTrackedAvatar(context: Context, userId: string, image: stri
 
   await deleteAsset(context.db, context.storage, { assetId: record.id, ownerId: userId }).catch(
     (error) => {
-    console.error("Failed to delete unused avatar", {
-      error: error instanceof Error ? error.message : "Unknown error",
-      assetId: record.id,
-      userId,
-    });
+      console.error("Failed to delete unused avatar", {
+        error: error instanceof Error ? error.message : "Unknown error",
+        assetId: record.id,
+        userId,
+      });
     },
   );
 }

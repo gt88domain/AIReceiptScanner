@@ -9,10 +9,7 @@ import {
   type NormalizedNativePlan,
   nativePaymentsConfig,
 } from "@repo/app-config/payments/native";
-import type {
-  PersistedServerPaymentProviderKey,
-  ServerPaymentProviderKey,
-} from "@repo/app-config";
+import type { PersistedServerPaymentProviderKey, ServerPaymentProviderKey } from "@repo/app-config";
 
 type WebCatalogPrice = NormalizedPlan["prices"][number];
 type NativeCatalogPrice = NormalizedNativePlan["prices"][number];

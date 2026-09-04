@@ -139,6 +139,9 @@ describe("billing state event ordering", () => {
       .select()
       .from(billingSubscription)
       .where(eq(billingSubscription.providerSubscriptionId, providerSubscriptionId));
-    expect(subscription).toMatchObject({ status: "active", providerEventId: "evt_subscription_active" });
+    expect(subscription).toMatchObject({
+      status: "active",
+      providerEventId: "evt_subscription_active",
+    });
   });
 });

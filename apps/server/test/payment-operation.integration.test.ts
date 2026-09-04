@@ -274,7 +274,8 @@ describe("payment operation scope ownership", () => {
       operationType: "checkout",
       operationId: crypto.randomUUID(),
       requestHash: "expired-retry-hash",
-      requestJson: '{"version":1,"payload":{"planId":"pro","priceId":"monthly","mode":"subscription"}}',
+      requestJson:
+        '{"version":1,"payload":{"planId":"pro","priceId":"monthly","mode":"subscription"}}',
       idempotencyMode: "native",
       relatedResourceType: "checkout_session",
     });
@@ -291,7 +292,8 @@ describe("payment operation scope ownership", () => {
       operationType: "checkout",
       operationId: crypto.randomUUID(),
       requestHash: "later-finalization-hash",
-      requestJson: '{"version":1,"payload":{"planId":"pro","priceId":"monthly","mode":"subscription"}}',
+      requestJson:
+        '{"version":1,"payload":{"planId":"pro","priceId":"monthly","mode":"subscription"}}',
       idempotencyMode: "native",
       relatedResourceType: "checkout_session",
     });

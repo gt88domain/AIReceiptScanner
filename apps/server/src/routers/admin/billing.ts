@@ -143,9 +143,7 @@ export const adminBillingRouter = {
       z
         .object({
           limit: z.number().int().min(1).max(100).default(50),
-          cursor: z
-            .object({ deadLetteredAt: z.date(), id: z.string().uuid() })
-            .optional(),
+          cursor: z.object({ deadLetteredAt: z.date(), id: z.string().uuid() }).optional(),
         })
         .optional(),
     )
@@ -197,16 +195,14 @@ export const adminBillingRouter = {
         )
         .orderBy(desc(billingEvent.deadLetteredAt), desc(billingEvent.id))
         .limit(limit + 1);
-      const page = rows.slice(0, limit).filter(
-        (row): row is typeof row & { deadLetteredAt: Date } => row.deadLetteredAt !== null,
-      );
+      const page = rows
+        .slice(0, limit)
+        .filter((row): row is typeof row & { deadLetteredAt: Date } => row.deadLetteredAt !== null);
       const last = page.at(-1);
       return {
         items: page,
         nextCursor:
-          rows.length > limit && last
-            ? { deadLetteredAt: last.deadLetteredAt, id: last.id }
-            : null,
+          rows.length > limit && last ? { deadLetteredAt: last.deadLetteredAt, id: last.id } : null,
       };
     }),
   acknowledgeDeadLetterWebhook: adminProcedure

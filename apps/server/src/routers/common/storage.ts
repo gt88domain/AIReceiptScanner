@@ -130,9 +130,7 @@ export const storageRouter = {
       });
       const records = await listOwnedAssets(context.db, {
         ownerId: userId,
-        storagePrefix: input?.purpose
-          ? getUserStoragePrefix(input.purpose, userId)
-          : undefined,
+        storagePrefix: input?.purpose ? getUserStoragePrefix(input.purpose, userId) : undefined,
         limit: input?.limit ?? 100,
       });
 
@@ -151,10 +149,7 @@ export const storageRouter = {
 
   delete: storageProcedure
     .input(
-      z.union([
-        z.object({ assetId: z.string().min(1) }),
-        z.object({ url: z.string().min(1) }),
-      ]),
+      z.union([z.object({ assetId: z.string().min(1) }), z.object({ url: z.string().min(1) })]),
     )
     .output(z.object({ success: z.boolean() }))
     .handler(async ({ context, input }) => {
@@ -182,11 +177,7 @@ export const storageRouter = {
           ownerId: userId,
           publicBaseUrl,
         });
-        const record = await findOwnedAssetByStorageKey(
-          context.db,
-          parsedStorageUrl.key,
-          userId,
-        );
+        const record = await findOwnedAssetByStorageKey(context.db, parsedStorageUrl.key, userId);
         if (!record) {
           throw new ORPCError("FORBIDDEN", {
             message: t("errors.forbidden"),

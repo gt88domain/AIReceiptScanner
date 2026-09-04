@@ -163,9 +163,7 @@ export async function acknowledgeWebhookEvent(db: Database, eventId: string) {
       alertLeaseToken: null,
       alertLeaseUntil: null,
     })
-    .where(
-      and(eq(billingEvent.id, eventId), eq(billingEvent.processingStatus, "dead_letter")),
-    )
+    .where(and(eq(billingEvent.id, eventId), eq(billingEvent.processingStatus, "dead_letter")))
     .returning({ id: billingEvent.id });
   return acknowledged ? event : null;
 }

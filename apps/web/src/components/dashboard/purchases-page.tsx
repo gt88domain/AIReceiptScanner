@@ -59,39 +59,39 @@ export function PurchasesPage() {
           {purchases.data && purchases.data.items.length > 0 ? (
             <div className="space-y-4">
               <div className="overflow-x-auto">
-              <table className="w-full min-w-[640px] text-left text-sm">
-                <thead className="border-b text-muted-foreground">
-                  <tr>
-                    <th className="px-3 py-2 font-medium">Type</th>
-                    <th className="px-3 py-2 font-medium">Item</th>
-                    <th className="px-3 py-2 font-medium">Amount</th>
-                    <th className="px-3 py-2 font-medium">Status</th>
-                    <th className="px-3 py-2 font-medium">Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {purchases.data.items.map((purchase, index) => (
-                    <tr
-                      className="border-b last:border-0"
-                      key={`${purchase.type}-${purchase.label}-${index}`}
-                    >
-                      <td className="px-3 py-3 capitalize">{purchase.type}</td>
-                      <td className="px-3 py-3 font-medium">{purchase.label}</td>
-                      <td className="px-3 py-3 tabular-nums">
-                        {purchase.amountCents !== null && purchase.currency
-                          ? formatCurrency(purchase.amountCents, purchase.currency)
-                          : "Not recorded"}
-                      </td>
-                      <td className="px-3 py-3 capitalize">
-                        {purchase.status.replaceAll("_", " ")}
-                      </td>
-                      <td className="px-3 py-3 text-muted-foreground">
-                        {formatDate(purchase.completedAt ?? purchase.createdAt)}
-                      </td>
+                <table className="w-full min-w-[640px] text-left text-sm">
+                  <thead className="border-b text-muted-foreground">
+                    <tr>
+                      <th className="px-3 py-2 font-medium">Type</th>
+                      <th className="px-3 py-2 font-medium">Item</th>
+                      <th className="px-3 py-2 font-medium">Amount</th>
+                      <th className="px-3 py-2 font-medium">Status</th>
+                      <th className="px-3 py-2 font-medium">Date</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {purchases.data.items.map((purchase, index) => (
+                      <tr
+                        className="border-b last:border-0"
+                        key={`${purchase.type}-${purchase.label}-${index}`}
+                      >
+                        <td className="px-3 py-3 capitalize">{purchase.type}</td>
+                        <td className="px-3 py-3 font-medium">{purchase.label}</td>
+                        <td className="px-3 py-3 tabular-nums">
+                          {purchase.amountCents !== null && purchase.currency
+                            ? formatCurrency(purchase.amountCents, purchase.currency)
+                            : "Not recorded"}
+                        </td>
+                        <td className="px-3 py-3 capitalize">
+                          {purchase.status.replaceAll("_", " ")}
+                        </td>
+                        <td className="px-3 py-3 text-muted-foreground">
+                          {formatDate(purchase.completedAt ?? purchase.createdAt)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
               <div className="flex justify-end gap-2">
                 <Button
