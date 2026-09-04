@@ -3,6 +3,53 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [4.0.0](https://github.com/gt88domain/easystarter-template/compare/v3.1.2...v4.0.0) (2026-09-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* downstream adopters must review removed listing primitives, archived providers, English-only default catalogs, stricter configuration, storage ownership, and payment workflow changes before upgrading.
+
+### Features
+
+* publish v4 downstream upgrade contract ([73f99d6](https://github.com/gt88domain/easystarter-template/commit/73f99d6e2abfbcf9437f6304a25c198dd72a7d7b))
+
+
+### Bug Fixes
+
+* **auth:** address review findings ([adb080d](https://github.com/gt88domain/easystarter-template/commit/adb080d084c98dc6738dcbf87583e87ab3e28a8c))
+* **auth:** apply reviewed authentication hardening ([f9b052f](https://github.com/gt88domain/easystarter-template/commit/f9b052fa5f18950ba1cbf784a69eb2476c8a6583))
+* **deps:** raise vulnerable transitive floors ([b48aa35](https://github.com/gt88domain/easystarter-template/commit/b48aa3551ae88b59ad1dbf0ba41c7596b5fde0a0))
+* **i18n:** expose config-safe locale subpaths ([b14b6bf](https://github.com/gt88domain/easystarter-template/commit/b14b6bf70bf7fca19197897938a0fcb335f7fda9))
+* **i18n:** use runtime-resolvable source imports ([8bb5031](https://github.com/gt88domain/easystarter-template/commit/8bb5031323e8a0d5379426d5b056f08c0d7ff35f))
+* **integration:** preserve retired data compatibility ([6798e72](https://github.com/gt88domain/easystarter-template/commit/6798e72ba894e0dc0795a0fa8f09ddb9c4ba5c15))
+* **integration:** separate active and historical providers ([6f838d9](https://github.com/gt88domain/easystarter-template/commit/6f838d9da4e53e90e9040b84ed7cd7bfad4bf5ee))
+* **ops:** close trusted IP and email gaps ([efc64be](https://github.com/gt88domain/easystarter-template/commit/efc64be46e4f38dd7951524eac836153f2470ffb))
+* **ops:** fail closed on missing Cloudflare identity ([d28655b](https://github.com/gt88domain/easystarter-template/commit/d28655bb692db781b59404f328fd599ae60523d9))
+* **payments:** address provider archive review findings ([9c47ab0](https://github.com/gt88domain/easystarter-template/commit/9c47ab0ad5f193cb19bed629c855102a9e6ef92a))
+* **payments:** address review findings ([e1cbdd0](https://github.com/gt88domain/easystarter-template/commit/e1cbdd0af992a35d2b196d785f2db87df82fa4ec))
+* **payments:** apply reviewed provider and webhook fixes ([0601bd0](https://github.com/gt88domain/easystarter-template/commit/0601bd0bd306cc684109ff1de4710783429d3c77))
+* **payments:** close deferred billing gaps ([1d21386](https://github.com/gt88domain/easystarter-template/commit/1d2138620b6c7bfe4a45d0175e6ca9b7d799ef66))
+* **payments:** complete persisted provider typing ([37cf95f](https://github.com/gt88domain/easystarter-template/commit/37cf95f9e04ce07e947e867e425639164cb4f602))
+* **payments:** enforce provider retry deadline ([605ddb3](https://github.com/gt88domain/easystarter-template/commit/605ddb380aee7f258db5aa03ef95e7bfe587ead1))
+* **payments:** harden manual review recovery ([0283a23](https://github.com/gt88domain/easystarter-template/commit/0283a23a6578be62cae615cfd939567e3a0caa66))
+* **payments:** isolate expired retries without aborting ([48571f8](https://github.com/gt88domain/easystarter-template/commit/48571f8aca0e84f2675cde334ef7fd0d41fb60f7))
+* **payments:** narrow retired provider compatibility ([0e1de67](https://github.com/gt88domain/easystarter-template/commit/0e1de67243d5060bea119447cf57bc50953b205d))
+* **platform:** apply reviewed storage and runtime fixes ([4eedd1e](https://github.com/gt88domain/easystarter-template/commit/4eedd1e651c152e5983e22efa78c685b707762ad))
+* **review:** close integrated static findings ([71f716d](https://github.com/gt88domain/easystarter-template/commit/71f716dcd1837a083b4818737687e52ffe6ee806))
+* **storage:** complete reviewed pagination and archive cleanup ([3736ec5](https://github.com/gt88domain/easystarter-template/commit/3736ec5407cbd9c646a4d93e5a03b64c4538753e))
+* **storage:** enforce asset ownership ([4a7ea72](https://github.com/gt88domain/easystarter-template/commit/4a7ea72d6652977c6157c9e86fef64cf63632b94))
+* **storage:** preserve list ordering and auth isolation ([691357a](https://github.com/gt88domain/easystarter-template/commit/691357a18bea9b25c019ae0e61163778a0557d03))
+* **storage:** preserve safe delete compatibility ([c327628](https://github.com/gt88domain/easystarter-template/commit/c32762857e6b196a819818322b067f1df4dba7b7))
+* **storage:** restore URL parser import ([449530d](https://github.com/gt88domain/easystarter-template/commit/449530d96b3fdab0e039d1d2bf7a2bd05206a8ea))
+* **tooling:** align query error callback types ([42ebf2e](https://github.com/gt88domain/easystarter-template/commit/42ebf2e53c300840635807632c97d8dc0b84ecdc))
+* **tooling:** preserve release dispatch permissions ([0705d01](https://github.com/gt88domain/easystarter-template/commit/0705d0173ab2212dd4608320e5f23c1dbb201e20))
+* **web:** address i18n and tooling review findings ([372add1](https://github.com/gt88domain/easystarter-template/commit/372add195d9daad1a81f4b88273eb1474ba11b1b))
+* **web:** align docs and worker environment types ([f02e06a](https://github.com/gt88domain/easystarter-template/commit/f02e06ac83057f3b092ce6767830d99aace6c3e3))
+* **web:** apply reviewed web and i18n fixes ([3975384](https://github.com/gt88domain/easystarter-template/commit/3975384fb0f5ff71d38a91ef227b917fc303c01c))
+* **web:** resolve deferred cleanup findings ([5403a49](https://github.com/gt88domain/easystarter-template/commit/5403a49d2c877621ee7bea852ed009219deb81b1))
+* **web:** resolve second review findings ([ebe94fe](https://github.com/gt88domain/easystarter-template/commit/ebe94fe0384b6085d692b56075b6cdace888fd62))
+
 ## [3.1.2](https://github.com/gt88domain/easystarter-template/compare/v3.1.1...v3.1.2) (2026-09-01)
 
 
