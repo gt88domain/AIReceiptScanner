@@ -3,6 +3,17 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [5.0.0](https://github.com/gt88domain/easystarter-template/compare/v4.0.0...v5.0.0) (2026-09-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* harden payment and audit boundaries ([#137](https://github.com/gt88domain/easystarter-template/issues/137))
+
+### Features
+
+* harden payment and audit boundaries ([#137](https://github.com/gt88domain/easystarter-template/issues/137)) ([f2911e3](https://github.com/gt88domain/easystarter-template/commit/f2911e38e8627ec15fc81ff8d8d64f51476023ab))
+
 ## [4.0.0](https://github.com/gt88domain/easystarter-template/compare/v3.1.2...v4.0.0) (2026-09-04)
 
 
