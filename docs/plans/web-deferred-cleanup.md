@@ -10,12 +10,12 @@ behavior, or masking uncertainty with defensive code.
 
 | ID | Decision | Status |
 | --- | --- | --- |
-| WEB-101 | Listing components are gallery-only; compose the retained gallery from UI primitives and remove the unused framework | Implemented, review pending |
-| WEB-102 | Add an explicit CSP for current first-party, GA, OpenPanel, and Turnstile sources; strengthen HSTS | Implemented, browser review pending |
+| WEB-101 | Listing components are gallery-only; compose the retained gallery from UI primitives and remove the unused framework | Implemented and statically reviewed |
+| WEB-102 | Add an explicit CSP for current first-party API, GA, OpenPanel, and Turnstile sources; strengthen HSTS | Implemented and statically reviewed; browser review pending |
 | WEB-104 | Both contact and newsletter call the shared server verifier before rate limiting or delivery; production without a secret fails closed | Code complete, real-key verification deferred |
 | WEB-105 | Keep prerender disabled until public content and user-state behavior are accepted; the page inventory also drives sitemap behavior and is not deleted | No code change by design |
-| WEB-110 | Remove only five dependencies proven to have no Web source or configuration references | Implemented, lock update pending |
-| WEB-111 | Pass the documented failed Query object through the shared client callback and refetch only its query hash | Implemented, review pending |
+| WEB-110 | Remove only five dependencies proven to have no Web source or configuration references | Implemented and lockfile committed |
+| WEB-111 | Pass the documented failed Query object through the shared client callback and refetch only its query hash | Implemented and statically reviewed |
 
 Fumadocs, Orama, blog, and the design-system gallery remain active. This change
 does not enable prerendering or introduce a new listing abstraction.

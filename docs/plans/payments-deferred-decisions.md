@@ -1,6 +1,6 @@
 # Payments deferred decisions
 
-Status: implementation complete, static review pending, tests not yet authored or run.
+Status: implementation and independent static review complete; focused tests authored but not run.
 
 ## Implemented
 
@@ -26,11 +26,11 @@ Status: implementation complete, static review pending, tests not yet authored o
 
 - Automatic Stripe subscription revocation after a refund/dispute requires reliable charge-to-invoice-to-subscription evidence and an explicit access policy. The current safe outcome is a visible dead letter.
 - Automatic RevenueCat credit transfer is not implemented because provider entitlement transfer does not define how already-consumed application credits move.
-- No PAY-117 code was changed.
+- No PAY-117 recommendation was implemented. Shared payment-operation files changed only for PAY-105.
 
 ## Test plan
 
-Tests will be authored only after independent static review confirms the implementation boundaries.
+Focused tests were authored after independent static review confirmed the implementation boundaries.
 
 - Credit order: pending and expired orders complete exactly once; failed/refunded orders reject; amount/currency mismatch still rejects.
 - Payment operation: native manual review can requeue; local-only manual review cannot requeue; either can be closed failed; stale status races do not resolve.

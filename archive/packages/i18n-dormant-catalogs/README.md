@@ -5,13 +5,13 @@ per review CSV LANG-101. The first product launch ships `en` only, so these
 catalogs intentionally live outside the `@repo/i18n` build to avoid paying
 per-key maintenance for unreachable copy.
 
-Nothing in the main workspace imports this package; it is an archive, not a
-dependency.
+This directory lives outside the root `packages/*` workspace. Nothing in the
+main workspace imports it; it is a recovery archive, not an active dependency.
 
 ## Restoring a locale
 
 1. Copy the locale's catalogs back, e.g. for `zh`:
-   `cp messages/<surface>/zh.json ../i18n/src/messages/<surface>/zh.json`
+   `cp messages/<surface>/zh.json ../../../packages/i18n/src/messages/<surface>/zh.json`
    for each surface (`common`, `web`, `server`, `native`) — or re-export them
    from this package and import them in `@repo/i18n` instead.
 2. Re-add the import and record entry in

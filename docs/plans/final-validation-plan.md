@@ -1,12 +1,17 @@
 # Final validation plan
 
-Status: implementation and static topic reviews complete; integrated static review pending; no command in this document has been run.
+Status: implementation and static topic reviews complete; integrated review findings remediated and follow-up review pending; no command in this document has been run.
 
 Branch: `review/integration-final`
 
 Baseline: `ee550f56df435085f262e707a2e9da5cf352e01c`
 
 Reviewed integration base: `37cf95f9e04ce07e947e867e425639164cb4f602`
+
+Scope provenance: the reviewed integration base already contains separately
+authorized auth, platform, Web/tooling, i18n, and payment cleanup. The commits
+after that base contain the later approved TOOL-107, Web, storage, operations,
+and payment work; this plan validates the combined candidate.
 
 ## Rules
 
@@ -15,6 +20,11 @@ Reviewed integration base: `37cf95f9e04ce07e947e867e425639164cb4f602`
 - Do not deploy, migrate production data, configure WAF, or call live payment APIs without a separate explicit approval.
 - Stop at the first failing gate, preserve its output, and fix on a new review commit.
 - Repeat affected checks after a fix; run the full suite only after targeted checks pass.
+
+## Gate 0: reproducible dependency installation
+
+1. `pnpm install --frozen-lockfile`
+2. `pnpm --dir optional install --frozen-lockfile`
 
 ## Gate 1: repository and generated-file checks
 
@@ -36,6 +46,7 @@ Reviewed integration base: `37cf95f9e04ce07e947e867e425639164cb4f602`
 3. `pnpm --filter server test:production-config`
 4. `pnpm --filter server test:integration`
 5. `pnpm --filter web test:integration`
+6. `pnpm --filter server exec tsx ../../scripts/check-security-headers.ts`
 
 Required coverage includes:
 
@@ -51,6 +62,7 @@ Required coverage includes:
 2. `pnpm test:integration`
 3. `pnpm test:unit`
 4. `pnpm build`
+5. `pnpm mobile:check`
 
 ## Gate 4: local browser checks
 
@@ -60,12 +72,19 @@ Required coverage includes:
 - Walk purchase-history previous/next pages across equal timestamps and a forced failed later-page request.
 - As an administrator, list, replay, and acknowledge a dead-letter event; resolve a manual-review payment operation and inspect its audit record.
 - Confirm Fumadocs, Orama search, blog routes, and design-system gallery remain available.
+- With real non-production Turnstile, GA, and OpenPanel keys, confirm each
+  provider request succeeds and no required script, frame, or connection is
+  blocked by CSP. Record browser network and console evidence without storing
+  the keys in the repository.
 
 ## Gate 5: provider sandboxes
 
 - Stripe test mode: card checkout, delayed asynchronous credit payment after local expiration, zero-value proration invoice void, full refund, partial refund, dispute creation/loss, and webhook replay.
 - RevenueCat sandbox: signature rejection, normal subscription lifecycle, customer-support refund dead letter, and identity transfer. Verify that application credits do not move automatically.
 - R2 test bucket: upload/list/delete by owner, cross-owner rejection, historical current-avatar adoption, and URL compatibility without rewriting provider paths.
+- Turnstile test sitekey/secret: valid form submissions pass, invalid and
+  missing tokens fail closed, and the challenge frame/network requests are not
+  blocked by CSP.
 
 ## Gate 6: external production readiness
 

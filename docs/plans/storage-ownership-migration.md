@@ -10,10 +10,10 @@ for unknown R2 objects.
 
 | ID | Decision | Status |
 | --- | --- | --- |
-| STORE-101 | Delete by asset ID after an owner-ID database lookup; never authorize from URL/key prefix | Implemented, review pending |
-| STORE-102 | Upload, list, replacement cleanup, and delete now call the asset module | Implemented, review pending |
+| STORE-101 | Delete by asset ID after an owner-ID database lookup; never authorize from URL/key prefix | Implemented and statically reviewed |
+| STORE-102 | Upload, list, replacement cleanup, and delete now call the asset module | Implemented and statically reviewed |
 | STORE-104 | Keep the existing provider-shaped R2 URL for compatibility; Aliyun remains archived | No further code change by design |
-| STORE-105 | List newest asset records with a maximum of 100; bound provider list calls; keep five-minute serve cache | Implemented, review pending |
+| STORE-105 | List newest asset records with a maximum of 100; bound provider list calls; keep five-minute serve cache | Implemented and statically reviewed |
 
 ## Historical data policy
 

@@ -182,14 +182,15 @@ export const usersRouter = {
         typeof normalizedInput.image === "string" && normalizedInput.image !== currentUser?.image
           ? normalizedInput.image
           : null;
-      if (currentUser?.image && currentUser.image !== normalizedInput.image && context.storage) {
-        await backfillCurrentAvatarAsset(context.db, context.storage, {
-          ownerId: userId,
-          publicBaseUrl: getStoragePublicBaseUrl(context.env.SERVER_URL),
-        });
-      }
       let updatedUser: typeof user.$inferSelect | undefined;
       try {
+        if (currentUser?.image && currentUser.image !== normalizedInput.image && context.storage) {
+          await backfillCurrentAvatarAsset(context.db, context.storage, {
+            ownerId: userId,
+            publicBaseUrl: getStoragePublicBaseUrl(context.env.SERVER_URL),
+          });
+        }
+
         [updatedUser] = await db
           .update(user)
           .set({
