@@ -139,6 +139,36 @@ export async function claimPaymentOperation(
 ) {
   if (operation.status === "manual_review") throw new Error("PAYMENT_OPERATION_MANUAL_REVIEW");
   if (operation.status === "completed" || operation.status === "provider_succeeded") return null;
+  if (
+    operation.idempotencyMode === "native" &&
+    now.getTime() - operation.createdAt.getTime() > PROVIDER_IDEMPOTENCY_REQUEUE_WINDOW_MS
+  ) {
+    await db
+      .update(paymentOperation)
+      .set({
+        status: "manual_review",
+        manualReviewCode: "PAYMENT_OPERATION_IDEMPOTENCY_WINDOW_EXPIRED",
+        leaseToken: null,
+        leaseUntil: null,
+        nextRetryAt: null,
+        retryable: false,
+        updatedAt: now,
+      })
+      .where(
+        and(
+          eq(paymentOperation.id, operation.id),
+          or(
+            eq(paymentOperation.status, "pending"),
+            eq(paymentOperation.status, "failed"),
+            and(
+              eq(paymentOperation.status, "processing"),
+              or(isNull(paymentOperation.leaseUntil), lte(paymentOperation.leaseUntil, now)),
+            ),
+          ),
+        ),
+      );
+    throw new Error("PAYMENT_OPERATION_MANUAL_REVIEW");
+  }
   if (operation.status === "processing" && operation.leaseUntil && operation.leaseUntil > now) {
     throw new Error("PAYMENT_OPERATION_IN_PROGRESS");
   }
