@@ -1,4 +1,4 @@
-import { SUPPORTED_SERVER_PAYMENT_PROVIDERS } from "@repo/app-config";
+import { PERSISTED_SERVER_PAYMENT_PROVIDERS } from "@repo/app-config";
 import { SUBSCRIPTION_STATUSES } from "@repo/app-config/payments/web";
 import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { user } from "./auth";
@@ -45,7 +45,7 @@ export const billingCustomer = sqliteTable(
     id: text("id").primaryKey(), // Internal customer record ID
     userId: text("user_id").notNull(), // Internal user ID
     provider: text("provider", {
-      enum: SUPPORTED_SERVER_PAYMENT_PROVIDERS,
+      enum: PERSISTED_SERVER_PAYMENT_PROVIDERS,
     }).notNull(), // Payment provider
     providerCustomerId: text("provider_customer_id").notNull(), // Customer ID in provider's system
     email: text("email"), // Customer email address
@@ -73,7 +73,7 @@ export const billingSubscription = sqliteTable(
     id: text("id").primaryKey(), // Internal subscription record ID
     userId: text("user_id").notNull(), // Internal user ID
     provider: text("provider", {
-      enum: SUPPORTED_SERVER_PAYMENT_PROVIDERS,
+      enum: PERSISTED_SERVER_PAYMENT_PROVIDERS,
     }).notNull(), // Payment provider handling subscription
     providerSubscriptionId: text("provider_subscription_id").notNull(), // Subscription ID in provider's system
     providerCustomerId: text("provider_customer_id").notNull(), // Customer ID in provider's system
@@ -115,7 +115,7 @@ export const billingCheckoutSession = sqliteTable(
     id: text("id").primaryKey(), // Internal checkout session ID
     userId: text("user_id").notNull(), // Internal user ID
     provider: text("provider", {
-      enum: SUPPORTED_SERVER_PAYMENT_PROVIDERS,
+      enum: PERSISTED_SERVER_PAYMENT_PROVIDERS,
     }).notNull(), // Payment provider handling checkout
     providerSessionId: text("provider_session_id").notNull(), // Checkout session ID in provider's system
     planId: text("plan_id").notNull(), // Plan being purchased
@@ -148,7 +148,7 @@ export const paymentOperation = sqliteTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    provider: text("provider", { enum: SUPPORTED_SERVER_PAYMENT_PROVIDERS }).notNull(),
+    provider: text("provider", { enum: PERSISTED_SERVER_PAYMENT_PROVIDERS }).notNull(),
     operationType: text("operation_type", { enum: PAYMENT_OPERATION_TYPES }).notNull(),
     requestVersion: integer("request_version").notNull().default(1),
     requestHash: text("request_hash").notNull(),
@@ -192,7 +192,7 @@ export const billingEvent = sqliteTable(
   {
     id: text("id").primaryKey(), // Internal event record ID
     provider: text("provider", {
-      enum: SUPPORTED_SERVER_PAYMENT_PROVIDERS,
+      enum: PERSISTED_SERVER_PAYMENT_PROVIDERS,
     }).notNull(), // Payment provider that sent the event
     providerEventId: text("provider_event_id").notNull(), // Event ID from provider (for idempotency)
     eventType: text("event_type").notNull(), // Type of event (e.g., "invoice.paid")
@@ -246,7 +246,7 @@ export const billingOutbox = sqliteTable(
   {
     id: text("id").primaryKey(),
     jobType: text("job_type", { enum: ["cancel_previous_subscription"] }).notNull(),
-    provider: text("provider", { enum: SUPPORTED_SERVER_PAYMENT_PROVIDERS }).notNull(),
+    provider: text("provider", { enum: PERSISTED_SERVER_PAYMENT_PROVIDERS }).notNull(),
     deduplicationKey: text("deduplication_key").notNull(),
     payloadJson: text("payload_json").notNull(),
     processingStatus: text("processing_status", {
@@ -284,7 +284,7 @@ export const billingPurchase = sqliteTable(
     id: text("id").primaryKey(), // Internal purchase record ID
     userId: text("user_id").notNull(), // Internal user ID
     provider: text("provider", {
-      enum: SUPPORTED_SERVER_PAYMENT_PROVIDERS,
+      enum: PERSISTED_SERVER_PAYMENT_PROVIDERS,
     }).notNull(), // Payment provider that processed payment
     providerPaymentIntentId: text("provider_payment_intent_id").notNull(), // Payment intent ID in provider's system
     planId: text("plan_id").notNull(), // Plan that was purchased

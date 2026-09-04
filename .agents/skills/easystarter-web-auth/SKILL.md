@@ -111,9 +111,7 @@ socialProviders: {
 },
 ```
 
-Email/password is configured at lines 152-172. Email OTP is a plugin at lines 246-262. Phone SMS is a plugin at lines 263-284.
-
-The provider code stays in place even when `enabled: false` — the config switch gates it safely.
+Email/password and email OTP are configured independently from OAuth providers.
 
 ## Section 3: Environment Variables
 
@@ -126,9 +124,6 @@ The provider code stays in place even when `enabled: false` — the config switc
 | `GOOGLE_CLIENT_SECRET` | `apps/server/.dev.vars` + `.env.production` | Secret |
 | `APPLE_APP_BUNDLE_IDENTIFIER` | `apps/server/wrangler.jsonc` → `vars` | Public — must match `app.json` `ios.bundleIdentifier` |
 | `RESEND_API_KEY` | `apps/server/.dev.vars` + `.env.production` | Secret — needed if email-based auth is enabled |
-| `ALIBABA_CLOUD_ACCESS_KEY_ID` | `apps/server/.dev.vars` + `.env.production` | Secret — needed if SMS auth is enabled |
-| `ALIBABA_CLOUD_ACCESS_KEY_SECRET` | `apps/server/.dev.vars` + `.env.production` | Secret — needed if SMS auth is enabled |
-
 **Public IDs go in `wrangler.jsonc` `vars`; secrets go in `.dev.vars` / `.env.production` only.** Never put secrets in `wrangler.jsonc` or Web env files.
 
 ## Section 4: Callback URLs and Trusted Origins

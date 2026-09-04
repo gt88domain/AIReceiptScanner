@@ -75,10 +75,6 @@ RESEND_API_KEY=re_xxxx
 # Storage
 R2_PUBLIC_URL=https://pub-xxxx.r2.dev
 
-# SMS (if enabled)
-ALIBABA_CLOUD_ACCESS_KEY_ID=your-key-id
-ALIBABA_CLOUD_ACCESS_KEY_SECRET=your-key-secret
-
 # RevenueCat
 REVENUECAT_WEBHOOK_SECRET=your-webhook-secret
 ```

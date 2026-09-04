@@ -54,7 +54,7 @@ The authentication server SHALL issue six-digit email sign-in codes that expire 
 
 ### Requirement: Email OTP SHALL preserve existing auth flows
 
-The authentication server SHALL keep existing email/password, email verification link, OAuth, and phone OTP behavior unchanged while adding email OTP sign-in.
+The authentication server SHALL keep existing email/password, email verification link, and OAuth behavior unchanged while adding email OTP sign-in.
 
 #### Scenario: Email verification link remains available
 
@@ -64,6 +64,5 @@ The authentication server SHALL keep existing email/password, email verification
 
 #### Scenario: Existing login methods remain available
 
-- **WHEN** a user signs in with email/password, OAuth, or phone OTP
+- **WHEN** a user signs in with email/password or OAuth
 - **THEN** the server processes the sign-in through the existing flow for that method
-
