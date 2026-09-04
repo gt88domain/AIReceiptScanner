@@ -111,3 +111,33 @@ Required coverage includes:
 - Automatic cross-account credit transfer, automatic subscription revocation without provider evidence, destructive billing-event retention, and deletion of `job_event`.
 - Freezing or removing Fumadocs, Orama, blog, or design-system gallery.
 - Production deploys, production migrations, and live money movement.
+## 2026-09-05 final validation result
+
+Status: repository implementation is reviewed and locally tested. No production deployment, live migration, real payment, real email, or provider-side configuration was performed.
+
+### Passed locally
+
+- Dependency installation passed for the root workspace and `optional/`, both with frozen lockfiles and supply-chain policy checks.
+- Formatting, linting, TypeScript checks, documentation facts, package boundaries, profile drift, auto-merge SHA, and database schema checks passed.
+- App config tests passed: 7 files, 83 tests.
+- Server config tests passed: 38 tests; production configuration self-checks passed.
+- Database migration upgrade tests passed: 2 TAP tests.
+- Server integration tests passed: 31 files, 131 tests.
+- Web integration tests passed: 8 files, 18 tests.
+- Full template, integration, unit, build, and optional mobile checks passed in one final run.
+- Web production build retained Fumadocs, Orama, blog, and design-system gallery code paths.
+- Browser checks passed for the home page, contact page, design-system gallery, mobile layout, newsletter expansion, and unauthenticated sign-in page with `redirectTo=/dashboard`.
+- Security headers were present, including CSP defaults/script policy, HSTS `includeSubDomains`, permissions policy, referrer policy, MIME sniffing protection, and frame denial.
+
+### Intentionally not executed
+
+- Stripe, RevenueCat, R2, Resend, Turnstile, analytics, WAF, and other provider sandbox/production checks require separately supplied non-production credentials or external platform access.
+- No account was created and no login, form submission, CAPTCHA, payment, webhook, email, deployment, production migration, merge, or push was performed.
+- `PAY-117` remains untouched as requested. The intentional `$299` / `29900` sample remains unchanged.
+
+### Non-blocking observations
+
+- `/blog` returns 200 and remains available. `/docs` returns 404 because the repository currently has no MDX documentation content; the Fumadocs and Orama pipeline remains built and was not frozen.
+- TanStack Router reports its generic missing `notFoundComponent` warning for the empty docs route. This is outside the approved CSV scope and no defensive UI was added.
+- The final build emits dependency sourcemap and Vite deprecation warnings only; all commands exit successfully.
+- Local browser validation used process-only placeholder values and development HTTP mode. No placeholder value was written to repository configuration.
