@@ -1,9 +1,4 @@
-import {
-  defaultLocale,
-  isValidLocale,
-  localeCookieName,
-  type PublishedLocale,
-} from "./locales";
+import { defaultLocale, isValidLocale, localeCookieName, type PublishedLocale } from "./locales";
 
 const localePrefixPattern = /^\/([a-z]{2})(?:\/|$)/;
 

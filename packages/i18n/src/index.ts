@@ -1,8 +1,4 @@
-export {
-  extractLocalePrefix,
-  parseLocaleCookieString,
-  stripLocalePrefix,
-} from "./locale-path";
+export { extractLocalePrefix, parseLocaleCookieString, stripLocalePrefix } from "./locale-path";
 export {
   availableLocales,
   defaultLocale,
