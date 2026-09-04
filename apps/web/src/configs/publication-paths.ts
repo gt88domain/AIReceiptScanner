@@ -1,4 +1,4 @@
-import { stripLocalePrefix } from "@repo/i18n";
+import { stripLocalePrefix } from "@repo/i18n/locale-path";
 import { isNonPublicPath } from "./non-public-paths";
 
 type PublicationLocaleConfig = {

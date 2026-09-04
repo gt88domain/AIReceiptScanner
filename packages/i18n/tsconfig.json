@@ -3,7 +3,6 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "rewriteRelativeImportExtensions": true,
     "declaration": true,
     "declarationMap": true,
     "outDir": "./dist",

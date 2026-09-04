@@ -1,4 +1,9 @@
-import { defaultLocale, isValidLocale, localeCookieName, type PublishedLocale } from "./locales.ts";
+import {
+  defaultLocale,
+  isValidLocale,
+  localeCookieName,
+  type PublishedLocale,
+} from "@repo/i18n/locales";
 
 const localePrefixPattern = /^\/([a-z]{2})(?:\/|$)/;
 
