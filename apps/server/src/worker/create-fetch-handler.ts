@@ -1,4 +1,5 @@
 import type { ServerApp } from "../app/types";
+import { assertBackofficePreviewNotInProduction } from "../lib/backoffice-preview";
 import { validateServerModuleEnvironment } from "../lib/module-config";
 import type { ServerRuntimeConfig } from "../lib/runtime-config";
 
@@ -9,6 +10,7 @@ export function createFetchHandler(
 ) {
   return async (request: Request, env: Cloudflare.Env, ctx: ExecutionContext) => {
     if (env.NODE_ENV === "production") {
+      assertBackofficePreviewNotInProduction(env);
       validateServerModuleEnvironment(env, { runtimeConfig, requireStorageBinding: true });
     }
     const controlResponse = await handleControlRead(request, env);

@@ -26,10 +26,7 @@ import {
 import type { Locale } from "@repo/i18n";
 import { resolveOriginConfig, type ServerRuntimeConfig } from "./runtime-config";
 import { logSafeError } from "./safe-error";
-import {
-  assertBackofficePreviewNotInProduction,
-  isBackofficePreview,
-} from "./backoffice-preview";
+import { isBackofficePreview } from "./backoffice-preview";
 
 const commonConfig = resolveCommonConfig();
 
@@ -101,7 +98,6 @@ export function createAuth(
 
   const db = drizzle(d1);
   const runtimeNodeEnv = runtimeEnv.NODE_ENV;
-  assertBackofficePreviewNotInProduction(runtimeEnv);
   const backofficePreview = isBackofficePreview(runtimeEnv);
   const signupPolicy = resolveSignupPolicy({
     backofficePreview,

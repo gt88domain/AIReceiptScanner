@@ -550,9 +550,9 @@ export function validateProductionConfigResult(
     );
   } else if (publicFormsEnabled && !hasTurnstileSiteKey) {
     add(
-      warnings,
-      "PUBLIC_FORM_PROTECTION_DISABLED",
-      "Public forms have no Turnstile protection. Configure Cloudflare WAF rate limiting in production.",
+      errors,
+      "MISSING_PUBLIC_FORM_PROTECTION",
+      "Public forms require VITE_TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY in production.",
     );
   }
 
