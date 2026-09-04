@@ -1,7 +1,7 @@
 import { createORPCClient, type NestedClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
-import { QueryCache, QueryClient } from "@tanstack/react-query";
+import { QueryCache, QueryClient, type Query } from "@tanstack/react-query";
 
 export interface ApiClientOptions {
   baseUrl: string;
@@ -15,7 +15,7 @@ export type ApiClientContext = Record<PropertyKey, unknown>;
 
 export interface QueryClientOptions {
   staleTimeMs?: number;
-  onError?: (error: Error) => void;
+  onError?: (error: Error, query: Query) => void;
 }
 
 // Cloudflare Service Binding interface

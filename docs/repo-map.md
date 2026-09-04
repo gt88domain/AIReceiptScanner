@@ -26,7 +26,7 @@ available; browser and mobile clients use HTTPS oRPC.
 | Product identity, auth choices, email, storage, credit packages | `packages/app-config/src/product-config.ts` and product-owned sibling files | `docs/config-architecture.md` |
 | Public feature switches, routes, theme preset | `packages/app-config/src/public-runtime.ts` | `packages/app-config/src/features.ts` |
 | Starter landing page and public navigation | `apps/web/src/components/landing-page`, `apps/web/src/components/layout/tailark` | `_public/route.tsx` owns the single Header/Footer shell; semantic skin tokens live in `styles/index.css` |
-| Product listing, ranking, or detail page | `apps/web/src/components/listing`, `apps/web/src/components/public` | `docs/golden-paths/directory.md`; product owns data, URLs, SEO, and copy |
+| Product listing, ranking, or detail page | Product module under `apps/web/src/modules/<domain>` using `components/ui` and `components/public` | `docs/golden-paths/directory.md`; product owns data, URLs, SEO, filters, cards, and copy |
 | Inspect shared public components | Dev/preview-only `/design-system` route | `apps/web/src/components/design-system`, `wrangler.preview.jsonc`; production returns 404 |
 | Membership tiers and presentation semantics | `packages/app-config/src/membership-config.ts` | `apps/server/src/payments/domain/policy.ts` |
 | Provider price catalog and platform-specific payment policy | `packages/app-config/src/app-config.ts` | `apps/server/src/payments/providers` |
