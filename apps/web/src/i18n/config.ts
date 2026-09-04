@@ -3,6 +3,7 @@ import {
   isValidLocale,
   localeCookieName,
   localeDisplayNames,
+  stripLocalePrefix,
   type Locale,
   defaultLocale as sharedDefaultLocale,
   supportedLocales,
@@ -30,4 +31,3 @@ export function shouldIgnorePath(pathname: string): boolean {
 export function extractLocaleFromPath(pathname: string): Locale | null {
   return extractLocalePrefix(pathname);
 }
-  stripLocalePrefix,
