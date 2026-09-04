@@ -132,8 +132,6 @@ Full list from `apps/server/.env.production.example`:
 | `R2_PUBLIC_URL` | If storage enabled | Public URL for stored files |
 | `STRIPE_SECRET_KEY` | If Stripe enabled | Stripe API |
 | `STRIPE_WEBHOOK_SECRET` | If Stripe enabled | Webhook signature verification |
-| `CREEM_API_KEY` | If Creem enabled | Creem API |
-| `CREEM_WEBHOOK_SECRET` | If Creem enabled | Webhook signature verification |
 | `REVENUECAT_WEBHOOK_SECRET` | If native IAP enabled | RevenueCat webhook auth |
 | `ALIBABA_CLOUD_ACCESS_KEY_ID` | If SMS enabled | Aliyun API |
 | `ALIBABA_CLOUD_ACCESS_KEY_SECRET` | If SMS enabled | Aliyun API |
@@ -169,13 +167,11 @@ Webhook handlers are registered in `apps/server/src/index.ts`:
 
 ```typescript
 app.post("/api/webhooks/stripe", ...);      // Stripe
-app.post("/api/webhooks/creem", ...);       // Creem
 app.post("/api/webhooks/revenuecat", ...);  // RevenueCat
 ```
 
 Update in provider dashboards:
 - **Stripe**: `https://YOUR_SERVER_DOMAIN/api/webhooks/stripe`
-- **Creem**: `https://YOUR_SERVER_DOMAIN/api/webhooks/creem`
 - **RevenueCat**: `https://YOUR_SERVER_DOMAIN/api/webhooks/revenuecat`
 
 ### Cron trigger

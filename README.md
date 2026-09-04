@@ -253,8 +253,6 @@ Web checkout uses Stripe; an enabled mobile app uses RevenueCat:
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 
-WAFFO_ENVIRONMENT=test
-
 # RevenueCat (optional mobile)
 REVENUECAT_WEBHOOK_SECRET=your_revenuecat_webhook_secret
 ```

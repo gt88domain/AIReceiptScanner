@@ -114,7 +114,7 @@ auth: {
 // Web payments -- update providerPriceId values from your Stripe dashboard
 payments: {
   enabled: true,
-  provider: "stripe",          // or "creem"
+  provider: "stripe",
   plans: [
     { id: "free" },
     { id: "pro", prices: [

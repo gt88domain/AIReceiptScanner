@@ -5,7 +5,7 @@ description: Configure the EasyStarter Web credit system. Use when the user ment
 
 # EasyStarter Web Credits
 
-Credits are a ledger-backed virtual currency system with three components: **grants** (signup bonus or purchases), **consumption** (idempotent usage), and **expiration** (daily cron job). Purchases flow through the existing payment provider (Stripe or Creem). The credit system has its own DB schema, oRPC routes, and React Query hooks.
+Credits are a ledger-backed virtual currency system with three components: **grants** (signup bonus or purchases), **consumption** (idempotent usage), and **expiration** (daily cron job). Purchases flow through Stripe. The credit system has its own DB schema, oRPC routes, and React Query hooks.
 
 ## Decision Tree
 
@@ -195,7 +195,7 @@ The `runCreditMaintenance` function expires stale grants and cleans up expired o
 
 1. Ensure `web.credits.enabled: true` in app-config
 2. Run DB migration if first time: `pnpm db:push`
-3. Verify payment provider price IDs match actual Stripe/Creem products
+3. Verify payment provider price IDs match actual Stripe products
 4. `pnpm dev:web+server`
 5. Sign up a new user -- check that signup grant credits appear
 6. Navigate to credits/purchase -- buy a package via test checkout
@@ -205,7 +205,7 @@ The `runCreditMaintenance` function expires stale grants and cleans up expired o
 ## Common Mistakes
 
 - **Renaming package IDs** -- Package IDs (`"starter"`, `"growth"`) are stored in credit orders and used as i18n keys. Renaming them breaks existing orders and translation lookups. Add new packages instead.
-- **Mismatched payment provider** -- The `web.provider` in each credit package must match the active payment provider. If `web.payments.provider` is `"stripe"` but a credit package has `provider: "creem"`, checkout fails.
+- **Mismatched payment provider** -- The `web.provider` in each credit package must be `"stripe"` and match `web.payments.provider`.
 - **Forgetting the idempotency key in consumption** -- The `consume` endpoint requires an `idempotencyKey` (8-120 chars). Without it, the request fails validation. The key should be unique per logical action to prevent double-charging.
 - **Subtracting credits in UI code** -- Never directly modify the balance in client code. Always call `orpc.credits.consume`. The server handles balance validation, ledger entries, and idempotency.
 - **Missing DB migration** -- Credit tables (`credit_account`, `credit_transaction`, `credit_order`, `credit_signup_grant_claim`) must exist. If credits are enabled but the migration has not been run, all credit operations fail with table-not-found errors.
