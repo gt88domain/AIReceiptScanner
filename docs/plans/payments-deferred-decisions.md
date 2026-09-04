@@ -5,12 +5,12 @@ Status: implementation complete, static review pending, tests not yet authored o
 ## Implemented
 
 - PAY-104: a verified late provider success may complete an expired immutable credit order after the existing provider, session, payment, amount, and currency checks pass.
-- PAY-105: administrators can close a manual-review operation as failed, or requeue it only when the provider operation has native idempotency. Successful resolutions are audit logged. Provider-specific success reconciliation remains a webhook/replay responsibility.
+- PAY-105: administrators can close a manual-review operation as failed, or requeue it only when the provider operation has native idempotency and no newer active operation owns the same scope. Requeue restores a bounded retry budget. Successful resolutions preserve the original reason in the audit log. Provider-specific success reconciliation remains a webhook/replay responsibility.
 - PAY-106: Stripe subscription or unknown refunds/disputes no longer disappear silently. They become non-retryable webhook dead letters for administrator review; the code does not guess at an automatic subscription transition without invoice/subscription evidence.
 - PAY-111: `invoice.voided` is ignored and no longer marks a subscription unpaid.
 - PAY-114: RevenueCat subscription refunds with `cancel_reason=CUSTOMER_SUPPORT` become visible manual-review events. Existing subscription/purchase identity transfer records remain unchanged.
-- PAY-120: administrators have a bounded cursor-paginated dead-letter listing that works with the existing audited replay procedure.
-- PAY-125: purchase history is globally sorted, cursor-paginated, and bounded to 100 items per source query. The public comment now correctly says provider resource IDs, rather than provider names, stay server-side.
+- PAY-120: administrators have a bounded cursor-paginated dead-letter listing that works with the existing audited replay procedure. A reviewed event can also be acknowledged without replay, with its original failure recorded in the audit log.
+- PAY-125: the existing array response remains as a bounded compatibility endpoint. A new purchase-history page endpoint is globally sorted and cursor-paginated, and the Web UI exposes previous/next navigation. The public comment now correctly says provider resource IDs, rather than provider names, stay server-side.
 
 ## Reviewed and intentionally unchanged
 

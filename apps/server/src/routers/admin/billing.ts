@@ -6,7 +6,10 @@ import { adminProcedure } from "@/lib/orpc";
 import { getAdminBillingOverviewReadModel } from "@/modules/control-read";
 import { recordAdminAuditLog } from "@/modules/audit";
 import { replayBillingOutboxJob } from "@/payments/application/billing-outbox";
-import { replayWebhookEvent } from "@/payments/application/webhook-observability";
+import {
+  acknowledgeWebhookEvent,
+  replayWebhookEvent,
+} from "@/payments/application/webhook-observability";
 import {
   resolvePaymentOperationManualReview,
   retryPaymentOperation,
@@ -108,7 +111,12 @@ export const adminBillingRouter = {
       z.object({
         resolved: z.boolean(),
         reason: z
-          .enum(["NOT_IN_MANUAL_REVIEW", "UNSAFE_NON_IDEMPOTENT_RETRY", "STATUS_CHANGED"])
+          .enum([
+            "NOT_IN_MANUAL_REVIEW",
+            "UNSAFE_NON_IDEMPOTENT_RETRY",
+            "ACTIVE_SCOPE_CONFLICT",
+            "STATUS_CHANGED",
+          ])
           .nullable(),
       }),
     )
@@ -123,10 +131,11 @@ export const adminBillingRouter = {
           actor: context.session!.user,
           action: "billing.payment-operation.manual-review-resolved",
           entity: { type: "payment_operation", id: input.operationId },
+          before: "previous" in result ? result.previous : null,
           after: { resolution: input.resolution },
         });
       }
-      return result;
+      return { resolved: result.resolved, reason: result.reason };
     }),
   listDeadLetterWebhooks: adminProcedure
     .input(
@@ -198,6 +207,22 @@ export const adminBillingRouter = {
             ? { deadLetteredAt: last.deadLetteredAt, id: last.id }
             : null,
       };
+    }),
+  acknowledgeDeadLetterWebhook: adminProcedure
+    .input(z.object({ eventId: z.string().uuid() }))
+    .output(z.object({ acknowledged: z.boolean() }))
+    .handler(async ({ context, input }) => {
+      const previous = await acknowledgeWebhookEvent(context.db, input.eventId);
+      if (previous) {
+        await recordAdminAuditLog(context.db, {
+          actor: context.session!.user,
+          action: "billing.webhook.dead-letter-acknowledged",
+          entity: { type: "billing_event", id: input.eventId },
+          before: previous,
+          after: { resolution: "acknowledged_without_replay" },
+        });
+      }
+      return { acknowledged: Boolean(previous) };
     }),
   replayWebhook: adminProcedure
     .input(z.object({ eventId: z.string().uuid() }))

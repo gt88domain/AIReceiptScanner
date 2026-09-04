@@ -1,4 +1,4 @@
-import { and, eq, isNull, lte, or, sql } from "drizzle-orm";
+import { and, eq, isNull, lte, ne, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { Database } from "@/db";
 import { paymentOperation, type PaymentOperation } from "@/db/schema/payments";
@@ -379,7 +379,11 @@ export async function resolvePaymentOperationManualReview(
 ) {
   const [operation] = await db
     .select({
+      attemptCount: paymentOperation.attemptCount,
       idempotencyMode: paymentOperation.idempotencyMode,
+      lastError: paymentOperation.lastError,
+      manualReviewCode: paymentOperation.manualReviewCode,
+      scopeKey: paymentOperation.scopeKey,
       status: paymentOperation.status,
     })
     .from(paymentOperation)
@@ -392,13 +396,34 @@ export async function resolvePaymentOperationManualReview(
   if (resolution === "requeue" && operation.idempotencyMode !== "native") {
     return { resolved: false, reason: "UNSAFE_NON_IDEMPOTENT_RETRY" as const };
   }
+  if (resolution === "requeue" && operation.scopeKey) {
+    const [activeScope] = await db
+      .select({ id: paymentOperation.id })
+      .from(paymentOperation)
+      .where(
+        and(
+          eq(paymentOperation.scopeKey, operation.scopeKey),
+          ne(paymentOperation.id, operationId),
+          or(
+            eq(paymentOperation.status, "pending"),
+            eq(paymentOperation.status, "processing"),
+            eq(paymentOperation.status, "provider_succeeded"),
+          ),
+        ),
+      )
+      .limit(1);
+    if (activeScope) {
+      return { resolved: false, reason: "ACTIVE_SCOPE_CONFLICT" as const };
+    }
+  }
 
   const [resolved] = await db
     .update(paymentOperation)
     .set({
       status: resolution === "requeue" ? "pending" : "failed",
-      manualReviewCode: null,
-      lastError: resolution === "mark_failed" ? "Closed after administrator review" : null,
+      attemptCount: resolution === "requeue" ? 0 : operation.attemptCount,
+      manualReviewCode: resolution === "requeue" ? null : operation.manualReviewCode,
+      lastError: resolution === "requeue" ? null : operation.lastError,
       leaseToken: null,
       leaseUntil: null,
       nextRetryAt: resolution === "requeue" ? now : null,
@@ -413,5 +438,11 @@ export async function resolvePaymentOperationManualReview(
   return {
     resolved: Boolean(resolved),
     reason: resolved ? null : ("STATUS_CHANGED" as const),
+    previous: {
+      status: operation.status,
+      attemptCount: operation.attemptCount,
+      manualReviewCode: operation.manualReviewCode,
+      lastError: operation.lastError,
+    },
   };
 }

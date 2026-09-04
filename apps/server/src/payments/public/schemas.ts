@@ -151,6 +151,7 @@ export const purchaseHistorySchema = z.object({
 });
 
 export type PurchaseHistoryItem = z.infer<typeof purchaseHistoryItemSchema>;
+export type PurchaseHistoryCursor = z.infer<typeof purchaseHistoryCursorSchema>;
 
 /**
  * Billing status TypeScript type inferred from schema.

@@ -84,7 +84,9 @@ export async function handleStripeChargeRefunded(
   const paymentIntentId =
     typeof charge.payment_intent === "string" ? charge.payment_intent : charge.payment_intent?.id;
 
-  if (!paymentIntentId) return;
+  if (!paymentIntentId) {
+    throw new NonRetryableWebhookError("REFUND_WITHOUT_PAYMENT_INTENT_REQUIRES_MANUAL_REVIEW");
+  }
 
   const revokedCreditPurchase = await revokeCreditPurchaseBySource(db, {
     originalSourceProvider: "stripe",
@@ -281,7 +283,9 @@ async function updatePurchaseStatusFromDispute(
   const paymentIntentRef = dispute.payment_intent;
   const paymentIntentId =
     typeof paymentIntentRef === "string" ? paymentIntentRef : paymentIntentRef?.id;
-  if (!paymentIntentId) return;
+  if (!paymentIntentId) {
+    throw new NonRetryableWebhookError("DISPUTE_WITHOUT_PAYMENT_INTENT_REQUIRES_MANUAL_REVIEW");
+  }
 
   const creditDispute = await recordCreditPaymentDispute(db, {
     provider: "stripe",

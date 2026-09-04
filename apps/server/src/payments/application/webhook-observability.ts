@@ -138,6 +138,38 @@ export async function replayWebhookEvent(db: Database, eventId: string, now = ne
   return Boolean(replayed);
 }
 
+/** Closes a reviewed dead letter without pretending that its domain effect was replayed. */
+export async function acknowledgeWebhookEvent(db: Database, eventId: string) {
+  const [event] = await db
+    .select({
+      processingStatus: billingEvent.processingStatus,
+      eventType: billingEvent.eventType,
+      provider: billingEvent.provider,
+      attemptCount: billingEvent.attemptCount,
+      lastError: billingEvent.lastError,
+    })
+    .from(billingEvent)
+    .where(eq(billingEvent.id, eventId))
+    .limit(1);
+  if (!event || event.processingStatus !== "dead_letter") return null;
+
+  const [acknowledged] = await db
+    .update(billingEvent)
+    .set({
+      processingStatus: "processed",
+      leaseToken: null,
+      leaseUntil: null,
+      nextRetryAt: null,
+      alertLeaseToken: null,
+      alertLeaseUntil: null,
+    })
+    .where(
+      and(eq(billingEvent.id, eventId), eq(billingEvent.processingStatus, "dead_letter")),
+    )
+    .returning({ id: billingEvent.id });
+  return acknowledged ? event : null;
+}
+
 async function claimPendingWebhookAlert(db: Database, eventId: string, now: Date) {
   const token = createLeaseToken();
   const threshold = new Date(now.getTime() - PENDING_WEBHOOK_ALERT_AFTER_MS);

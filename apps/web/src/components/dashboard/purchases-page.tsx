@@ -1,13 +1,25 @@
 import { formatCurrency } from "@repo/shared";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { ReceiptTextIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { useOrpc } from "@/hooks/use-orpc";
+
+type PurchaseHistoryCursor = {
+  createdAt: Date;
+  type: "subscription" | "membership" | "credits";
+  id: string;
+};
 
 export function PurchasesPage() {
   const orpc = useOrpc();
-  const purchases = useQuery(orpc.payments.listPurchaseHistory.queryOptions({ input: {} }));
+  const [cursor, setCursor] = useState<PurchaseHistoryCursor>();
+  const [previousCursors, setPreviousCursors] = useState<(PurchaseHistoryCursor | undefined)[]>([]);
+  const purchases = useQuery(
+    orpc.payments.listPurchaseHistoryPage.queryOptions({ input: { cursor, limit: 50 } }),
+  );
 
   return (
     <div className="space-y-6">
@@ -31,7 +43,8 @@ export function PurchasesPage() {
           ) : null}
           {purchases.data?.items.length === 0 ? <EmptyPurchases /> : null}
           {purchases.data && purchases.data.items.length > 0 ? (
-            <div className="overflow-x-auto">
+            <div className="space-y-4">
+              <div className="overflow-x-auto">
               <table className="w-full min-w-[640px] text-left text-sm">
                 <thead className="border-b text-muted-foreground">
                   <tr>
@@ -65,6 +78,30 @@ export function PurchasesPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button
+                  disabled={previousCursors.length === 0 || purchases.isFetching}
+                  onClick={() => {
+                    const previous = previousCursors.at(-1);
+                    setPreviousCursors((current) => current.slice(0, -1));
+                    setCursor(previous);
+                  }}
+                  variant="outline"
+                >
+                  Previous
+                </Button>
+                <Button
+                  disabled={!purchases.data.nextCursor || purchases.isFetching}
+                  onClick={() => {
+                    setPreviousCursors((current) => [...current, cursor]);
+                    setCursor(purchases.data?.nextCursor ?? undefined);
+                  }}
+                  variant="outline"
+                >
+                  Next
+                </Button>
+              </div>
             </div>
           ) : null}
         </CardContent>
