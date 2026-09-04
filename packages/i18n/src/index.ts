@@ -1,4 +1,4 @@
-export { extractLocalePrefix, parseLocaleCookieString, stripLocalePrefix } from "./locale-path";
+export { extractLocalePrefix, parseLocaleCookieString, stripLocalePrefix } from "./locale-path.ts";
 export {
   availableLocales,
   defaultLocale,
@@ -11,4 +11,4 @@ export {
   localeToDateFormat,
   localeToOpenGraph,
   supportedLocales,
-} from "./locales";
+} from "./locales.ts";
