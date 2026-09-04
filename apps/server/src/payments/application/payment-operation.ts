@@ -167,7 +167,10 @@ export async function claimPaymentOperation(
           ),
         ),
       );
-    throw new Error("PAYMENT_OPERATION_MANUAL_REVIEW");
+    // A successful CAS isolates this operation without aborting the rest of a
+    // recovery batch. If another worker won the race, returning unclaimed also
+    // prevents this stale caller from issuing a provider request.
+    return null;
   }
   if (operation.status === "processing" && operation.leaseUntil && operation.leaseUntil > now) {
     throw new Error("PAYMENT_OPERATION_IN_PROGRESS");
