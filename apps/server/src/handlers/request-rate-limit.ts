@@ -1,4 +1,4 @@
-import { getClientIp } from "@repo/shared";
+import { getClientIp, normalizeHeaderValue } from "@repo/shared";
 
 const recentAttempts = new Map<string, number>();
 
@@ -12,8 +12,11 @@ export function isRequestRateLimited(
   request: Request,
   namespace: string,
   retryAfterMs: number,
+  options: { cloudflareOnly?: boolean } = {},
 ): boolean {
-  const clientIp = getClientIp(request.headers);
+  const clientIp = options.cloudflareOnly
+    ? normalizeHeaderValue(request.headers.get("cf-connecting-ip"))
+    : getClientIp(request.headers);
   if (!clientIp) return false;
 
   const key = `${namespace}:${clientIp}`;

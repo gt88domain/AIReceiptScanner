@@ -24,15 +24,16 @@ export function createResendEmailProvider({
       }
 
       const renderedHtml = template ? await render(template) : html;
-      if (!renderedHtml && !text) {
+      const renderedText = text ?? (template ? await render(template, { plainText: true }) : undefined);
+      if (!renderedHtml && !renderedText) {
         throw new Error("Email content is missing");
       }
 
       const base = { from: resolvedFrom, to, subject };
 
       const payload: CreateEmailOptions = renderedHtml
-        ? ({ ...base, html: renderedHtml } as CreateEmailOptions)
-        : ({ ...base, text: text ?? "" } as CreateEmailOptions);
+        ? ({ ...base, html: renderedHtml, text: renderedText } as CreateEmailOptions)
+        : ({ ...base, text: renderedText ?? "" } as CreateEmailOptions);
 
       const { error } = await client.emails.send(payload);
 

@@ -79,7 +79,11 @@ export const ticketsRouter = {
     .input(createSchema)
     .output(ticketDetailSchema)
     .handler(async ({ context, input }) => {
-      if (isRequestRateLimited(context.request, `tickets:${context.session!.user.id}`, 60_000)) {
+      if (
+        isRequestRateLimited(context.request, `tickets:${context.session!.user.id}`, 60_000, {
+          cloudflareOnly: context.env.NODE_ENV === "production",
+        })
+      ) {
         throw new ORPCError("TOO_MANY_REQUESTS", {
           message: "Please wait a minute before creating another ticket",
         });

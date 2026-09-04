@@ -40,7 +40,11 @@ export function createContactHandler(
     if (!challenge.ok) {
       return c.json({ error: challenge.error, code: challenge.code }, challenge.status);
     }
-    if (isRequestRateLimited(c.req.raw, "contact", retryAfterMs)) {
+    if (
+      isRequestRateLimited(c.req.raw, "contact", retryAfterMs, {
+        cloudflareOnly: c.env.NODE_ENV === "production",
+      })
+    ) {
       return c.json({ error: "Please wait a minute before trying again" }, 429, {
         "Retry-After": String(retryAfterMs / 1_000),
       });
