@@ -1,13 +1,16 @@
 import { controlBillingOverviewSchema } from "@repo/shared/control-read";
-import { and, desc, eq, gte, lte } from "drizzle-orm";
+import { and, desc, eq, gte, lt, lte, or } from "drizzle-orm";
 import { z } from "zod";
-import { paymentOperation } from "@/db/schema/payments";
+import { billingEvent, paymentOperation } from "@/db/schema/payments";
 import { adminProcedure } from "@/lib/orpc";
 import { getAdminBillingOverviewReadModel } from "@/modules/control-read";
 import { recordAdminAuditLog } from "@/modules/audit";
 import { replayBillingOutboxJob } from "@/payments/application/billing-outbox";
 import { replayWebhookEvent } from "@/payments/application/webhook-observability";
-import { retryPaymentOperation } from "@/payments/application/payment-operation";
+import {
+  resolvePaymentOperationManualReview,
+  retryPaymentOperation,
+} from "@/payments/application/payment-operation";
 
 const paymentOperationSchema = z.object({
   id: z.string(),
@@ -93,6 +96,108 @@ export const adminBillingRouter = {
           after: { resolution: "requeued" },
         });
       return { queued };
+    }),
+  resolvePaymentOperationManualReview: adminProcedure
+    .input(
+      z.object({
+        operationId: z.string().uuid(),
+        resolution: z.enum(["requeue", "mark_failed"]),
+      }),
+    )
+    .output(
+      z.object({
+        resolved: z.boolean(),
+        reason: z
+          .enum(["NOT_IN_MANUAL_REVIEW", "UNSAFE_NON_IDEMPOTENT_RETRY", "STATUS_CHANGED"])
+          .nullable(),
+      }),
+    )
+    .handler(async ({ context, input }) => {
+      const result = await resolvePaymentOperationManualReview(
+        context.db,
+        input.operationId,
+        input.resolution,
+      );
+      if (result.resolved) {
+        await recordAdminAuditLog(context.db, {
+          actor: context.session!.user,
+          action: "billing.payment-operation.manual-review-resolved",
+          entity: { type: "payment_operation", id: input.operationId },
+          after: { resolution: input.resolution },
+        });
+      }
+      return result;
+    }),
+  listDeadLetterWebhooks: adminProcedure
+    .input(
+      z
+        .object({
+          limit: z.number().int().min(1).max(100).default(50),
+          cursor: z
+            .object({ deadLetteredAt: z.date(), id: z.string().uuid() })
+            .optional(),
+        })
+        .optional(),
+    )
+    .output(
+      z.object({
+        items: z.array(
+          z.object({
+            id: z.string().uuid(),
+            provider: z.string(),
+            eventType: z.string(),
+            attemptCount: z.number().int(),
+            lastError: z.string().nullable(),
+            firstReceivedAt: z.date().nullable(),
+            lastAttemptAt: z.date().nullable(),
+            deadLetteredAt: z.date(),
+          }),
+        ),
+        nextCursor: z.object({ deadLetteredAt: z.date(), id: z.string().uuid() }).nullable(),
+      }),
+    )
+    .handler(async ({ context, input }) => {
+      const limit = input?.limit ?? 50;
+      const cursor = input?.cursor;
+      const rows = await context.db
+        .select({
+          id: billingEvent.id,
+          provider: billingEvent.provider,
+          eventType: billingEvent.eventType,
+          attemptCount: billingEvent.attemptCount,
+          lastError: billingEvent.lastError,
+          firstReceivedAt: billingEvent.firstReceivedAt,
+          lastAttemptAt: billingEvent.lastAttemptAt,
+          deadLetteredAt: billingEvent.deadLetteredAt,
+        })
+        .from(billingEvent)
+        .where(
+          and(
+            eq(billingEvent.processingStatus, "dead_letter"),
+            cursor
+              ? or(
+                  lt(billingEvent.deadLetteredAt, cursor.deadLetteredAt),
+                  and(
+                    eq(billingEvent.deadLetteredAt, cursor.deadLetteredAt),
+                    lt(billingEvent.id, cursor.id),
+                  ),
+                )
+              : undefined,
+          ),
+        )
+        .orderBy(desc(billingEvent.deadLetteredAt), desc(billingEvent.id))
+        .limit(limit + 1);
+      const page = rows.slice(0, limit).filter(
+        (row): row is typeof row & { deadLetteredAt: Date } => row.deadLetteredAt !== null,
+      );
+      const last = page.at(-1);
+      return {
+        items: page,
+        nextCursor:
+          rows.length > limit && last
+            ? { deadLetteredAt: last.deadLetteredAt, id: last.id }
+            : null,
+      };
     }),
   replayWebhook: adminProcedure
     .input(z.object({ eventId: z.string().uuid() }))

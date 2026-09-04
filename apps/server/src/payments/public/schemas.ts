@@ -127,7 +127,7 @@ export const billingStatusSchema = z.object({
     .nullable(),
 });
 
-/** A safe, user-facing payment history row. Provider identifiers stay server-side. */
+/** A safe, user-facing payment history row. Provider resource IDs stay server-side. */
 export const purchaseHistoryItemSchema = z.object({
   type: z.enum(["subscription", "membership", "credits"]),
   label: z.string(),
@@ -139,7 +139,16 @@ export const purchaseHistoryItemSchema = z.object({
   completedAt: z.date().nullable(),
 });
 
-export const purchaseHistorySchema = z.array(purchaseHistoryItemSchema);
+export const purchaseHistoryCursorSchema = z.object({
+  createdAt: z.date(),
+  type: purchaseHistoryItemSchema.shape.type,
+  id: z.string(),
+});
+
+export const purchaseHistorySchema = z.object({
+  items: z.array(purchaseHistoryItemSchema),
+  nextCursor: purchaseHistoryCursorSchema.nullable(),
+});
 
 export type PurchaseHistoryItem = z.infer<typeof purchaseHistoryItemSchema>;
 

@@ -7,7 +7,7 @@ import { useOrpc } from "@/hooks/use-orpc";
 
 export function PurchasesPage() {
   const orpc = useOrpc();
-  const purchases = useQuery(orpc.payments.listPurchaseHistory.queryOptions());
+  const purchases = useQuery(orpc.payments.listPurchaseHistory.queryOptions({ input: {} }));
 
   return (
     <div className="space-y-6">
@@ -29,8 +29,8 @@ export function PurchasesPage() {
           {purchases.isError ? (
             <p className="text-muted-foreground text-sm">Purchase history could not be loaded.</p>
           ) : null}
-          {purchases.data?.length === 0 ? <EmptyPurchases /> : null}
-          {purchases.data && purchases.data.length > 0 ? (
+          {purchases.data?.items.length === 0 ? <EmptyPurchases /> : null}
+          {purchases.data && purchases.data.items.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[640px] text-left text-sm">
                 <thead className="border-b text-muted-foreground">
@@ -43,7 +43,7 @@ export function PurchasesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {purchases.data.map((purchase, index) => (
+                  {purchases.data.items.map((purchase, index) => (
                     <tr
                       className="border-b last:border-0"
                       key={`${purchase.type}-${purchase.label}-${index}`}

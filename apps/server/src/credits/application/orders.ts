@@ -246,7 +246,10 @@ export async function completeCreditOrderPurchase(
   if ((order.status === "completed" && order.ledgerTransactionId) || order.status === "refunded") {
     return order;
   }
-  if (order.status !== "pending") {
+  // Expiration only closes an abandoned checkout locally. A later, verified provider
+  // success still wins because the immutable order snapshot and amount checks above
+  // prove exactly what was paid for.
+  if (order.status !== "pending" && order.status !== "expired") {
     throw new Error("Credit order cannot be completed from its current state");
   }
 

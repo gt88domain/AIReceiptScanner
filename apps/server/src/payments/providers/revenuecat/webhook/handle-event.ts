@@ -18,6 +18,7 @@ import {
   upsertBillingPurchaseIfNewer,
   upsertBillingSubscriptionIfNewer,
 } from "@/payments/infrastructure/repositories/billing-store";
+import { NonRetryableWebhookError } from "@/payments/application/webhook-observability";
 import { reconcileActivatedPriceWithExistingSubscriptions } from "../../shared/activated-price-effects";
 import type { RevenueCatWebhookEnvelope, RevenueCatWebhookEvent } from "../types";
 import { shouldIgnoreRevenueCatEvent } from "./event-filter";
@@ -345,6 +346,13 @@ export async function handleRevenueCatEvent(db: Database, payload: unknown) {
       await reconcileActivatedPriceWithExistingSubscriptions(db, { userId }, mappedPrice.price.id);
     }
     return;
+  }
+
+  if (event.type === "CANCELLATION" && event.cancel_reason === "CUSTOMER_SUPPORT") {
+    // RevenueCat documents this as a refund signal but also warns that renewal
+    // can remain active. Keep it visible for an operator instead of guessing at
+    // an automatic subscription state transition.
+    throw new NonRetryableWebhookError("REVENUECAT_SUBSCRIPTION_REFUND_REQUIRES_MANUAL_REVIEW");
   }
 
   const applied = await upsertRevenueCatSubscription(db, {

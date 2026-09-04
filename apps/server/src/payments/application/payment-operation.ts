@@ -369,3 +369,49 @@ export async function retryPaymentOperation(db: Database, operationId: string, n
     .where(eq(paymentOperation.id, operationId));
   return true;
 }
+
+/** Resolves a manual-review operation without permitting an unsafe duplicate provider call. */
+export async function resolvePaymentOperationManualReview(
+  db: Database,
+  operationId: string,
+  resolution: "requeue" | "mark_failed",
+  now = new Date(),
+) {
+  const [operation] = await db
+    .select({
+      idempotencyMode: paymentOperation.idempotencyMode,
+      status: paymentOperation.status,
+    })
+    .from(paymentOperation)
+    .where(eq(paymentOperation.id, operationId))
+    .limit(1);
+
+  if (!operation || operation.status !== "manual_review") {
+    return { resolved: false, reason: "NOT_IN_MANUAL_REVIEW" as const };
+  }
+  if (resolution === "requeue" && operation.idempotencyMode !== "native") {
+    return { resolved: false, reason: "UNSAFE_NON_IDEMPOTENT_RETRY" as const };
+  }
+
+  const [resolved] = await db
+    .update(paymentOperation)
+    .set({
+      status: resolution === "requeue" ? "pending" : "failed",
+      manualReviewCode: null,
+      lastError: resolution === "mark_failed" ? "Closed after administrator review" : null,
+      leaseToken: null,
+      leaseUntil: null,
+      nextRetryAt: resolution === "requeue" ? now : null,
+      retryable: resolution === "requeue",
+      updatedAt: now,
+    })
+    .where(
+      and(eq(paymentOperation.id, operationId), eq(paymentOperation.status, "manual_review")),
+    )
+    .returning({ id: paymentOperation.id });
+
+  return {
+    resolved: Boolean(resolved),
+    reason: resolved ? null : ("STATUS_CHANGED" as const),
+  };
+}

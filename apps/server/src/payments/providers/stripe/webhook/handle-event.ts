@@ -10,7 +10,6 @@ import {
   handleStripeInvoiceMarkedUncollectible,
   handleStripeInvoicePaid,
   handleStripeInvoicePaymentFailed,
-  handleStripeInvoiceVoided,
 } from "./invoice-events";
 import {
   handleStripeChargeDisputeClosed,
@@ -130,12 +129,8 @@ export async function handleStripeEvent(db: Database, payload: unknown) {
       return;
     }
     case "invoice.voided": {
-      await handleStripeInvoiceVoided(
-        db,
-        event.data.object as Stripe.Invoice,
-        providerEventAt,
-        event.id,
-      );
+      // Voiding an invoice does not prove that its subscription is unpaid. In
+      // particular, Stripe can void zero-value proration invoices during changes.
       return;
     }
     case "charge.dispute.updated": {
