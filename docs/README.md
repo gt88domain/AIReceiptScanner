@@ -49,6 +49,8 @@ historical records as dated evidence, not as instructions for the current tree.
 - [D1 backup and recovery](./d1-backup-recovery.md)
 - [Template governance](./template-governance.md),
   [upstream sync](./upstream-sync.md), and [upgrade guides](./upgrades/)
+- [Upgrade from v3.1.2 to v4.0.0](./upgrades/v3.1.2-to-v4.0.0.md): breaking
+  changes, downstream adoption order, provider/i18n recovery, and rollback
 
 ## Web, content, and localization
 
