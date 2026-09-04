@@ -20,3 +20,4 @@ jobs:
         with:
           scan-args: |-
             --lockfile=pnpm-lock.yaml
+            --lockfile=optional/pnpm-lock.yaml

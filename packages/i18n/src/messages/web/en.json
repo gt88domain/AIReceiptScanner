@@ -591,7 +591,7 @@
   },
   "seo": {
     "home": {
-      "description": "TanStack Template is a modern full-stack TypeScript SaaS template with auth, billing, i18n, and deployment workflows built in."
+      "description": "EasyStarter is a production-ready foundation for paid web products, with authentication, billing, i18n, and Cloudflare deployment built in."
     },
     "noIndex": {
       "descriptionTemplate": "{page} pages are private workflows and are excluded from search indexing.",

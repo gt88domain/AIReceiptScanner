@@ -1,5 +1,5 @@
 import { useForm } from "@tanstack/react-form";
-import { Link } from "@tanstack/react-router";
+import { Link, useSearch } from "@tanstack/react-router";
 import { Loader2Icon } from "lucide-react";
 import { toast } from "sonner";
 import z from "zod";
@@ -10,13 +10,16 @@ import { Input } from "@/components/ui/input";
 import { getAuthUrls } from "@/configs/web-config";
 import { useTranslations } from "@/i18n";
 import { authClient } from "@/lib/auth/auth-client";
+import { sanitizeReturnTo } from "@/lib/auth/require-user";
 
 export function EmailSignInForm() {
   const t = useTranslations();
+  const search = useSearch({ strict: false }) as { returnTo?: string };
+  const returnTo = sanitizeReturnTo(search.returnTo);
   const form = useForm({
     defaultValues: { email: "", password: "" },
     onSubmit: async ({ value }) => {
-      const authUrls = getAuthUrls();
+      const authUrls = getAuthUrls({ returnTo });
       await authClient.signIn.email(
         {
           email: value.email,

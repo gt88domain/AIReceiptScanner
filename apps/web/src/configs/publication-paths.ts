@@ -1,3 +1,4 @@
+import { stripLocalePrefix } from "@repo/i18n";
 import { isNonPublicPath } from "./non-public-paths";
 
 type PublicationLocaleConfig = {
@@ -17,9 +18,7 @@ export function stripPublishedLocalePrefix(
   path: string,
   supportedLocales: readonly string[],
 ): string {
-  const pathname = path.split(/[?#]/)[0] || "/";
-  const locale = /^\/([a-z]{2})(?:\/|$)/.exec(pathname)?.[1];
-  return locale && supportedLocales.includes(locale) ? pathname.slice(3) || "/" : pathname;
+  return stripLocalePrefix(path, supportedLocales);
 }
 
 export function isNonPublicPublishedPath(

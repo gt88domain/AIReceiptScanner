@@ -136,10 +136,16 @@ function resolveBuildEnvValue(
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, appDirectory, "");
   const wranglerVars = loadWranglerVars();
+  const publicClientEnvKeys = [
+    "VITE_SERVER_URL",
+    "VITE_APP_URL",
+    "VITE_TURNSTILE_SITE_KEY",
+    "VITE_GA_MEASUREMENT_ID",
+    "VITE_OPENPANEL_CLIENT_ID",
+    "VITE_TEMPLATE_PREVIEW",
+  ] as const;
   const clientBuildEnv = Object.fromEntries(
-    Object.keys(wranglerVars)
-      .filter((key) => key.startsWith("VITE_"))
-      .map((key) => [
+    publicClientEnvKeys.map((key) => [
         `import.meta.env.${key}`,
         JSON.stringify(resolveBuildEnvValue(key, [process.env, env, wranglerVars]) ?? ""),
       ]),

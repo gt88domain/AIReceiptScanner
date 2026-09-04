@@ -591,7 +591,7 @@
   },
   "seo": {
     "home": {
-      "description": "TanStack Template 是一个现代全栈 TypeScript SaaS 模板，内置认证、支付、国际化与部署能力。"
+      "description": "EasyStarter 是一个可直接用于生产环境的付费 Web 产品基础，内置认证、支付、国际化与 Cloudflare 部署能力。"
     },
     "noIndex": {
       "descriptionTemplate": "{page}页面属于站内流程页，已禁止搜索引擎收录。",
