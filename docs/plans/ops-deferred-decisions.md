@@ -34,7 +34,8 @@ After core-goal review, add focused tests proving:
 
 - production throttling ignores spoofed forwarded/real-IP headers and uses the
   Cloudflare IP;
-- local development retains existing forwarded-header behavior;
+- requests missing the Cloudflare header share a bounded bucket rather than
+  trusting forwarded headers;
 - contact, newsletter, and ticket callers select production trust mode;
 - a React email template sends both non-empty HTML and plain text;
 - an explicit text-only email remains unchanged;
@@ -55,3 +56,12 @@ performed in this phase.
 Public write endpoints select Cloudflare-only identity unconditionally rather
 than depending on `NODE_ENV`. A request missing `cf-connecting-ip` enters one
 shared bounded bucket; it cannot opt out of throttling by removing the header.
+
+## Review and test-authoring status
+
+- Core-goal review: passed after two independent reviews and correction of the
+  environment-drift and missing-header findings.
+- EMAIL/CORE/JOB/DATA decisions: independently reviewed with no actionable
+  repository finding.
+- Test authoring: trusted-IP and dual-format email tests added after core review.
+- Test execution: not authorized and not run.

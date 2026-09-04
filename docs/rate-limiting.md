@@ -45,9 +45,9 @@ URLs are not a substitute for a production custom-domain WAF policy.
   failure behavior, and load expectations in its owning domain.
 - Return a stable `429` and a bounded retry hint for application-enforced
   limits. Never make a client-side hidden button the enforcement mechanism.
-- In production, application throttles use only `cf-connecting-ip`; forwarded
-  and real-IP headers remain local-development fallbacks and are not trusted as
-  attacker identity.
+- Public write endpoints use only `cf-connecting-ip`. Requests without that
+  trusted header share a conservative fallback bucket; forwarded and real-IP
+  headers are never used as attacker identity on those endpoints.
 - A limit cannot grant authorization. Keep authentication, capability, credit,
   and idempotency checks independent of it.
 
