@@ -437,7 +437,7 @@ function selfCheck() {
   assert.match(
     validateProductionConfigResult({
       ...validInput,
-      web: { ...validInput.web, turnstileSiteKey: "site-key" },
+      web: { ...validInput.web, turnstileSiteKey: "" },
     })
       .errors.map(({ code }) => code)
       .join("\n"),
