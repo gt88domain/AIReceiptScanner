@@ -23,8 +23,10 @@ Before editing, classify the request:
 
 Use [the repository map](docs/repo-map.md) for change navigation and
 [the architecture map](docs/architecture-map.md) for topology and critical
-flows. `template-kit/repository-facts.json` is the only machine-readable source
-for repository facts and enforced import boundaries; do not create a second
+flows. [`GOVERNANCE.md`](GOVERNANCE.md) is a non-normative pointer to operating
+references; this file remains the sole normative instruction source.
+`template-kit/repository-facts.json` is the only machine-readable source for
+repository facts and enforced import boundaries; do not create a second
 hard-coded rule set or generated repo map.
 
 ## Working style
