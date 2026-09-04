@@ -6,9 +6,6 @@ import {
   PHONE_COMPATIBILITY_EMAIL_PREFIX,
 } from "@repo/shared";
 
-// Sync HMAC-SHA256(phoneDigits) keyed by the server secret, truncated to 64 bits of hex.
-// Must be synchronous because Better Auth's phoneNumber plugin calls getTempEmail without awaiting.
-// Uses node:crypto (available on Cloudflare Workers via the nodejs_compat flag).
 export function buildPhoneCompatibilityEmail(phoneNumber: string, secret: string): string {
   if (!secret) {
     throw new Error("buildPhoneCompatibilityEmail requires a non-empty secret");

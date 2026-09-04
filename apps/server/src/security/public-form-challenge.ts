@@ -9,6 +9,7 @@ export type PublicFormAction = "contact" | "newsletter";
 export type ChallengeEnvironment = {
   TURNSTILE_SECRET_KEY?: string;
   WEBSITE_URL?: string;
+  NODE_ENV?: string;
 };
 
 export type PublicFormChallengeResult =
@@ -56,7 +57,17 @@ export const verifyPublicFormChallenge: PublicFormChallengeVerifier = async ({
   token,
 }) => {
   const secret = env.TURNSTILE_SECRET_KEY?.trim();
-  if (!secret) return { ok: true };
+  if (!secret) {
+    if (env.NODE_ENV === "production") {
+      return {
+        ok: false,
+        code: "CHALLENGE_UNAVAILABLE",
+        error: "Verification is temporarily unavailable. Please try again.",
+        status: 503,
+      };
+    }
+    return { ok: true };
+  }
   if (!token) {
     return {
       ok: false,

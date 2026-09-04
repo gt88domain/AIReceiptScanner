@@ -18,8 +18,6 @@ export function buildDeletedAccountUserUpdate(
     deletedAt,
     email: `${currentUser.email}__deleted_${deletedAt.getTime()}`,
     emailVerified: false,
-    phoneNumber: null,
-    phoneNumberVerified: false,
   };
 }
 

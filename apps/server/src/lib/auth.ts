@@ -26,7 +26,10 @@ import {
 import type { Locale } from "@repo/i18n";
 import { resolveOriginConfig, type ServerRuntimeConfig } from "./runtime-config";
 import { logSafeError } from "./safe-error";
-import { isBackofficePreview } from "./backoffice-preview";
+import {
+  assertBackofficePreviewNotInProduction,
+  isBackofficePreview,
+} from "./backoffice-preview";
 
 const commonConfig = resolveCommonConfig();
 
@@ -98,6 +101,7 @@ export function createAuth(
 
   const db = drizzle(d1);
   const runtimeNodeEnv = runtimeEnv.NODE_ENV;
+  assertBackofficePreviewNotInProduction(runtimeEnv);
   const backofficePreview = isBackofficePreview(runtimeEnv);
   const signupPolicy = resolveSignupPolicy({
     backofficePreview,
@@ -131,6 +135,11 @@ export function createAuth(
       provider: "sqlite",
       schema,
     }),
+    user: {
+      // Admin authorization is email-based, so self-service email changes are
+      // disabled rather than creating a second privilege-sensitive workflow.
+      changeEmail: { enabled: false },
+    },
     account: {
       encryptOAuthTokens: true,
       accountLinking: {
@@ -143,8 +152,7 @@ export function createAuth(
     },
     session: {
       cookieCache: {
-        enabled: true,
-        maxAge: 60 * 60,
+        enabled: false,
       },
       expiresIn: 60 * 60 * 24 * 7,
       updateAge: 60 * 60 * 24,

@@ -14,10 +14,8 @@ export function toCnE164PhoneNumber(localDigits: string): string {
   return `${CN_DIAL_PREFIX}${localDigits}`;
 }
 
-// Compatibility emails use a 16-hex-char HMAC digest so the stored email never leaks the raw
-// phone number. The format must be URL-safe and fit RFC 5321 local-part limits. The digest is
-// computed server-side (see apps/server/src/lib/phone-email.ts) so it can use node:crypto
-// synchronously — Better Auth's getTempEmail callback signature is sync-only.
+// Compatibility matchers remain only for historical phone-era rows. Phone
+// login is not registered and no production path creates these addresses.
 export const PHONE_COMPATIBILITY_EMAIL_DOMAIN = "phone-auth.invalid";
 export const PHONE_COMPATIBILITY_EMAIL_PREFIX = "phone-";
 export const PHONE_COMPATIBILITY_EMAIL_DIGEST_LENGTH = 16;

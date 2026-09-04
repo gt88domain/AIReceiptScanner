@@ -5,6 +5,7 @@ export const user = sqliteTable("user", {
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   emailVerified: integer("email_verified", { mode: "boolean" }).notNull(),
+  // Reserved for migration compatibility. Phone login is not registered.
   phoneNumber: text("phone_number").unique(),
   phoneNumberVerified: integer("phone_number_verified", { mode: "boolean" })
     .notNull()
