@@ -38,7 +38,7 @@ Review and replace the following groups together:
 | Product name, support email, website and app links | `packages/app-config/src/product-config.ts` |
 | Cloudflare Worker, D1, R2, and service-binding names | both `wrangler.jsonc` files |
 | Native bundle identifier and deep-link scheme | `optional/mobile/app.json`, `packages/app-config/src/product-config.ts` |
-| Stripe, Creem, Waffo, and RevenueCat membership product/price IDs | `packages/app-config/src/app-config.ts` |
+| Stripe and RevenueCat membership product/price IDs | `packages/app-config/src/app-config.ts` |
 | Membership tiers and credit-package product IDs | `packages/app-config/src/membership-config.ts`, `packages/app-config/src/product-config.ts` |
 | Transactional-email sender and production secrets | `apps/server/.env.production.example` and Worker secrets |
 

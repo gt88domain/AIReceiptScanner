@@ -272,7 +272,7 @@ entitlements and balances.
 ```mermaid
 sequenceDiagram
   autonumber
-  participant Provider as Stripe, Creem, Waffo,<br/>or RevenueCat
+  participant Provider as Stripe<br/>or RevenueCat
   participant HTTP as Hono webhook route
   participant Adapter as Payment provider adapter
   participant Inbox as billing_event inbox

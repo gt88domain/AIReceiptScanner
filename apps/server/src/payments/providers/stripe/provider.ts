@@ -200,11 +200,12 @@ export function createStripePaymentProvider(): PaymentProvider {
       }
 
       let event: Stripe.Event;
+      const webhookSecret = requireWebhookSecret();
       try {
         event = await stripe.webhooks.constructEventAsync(
           input.rawBody,
           signature,
-          requireWebhookSecret(),
+          webhookSecret,
         );
       } catch {
         throw new HTTPException(400, { message: "Invalid Stripe webhook signature" });

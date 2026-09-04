@@ -74,7 +74,7 @@ export function PricingSection({ title, subtitle }: PricingSectionProps) {
         const billingProvider = statusQuery.data?.billingProvider ?? null;
         const canUseDirectProviderUpgrade =
           decision.action === "upgrade" &&
-          (billingProvider === "stripe" || billingProvider === "creem") &&
+          billingProvider === "stripe" &&
           targetProvider === billingProvider;
 
         if (canUseDirectProviderUpgrade) {
@@ -119,9 +119,6 @@ export function PricingSection({ title, subtitle }: PricingSectionProps) {
           return tBilling("currentPlanCta");
         }
         if (decision.reason === "subscription_upgrade") {
-          if (billingProvider === "waffo" && targetProvider === billingProvider) {
-            return tBilling("upgradeUnavailable");
-          }
           return tBilling("upgradeSubscription");
         }
         if (decision.reason === "already_lifetime") {
@@ -150,16 +147,6 @@ export function PricingSection({ title, subtitle }: PricingSectionProps) {
     }
 
     const decision = getCheckoutDecision(priceMeta);
-    const targetProvider = findPriceProvider(plans, priceMeta.priceId);
-    const billingProvider = statusQuery.data?.billingProvider ?? null;
-    if (
-      decision.reason === "subscription_upgrade" &&
-      billingProvider === "waffo" &&
-      targetProvider === billingProvider
-    ) {
-      return true;
-    }
-
     return decision.action === "disabled";
   };
 
