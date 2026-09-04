@@ -56,3 +56,14 @@ pnpm test:integration
 
 No D1 migration, R2 mutation, test, build, deploy, or production inventory was
 run while preparing this change.
+
+## Review and test-authoring status
+
+- Core-goal review: passed after two independent reviews and correction of one
+  missing URL-parser import.
+- Accepted residual risk: D1 and R2 cannot commit atomically; current delete is
+  retry-safe and upload attempts best-effort object cleanup.
+- Future provider gate: adding a provider after R2 requires an asset provider
+  discriminator and migration review.
+- Test authoring: focused ownership and R2-bound tests added after core review.
+- Test execution: not authorized and not run.
