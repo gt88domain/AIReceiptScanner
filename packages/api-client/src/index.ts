@@ -15,7 +15,7 @@ export type ApiClientContext = Record<PropertyKey, unknown>;
 
 export interface QueryClientOptions {
   staleTimeMs?: number;
-  onError?: (error: Error, query: Query) => void;
+  onError?: (error: Error, query: Query<unknown, unknown, unknown, readonly unknown[]>) => void;
 }
 
 // Cloudflare Service Binding interface
