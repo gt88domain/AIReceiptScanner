@@ -77,6 +77,7 @@ describe("webhook observability", () => {
       await expect(alertPendingWebhookEvents(db, "admin@example.test", { send })).resolves.toBe(0);
       expect(sent).toEqual([event!.id]);
     } finally {
+      await db.delete(billingEvent).where(eq(billingEvent.providerEventId, eventId));
       parse.mockRestore();
     }
   });
@@ -114,6 +115,7 @@ describe("webhook observability", () => {
         .where(eq(billingEvent.providerEventId, eventId));
       expect(event).toMatchObject({ processingStatus: "dead_letter", attemptCount: 1 });
     } finally {
+      await db.delete(billingEvent).where(eq(billingEvent.providerEventId, eventId));
       parse.mockRestore();
     }
   });
@@ -151,6 +153,7 @@ describe("webhook observability", () => {
         .where(eq(billingEvent.providerEventId, eventId));
       expect(event).toMatchObject({ processingStatus: "dead_letter", attemptCount: 1 });
     } finally {
+      await db.delete(billingEvent).where(eq(billingEvent.providerEventId, eventId));
       parse.mockRestore();
     }
   });
