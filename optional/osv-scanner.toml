@@ -1,0 +1,9 @@
+[[IgnoredVulns]]
+id = "GHSA-5p2g-fcmc-qvqq"
+ignoreUntil = 2026-10-05
+reason = "No patched image-size release exists. It is transitive Metro build tooling and only parses reviewed repository assets, not user uploads. Reassess when Expo or image-size publishes a fix."
+
+[[IgnoredVulns]]
+id = "GHSA-w3rx-r6r6-pgpr"
+ignoreUntil = 2026-10-05
+reason = "No patched image-size release exists. It is transitive Metro build tooling and only parses reviewed repository assets, not user uploads. Reassess when Expo or image-size publishes a fix."
