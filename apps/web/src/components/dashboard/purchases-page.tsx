@@ -39,7 +39,21 @@ export function PurchasesPage() {
         <CardContent>
           {purchases.isPending ? <PurchaseSkeleton /> : null}
           {purchases.isError ? (
-            <p className="text-muted-foreground text-sm">Purchase history could not be loaded.</p>
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-muted-foreground text-sm">Purchase history could not be loaded.</p>
+              {previousCursors.length > 0 ? (
+                <Button
+                  onClick={() => {
+                    const previous = previousCursors.at(-1);
+                    setPreviousCursors((current) => current.slice(0, -1));
+                    setCursor(previous);
+                  }}
+                  variant="outline"
+                >
+                  Previous
+                </Button>
+              ) : null}
+            </div>
           ) : null}
           {purchases.data?.items.length === 0 ? <EmptyPurchases /> : null}
           {purchases.data && purchases.data.items.length > 0 ? (

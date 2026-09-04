@@ -114,6 +114,7 @@ export const adminBillingRouter = {
           .enum([
             "NOT_IN_MANUAL_REVIEW",
             "UNSAFE_NON_IDEMPOTENT_RETRY",
+            "IDEMPOTENCY_WINDOW_EXPIRED",
             "ACTIVE_SCOPE_CONFLICT",
             "STATUS_CHANGED",
           ])
@@ -131,7 +132,7 @@ export const adminBillingRouter = {
           actor: context.session!.user,
           action: "billing.payment-operation.manual-review-resolved",
           entity: { type: "payment_operation", id: input.operationId },
-          before: "previous" in result ? result.previous : null,
+          before: "previous" in result ? result.previous : undefined,
           after: { resolution: input.resolution },
         });
       }
