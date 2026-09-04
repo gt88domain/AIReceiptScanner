@@ -4,7 +4,7 @@ import { z } from "zod";
 import { storageProcedure } from "@/lib/orpc";
 import { requireStorageService } from "@/lib/storage-access";
 import { backfillCurrentAvatarAsset, createAsset, deleteAsset } from "@/modules/assets/service";
-import { listOwnedAssets } from "@/modules/assets/repository";
+import { findOwnedAssetByStorageKey, listOwnedAssets } from "@/modules/assets/repository";
 import {
   generateStorageKey,
   getMaxFileSize,
@@ -149,7 +149,12 @@ export const storageRouter = {
     }),
 
   delete: storageProcedure
-    .input(z.object({ assetId: z.string().min(1) }))
+    .input(
+      z.union([
+        z.object({ assetId: z.string().min(1) }),
+        z.object({ url: z.string().min(1) }),
+      ]),
+    )
     .output(z.object({ success: z.boolean() }))
     .handler(async ({ context, input }) => {
       const storageProvider = requireStorageService(context);
@@ -161,8 +166,36 @@ export const storageRouter = {
         });
       }
 
+      let assetId: string;
+      if ("assetId" in input) {
+        assetId = input.assetId;
+      } else {
+        const publicBaseUrl = getStoragePublicBaseUrl(context.env.SERVER_URL);
+        const parsedStorageUrl = parseStoragePublicUrl(publicBaseUrl, input.url);
+        if (!parsedStorageUrl) {
+          throw new ORPCError("BAD_REQUEST", {
+            message: t("errors.invalidUrl"),
+          });
+        }
+        await backfillCurrentAvatarAsset(context.db, storageProvider, {
+          ownerId: userId,
+          publicBaseUrl,
+        });
+        const record = await findOwnedAssetByStorageKey(
+          context.db,
+          parsedStorageUrl.key,
+          userId,
+        );
+        if (!record) {
+          throw new ORPCError("FORBIDDEN", {
+            message: t("errors.forbidden"),
+          });
+        }
+        assetId = record.id;
+      }
+
       const deleted = await deleteAsset(context.db, storageProvider, {
-        assetId: input.assetId,
+        assetId,
         ownerId: userId,
       });
       if (!deleted) {

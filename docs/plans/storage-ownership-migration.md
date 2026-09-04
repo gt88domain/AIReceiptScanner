@@ -27,6 +27,11 @@ Unreferenced R2 objects are deliberately not adopted. Before production
 cutover, operators must inventory them and choose deletion, external evidence,
 or quarantine; the application must not guess an owner.
 
+The current active provider set contains only R2, so asset rows do not add a
+second provider discriminator. Both the new `{ assetId }` delete request and
+the historical `{ url }` shape are accepted; URL compatibility still resolves
+an owner-scoped asset row before deletion and never authorizes from key text.
+
 ## Deferred test plan
 
 After core-goal review, add focused tests proving:
