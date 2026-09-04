@@ -137,6 +137,26 @@ describe("administrator RPC authorization", () => {
       createdAt: deadLetteredAt,
       updatedAt: deadLetteredAt,
     });
+    const concurrentManualOperationId = crypto.randomUUID();
+    await db.insert(paymentOperation).values({
+      id: concurrentManualOperationId,
+      operationKey: `${actor!.id}:checkout:${concurrentManualOperationId}`,
+      scopeKey: null,
+      userId: actor!.id,
+      provider: "stripe",
+      operationType: "checkout",
+      requestVersion: 1,
+      requestHash: "admin-concurrent-manual-review",
+      requestJson: '{"version":1,"payload":{}}',
+      status: "manual_review",
+      idempotencyMode: "local_only",
+      attemptCount: 1,
+      retryable: false,
+      lastError: "concurrent administrator review",
+      manualReviewCode: "PAYMENT_OPERATION_PROVIDER_AMBIGUOUS",
+      createdAt: deadLetteredAt,
+      updatedAt: deadLetteredAt,
+    });
     const jobId = crypto.randomUUID();
     const failedJobEventId = crypto.randomUUID();
     const now = new Date();
@@ -239,11 +259,30 @@ describe("administrator RPC authorization", () => {
         resolution: "mark_failed",
       }),
     ).resolves.toEqual({ resolved: true, reason: null });
+    const concurrentResolutions = await Promise.all([
+      client.admin.resolvePaymentOperationManualReview({
+        operationId: concurrentManualOperationId,
+        resolution: "mark_failed",
+      }),
+      client.admin.resolvePaymentOperationManualReview({
+        operationId: concurrentManualOperationId,
+        resolution: "mark_failed",
+      }),
+    ]);
+    expect(concurrentResolutions.filter((result) => result.resolved)).toHaveLength(1);
+    expect(concurrentResolutions.filter((result) => !result.resolved)).toHaveLength(1);
     await expect(client.admin.retryFailedJob({ id: failedJobEventId })).resolves.toEqual({
       retried: true,
     });
     const auditLog = await client.admin.listAuditLog({ page: 1, perPage: 10 });
-    expect(auditLog.total).toBe(4);
+    expect(auditLog.total).toBe(5);
+    expect(
+      auditLog.data.filter(
+        (entry) =>
+          entry.action === "billing.payment-operation.manual-review-resolved" &&
+          entry.entityId === concurrentManualOperationId,
+      ),
+    ).toHaveLength(1);
     expect(auditLog.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
