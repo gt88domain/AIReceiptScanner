@@ -492,12 +492,6 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  packages/i18n-dormant-catalogs:
-    devDependencies:
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-
   packages/shared:
     dependencies:
       lodash-es:

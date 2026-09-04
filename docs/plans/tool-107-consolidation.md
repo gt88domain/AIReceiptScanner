@@ -29,7 +29,7 @@ weakening CI, release, security, product-profile, or upstream-adoption guards.
 
 ## Deferred test plan
 
-After core-goal review passes, update the focused auto-merge checker to prove:
+The focused auto-merge checker was updated after core-goal review to prove:
 
 - `auto-merge.yml` is the only workflow containing the merge API call;
 - ordinary workflow-run events still require the exact successful head SHA;

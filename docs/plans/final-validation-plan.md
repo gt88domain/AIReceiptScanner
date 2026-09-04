@@ -8,10 +8,17 @@ Baseline: `ee550f56df435085f262e707a2e9da5cf352e01c`
 
 Reviewed integration base: `37cf95f9e04ce07e947e867e425639164cb4f602`
 
-Scope provenance: the reviewed integration base already contains separately
-authorized auth, platform, Web/tooling, i18n, and payment cleanup. The commits
-after that base contain the later approved TOOL-107, Web, storage, operations,
-and payment work; this plan validates the combined candidate.
+## Authorization boundary
+
+| IDs | Recorded decision | Candidate provenance |
+| --- | --- | --- |
+| AUTH-103, AUTH-109, PAY-116, LANG-101 | Preserve the separately reviewed integration-base implementation; do not reopen or extend it in the deferred-topic pass | `ee550f5..37cf95f` |
+| TOOL-107 | Apply the user-approved conservative consolidation; preserve rollback evidence and protected surfaces | `b698120`, `0705d01` |
+| Deferred Web, storage, operations, and payment IDs listed in their topic plans | Implement only evidence-supported CSV findings; reject or defer disputed/product-policy changes | Commits after `37cf95f`, ending at the final reviewed candidate |
+
+This table records a closed list, not domain-wide authorization. In particular,
+it does not authorize PAY-117, further provider removal, destructive audit-data
+changes, or freezing protected content surfaces.
 
 ## Rules
 

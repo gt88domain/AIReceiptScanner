@@ -30,7 +30,7 @@ applied SQL.
 
 ## Deferred test plan
 
-After core-goal review, add focused tests proving:
+Focused tests were added after core-goal review to prove:
 
 - production throttling ignores spoofed forwarded/real-IP headers and uses the
   Cloudflare IP;

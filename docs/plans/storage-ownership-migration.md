@@ -34,7 +34,7 @@ an owner-scoped asset row before deletion and never authorizes from key text.
 
 ## Deferred test plan
 
-After core-goal review, add focused tests proving:
+Focused tests were added after core-goal review to prove:
 
 - uploads create an asset row and clean up R2 when metadata persistence fails;
 - deletion rejects another user's asset ID without touching its object;

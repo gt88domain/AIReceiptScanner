@@ -22,7 +22,7 @@ does not enable prerendering or introduce a new listing abstraction.
 
 ## Deferred test plan
 
-After implementation and core-goal review, update focused tests to cover:
+Focused tests were updated after implementation and core-goal review to cover:
 
 - the exact CSP directives and HSTS `includeSubDomains` value;
 - server rendering/hydration with the CSP present;

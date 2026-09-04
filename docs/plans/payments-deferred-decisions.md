@@ -26,7 +26,9 @@ Status: implementation and independent static review complete; focused tests aut
 
 - Automatic Stripe subscription revocation after a refund/dispute requires reliable charge-to-invoice-to-subscription evidence and an explicit access policy. The current safe outcome is a visible dead letter.
 - Automatic RevenueCat credit transfer is not implemented because provider entitlement transfer does not define how already-consumed application credits move.
-- No PAY-117 recommendation was implemented. Shared payment-operation files changed only for PAY-105.
+- No PAY-117 recommendation was implemented. Shared payment-operation and
+  recovery files changed for PAY-105 and PAY-124, not for PAY-117's proposed
+  layer removal.
 
 ## Test plan
 
