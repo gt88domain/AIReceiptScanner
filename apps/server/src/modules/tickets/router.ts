@@ -81,7 +81,7 @@ export const ticketsRouter = {
     .handler(async ({ context, input }) => {
       if (
         isRequestRateLimited(context.request, `tickets:${context.session!.user.id}`, 60_000, {
-          cloudflareOnly: context.env.NODE_ENV === "production",
+          cloudflareOnly: true,
         })
       ) {
         throw new ORPCError("TOO_MANY_REQUESTS", {

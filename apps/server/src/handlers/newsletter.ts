@@ -38,7 +38,7 @@ export function createNewsletterHandler(
     }
     if (
       isRequestRateLimited(c.req.raw, "newsletter", retryAfterMs, {
-        cloudflareOnly: c.env.NODE_ENV === "production",
+        cloudflareOnly: true,
       })
     ) {
       return c.json({ error: "Please wait a minute before trying again" }, 429, {

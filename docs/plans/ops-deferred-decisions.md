@@ -51,3 +51,7 @@ pnpm --filter server db:check
 
 No tests, Drizzle generation, WAF changes, deployments, or provider calls were
 performed in this phase.
+
+Public write endpoints select Cloudflare-only identity unconditionally rather
+than depending on `NODE_ENV`. A request missing `cf-connecting-ip` enters one
+shared bounded bucket; it cannot opt out of throttling by removing the header.

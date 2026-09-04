@@ -15,7 +15,7 @@ export function isRequestRateLimited(
   options: { cloudflareOnly?: boolean } = {},
 ): boolean {
   const clientIp = options.cloudflareOnly
-    ? normalizeHeaderValue(request.headers.get("cf-connecting-ip"))
+    ? (normalizeHeaderValue(request.headers.get("cf-connecting-ip")) ?? "missing-cloudflare-ip")
     : getClientIp(request.headers);
   if (!clientIp) return false;
 
