@@ -3,6 +3,13 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [5.0.3](https://github.com/gt88domain/easystarter-template/compare/v5.0.2...v5.0.3) (2026-09-06)
+
+
+### Bug Fixes
+
+* synchronize template release metadata
+
 ## [5.0.0](https://github.com/gt88domain/easystarter-template/compare/v4.0.0...v5.0.0) (2026-09-04)
 
 
