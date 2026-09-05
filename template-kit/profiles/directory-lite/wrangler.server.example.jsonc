@@ -14,6 +14,7 @@
   ],
   "vars": {
     "NODE_ENV": "production",
+    "PAYMENTS_PRICE_ENV": "prod",
     "WEBSITE_URL": "https://replace-directory-lite.example",
     "SERVER_URL": "https://api.replace-directory-lite.example"
   },

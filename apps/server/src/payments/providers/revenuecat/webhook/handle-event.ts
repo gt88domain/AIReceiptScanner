@@ -1,13 +1,10 @@
 import { and, eq } from "drizzle-orm";
 import {
-  creditsConfig,
-  findNativeCreditPackageByProviderProductId,
-} from "@repo/app-config/credits";
-import {
   markCreditOrderRefunded,
   recordNativeCreditOrderPurchase,
   revokeCreditPurchase,
 } from "@/credits";
+import { findConfiguredNativeCreditPackageByProviderProductId } from "@/credits/application/internal";
 import type { Database } from "@/db";
 import { billingCustomer, billingPurchase, billingSubscription } from "@/db/schema/payments";
 import {
@@ -262,8 +259,7 @@ export async function handleRevenueCatEvent(db: Database, payload: unknown) {
     return;
   }
 
-  const mappedCreditPackage = findNativeCreditPackageByProviderProductId(
-    creditsConfig,
+  const mappedCreditPackage = findConfiguredNativeCreditPackageByProviderProductId(
     event.product_id,
   );
   if (mappedCreditPackage) {

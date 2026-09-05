@@ -1,7 +1,9 @@
-import { and, count, desc, eq, isNull } from "drizzle-orm";
+import { and, count, desc, eq, isNull, lte, or } from "drizzle-orm";
 import type { Database } from "@/db";
 import { failedJobEvent, job } from "@/db/schema/jobs";
+import { recordJobEvent } from "./job.events";
 import type { JobQueueMessage } from "./job.types";
+import { JOB_LEASE_MS } from "./job.worker";
 
 function isJobQueueMessage(value: unknown): value is JobQueueMessage {
   return (
@@ -22,12 +24,86 @@ export async function consumeDeadLetterMessages(db: Database, batch: MessageBatc
       continue;
     }
     try {
-      const [failedJob] = await db
+      const now = new Date();
+      let [failedJob] = await db
         .select()
         .from(job)
         .where(eq(job.id, message.body.jobId))
         .limit(1);
-      const now = new Date();
+
+      if (
+        failedJob?.status === "running" &&
+        failedJob.leaseUntil &&
+        failedJob.leaseUntil.getTime() > now.getTime()
+      ) {
+        message.retry({
+          delaySeconds: Math.max(
+            1,
+            Math.ceil((failedJob.leaseUntil.getTime() - now.getTime()) / 1000),
+          ),
+        });
+        continue;
+      }
+      if (
+        failedJob?.status === "running" &&
+        !failedJob.leaseToken &&
+        failedJob.lockedAt &&
+        failedJob.lockedAt.getTime() + JOB_LEASE_MS > now.getTime()
+      ) {
+        message.retry({
+          delaySeconds: Math.max(
+            1,
+            Math.ceil((failedJob.lockedAt.getTime() + JOB_LEASE_MS - now.getTime()) / 1000),
+          ),
+        });
+        continue;
+      }
+
+      if (failedJob?.status === "pending" || failedJob?.status === "running") {
+        const terminalized = await db
+          .update(job)
+          .set({
+            status: "failed",
+            error: failedJob.error ?? "Queue delivery budget exhausted",
+            lockedAt: null,
+            leaseToken: null,
+            leaseUntil: null,
+            completedAt: now,
+            updatedAt: now,
+          })
+          .where(
+            and(
+              eq(job.id, failedJob.id),
+              or(
+                eq(job.status, "pending"),
+                and(
+                  eq(job.status, "running"),
+                  or(isNull(job.leaseUntil), lte(job.leaseUntil, now)),
+                ),
+              ),
+            ),
+          )
+          .run();
+        if (terminalized.meta.changes === 1) {
+          await recordJobEvent(db, {
+            jobId: failedJob.id,
+            type: "failed",
+            detail: failedJob.error ?? "Queue delivery budget exhausted",
+          });
+        }
+        [failedJob] = await db.select().from(job).where(eq(job.id, failedJob.id)).limit(1);
+      }
+
+      if (failedJob?.status === "succeeded" || failedJob?.status === "cancelled") {
+        message.ack();
+        continue;
+      }
+
+      if (failedJob && failedJob.status !== "failed") {
+        message.retry({ delaySeconds: 60 });
+        continue;
+      }
+
       await db
         .insert(failedJobEvent)
         .values({

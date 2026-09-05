@@ -4,8 +4,9 @@ import { z } from "zod";
 import { ticket, ticketMessage, ticketStatusValues } from "@/db/schema/tickets";
 import { user } from "@/db/schema/auth";
 import { isRequestRateLimited } from "@/handlers/request-rate-limit";
+import { logSafeError } from "@/lib/safe-error";
 import { adminTicketsProcedure, ticketsProcedure } from "@/lib/orpc";
-import { recordAdminAuditLog } from "@/modules/audit";
+import { createAdminAuditLogBatchItem, recordAdminAuditLog } from "@/modules/audit";
 import type { Context } from "@/lib/context";
 
 const ticketStatusSchema = z.enum(ticketStatusValues);
@@ -162,34 +163,44 @@ export const ticketsRouter = {
       if (item.status === "closed")
         throw new ORPCError("BAD_REQUEST", { message: "Closed tickets cannot be replied to" });
       const now = new Date();
-      await context.db.insert(ticketMessage).values({
-        id: crypto.randomUUID(),
-        ticketId: item.id,
-        authorUserId: context.session!.user.id,
-        authorRole: "admin",
-        body: input.body,
-        createdAt: now,
-      });
-      await context.db
-        .update(ticket)
-        .set({ status: "replied", updatedAt: now })
-        .where(eq(ticket.id, item.id));
+      await context.db.batch([
+        context.db.insert(ticketMessage).values({
+          id: crypto.randomUUID(),
+          ticketId: item.id,
+          authorUserId: context.session!.user.id,
+          authorRole: "admin",
+          body: input.body,
+          createdAt: now,
+        }),
+        context.db
+          .update(ticket)
+          .set({ status: "replied", updatedAt: now })
+          .where(eq(ticket.id, item.id)),
+        createAdminAuditLogBatchItem(
+          context.db,
+          {
+            actor: context.session!.user,
+            action: "tickets.replied",
+            entity: { type: "ticket", id: item.id },
+            before: { status: item.status },
+            after: { status: "replied" },
+          },
+          now,
+        ),
+      ]);
       if (context.email) {
-        const owner = await context.db.query.user.findFirst({ where: eq(user.id, item.userId) });
-        if (owner)
-          await context.email.send({
-            to: owner.email,
-            subject: `Reply: ${item.subject.replace(/[\r\n]+/g, " ")}`,
-            text: input.body,
-          });
+        try {
+          const owner = await context.db.query.user.findFirst({ where: eq(user.id, item.userId) });
+          if (owner)
+            await context.email.send({
+              to: owner.email,
+              subject: `Reply: ${item.subject.replace(/[\r\n]+/g, " ")}`,
+              text: input.body,
+            });
+        } catch (error) {
+          logSafeError("Ticket reply email delivery failed", error, { ticketId: item.id });
+        }
       }
-      await recordAdminAuditLog(context.db, {
-        actor: context.session!.user,
-        action: "tickets.replied",
-        entity: { type: "ticket", id: item.id },
-        before: { status: item.status },
-        after: { status: "replied" },
-      });
       return getTicketDetail(context, item.id);
     }),
   closeAdmin: adminTicketsProcedure

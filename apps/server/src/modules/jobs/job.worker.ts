@@ -7,7 +7,7 @@ import { recordJobEvent } from "./job.events";
 import type { JobHandlers, JobQueueMessage } from "./job.types";
 import { getRetryDelaySeconds } from "./job.retry";
 
-const JOB_LEASE_MS = 15 * 60 * 1000;
+export const JOB_LEASE_MS = 15 * 60 * 1000;
 const MAX_QUEUE_DELAY_SECONDS = 24 * 60 * 60;
 
 export async function consumeJobMessages(

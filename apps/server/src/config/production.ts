@@ -44,6 +44,7 @@ export type ProductionConfigInput = {
     websiteUrl: string;
     serverUrl: string;
     nodeEnv: string;
+    paymentPriceEnv?: string;
     oauthClientIds: { github: string; google: string; apple: string };
     controlReadHttpHost: string;
     controlAccessTeamDomain: string;
@@ -362,6 +363,13 @@ export function validateProductionConfigResult(
 
   if (server.nodeEnv !== "production") {
     add(errors, "INVALID_NODE_ENV", "NODE_ENV must be production in server wrangler.jsonc.");
+  }
+  if (server.paymentPriceEnv !== "prod") {
+    add(
+      errors,
+      "INVALID_PAYMENTS_PRICE_ENV",
+      'PAYMENTS_PRICE_ENV must be "prod" in the production server wrangler.jsonc.',
+    );
   }
   if (productionEnv && productionEnv.ENVIRONMENT?.trim() !== "production") {
     add(errors, "INVALID_ENVIRONMENT", "ENVIRONMENT must be production in .env.production.");

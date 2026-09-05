@@ -80,8 +80,8 @@ payments: {
 
 - **`providerPriceId` must be a real Stripe Price ID** (`price_...`) — create the Price in Stripe Dashboard first, then copy the ID here
 - **`test` and `prod` use separate Price IDs** — test prices come from a Stripe Sandbox, production prices from the live account
-- The runtime auto-selects `test` vs `prod` based on `NODE_ENV` (see `resolveProviderPriceEnvironment()` in `packages/app-config/src/payments/web.ts`)
-- **`amountCents` must match the Stripe Price** — this is for UI display, not for charging. A mismatch confuses users but doesn't break billing
+- Set `PAYMENTS_PRICE_ENV` explicitly to `test` or `prod`; it chooses which configured Price ID the server uses and must be `prod` when `NODE_ENV=production`
+- **`amountCents` and `currency` must match the Stripe Price** — successful lifetime webhooks with a mismatch are rejected for manual review instead of granting access
 - **Plan `id` values are stable** — translations, billing logic, and order history reference them. Don't rename after launch
 - Set `status: "archived"` to hide a plan from the pricing page without breaking existing subscribers
 
@@ -111,8 +111,9 @@ Stripe is the only active Web payment provider. Update its price IDs and environ
 |----------|-------|-------|
 | `STRIPE_SECRET_KEY` | `apps/server/.dev.vars` + `.env.production` | `sk_test_...` for dev, `sk_live_...` for production |
 | `STRIPE_WEBHOOK_SECRET` | `apps/server/.dev.vars` + `.env.production` | `whsec_...` from Stripe CLI (dev) or Dashboard (prod) |
+| `PAYMENTS_PRICE_ENV` | `apps/server/.dev.vars` + Worker environment config | Explicitly select `test` or `prod`; production must use `prod` |
 
-Both are secrets — never put them in `wrangler.jsonc` or Web env files.
+`STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` are secrets — never put them in `wrangler.jsonc` or Web env files. `PAYMENTS_PRICE_ENV` is non-secret Worker configuration.
 
 ## Section 4: Webhook Configuration
 

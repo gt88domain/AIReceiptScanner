@@ -16,6 +16,7 @@
   "triggers": { "crons": ["*/10 * * * *"] },
   "vars": {
     "NODE_ENV": "production",
+    "PAYMENTS_PRICE_ENV": "prod",
     "WEBSITE_URL": "https://replace-domain.example",
     "SERVER_URL": "https://api.replace-domain.example",
     "JOB_QUEUE_DLQ_NAME": "replace-full-saas-jobs-dlq"

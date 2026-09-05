@@ -1,7 +1,11 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
 import type { Database } from "@/db";
 import { billingSubscription } from "@/db/schema/payments";
-import { findPlanById, findPriceById } from "../domain/plan-catalog";
+import {
+  findPlanById,
+  findPriceById,
+  findPriceByProviderPriceId,
+} from "../domain/plan-catalog";
 import { evaluateCheckoutDecision } from "../domain/policy";
 import { getPaymentProvider, resolvePaymentProviderKey } from "../providers";
 import { getBillingStatus } from "./billing-status";
@@ -28,6 +32,42 @@ export async function upgradeSubscription(db: Database, input: UpgradeSubscripti
   if (input.provider && price.provider !== input.provider)
     throw new Error("Price provider mismatch");
 
+  const providerKey = resolvePaymentProviderKey(input.provider ?? price.provider);
+  const [subscription] = await db
+    .select()
+    .from(billingSubscription)
+    .where(
+      and(
+        eq(billingSubscription.userId, input.user.userId),
+        eq(billingSubscription.provider, providerKey),
+        inArray(billingSubscription.status, ["active", "trialing"]),
+      ),
+    )
+    .orderBy(desc(billingSubscription.updatedAt))
+    .limit(1);
+
+  // v4 recovery could persist the provider price ID in the local priceId column.
+  // Repair that known shape before policy evaluation so it cannot block every later upgrade.
+  let currentPrice = subscription ? findPriceById(subscription.priceId) : undefined;
+  if (subscription && !currentPrice) {
+    const legacyPrice = findPriceByProviderPriceId(providerKey, subscription.priceId);
+    if (legacyPrice && legacyPrice.planId === subscription.planId) {
+      const repaired = await db
+        .update(billingSubscription)
+        .set({ priceId: legacyPrice.id, updatedAt: now })
+        .where(
+          and(
+            eq(billingSubscription.id, subscription.id),
+            eq(billingSubscription.priceId, subscription.priceId),
+          ),
+        )
+        .returning({ id: billingSubscription.id });
+      if (!repaired[0]) throw new Error("SUBSCRIPTION_LOCAL_STATE_DIVERGED");
+      subscription.priceId = legacyPrice.id;
+      currentPrice = legacyPrice;
+    }
+  }
+
   const billingStatus = await getBillingStatus(db, input.user);
   const checkoutDecision = evaluateCheckoutDecision({
     currentEntitlement: {
@@ -42,25 +82,11 @@ export async function upgradeSubscription(db: Database, input: UpgradeSubscripti
     throw createCheckoutDecisionBlockedError(checkoutDecision.reason);
   }
 
-  const providerKey = resolvePaymentProviderKey(input.provider ?? price.provider);
   if (billingStatus.billingProvider !== providerKey) {
     throw new Error("Current subscription is managed by another billing provider");
   }
   const provider = getPaymentProvider(providerKey);
-  const [subscription] = await db
-    .select()
-    .from(billingSubscription)
-    .where(
-      and(
-        eq(billingSubscription.userId, input.user.userId),
-        eq(billingSubscription.provider, providerKey),
-        inArray(billingSubscription.status, ["active", "trialing"]),
-      ),
-    )
-    .orderBy(desc(billingSubscription.updatedAt))
-    .limit(1);
   if (!subscription) throw new Error("Active subscription not found");
-  const currentPrice = findPriceById(subscription.priceId);
   if (
     !currentPrice ||
     currentPrice.provider !== providerKey ||
@@ -75,7 +101,8 @@ export async function upgradeSubscription(db: Database, input: UpgradeSubscripti
     expectedCurrentPriceId: currentPrice.id,
     expectedCurrentProviderPriceId: currentPrice.providerPriceId,
     targetPlanId: plan.id,
-    targetPriceId: price.providerPriceId,
+    targetPriceId: price.id,
+    targetProviderPriceId: price.providerPriceId,
   });
   const operation = await getOrCreatePaymentOperation(db, {
     userId: input.user.userId,

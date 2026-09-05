@@ -1,13 +1,9 @@
-import {
-  creditsConfig,
-  normalizeCreditsConfig,
-  type NormalizedCreditPackage,
-} from "@repo/app-config/credits";
+import type { NormalizedCreditPackage } from "@repo/app-config/credits";
 import { and, count, desc, eq, gt, lte } from "drizzle-orm";
 import type { Database } from "@/db";
 import { creditAccount, creditOrder, creditTransaction } from "@/db/schema/credits";
 import { toPublicCreditOrder } from "./orders";
-import { EXPIRING_WINDOW_DAYS, addDays, assertCreditsEnabled } from "./internal";
+import { EXPIRING_WINDOW_DAYS, addDays, assertCreditsEnabled, getConfig } from "./internal";
 import { ensureSignupGrant } from "./signup-grant";
 import { getSpendableBalance } from "./spendable-balance";
 import type {
@@ -65,7 +61,7 @@ function toPublicPackage(
 }
 
 export function listPackages(input: ListPackagesInput): CreditPackage[] {
-  const config = normalizeCreditsConfig(creditsConfig);
+  const config = getConfig();
   if (!config.enabled) {
     return [];
   }

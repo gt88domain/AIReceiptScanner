@@ -1,8 +1,10 @@
 import { creditsConfig, normalizeCreditsConfig } from "@repo/app-config/credits";
+import { env } from "cloudflare:workers";
 import { and, eq, gte, sql } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import type { Database } from "@/db";
 import { creditAccount, creditTransaction } from "@/db/schema/credits";
+import { resolveProviderPriceEnvironment } from "@/lib/provider-price-environment";
 import type { CreditSource } from "./types";
 
 export const EXPIRING_WINDOW_DAYS = 7;
@@ -14,7 +16,23 @@ export const CREDIT_EXPIRATION_BATCH_LIMIT = 100;
 export type CreditBatchItem = BatchItem<"sqlite">;
 
 export function getConfig() {
-  return normalizeCreditsConfig(creditsConfig);
+  return normalizeCreditsConfig(creditsConfig, resolveProviderPriceEnvironment(env));
+}
+
+export function findConfiguredCreditPackageById(packageId: string) {
+  return getConfig().packages.find((item) => item.id === packageId) ?? null;
+}
+
+export function findConfiguredNativeCreditPackageByProviderProductId(providerProductId: string) {
+  for (const creditPackage of getConfig().packages) {
+    for (const platform of ["ios", "android"] as const) {
+      const product = creditPackage.native[platform];
+      if (product?.providerProductId === providerProductId) {
+        return { platform, package: creditPackage, product };
+      }
+    }
+  }
+  return null;
 }
 
 export function assertCreditsEnabled() {

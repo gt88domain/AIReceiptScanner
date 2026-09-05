@@ -249,6 +249,7 @@ async function loadProductionConfig(
       websiteUrl: value(serverVars, "WEBSITE_URL"),
       serverUrl: value(serverVars, "SERVER_URL"),
       nodeEnv: value(serverVars, "NODE_ENV"),
+      paymentPriceEnv: value(serverVars, "PAYMENTS_PRICE_ENV"),
       oauthClientIds: {
         github: value(serverVars, "GITHUB_CLIENT_ID"),
         google: value(serverVars, "GOOGLE_CLIENT_ID"),
@@ -365,6 +366,7 @@ function selfCheck() {
       websiteUrl: "https://app.acme.test",
       serverUrl: "https://api.acme.test",
       nodeEnv: "production",
+      paymentPriceEnv: "prod",
       oauthClientIds: { github: "", google: "", apple: "" },
       controlReadHttpHost: "",
       controlAccessTeamDomain: "",
@@ -402,6 +404,20 @@ function selfCheck() {
     validateProductionConfigResult(input).errors.map(({ message }) => message);
 
   assert.deepEqual(errors(validInput), []);
+  assert.match(
+    errors({
+      ...validInput,
+      server: { ...validInput.server, paymentPriceEnv: "" },
+    }).join("\n"),
+    /PAYMENTS_PRICE_ENV must be "prod"/,
+  );
+  assert.match(
+    errors({
+      ...validInput,
+      server: { ...validInput.server, paymentPriceEnv: "test" },
+    }).join("\n"),
+    /PAYMENTS_PRICE_ENV must be "prod"/,
+  );
   assert.ok(
     validateProductionConfigResult({
       ...validInput,

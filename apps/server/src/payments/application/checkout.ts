@@ -67,6 +67,7 @@ export async function createCheckoutSession(db: Database, input: CreateCheckoutS
   const canApplyStripeTrial =
     resolvedProviderKey === "stripe" && price.priceType === "subscription" && price.trialDays;
   const resolvedTrialDays = canApplyStripeTrial && !hasConsumedTrial ? price.trialDays : null;
+  const resolvedCustomerEmail = existingCustomer?.email ?? input.customerEmail ?? null;
   const operationId = input.operationId ?? crypto.randomUUID();
   const operationRequest = await createPaymentOperationRequest({
     provider: resolvedProviderKey,
@@ -80,6 +81,7 @@ export async function createCheckoutSession(db: Database, input: CreateCheckoutS
     successUrl: new URL(input.successUrl).toString(),
     cancelUrl: new URL(input.cancelUrl).toString(),
     customerReference: existingCustomer?.providerCustomerId ?? null,
+    customerEmail: resolvedCustomerEmail,
   });
   let operation = await getOrCreatePaymentOperation(db, {
     userId: input.user.userId,
@@ -143,9 +145,7 @@ export async function createCheckoutSession(db: Database, input: CreateCheckoutS
       ...(existingCustomer?.providerCustomerId
         ? { customerId: existingCustomer.providerCustomerId }
         : {}),
-      ...((existingCustomer?.email ?? input.customerEmail)
-        ? { customerEmail: existingCustomer?.email ?? input.customerEmail! }
-        : {}),
+      ...(resolvedCustomerEmail ? { customerEmail: resolvedCustomerEmail } : {}),
     });
     const stored = {
       providerSessionId: session.providerSessionId,

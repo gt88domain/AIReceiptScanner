@@ -7,13 +7,14 @@ import {
 } from "@/credits";
 import type { Database } from "@/db";
 import {
+  applyBillingPurchaseEvent,
   findPurchaseByProviderIntent,
   upsertBillingPurchaseIfNewer,
 } from "../../../infrastructure/repositories/billing-store";
 import { NonRetryableWebhookError } from "../../../application/webhook-observability";
-import { findPriceById } from "../../../domain/plan-catalog";
 import { reconcileActivatedPriceWithExistingSubscriptions } from "../../shared/activated-price-effects";
 import { resolveUserFromMetadata } from "./owner-resolver";
+import { assertStripePurchaseMatchesCatalog } from "./purchase-validation";
 
 /**
  * Handles successful payment intents and ensures purchase records are updated.
@@ -195,10 +196,18 @@ async function upsertPurchaseFromPaymentIntent(
     return;
   }
 
-  const recordedPlanId = metadata.planId ?? existing?.planId;
-  const recordedPriceId = metadata.priceId ?? existing?.priceId;
+  // Persisted ownership/catalog identity wins for an existing purchase. Provider
+  // metadata is used only to create the first local row.
+  const recordedPlanId = existing?.planId ?? metadata.planId;
+  const recordedPriceId = existing?.priceId ?? metadata.priceId;
   if (input.status === "succeeded" && recordedPlanId && recordedPriceId) {
-    assertStripePurchaseMatchesCatalog(input.paymentIntent, recordedPlanId, recordedPriceId);
+    assertStripePurchaseMatchesCatalog({
+      providerResourceId: paymentIntentId,
+      planId: recordedPlanId,
+      priceId: recordedPriceId,
+      amountCents: input.paymentIntent.amount_received,
+      currency: input.paymentIntent.currency,
+    });
   }
 
   if (!existing) {
@@ -221,7 +230,7 @@ async function upsertPurchaseFromPaymentIntent(
       return;
     }
 
-    const applied = await upsertBillingPurchaseIfNewer(db, {
+    const outcome = await applyBillingPurchaseEvent(db, {
       userId: user.userId,
       provider: "stripe",
       providerPaymentIntentId: paymentIntentId,
@@ -233,13 +242,13 @@ async function upsertPurchaseFromPaymentIntent(
       providerEventId: input.providerEventId,
     });
 
-    if (applied && input.status === "succeeded") {
+    if (outcome !== "stale" && input.status === "succeeded") {
       await reconcileActivatedPriceWithExistingSubscriptions(db, user, priceId);
     }
     return;
   }
 
-  const applied = await upsertBillingPurchaseIfNewer(db, {
+  const outcome = await applyBillingPurchaseEvent(db, {
     userId: existing.userId,
     provider: existing.provider,
     providerPaymentIntentId: existing.providerPaymentIntentId,
@@ -251,34 +260,11 @@ async function upsertPurchaseFromPaymentIntent(
     providerEventId: input.providerEventId,
   });
 
-  if (applied && input.status === "succeeded") {
+  if (outcome !== "stale" && input.status === "succeeded") {
     await reconcileActivatedPriceWithExistingSubscriptions(
       db,
       { userId: existing.userId },
       existing.priceId,
-    );
-  }
-}
-
-function assertStripePurchaseMatchesCatalog(
-  paymentIntent: Stripe.PaymentIntent,
-  planId: string,
-  priceId: string,
-) {
-  const price = findPriceById(priceId);
-  if (!price || price.planId !== planId || price.provider !== "stripe") {
-    throw new NonRetryableWebhookError(
-      `Stripe purchase ${paymentIntent.id} does not match the configured billing catalog.`,
-    );
-  }
-  // Subscription invoices can contain prorations and discounts. One-time purchases cannot.
-  if (price.priceType !== "lifetime") return;
-  if (
-    paymentIntent.amount_received !== price.amountCents ||
-    paymentIntent.currency.toLowerCase() !== price.currency.toLowerCase()
-  ) {
-    throw new NonRetryableWebhookError(
-      `Stripe purchase ${paymentIntent.id} amount or currency does not match price ${priceId}.`,
     );
   }
 }

@@ -3,15 +3,17 @@ import type Stripe from "stripe";
 import { completeCreditOrderPurchase, markCreditOrderStatus } from "@/credits";
 import type { Database } from "@/db";
 import { billingCheckoutSession } from "@/db/schema/payments";
+import { NonRetryableWebhookError } from "../../../application/webhook-observability";
 import type { DbLike } from "../../../infrastructure/repositories/billing-store";
 import {
-  upsertBillingPurchaseIfNewer,
+  applyBillingPurchaseEvent,
+  insertBillingSubscriptionIfMissing,
   upsertBillingCustomer,
-  upsertBillingSubscriptionIfNewer,
 } from "../../../infrastructure/repositories/billing-store";
 import type { BillingUser } from "../../../public/types";
 import { reconcileActivatedPriceWithExistingSubscriptions } from "../../shared/activated-price-effects";
 import { resolveUserFromMetadata } from "./owner-resolver";
+import { assertStripePurchaseMatchesCatalog } from "./purchase-validation";
 
 /**
  * Handles checkout.session.completed and persists checkout, subscription, and purchase state.
@@ -119,6 +121,19 @@ export async function handleStripeCheckoutCompleted(
     return;
   }
 
+  const providerPaymentIntentId =
+    typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : session.payment_intent?.id;
+  const isPaymentCompleted =
+    session.mode === "payment" &&
+    (session.payment_status === "paid" || session.payment_status === "no_payment_required");
+  if (session.mode === "payment" && isPaymentCompleted && !providerPaymentIntentId) {
+    throw new NonRetryableWebhookError(
+      "LIFETIME_CHECKOUT_WITHOUT_PAYMENT_INTENT_REQUIRES_MANUAL_REVIEW",
+    );
+  }
+
   const now = new Date();
   const providerCustomerId =
     typeof session.customer === "string" ? session.customer : session.customer?.id;
@@ -149,35 +164,24 @@ export async function handleStripeCheckoutCompleted(
     typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
 
   if (session.mode === "subscription" && providerSubscriptionId) {
-    await upsertSubscriptionFromCheckout(db, {
+    await insertSubscriptionPlaceholderFromCheckout(db, {
       user: resolvedUser,
       providerSubscriptionId,
       providerCustomerId: providerCustomerId ?? "",
       planId,
       priceId,
-      providerEventAt,
-      providerEventId,
     });
   }
 
-  const providerPaymentIntentId =
-    typeof session.payment_intent === "string"
-      ? session.payment_intent
-      : session.payment_intent?.id;
-
-  const isPaymentCompleted =
-    session.mode === "payment" &&
-    (session.payment_status === "paid" || session.payment_status === "no_payment_required");
-
-  if (session.mode === "payment" && (providerPaymentIntentId || isPaymentCompleted)) {
-    // Stripe may complete discounted checkout without creating PaymentIntent.
-    const resolvedPaymentIntentId = providerPaymentIntentId ?? `checkout_session:${session.id}`;
+  if (session.mode === "payment" && providerPaymentIntentId) {
     await upsertPurchaseFromCheckout(db, {
       user: resolvedUser,
-      providerPaymentIntentId: resolvedPaymentIntentId,
+      providerPaymentIntentId,
       planId,
       priceId,
       paid: isPaymentCompleted,
+      amountCents: session.amount_total,
+      currency: session.currency,
       providerEventAt,
       providerEventId,
     });
@@ -290,9 +294,9 @@ export async function handleStripeCheckoutExpired(
 }
 
 /**
- * Creates or updates a local subscription row after checkout is initiated.
+ * Creates a local subscription placeholder without overwriting lifecycle events.
  */
-async function upsertSubscriptionFromCheckout(
+async function insertSubscriptionPlaceholderFromCheckout(
   db: DbLike,
   input: {
     user: BillingUser;
@@ -300,11 +304,9 @@ async function upsertSubscriptionFromCheckout(
     providerCustomerId: string;
     planId: string;
     priceId: string;
-    providerEventAt: Date;
-    providerEventId: string;
   },
 ) {
-  await upsertBillingSubscriptionIfNewer(db, {
+  await insertBillingSubscriptionIfMissing(db, {
     userId: input.user.userId,
     provider: "stripe",
     providerSubscriptionId: input.providerSubscriptionId,
@@ -316,8 +318,6 @@ async function upsertSubscriptionFromCheckout(
     cancelAtPeriodEnd: false,
     startedAt: null,
     endedAt: null,
-    providerEventAt: input.providerEventAt,
-    providerEventId: input.providerEventId,
   });
 }
 
@@ -332,11 +332,23 @@ async function upsertPurchaseFromCheckout(
     planId: string;
     priceId: string;
     paid: boolean;
+    amountCents: number | null;
+    currency: string | null;
     providerEventAt: Date;
     providerEventId: string;
   },
 ) {
-  const applied = await upsertBillingPurchaseIfNewer(db, {
+  if (input.paid) {
+    assertStripePurchaseMatchesCatalog({
+      providerResourceId: input.providerPaymentIntentId,
+      planId: input.planId,
+      priceId: input.priceId,
+      amountCents: input.amountCents,
+      currency: input.currency,
+    });
+  }
+
+  const outcome = await applyBillingPurchaseEvent(db, {
     userId: input.user.userId,
     provider: "stripe",
     providerPaymentIntentId: input.providerPaymentIntentId,
@@ -348,7 +360,7 @@ async function upsertPurchaseFromCheckout(
     providerEventId: input.providerEventId,
   });
 
-  if (applied && input.paid) {
+  if (outcome !== "stale" && input.paid) {
     await reconcileActivatedPriceWithExistingSubscriptions(db, input.user, input.priceId);
   }
 }

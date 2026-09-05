@@ -7,6 +7,7 @@ import { recordJobEvent } from "./job.events";
 import type { JobQueueMessage, JobType } from "./job.types";
 
 const JOB_OUTBOX_LEASE_MS = 5 * 60 * 1000;
+export const MAX_JOB_DELIVERIES = 4;
 
 export type CreateJobInput = {
   idempotencyKey: string;
@@ -52,8 +53,8 @@ export function createJobService(db: Database, queue: Pick<Queue<JobQueueMessage
     if (!idempotencyKey) throw new Error("Job idempotencyKey is required.");
     const payloadHash = await hashJobPayload(input.payload);
     const maxAttempts = input.maxAttempts ?? 3;
-    if (!Number.isInteger(maxAttempts) || maxAttempts < 1) {
-      throw new Error("Job maxAttempts must be a positive integer.");
+    if (!Number.isInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > MAX_JOB_DELIVERIES) {
+      throw new Error(`Job maxAttempts must be an integer from 1 to ${MAX_JOB_DELIVERIES}.`);
     }
     const record: Job = {
       id: crypto.randomUUID(),

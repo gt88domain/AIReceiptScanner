@@ -16,6 +16,7 @@
   ],
   "vars": {
     "NODE_ENV": "development",
+    "PAYMENTS_PRICE_ENV": "test",
     "BACKOFFICE_PREVIEW": "1",
     "WEBSITE_URL": "http://localhost:3100",
     "SERVER_URL": "http://localhost:3101",

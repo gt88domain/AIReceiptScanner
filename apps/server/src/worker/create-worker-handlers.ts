@@ -5,10 +5,7 @@ import type { ServerRuntimeConfig } from "../lib/runtime-config";
 import { runCreditMaintenance } from "../credits";
 import { processBillingOutbox } from "../payments/application/billing-outbox";
 import { reconcilePaymentOperations } from "../payments/application/payment-operation-recovery";
-import {
-  processPendingWebhookEvents,
-  purgeProcessedWebhookEvents,
-} from "../payments/application/webhook-dispatch";
+import { processPendingWebhookEvents } from "../payments/application/webhook-dispatch";
 import { alertPendingWebhookEvents } from "../payments/application/webhook-observability";
 import { jobRegistry } from "../modules/jobs";
 import { consumeDeadLetterMessages } from "../modules/jobs/job.dead-letter";
@@ -33,9 +30,6 @@ export function createJobWorkerHandlers(runtimeConfig: ServerRuntimeConfig): Job
     async scheduled(controller, env) {
       const db = createDb(env.DB);
       if (controller.cron === "10 16 * * *") {
-        if (runtimeConfig.features.billing) {
-          await purgeProcessedWebhookEvents(db);
-        }
         if (runtimeConfig.features.credits) {
           await runCreditMaintenance(db);
         }

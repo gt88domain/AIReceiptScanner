@@ -5,6 +5,8 @@ import {
   billingSubscription,
   paymentOperation,
 } from "@/db/schema/payments";
+import { findPriceById, findPriceByProviderPriceId } from "../domain/plan-catalog";
+import { getPaymentProvider } from "../providers";
 import {
   completePaymentOperation,
   claimPaymentOperation,
@@ -15,7 +17,6 @@ import {
   savePaymentOperationProviderResult,
   savePaymentOperationProviderSuccess,
 } from "./payment-operation";
-import { getPaymentProvider } from "../providers";
 
 const PAYMENT_OPERATION_BATCH_SIZE = 25;
 
@@ -109,10 +110,11 @@ async function executeClaimedOperation(
   const request = readPaymentOperationRequest(operation);
   const provider = getPaymentProvider(operation.provider);
   if (operation.operationType === "subscription_upgrade") {
+    const target = readSubscriptionUpgradeTarget(operation, request);
     await provider.updateSubscriptionPlan({
       subscriptionId: stringField(request, "subscriptionId"),
       currentPriceId: stringField(request, "expectedCurrentProviderPriceId"),
-      targetPriceId: stringField(request, "targetPriceId"),
+      targetPriceId: target.providerPriceId,
       idempotencyKey: operation.operationKey,
     });
     const updated = await savePaymentOperationProviderSuccess(
@@ -120,7 +122,7 @@ async function executeClaimedOperation(
       operation.id,
       token,
       stringField(request, "subscriptionId"),
-      JSON.stringify({ version: 1, targetPriceId: stringField(request, "targetPriceId") }),
+      JSON.stringify({ version: 1, targetPriceId: target.localPriceId }),
       now,
     );
     await finalizeProviderSuccess(db, updated, now);
@@ -142,6 +144,8 @@ async function executeClaimedOperation(
     metadata.planId = stringField(request, "planId");
     metadata.priceId = stringField(request, "priceId");
   }
+  const customerId = stringField(request, "customerReference", false);
+  const customerEmail = stringField(request, "customerEmail", false);
   const result = await provider.createCheckoutSession({
     mode: stringField(request, "mode") === "subscription" ? "subscription" : "payment",
     lineItems: [{ priceId: stringField(request, "providerPriceId"), quantity: 1 }],
@@ -149,7 +153,10 @@ async function executeClaimedOperation(
     successUrl: stringField(request, "successUrl", false) ?? stringField(request, "returnUrl"),
     cancelUrl: stringField(request, "cancelUrl", false) ?? stringField(request, "returnUrl"),
     metadata,
+    trialDays: optionalNumberField(request, "trialDays"),
     idempotencyKey: operation.operationKey,
+    ...(customerId ? { customerId } : {}),
+    ...(customerEmail ? { customerEmail } : {}),
   });
   const updated = await savePaymentOperationProviderResult(
     db,
@@ -213,7 +220,7 @@ async function finalizeProviderSuccess(
     case "subscription_upgrade": {
       if (!operation.relatedResourceId) throw new Error("Subscription upgrade target missing");
       const expectedCurrentPriceId = stringField(request, "expectedCurrentPriceId");
-      const targetPriceId = stringField(request, "targetPriceId");
+      const { localPriceId: targetPriceId } = readSubscriptionUpgradeTarget(operation, request);
       const [subscription] = await db
         .select()
         .from(billingSubscription)
@@ -233,6 +240,36 @@ async function finalizeProviderSuccess(
   }
 }
 
+function readSubscriptionUpgradeTarget(
+  operation: typeof paymentOperation.$inferSelect,
+  request: Record<string, unknown>,
+) {
+  const targetPriceId = stringField(request, "targetPriceId");
+  const targetProviderPriceId = stringField(request, "targetProviderPriceId", false);
+  if (targetProviderPriceId) {
+    const targetPrice = findPriceById(targetPriceId);
+    const targetPlanId = stringField(request, "targetPlanId", false);
+    if (
+      !targetPrice ||
+      targetPrice.provider !== operation.provider ||
+      targetPrice.providerPriceId !== targetProviderPriceId ||
+      (targetPlanId && targetPrice.planId !== targetPlanId)
+    ) {
+      throw new Error("Subscription upgrade target price is not available");
+    }
+    return { localPriceId: targetPrice.id, providerPriceId: targetProviderPriceId };
+  }
+
+  // Legacy v1 requests stored the provider price ID in targetPriceId. Resolve
+  // the local catalog ID so an already-persisted operation can still finalize.
+  const legacyTarget = findPriceByProviderPriceId(operation.provider, targetPriceId);
+  const targetPlanId = stringField(request, "targetPlanId", false);
+  if (!legacyTarget || (targetPlanId && legacyTarget.planId !== targetPlanId)) {
+    throw new Error("Subscription upgrade target price is not available");
+  }
+  return { localPriceId: legacyTarget.id, providerPriceId: targetPriceId };
+}
+
 function stringField(payload: Record<string, unknown>, field: string): string;
 function stringField(
   payload: Record<string, unknown>,
@@ -247,5 +284,12 @@ function stringField(
   const value = payload[field];
   if (typeof value === "string" && value) return value;
   if (!required) return null;
+  throw new Error(`Payment operation request is missing ${field}`);
+}
+
+function optionalNumberField(payload: Record<string, unknown>, field: string): number | null {
+  const value = payload[field];
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (value === null || value === undefined) return null;
   throw new Error(`Payment operation request is missing ${field}`);
 }

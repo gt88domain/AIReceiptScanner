@@ -21,15 +21,18 @@ export default function SecurityScreen() {
   const { t } = useTranslation();
   const { toastError, toastSuccess } = useToast();
   const { user } = useAuth();
+  const [successColor, mutedColor] = useThemeColor(["success", "muted"]);
+  const [isSending, setIsSending] = useState(false);
+  const passwordStatus = useQuery({
+    ...orpc.users.getPasswordStatus.queryOptions(),
+    enabled: Boolean(user),
+  });
+
+  useTabBarVisibility(true);
+
   if (!user) {
     return null;
   }
-
-  const [successColor, mutedColor] = useThemeColor(["success", "muted"]);
-  const [isSending, setIsSending] = useState(false);
-  const passwordStatus = useQuery(orpc.users.getPasswordStatus.queryOptions());
-
-  useTabBarVisibility(true);
 
   const visibleEmail = getVisibleUserEmail(user);
   const hasPassword = passwordStatus.data?.hasPassword ?? false;

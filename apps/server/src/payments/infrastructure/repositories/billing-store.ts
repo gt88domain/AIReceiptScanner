@@ -1,6 +1,6 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 import type { SQLWrapper } from "drizzle-orm";
-import type { ServerPaymentProviderKey } from "@repo/app-config";
+import type { PersistedServerPaymentProviderKey, ServerPaymentProviderKey } from "@repo/app-config";
 import type { Database } from "@/db";
 import { billingCustomer, billingPurchase, billingSubscription } from "@/db/schema/payments";
 import type { BillingUser } from "../../public/types";
@@ -24,6 +24,8 @@ type BillingPurchaseState = Omit<
   providerEventAt: Date;
   providerEventId: string;
 };
+
+type BillingPurchaseEventOutcome = "applied" | "replayed" | "stale";
 
 function isNewerProviderEvent(
   providerEventAt: Date,
@@ -58,6 +60,29 @@ async function upsertBillingSubscriptionIfNewer(db: DbLike, input: BillingSubscr
   return updated ?? null;
 }
 
+/** Creates checkout's local placeholder without consuming provider lifecycle ordering. */
+async function insertBillingSubscriptionIfMissing(
+  db: DbLike,
+  input: Omit<BillingSubscriptionState, "providerEventAt" | "providerEventId">,
+) {
+  const now = new Date();
+  const [inserted] = await db
+    .insert(billingSubscription)
+    .values({
+      id: crypto.randomUUID(),
+      ...input,
+      providerEventAt: null,
+      providerEventId: null,
+      createdAt: now,
+      updatedAt: now,
+    })
+    .onConflictDoNothing({
+      target: [billingSubscription.provider, billingSubscription.providerSubscriptionId],
+    })
+    .returning({ id: billingSubscription.id });
+  return inserted ?? null;
+}
+
 /** Atomically applies one-time purchase state only when its provider event is newer. */
 async function upsertBillingPurchaseIfNewer(db: DbLike, input: BillingPurchaseState) {
   const now = new Date();
@@ -76,6 +101,32 @@ async function upsertBillingPurchaseIfNewer(db: DbLike, input: BillingPurchaseSt
     })
     .returning({ id: billingPurchase.id });
   return updated ?? null;
+}
+
+/**
+ * Applies a purchase event and distinguishes an exact replay from a stale event.
+ * Exact replays may safely resume idempotent effects that failed after the state write.
+ */
+async function applyBillingPurchaseEvent(
+  db: DbLike,
+  input: BillingPurchaseState,
+): Promise<BillingPurchaseEventOutcome> {
+  const applied = await upsertBillingPurchaseIfNewer(db, input);
+  if (applied) return "applied";
+
+  const current = await findPurchaseByProviderIntent(
+    db,
+    input.provider,
+    input.providerPaymentIntentId,
+  );
+  const sameEventSecond =
+    current?.providerEventAt &&
+    Math.floor(current.providerEventAt.getTime() / 1000) ===
+      Math.floor(input.providerEventAt.getTime() / 1000);
+  if (sameEventSecond && current.providerEventId === input.providerEventId) {
+    return "replayed";
+  }
+  return "stale";
 }
 
 /**
@@ -219,7 +270,7 @@ async function findSubscriptionByProviderId(
  */
 async function findPurchaseByProviderIntent(
   db: DbLike,
-  provider: ServerPaymentProviderKey,
+  provider: PersistedServerPaymentProviderKey,
   providerPaymentIntentId: string,
 ) {
   const [purchase] = await db
@@ -266,10 +317,12 @@ async function hasTrialConsumingSubscriptionHistory(
 }
 
 export {
+  applyBillingPurchaseEvent,
   findBillingCustomer,
   findPurchaseByProviderIntent,
   findSubscriptionByProviderId,
   hasTrialConsumingSubscriptionHistory,
+  insertBillingSubscriptionIfMissing,
   upsertBillingPurchaseIfNewer,
   upsertBillingCustomer,
   upsertBillingSubscriptionIfNewer,

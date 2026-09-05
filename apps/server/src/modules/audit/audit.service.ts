@@ -1,5 +1,5 @@
 import type { Database } from "@/db";
-import { createAdminAuditLog } from "./audit.repository";
+import { createAdminAuditLog, createAdminAuditLogCommand } from "./audit.repository";
 import type { AuditSnapshot, AuditValue, RecordAdminAuditLogInput } from "./audit.types";
 
 const SENSITIVE_AUDIT_FIELD =
@@ -37,4 +37,25 @@ export function recordAdminAuditLog(db: Database, input: RecordAdminAuditLogInpu
     before: redactAuditSnapshot(input.before),
     after: redactAuditSnapshot(input.after),
   });
+}
+
+/** Builds an audit insert for an atomic D1 batch with the guarded domain mutation. */
+export function createAdminAuditLogBatchItem(
+  db: Database,
+  input: RecordAdminAuditLogInput,
+  now = new Date(),
+) {
+  return createAdminAuditLogCommand(
+    db,
+    {
+      actorId: input.actor.id,
+      actorEmail: input.actor.email,
+      action: input.action,
+      entityType: input.entity.type,
+      entityId: input.entity.id,
+      before: redactAuditSnapshot(input.before),
+      after: redactAuditSnapshot(input.after),
+    },
+    now,
+  ).command;
 }

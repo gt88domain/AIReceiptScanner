@@ -1,4 +1,3 @@
-import { creditsConfig, findCreditPackageById } from "@repo/app-config/credits";
 import { and, eq } from "drizzle-orm";
 import type { Database } from "@/db";
 import { creditOrder, creditTransaction } from "@/db/schema/credits";
@@ -6,6 +5,7 @@ import {
   assertCreditsEnabled,
   assertPositiveAmount,
   createAccountGrantUpdate,
+  findConfiguredCreditPackageById,
   findTransactionBySource,
   runCreditBatch,
 } from "./internal";
@@ -53,7 +53,7 @@ export async function grantCreditPackagePurchase(
   db: Database,
   input: GrantCreditPackagePurchaseInput,
 ) {
-  const creditPackage = findCreditPackageById(creditsConfig, input.packageId);
+  const creditPackage = findConfiguredCreditPackageById(input.packageId);
   if (!creditPackage || creditPackage.status !== "active") {
     throw new Error("Credit package not available");
   }
@@ -74,7 +74,7 @@ export async function recordNativeCreditOrderPurchase(
   db: Database,
   input: RecordNativeCreditOrderPurchaseInput,
 ) {
-  const creditPackage = findCreditPackageById(creditsConfig, input.packageId);
+  const creditPackage = findConfiguredCreditPackageById(input.packageId);
   const product = creditPackage?.native[input.platform] ?? null;
   if (
     !creditPackage ||

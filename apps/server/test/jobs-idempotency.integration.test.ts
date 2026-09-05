@@ -35,7 +35,7 @@ describe("job idempotency", () => {
     ).rejects.toThrow("different input");
   });
 
-  it("rejects an invalid retry budget before persisting a job", async () => {
+  it("rejects retry budgets outside the configured Queue delivery limit before persisting a job", async () => {
     const db = createDb(env.DB);
     const jobs = createJobService(db, {
       send: async () => ({ metadata: { metrics: { backlogCount: 0, backlogBytes: 0 } } }),
@@ -48,7 +48,15 @@ describe("job idempotency", () => {
         payload: { format: "csv" },
         maxAttempts: 0,
       }),
-    ).rejects.toThrow("positive integer");
+    ).rejects.toThrow("integer from 1 to 4");
+    await expect(
+      jobs.create({
+        idempotencyKey: crypto.randomUUID(),
+        type: "data.export",
+        payload: { format: "csv" },
+        maxAttempts: 5,
+      }),
+    ).rejects.toThrow("integer from 1 to 4");
   });
 
   it("claims an outbox publication once when dispatchers overlap", async () => {
