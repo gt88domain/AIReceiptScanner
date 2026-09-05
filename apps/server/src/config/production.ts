@@ -364,7 +364,8 @@ export function validateProductionConfigResult(
   if (server.nodeEnv !== "production") {
     add(errors, "INVALID_NODE_ENV", "NODE_ENV must be production in server wrangler.jsonc.");
   }
-  if (server.paymentPriceEnv !== "prod") {
+  const usesProviderPrices = features.billing || features.credits;
+  if (usesProviderPrices && server.paymentPriceEnv !== "prod") {
     add(
       errors,
       "INVALID_PAYMENTS_PRICE_ENV",

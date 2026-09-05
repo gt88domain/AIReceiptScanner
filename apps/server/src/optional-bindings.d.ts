@@ -6,7 +6,7 @@ declare namespace Cloudflare {
     EMAIL_FROM: string;
     GITHUB_CLIENT_SECRET: string;
     GOOGLE_CLIENT_SECRET: string;
-    PAYMENTS_PRICE_ENV: "test" | "prod";
+    PAYMENTS_PRICE_ENV?: "test" | "prod";
     R2_PUBLIC_URL: string;
     RESEND_API_KEY: string;
     REVENUECAT_WEBHOOK_SECRET: string;

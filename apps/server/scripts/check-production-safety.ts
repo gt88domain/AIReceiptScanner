@@ -594,7 +594,7 @@ function selfCheck() {
       STRIPE_WEBHOOK_SECRET: undefined,
     },
     expectedEnv: validInput.expectedEnv,
-    server: { ...validInput.server, bucketName: undefined },
+    server: { ...validInput.server, bucketName: undefined, paymentPriceEnv: undefined },
     requirements: {
       ...validInput.requirements,
       features: createProductFeatures({
