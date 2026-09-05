@@ -109,15 +109,8 @@ export const adminJobsRouter = {
       const retried = await requireJobsService(context).retryFailed({
         failedJobEventId: input.id,
         resolvedBy: actor.id,
+        resolvedByEmail: actor.email,
       });
-      if (retried) {
-        await recordAdminAuditLog(context.db, {
-          actor,
-          action: "jobs.failed.retried",
-          entity: { type: "failed_job_event", id: input.id },
-          after: { resolution: "retried" },
-        });
-      }
       return { retried };
     }),
 

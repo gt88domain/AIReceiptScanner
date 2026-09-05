@@ -32,11 +32,11 @@ export function formatDate(
  * @returns Formatted date string or empty string if date is invalid/undefined
  */
 export function formatDateWithOptions(
-  date: Date | string | number | undefined,
+  date: Date | string | number | null | undefined,
   options: Intl.DateTimeFormatOptions = {},
   locale = "en-US",
 ): string {
-  if (!date) return "";
+  if (date == null) return "";
 
   try {
     return new Intl.DateTimeFormat(locale, {

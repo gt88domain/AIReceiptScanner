@@ -7,8 +7,8 @@ import {
 import { mergeCreditsConfigs, normalizeCreditsConfig } from "../credits";
 
 describe("platform credit config", () => {
-  it("keeps credits on platform config instead of common config", () => {
-    expect("credits" in resolveCommonConfig()).toBe(false);
+  it("keeps the signup grant common while platform purchase settings remain platform-specific", () => {
+    expect(resolveCommonConfig().credits.signupGrant?.enabled).toBe(false);
     expect(resolveWebCommonConfig().credits).toBeDefined();
     expect(resolveNativeCommonConfig().credits).toBeDefined();
   });
@@ -17,6 +17,7 @@ describe("platform credit config", () => {
     const merged = mergeCreditsConfigs([
       {
         enabled: false,
+        purchasesEnabled: false,
         packages: [
           {
             id: "starter",
@@ -33,6 +34,7 @@ describe("platform credit config", () => {
       },
       {
         enabled: true,
+        purchasesEnabled: false,
         packages: [
           {
             id: "starter",
@@ -50,7 +52,7 @@ describe("platform credit config", () => {
       },
     ]);
 
-    const [creditPackage] = normalizeCreditsConfig(merged).packages;
+    const [creditPackage] = normalizeCreditsConfig(merged, "test").packages;
 
     expect(merged.enabled).toBe(true);
     expect(creditPackage?.web).toBeNull();

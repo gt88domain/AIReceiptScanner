@@ -1,8 +1,9 @@
 import { ORPCError } from "@orpc/server";
-import { and, eq, isNotNull, isNull } from "drizzle-orm";
+import { and, eq, exists, isNotNull, isNull, ne, notExists } from "drizzle-orm";
 import { getVisibleUserName } from "@repo/shared";
 import { z } from "zod";
 import { account, session, user } from "@/db/schema/auth";
+import { billingSubscription } from "@/db/schema/payments";
 import type { Context } from "@/lib/context";
 import { buildDeletedAccountUserUpdate } from "@/lib/auth-session-guard";
 import { isContactDeliveryAvailable } from "@/lib/contact-delivery";
@@ -128,20 +129,42 @@ export const usersRouter = {
         });
       }
 
-      const billingStatus = context.payments
-        ? await context.payments.getBillingStatus({ userId })
-        : null;
-      if (billingStatus?.hasActiveSubscription) {
+      // Entitlement loss does not end the provider's ability to renew or collect debt.
+      // Guard the mutation itself so a concurrent subscription update cannot bypass it.
+      const noUnsettledSubscription = context.payments
+        ? notExists(
+            db
+              .select({ id: billingSubscription.id })
+              .from(billingSubscription)
+              .where(
+                and(
+                  eq(billingSubscription.userId, userId),
+                  ne(billingSubscription.status, "canceled"),
+                ),
+              ),
+          )
+        : undefined;
+      const accountWasDeleted = exists(
+        db
+          .select({ id: user.id })
+          .from(user)
+          .where(and(eq(user.id, userId), eq(user.deletedAt, deletedAt))),
+      );
+      const [deletion] = await db.batch([
+        db
+          .update(user)
+          .set(buildDeletedAccountUserUpdate(currentUser, deletedAt))
+          .where(and(eq(user.id, userId), isNull(user.deletedAt), noUnsettledSubscription)),
+        // Release provider identities and credentials together with the old sessions.
+        // Billing records and signup-grant claims remain attached to the tombstoned user.
+        db.delete(account).where(and(eq(account.userId, userId), accountWasDeleted)),
+        db.delete(session).where(and(eq(session.userId, userId), accountWasDeleted)),
+      ]);
+      if (deletion.meta.changes !== 1) {
         throw new ORPCError("BAD_REQUEST", {
           message: context.t("errors.activeSubscriptionDeletion"),
         });
       }
-
-      await db
-        .update(user)
-        .set(buildDeletedAccountUserUpdate(currentUser, deletedAt))
-        .where(eq(user.id, userId));
-      await db.delete(session).where(eq(session.userId, userId));
       return { success: true };
     }),
 

@@ -12,7 +12,7 @@ import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import * as z from "zod";
 import { Text } from "@/components/ui/text";
 import { ExternalLink } from "@/components/external-link";
-import { appConfig } from "@/configs/app-config";
+import { appConfig, getAuthConfig } from "@/configs/app-config";
 import { useToast } from "@/hooks/use-toast";
 import { authClient } from "@/lib/auth/auth.client";
 import { getErrorMessage } from "@/utils/error";
@@ -51,6 +51,7 @@ export function SignUpForm() {
           email: value.email,
           password: value.password,
           name: value.name,
+          callbackURL: `${getAuthConfig().callbackURL}?flow=verify-email`,
         },
         {
           onRequest: () => {},

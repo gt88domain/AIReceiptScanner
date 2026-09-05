@@ -74,6 +74,7 @@ describe("RevenueCat transfers", () => {
       event: {
         id: crypto.randomUUID(),
         type: "TRANSFER",
+        environment: "PRODUCTION",
         event_timestamp_ms: now.getTime(),
         transferred_from: [fromUserId],
         transferred_to: [toUserId],

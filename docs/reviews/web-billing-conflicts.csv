@@ -1,0 +1,2 @@
+module,area,slug_or_route,issue_type,severity,evidence,problem,suggested_fix,effort_hours,block_release
+web-billing,billing-status-cache,/settings/billing,conflict,P1,apps/web/src/hooks/use-payments.ts:30|apps/web/src/routes/_authed/(dashboard)/settings/billing.tsx:189|apps/server/src/routers/common/payments.ts:176|apps/server/src/payments/application/billing-status.ts:24,服务端账单状态以数据库为当前真相但前端缓存仅在 incomplete 状态轮询；active、trialing、canceled 等状态被 webhook 改写后页面可长期展示旧状态并据此作出另一套 checkout 决定,以服务端 getBillingStatus 的数据库结果为唯一真相并删除只覆盖 incomplete 的同步规则改为统一刷新账单状态及在支付操作后失效缓存,1,no

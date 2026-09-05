@@ -249,7 +249,7 @@ export type AppCreditsConfig = {
   /** Toggle that enables credit system paths. */
   enabled?: boolean;
   /** Allows this platform to sell configured credit packages through billing. */
-  purchasesEnabled?: boolean;
+  purchasesEnabled: boolean;
   /** Purchasable credit packages. */
   packages: CreditPackageConfig[];
   /** One-time signup grant. */
@@ -342,6 +342,8 @@ export type AppCommonConfig = {
     /** Maximum file sizes in bytes mapped by upload purpose. */
     maxFileSizes: Record<StorageUploadPurpose, number>;
   };
+  /** Global, one-time free-credit grant rule. */
+  credits: Pick<AppCreditsConfig, "signupGrant">;
   /** Product feature entitlements keyed by a stable capability name. */
   featureCapabilities: Record<string, FeatureCapabilityConfig>;
   /** Product-level membership catalog shared by all platforms. */

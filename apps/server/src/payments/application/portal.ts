@@ -1,13 +1,11 @@
 import type { Database } from "@/db";
 import { findBillingCustomer } from "../infrastructure/repositories/billing-store";
 import { getPaymentProvider, resolvePaymentProviderKey } from "../providers";
-import { getBillingStatus } from "./billing-status";
 import type { CreatePortalServiceInput } from "./types";
 
 export async function createPortalSession(db: Database, input: CreatePortalServiceInput) {
-  const billingStatus = await getBillingStatus(db, input.user);
-  const requestedProvider = input.provider ?? billingStatus.billingProvider;
-  if (!billingStatus.canManageBilling || requestedProvider !== "stripe") {
+  const requestedProvider = input.provider ?? "stripe";
+  if (requestedProvider !== "stripe") {
     throw new Error("Current billing provider does not support customer portal sessions");
   }
 

@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Loader2Icon } from "lucide-react";
 import { motion } from "motion/react";
-import { FaGithub, FaGoogle } from "react-icons/fa";
+import { FaApple, FaGithub, FaGoogle } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Field, FieldDescription, FieldGroup, FieldSeparator } from "@/components/ui/field";
@@ -15,7 +15,9 @@ import { TermsAgreement } from "./terms-agreement";
 type SignInFormProps = React.ComponentProps<"div">;
 
 const hasSocialSignInMethods =
-  webConfig.auth.methods.githubEnabled || webConfig.auth.methods.googleEnabled;
+  webConfig.auth.methods.appleEnabled ||
+  webConfig.auth.methods.githubEnabled ||
+  webConfig.auth.methods.googleEnabled;
 
 export function SignInForm({ className, ...props }: SignInFormProps) {
   const t = useTranslations();
@@ -86,6 +88,20 @@ export function SignInForm({ className, ...props }: SignInFormProps) {
                       )}
                       <FaGoogle className="mr-2" />
                       {t("auth.loginWithGoogle")}
+                    </Button>
+                  ) : null}
+                  {webConfig.auth.methods.appleEnabled ? (
+                    <Button
+                      variant="outline"
+                      type="button"
+                      disabled={socialLoading !== null}
+                      onClick={() => socialSignIn("apple")}
+                    >
+                      {socialLoading === "apple" && (
+                        <Loader2Icon className="size-4 animate-spin" />
+                      )}
+                      <FaApple className="mr-2" />
+                      {t("auth.loginWithApple")}
                     </Button>
                   ) : null}
                 </Field>

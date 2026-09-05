@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { ArrowRight, ChevronRight } from "lucide-react";
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useSearch } from "@/components/providers/search-provider";
 import {
   CommandDialog,
@@ -11,13 +12,26 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { sidebarData } from "@/configs/data/sidebar-data";
+import { administrationNavGroup, sidebarData } from "@/configs/data/sidebar-data";
+import { webConfig } from "@/configs/web-config";
+import { useOrpc } from "@/hooks/use-orpc";
 import { useTranslations } from "@/i18n";
+import { Route } from "@/routes/_authed/(dashboard)/route";
 
 export function CommandMenu() {
   const navigate = useNavigate();
   const { open, setOpen } = useSearch();
   const t = useTranslations();
+  const { user } = Route.useRouteContext();
+  const orpc = useOrpc();
+  const adminAccess = useQuery({
+    ...orpc.admin.getAccess.queryOptions(),
+    queryKey: ["admin", "access", user.id],
+    enabled: webConfig.adminEnabled,
+  });
+  const navGroups = adminAccess.data?.isAdmin
+    ? [...sidebarData.navGroups, administrationNavGroup]
+    : sidebarData.navGroups;
 
   const runCommand = React.useCallback(
     (command: () => unknown) => {
@@ -33,7 +47,7 @@ export function CommandMenu() {
       <CommandList>
         <ScrollArea className="h-72 pe-1" type="hover">
           <CommandEmpty>{t("common.noResults")}</CommandEmpty>
-          {sidebarData.navGroups.map((group) => (
+          {navGroups.map((group) => (
             <CommandGroup heading={t(group.title)} key={group.title}>
               {group.items.map((navItem, i) => {
                 if (navItem.url) {

@@ -12,7 +12,7 @@ export function registerEmailRoutes(app: ServerApp, runtimeConfig: ServerRuntime
   if (runtimeConfig.email.capabilities.newsletter) {
     app.post(
       "/api/newsletter/subscribe",
-      bodyLimit({ maxSize: 1024, onError: (c) => c.json({ error: "Payload too large" }, 413) }),
+      bodyLimit({ maxSize: 4 * 1024, onError: (c) => c.json({ error: "Payload too large" }, 413) }),
       (c) => {
         if (isBackofficePreview(c.env)) {
           return c.json({ error: "Email is disabled in Backoffice preview." }, 503);

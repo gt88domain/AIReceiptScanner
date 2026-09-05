@@ -15,6 +15,7 @@
     "db:migrate:production": "drizzle-kit migrate --config drizzle.production.config.ts",
     "db:studio:production": "drizzle-kit studio --config drizzle.production.config.ts",
     "audit:auth-accounts": "tsx scripts/audit-auth-accounts.ts",
+    "audit:legacy-credit-recoveries": "tsx scripts/audit-legacy-credit-recoveries.ts",
     "module:check": "tsx scripts/module-check.ts",
     "dev": "wrangler dev --port=3001",
     "dev:init-d1": "wrangler d1 execute DB --local --persist-to .wrangler/state --command 'select 1'",

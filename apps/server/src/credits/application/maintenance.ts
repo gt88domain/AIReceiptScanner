@@ -1,4 +1,4 @@
-import { and, asc, eq, gt, gte, isNull, lte, or, sql } from "drizzle-orm";
+import { and, asc, eq, gt, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import type { Database } from "@/db";
 import { creditOrder, creditTransaction } from "@/db/schema/credits";
 import {
@@ -22,6 +22,28 @@ export async function expireCredits(db: Database, now = new Date()) {
     .where(and(gt(creditTransaction.remainingAmount, 0), lte(creditTransaction.expiresAt, now)))
     .orderBy(asc(creditTransaction.expiresAt), asc(creditTransaction.id))
     .limit(CREDIT_EXPIRATION_BATCH_LIMIT);
+  const expirationSources = expiredGrants.map((grant) => grant.id);
+  // D1 limits bound parameters. Leave room for the provider/type predicates while
+  // retaining a bounded bulk lookup rather than falling back to one query per lot.
+  const existingExpirations = (
+    await Promise.all(
+      Array.from({ length: Math.ceil(expirationSources.length / 90) }, (_, index) =>
+        db
+          .select()
+          .from(creditTransaction)
+          .where(
+            and(
+              eq(creditTransaction.sourceProvider, "system"),
+              eq(creditTransaction.sourceType, "expiration"),
+              inArray(creditTransaction.sourceId, expirationSources.slice(index * 90, (index + 1) * 90)),
+            ),
+          ),
+      ),
+    )
+  ).flat();
+  const expirationByGrantId = new Map(
+    existingExpirations.map((expiration) => [expiration.sourceId, expiration]),
+  );
 
   let expiredAmount = 0;
   for (const grant of expiredGrants) {
@@ -45,7 +67,10 @@ export async function expireCredits(db: Database, now = new Date()) {
         break;
       }
 
-      const existingExpiration = await findTransactionBySource(db, expirationSource);
+      const existingExpiration =
+        attempt === 0
+          ? (expirationByGrantId.get(latestGrant.id) ?? null)
+          : await findTransactionBySource(db, expirationSource);
       const amount = existingExpiration
         ? Math.min(latestGrant.remainingAmount, Math.abs(existingExpiration.amount))
         : latestGrant.remainingAmount;
@@ -90,7 +115,9 @@ export async function expireCredits(db: Database, now = new Date()) {
           amount,
           field: "totalExpired",
           now,
-          requireAvailableBalance: true,
+          // Expiration removes an expired lot, not an additional spendable amount. A chargeback
+          // can legitimately leave the account below zero, so its debt must not block cleanup.
+          requireAvailableBalance: false,
         }),
         createBatchChangeGuard(db, expirationSource),
       ];

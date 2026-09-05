@@ -124,6 +124,7 @@ function RouteComponent() {
         {categories.length > 0 ? (
           <BlogCategoryFilter
             categories={categories}
+            totalCount={posts.length}
             allLabel={t("allCategories")}
             selectCategoryLabel={t("selectCategory")}
           />

@@ -9,10 +9,16 @@ type UsePaymentPlansQueryOptions = {
 
 type UseCurrentSubscriptionOptions = {
   includePlan?: boolean;
+  enabled?: boolean;
 };
 
 type UseBillingStatusQueryOptions = {
   enabled?: boolean;
+};
+
+export const billingStatusKeys = {
+  all: ["billing", "status"] as const,
+  user: (userId: string | undefined) => [...billingStatusKeys.all, userId] as const,
 };
 
 export function usePaymentPlansQuery(options?: UsePaymentPlansQueryOptions) {
@@ -37,16 +43,19 @@ export function useBillingStatusQuery(options?: UseBillingStatusQueryOptions) {
     ...orpc.payments.getBillingStatus.queryOptions({
       staleTime: 60_000,
       refetchOnWindowFocus: true,
+      refetchOnMount: "always",
+      refetchInterval: 30_000,
     }),
-    queryKey: ["billing", "status", userId],
+    queryKey: billingStatusKeys.user(userId),
     enabled: enabled && Boolean(userId),
   });
 }
 
 export function useCurrentSubscription(options?: UseCurrentSubscriptionOptions) {
   const includePlan = options?.includePlan ?? true;
-  const billingQuery = useBillingStatusQuery();
-  const plansQuery = usePaymentPlansQuery({ enabled: includePlan });
+  const enabled = options?.enabled ?? true;
+  const billingQuery = useBillingStatusQuery({ enabled });
+  const plansQuery = usePaymentPlansQuery({ enabled: enabled && includePlan });
 
   const plansQueryData = includePlan ? plansQuery.data : undefined;
   const billingQueryData = billingQuery.data;

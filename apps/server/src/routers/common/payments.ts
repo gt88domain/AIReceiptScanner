@@ -1,7 +1,7 @@
 import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 import type { Context } from "@/lib/context";
-import { creditOrder } from "@/db/schema/credits";
+import { creditOrder, creditTransaction } from "@/db/schema/credits";
 import { billingPurchase, billingSubscription } from "@/db/schema/payments";
 import { and, desc, eq, lt, or } from "drizzle-orm";
 import { requirePaymentService } from "@/lib/payment-access";
@@ -109,9 +109,11 @@ async function listPurchaseHistoryPage(
         status: creditOrder.status,
         amountCents: creditOrder.amountCents,
         currency: creditOrder.currency,
+        completedAt: creditTransaction.createdAt,
         createdAt: creditOrder.createdAt,
       })
       .from(creditOrder)
+      .leftJoin(creditTransaction, eq(creditOrder.ledgerTransactionId, creditTransaction.id))
       .where(and(eq(creditOrder.userId, user.userId), creditsCursor))
       .orderBy(desc(creditOrder.createdAt), desc(creditOrder.id))
       .limit(limit + 1),
@@ -149,7 +151,7 @@ async function listPurchaseHistoryPage(
       amountCents: record.amountCents,
       currency: record.currency,
       createdAt: record.createdAt,
-      completedAt: record.status === "completed" ? record.createdAt : null,
+      completedAt: record.status === "completed" ? record.completedAt : null,
     })),
   ].sort(
     (left, right) =>

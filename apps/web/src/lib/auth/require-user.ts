@@ -8,6 +8,27 @@ export function sanitizeReturnTo(value: unknown): string | undefined {
   return value;
 }
 
+export function resolvePostAuthReturnTo(search: {
+  returnTo?: unknown;
+  planId?: unknown;
+  priceId?: unknown;
+}): string | undefined {
+  const explicitReturnTo = sanitizeReturnTo(search.returnTo);
+  if (explicitReturnTo) return explicitReturnTo;
+
+  if (
+    typeof search.planId !== "string" ||
+    search.planId.length === 0 ||
+    typeof search.priceId !== "string" ||
+    search.priceId.length === 0
+  ) {
+    return undefined;
+  }
+
+  const query = new URLSearchParams({ planId: search.planId, priceId: search.priceId });
+  return `/settings/billing?${query.toString()}`;
+}
+
 export async function requireAuthenticatedUser(returnTo: string) {
   const user = await getCurrentUser();
   if (!user) {

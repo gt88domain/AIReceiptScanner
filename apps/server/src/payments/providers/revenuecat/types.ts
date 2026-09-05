@@ -37,6 +37,8 @@ export type RevenueCatWebhookEvent = {
   id: string;
   /** The type of the webhook event */
   type: RevenueCatWebhookEventType;
+  /** Store environment; transfer and temporary-grant events may omit it. */
+  environment?: "SANDBOX" | "PRODUCTION" | null;
   /** The App User ID associated with the event */
   app_user_id?: string | null;
   /** The original App User ID */

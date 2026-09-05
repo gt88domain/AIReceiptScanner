@@ -326,7 +326,7 @@ export function createAuth(
         session,
         user: normalizeAvatarForOutput(user, runtimeEnv.SERVER_URL),
       })),
-      ...(runtimeConfig.features.mobile ? [createExpoAuthPlugin()] : []),
+      ...(runtimeConfig.features.mobile ? [createExpoAuthPlugin(d1)] : []),
       localization({
         defaultLocale: "default",
         getLocale: (request) => {

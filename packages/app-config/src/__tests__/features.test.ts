@@ -310,7 +310,7 @@ describe("product features", () => {
           ],
         },
         nativePayments: { enabled: true, provider: "revenuecat" },
-        nativeCredits: { enabled: true, packages: [] },
+        nativeCredits: { enabled: true, purchasesEnabled: false, packages: [] },
       }),
     ).toEqual(["stripe"]);
   });

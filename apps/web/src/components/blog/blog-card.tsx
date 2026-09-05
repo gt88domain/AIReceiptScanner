@@ -18,6 +18,8 @@ export function BlogCard({
   description,
   date,
   thumbnail,
+  categories,
+  authorName,
   showRightBorder = true,
 }: BlogCardProps) {
   return (
@@ -40,11 +42,26 @@ export function BlogCard({
           </div>
         ) : null}
         <div className="flex flex-1 flex-col gap-2 p-6">
+          {categories.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {categories.map((category) => (
+                <span
+                  className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"
+                  key={category}
+                >
+                  {category}
+                </span>
+              ))}
+            </div>
+          ) : null}
           <h3 className="text-xl font-semibold text-card-foreground group-hover:underline underline-offset-4">
             {title}
           </h3>
           {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
-          <time className="mt-auto block text-sm font-medium text-muted-foreground">{date}</time>
+          <div className="mt-auto flex items-center justify-between gap-3 pt-2 text-sm font-medium text-muted-foreground">
+            {authorName ? <span className="truncate">{authorName}</span> : <span />}
+            <time>{date}</time>
+          </div>
         </div>
       </div>
     </Link>

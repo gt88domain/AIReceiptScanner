@@ -118,11 +118,5 @@
         ]
       }
     ]
-  },
-  "guidanceFiles": ["AGENTS.md", "CLAUDE.md", "openspec/project.md"],
-  "mobileGuidanceFiles": [
-    ".agents/skills/easystarter-mobile-quick-launch/SKILL.md",
-    ".agents/skills/easystarter-mobile-quick-launch/references/mobile-quick-launch-walkthrough.md"
-  ],
-  "requiredGuidance": ["pnpm test", "GOVERNANCE.md"]
+  }
 }

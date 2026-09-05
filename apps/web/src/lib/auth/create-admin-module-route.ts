@@ -6,9 +6,16 @@ export function createAdminModuleRoute<TFilePath extends keyof FileRoutesByPath>
   path: TFilePath,
 ): FileRoute<TFilePath>["createRoute"] {
   const createRoute = createFileRoute(path);
-  return ((options) =>
-    createRoute({
+  return ((options = {}) => {
+    const moduleBeforeLoad = options.beforeLoad as
+      | ((context: unknown) => unknown | Promise<unknown>)
+      | undefined;
+    return createRoute({
       ...options,
-      beforeLoad: requireAdminRouteAccess as never,
-    })) as FileRoute<TFilePath>["createRoute"];
+      beforeLoad: (async (context: unknown) => {
+        await requireAdminRouteAccess();
+        return moduleBeforeLoad?.(context);
+      }) as never,
+    });
+  }) as FileRoute<TFilePath>["createRoute"];
 }

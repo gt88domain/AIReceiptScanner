@@ -41,6 +41,13 @@ export async function grantCredits(db: Database, input: GrantCreditsInput) {
   } catch (error) {
     const existing = await findTransactionBySource(db, input);
     if (existing) {
+      if (
+        existing.userId !== input.user.userId ||
+        existing.amount !== input.amount ||
+        existing.packageId !== (input.packageId ?? null)
+      ) {
+        throw new Error("Credit grant source does not match this grant");
+      }
       return existing;
     }
     throw error;

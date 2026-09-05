@@ -84,11 +84,24 @@ describe("backoffice modules", () => {
     ).toThrow("Duplicate backoffice module id: duplicate");
   });
 
-  it("always installs the existing admin route guard", () => {
+  it("always runs the existing admin route guard", async () => {
     const route = createAdminModuleRoute("/_authed/(dashboard)/admin/analytics")({
       component: () => null,
     });
 
-    expect(route.options.beforeLoad).toBe(requireAdminRouteAccess);
+    await route.options.beforeLoad?.({} as never);
+    expect(requireAdminRouteAccess).toHaveBeenCalledOnce();
+  });
+
+  it("runs the module beforeLoad after the admin route guard", async () => {
+    const moduleBeforeLoad = vi.fn();
+    const route = createAdminModuleRoute("/_authed/(dashboard)/admin/analytics")({
+      beforeLoad: moduleBeforeLoad,
+      component: () => null,
+    });
+
+    await route.options.beforeLoad?.({} as never);
+    expect(requireAdminRouteAccess).toHaveBeenCalled();
+    expect(moduleBeforeLoad).toHaveBeenCalledOnce();
   });
 });

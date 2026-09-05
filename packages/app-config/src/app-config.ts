@@ -1,6 +1,8 @@
 import { deepMerge } from "@repo/shared";
-import { publicRuntimeConfig } from "./public-runtime";
+import { publicRuntimeConfig, resolvePublicRuntimeConfig } from "./public-runtime";
 import { productConfig } from "./product-config";
+import { resolveProfileBuildId } from "./profile-build-env";
+import { productProfileDefinitions } from "./profile-definitions";
 import type {
   AppCommonConfig,
   AppConfig,
@@ -9,8 +11,7 @@ import type {
   ResolvedWebCommonConfig,
 } from "./types";
 
-const { creditSignupGrant, membershipPlans, nativeCreditPackages, webCreditPackages } =
-  productConfig;
+const { membershipPlans, nativeCreditPackages, webCreditPackages } = productConfig;
 
 const appConfig: AppConfig = {
   // Shared defaults inherited by web and native unless a platform overrides them.
@@ -31,8 +32,6 @@ const appConfig: AppConfig = {
       enabled: publicRuntimeConfig.features.credits,
       // Allows web checkout for credit packages. Disable to keep grants/usage without sales.
       purchasesEnabled: publicRuntimeConfig.features.creditPurchases,
-      // Optional signup grant; disabled in the paid-product baseline.
-      signupGrant: creditSignupGrant,
       // Credit packages available through web checkout.
       packages: webCreditPackages,
     },
@@ -131,8 +130,6 @@ const appConfig: AppConfig = {
       enabled: true,
       // Allows native store purchases for credit packages.
       purchasesEnabled: true,
-      // Optional signup grant; disabled in the paid-product baseline.
-      signupGrant: creditSignupGrant,
       // Credit packages available through native in-app purchases.
       packages: nativeCreditPackages,
     },
@@ -267,20 +264,45 @@ export function resolveCommonConfig(): AppCommonConfig {
 
 export function resolveWebCommonConfig(): ResolvedWebCommonConfig {
   const commonConfig = resolvePlatformCommonConfig(appConfig.web);
+  const publicRuntime = resolvePublicRuntimeConfig();
   return {
     ...commonConfig,
-    credits: appConfig.web.credits,
+    credits: {
+      ...appConfig.web.credits,
+      enabled: publicRuntime.features.credits,
+      purchasesEnabled: publicRuntime.features.creditPurchases,
+      signupGrant: commonConfig.credits.signupGrant,
+    },
     routes: appConfig.web.routes,
-    payments: appConfig.web.payments,
+    payments: appConfig.web.payments
+      ? { ...appConfig.web.payments, enabled: publicRuntime.features.billing }
+      : undefined,
   };
 }
 
 export function resolveNativeCommonConfig(): ResolvedNativeCommonConfig {
   const commonConfig = resolvePlatformCommonConfig(appConfig.native);
+  const profileId = resolveProfileBuildId();
+  if (profileId && !(profileId in productProfileDefinitions)) {
+    throw new Error(`[app-config:UNKNOWN_PROFILE] ${profileId} is not an official profile.`);
+  }
+  const nativeFeatures = profileId
+    ? productProfileDefinitions[profileId as keyof typeof productProfileDefinitions].native
+    : undefined;
   return {
     ...commonConfig,
-    credits: appConfig.native.credits,
+    credits: {
+      ...appConfig.native.credits,
+      enabled: nativeFeatures?.credits ?? appConfig.native.credits.enabled,
+      purchasesEnabled: nativeFeatures?.creditPurchases ?? appConfig.native.credits.purchasesEnabled,
+      signupGrant: commonConfig.credits.signupGrant,
+    },
     routes: appConfig.native.routes,
-    payments: appConfig.native.payments,
+    payments: appConfig.native.payments
+      ? {
+          ...appConfig.native.payments,
+          enabled: nativeFeatures?.billing ?? appConfig.native.payments.enabled,
+        }
+      : undefined,
   };
 }

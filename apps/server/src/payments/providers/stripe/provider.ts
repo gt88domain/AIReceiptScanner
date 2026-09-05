@@ -35,6 +35,11 @@ function requireStripeSecretKey() {
   return env.STRIPE_SECRET_KEY;
 }
 
+/** Reads the provider-owned subscription snapshot for invoice-triggered reconciliation. */
+export async function retrieveStripeSubscription(subscriptionId: string) {
+  return new Stripe(requireStripeSecretKey()).subscriptions.retrieve(subscriptionId);
+}
+
 /**
  * Normalizes metadata according to Stripe API requirements.
  *

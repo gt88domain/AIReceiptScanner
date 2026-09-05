@@ -50,13 +50,18 @@ export const productConfig = {
       },
       from: { localPart: "noreply", domain: "mail.demo.aiarticles.com" },
     },
+    credits: {
+      signupGrant: {
+        enabled: false,
+        amount: 100,
+        expiresInDays: 30,
+      },
+    },
     storage: productStorageConfig,
-  } satisfies Pick<AppCommonConfig, "features" | "app" | "auth" | "email" | "storage">,
-  creditSignupGrant: {
-    enabled: false,
-    amount: 100,
-    expiresInDays: 30,
-  } satisfies NonNullable<AppCreditsConfig["signupGrant"]>,
+  } satisfies Pick<
+    AppCommonConfig,
+    "features" | "app" | "auth" | "email" | "credits" | "storage"
+  >,
   webCreditPackages: [
     {
       id: "starter",

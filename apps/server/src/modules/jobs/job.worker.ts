@@ -1,14 +1,14 @@
 import { and, eq, isNull, lte, or, sql } from "drizzle-orm";
 import type { Database } from "@/db";
-import { job } from "@/db/schema/jobs";
+import { job, jobOutbox } from "@/db/schema/jobs";
 import { createLeaseToken, leaseUntil } from "@/lib/lease";
 import { logSafeError, redactErrorText } from "@/lib/safe-error";
 import { recordJobEvent } from "./job.events";
 import type { JobHandlers, JobQueueMessage } from "./job.types";
 import { getRetryDelaySeconds } from "./job.retry";
+import { currentJobDelivery, isJobQueueMessage } from "./job.delivery";
 
 export const JOB_LEASE_MS = 15 * 60 * 1000;
-const MAX_QUEUE_DELAY_SECONDS = 24 * 60 * 60;
 
 export async function consumeJobMessages(
   db: Database,
@@ -35,23 +35,18 @@ export async function consumeJobMessages(
   }
 }
 
-function isJobQueueMessage(value: unknown): value is JobQueueMessage {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "jobId" in value &&
-    typeof value.jobId === "string" &&
-    value.jobId.length > 0
-  );
-}
-
 export async function processJobMessage(
   db: Database,
   message: JobQueueMessage,
   handlers: JobHandlers,
   now = new Date(),
 ) {
-  const [existing] = await db.select().from(job).where(eq(job.id, message.jobId)).limit(1);
+  const delivery = currentJobDelivery(db, message);
+  const [existing] = await db
+    .select()
+    .from(job)
+    .where(and(eq(job.id, message.jobId), delivery))
+    .limit(1);
   if (!existing || existing.status === "succeeded" || existing.status === "cancelled") {
     return null;
   }
@@ -60,10 +55,18 @@ export async function processJobMessage(
   if (existing.status === "failed") return getRetryDelaySeconds(existing.attemptCount || 1);
 
   if (existing.status === "pending" && existing.runAfter > now) {
-    return Math.min(
-      Math.max(1, Math.ceil((existing.runAfter.getTime() - now.getTime()) / 1000)),
-      MAX_QUEUE_DELAY_SECONDS,
-    );
+    // Park early deliveries from older producers without consuming Queue retry budget.
+    await db
+      .update(jobOutbox)
+      .set({
+        status: "pending",
+        leaseToken: null,
+        leaseUntil: null,
+        publishedAt: null,
+        updatedAt: now,
+      })
+      .where(and(eq(jobOutbox.jobId, existing.id), delivery));
+    return null;
   }
   const legacyLeaseExpiredAt = new Date(now.getTime() - JOB_LEASE_MS);
   if (existing.status === "running" && existing.leaseUntil && existing.leaseUntil > now) {
@@ -95,6 +98,7 @@ export async function processJobMessage(
     .where(
       and(
         eq(job.id, existing.id),
+        delivery,
         or(
           eq(job.status, "pending"),
           and(

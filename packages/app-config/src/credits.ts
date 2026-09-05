@@ -18,6 +18,8 @@ export type NativeCreditPlatform = "ios" | "android";
 export type CreditsConfig = {
   /** Enables or disables credit APIs and UI surfaces. */
   enabled?: boolean;
+  /** The sole purchase gate for the resolved credit catalog. */
+  purchasesEnabled: boolean;
   /** Purchasable credit packages shared by web and native clients. */
   packages?: CreditPackageConfig[];
   /** Optional one-time free credits granted when a user first touches the ledger. */
@@ -152,20 +154,10 @@ export function mergeCreditsConfigs(inputs: CreditsConfig[]): CreditsConfig {
 
   return {
     enabled: enabledConfigs.length > 0,
+    purchasesEnabled: enabledConfigs.some((input) => input.purchasesEnabled),
     packages: Array.from(packageMap.values()),
     signupGrant: enabledConfigs.find((input) => input.signupGrant)?.signupGrant,
   };
-}
-
-/**
- * Resolves the active web payment price environment from NODE_ENV.
- *
- * Web provider price IDs are environment-specific, while native product IDs are store-specific.
- */
-function resolveProviderPriceEnvironment(): ProviderPriceEnvironment {
-  const nodeEnv = (globalThis as { process?: { env?: { NODE_ENV?: string } } }).process?.env
-    ?.NODE_ENV;
-  return nodeEnv === "production" ? "prod" : "test";
 }
 
 /** Throws when a configured credit amount or price amount is not a positive integer. */
@@ -267,7 +259,7 @@ function normalizeNativePackage(
 /** Validates and normalizes the credit configuration used by clients and server code. */
 export function normalizeCreditsConfig(
   input: CreditsConfig,
-  providerPriceEnvironment: ProviderPriceEnvironment = resolveProviderPriceEnvironment(),
+  providerPriceEnvironment: ProviderPriceEnvironment,
 ): NormalizedCreditsConfig {
   // Keep configured package and provider IDs unique so webhook lookups are deterministic.
   const packageIds = new Set<string>();
@@ -332,6 +324,7 @@ const resolvedCreditsConfig = mergeCreditsConfigs([
 /** Runtime credit configuration resolved from common app-config. */
 export const creditsConfig: CreditsConfig = {
   enabled: resolvedCreditsConfig.enabled,
+  purchasesEnabled: resolvedCreditsConfig.purchasesEnabled,
   packages: resolvedCreditsConfig.packages,
   signupGrant: resolvedCreditsConfig.signupGrant,
 };
@@ -340,21 +333,65 @@ export const creditsConfig: CreditsConfig = {
 export const isCreditsEnabled = creditsConfig.enabled ?? false;
 
 /** Returns normalized credit packages from either supplied config or the runtime config. */
-export function listNormalizedCreditPackages(input: CreditsConfig = creditsConfig) {
-  return normalizeCreditsConfig(input).packages;
+export function listNormalizedCreditPackages(
+  input: CreditsConfig,
+  providerPriceEnvironment: ProviderPriceEnvironment,
+) {
+  return normalizeCreditsConfig(input, providerPriceEnvironment).packages;
 }
 
-/** Finds a configured credit package by its internal package id. */
-export function findCreditPackageById(input: CreditsConfig, packageId: string) {
-  return listNormalizedCreditPackages(input).find((item) => item.id === packageId) ?? null;
+/**
+ * Finds a configured credit package by its internal package id.
+ *
+ * Without a price environment this compatibility path returns native-only
+ * package data, so it never selects a web provider price implicitly.
+ */
+export function findCreditPackageById(
+  input: CreditsConfig,
+  packageId: string,
+): NormalizedCreditPackage | null;
+export function findCreditPackageById(
+  input: CreditsConfig,
+  packageId: string,
+  providerPriceEnvironment: ProviderPriceEnvironment,
+): NormalizedCreditPackage | null;
+export function findCreditPackageById(
+  input: CreditsConfig,
+  packageId: string,
+  providerPriceEnvironment?: ProviderPriceEnvironment,
+): NormalizedCreditPackage | null {
+  if (!providerPriceEnvironment) {
+    const item = input.packages?.find((candidate) => candidate.id === packageId);
+    if (!item) return null;
+    assertPositiveInteger(item.amount, `package ${item.id}.amount`);
+    assertStatus(item.status, `package ${item.id}`);
+    const native: Partial<Record<NativeCreditPlatform, NormalizedCreditNativePackage>> = {};
+    for (const platform of ["ios", "android"] as const) {
+      const product = normalizeNativePackage(item.native?.[platform], item.id, platform);
+      if (product) native[platform] = product;
+    }
+    return {
+      id: item.id,
+      amount: item.amount,
+      status: item.status ?? "active",
+      web: null,
+      native,
+    };
+  }
+  return (
+    listNormalizedCreditPackages(input, providerPriceEnvironment).find(
+      (item) => item.id === packageId,
+    ) ?? null
+  );
 }
 
 /** Finds a credit package by the provider price id received from a web payment provider. */
 export function findWebCreditPackageByProviderPriceId(
   input: CreditsConfig,
   providerPriceId: string,
+  providerPriceEnvironment: ProviderPriceEnvironment,
 ): NormalizedWebCreditPackageMatch | null {
-  for (const creditPackage of listNormalizedCreditPackages(input)) {
+  for (const creditPackage of listNormalizedCreditPackages(input, providerPriceEnvironment)) {
     if (creditPackage.web?.providerPriceId === providerPriceId) {
       return {
         package: creditPackage,
@@ -370,8 +407,9 @@ export function findWebCreditPackageByProviderPriceId(
 export function findNativeCreditPackageByProviderProductId(
   input: CreditsConfig,
   providerProductId: string,
+  providerPriceEnvironment: ProviderPriceEnvironment,
 ): NormalizedNativeCreditPackageMatch | null {
-  for (const creditPackage of listNormalizedCreditPackages(input)) {
+  for (const creditPackage of listNormalizedCreditPackages(input, providerPriceEnvironment)) {
     for (const platform of ["ios", "android"] as const) {
       const product = creditPackage.native[platform];
       if (product?.providerProductId === providerProductId) {

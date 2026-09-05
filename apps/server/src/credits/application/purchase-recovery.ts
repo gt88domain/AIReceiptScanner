@@ -45,6 +45,36 @@ function createRecoveryVersionGuard(db: Database, orderId: string) {
   );
 }
 
+/** Rolls the batch back when a concurrent consumer already changed the purchased lot. */
+function createPurchaseSpendableAmountGuard(db: Database, orderId: string) {
+  return db.insert(creditOrder).select((qb) =>
+    qb
+      .select({
+        id: creditOrder.id,
+        userId: creditOrder.userId,
+        packageId: creditOrder.packageId,
+        provider: creditOrder.provider,
+        providerSessionId: creditOrder.providerSessionId,
+        providerPaymentId: creditOrder.providerPaymentId,
+        status: creditOrder.status,
+        creditAmount: creditOrder.creditAmount,
+        amountCents: creditOrder.amountCents,
+        currency: creditOrder.currency,
+        ledgerTransactionId: creditOrder.ledgerTransactionId,
+        expiresAt: creditOrder.expiresAt,
+        recoveredAmountCents: creditOrder.recoveredAmountCents,
+        recoveredCreditAmount: creditOrder.recoveredCreditAmount,
+        recoveredSpendableAmount: creditOrder.recoveredSpendableAmount,
+        recoveryVersion: creditOrder.recoveryVersion,
+        recoveryMode: creditOrder.recoveryMode,
+        createdAt: creditOrder.createdAt,
+        updatedAt: creditOrder.updatedAt,
+      })
+      .from(creditOrder)
+      .where(and(eq(creditOrder.id, orderId), sql`changes() <> 1`)),
+  );
+}
+
 function isNewerEvent(
   existing: { providerEventAt: Date | null; providerEventId: string | null },
   input: ApplyCreditPurchaseRecoveryInput,
@@ -202,19 +232,24 @@ export async function applyCreditPurchaseRecovery(
     await ensureCreditAccount(db, order.userId);
     const batch = [eventWrite] as Parameters<typeof runCreditBatch>[1];
     if (creditDelta > 0) {
-      batch.push(
-        db
-          .update(creditTransaction)
-          .set({
-            remainingAmount: sql`${creditTransaction.remainingAmount} - ${spendableDelta}`,
-            updatedAt: now,
-          })
-          .where(
-            and(
-              eq(creditTransaction.id, purchase.id),
-              gte(creditTransaction.remainingAmount, spendableDelta),
+      if (spendableDelta > 0) {
+        batch.push(
+          db
+            .update(creditTransaction)
+            .set({
+              remainingAmount: sql`${creditTransaction.remainingAmount} - ${spendableDelta}`,
+              updatedAt: now,
+            })
+            .where(
+              and(
+                eq(creditTransaction.id, purchase.id),
+                gte(creditTransaction.remainingAmount, spendableDelta),
+              ),
             ),
-          ),
+          createPurchaseSpendableAmountGuard(db, order.id),
+        );
+      }
+      batch.push(
         db
           .update(creditAccount)
           .set({

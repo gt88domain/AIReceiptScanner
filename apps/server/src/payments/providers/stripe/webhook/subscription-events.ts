@@ -120,6 +120,7 @@ function mapStripeSubscriptionStatus(status: Stripe.Subscription.Status) {
     case "past_due":
     case "canceled":
     case "unpaid":
+    case "paused":
     case "incomplete":
       return status;
     case "incomplete_expired":

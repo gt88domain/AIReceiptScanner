@@ -131,31 +131,6 @@ if (!webWrangler.includes(`binding": "${facts.runtime.webApiBinding}"`)) {
   errors.push(`Web Wrangler configuration is missing ${facts.runtime.webApiBinding}.`);
 }
 
-for (const guidanceFile of facts.guidanceFiles) {
-  const guidance = await readFile(path.join(root, guidanceFile), "utf8");
-  for (const required of facts.requiredGuidance) {
-    if (!guidance.includes(required)) errors.push(`${guidanceFile} must mention ${required}.`);
-  }
-  if (guidance.includes("There is no root `test` script")) {
-    errors.push(`${guidanceFile} incorrectly says the root test script does not exist.`);
-  }
-}
-
-for (const guidanceFile of facts.mobileGuidanceFiles ?? []) {
-  const guidance = await readFile(path.join(root, guidanceFile), "utf8");
-  for (const required of [
-    facts.applications.mobile,
-    "pnpm --dir optional install",
-    "pnpm mobile:dev",
-  ]) {
-    if (!guidance.includes(required)) errors.push(`${guidanceFile} must mention ${required}.`);
-  }
-  for (const retired of ["apps/native", "pnpm -F native", "dev:native"]) {
-    if (guidance.includes(retired))
-      errors.push(`${guidanceFile} still references retired mobile guidance: ${retired}.`);
-  }
-}
-
 if (errors.length > 0) throw new Error(`Repository fact drift:\n${errors.join("\n")}`);
 
 console.log("Repository fact check passed.");

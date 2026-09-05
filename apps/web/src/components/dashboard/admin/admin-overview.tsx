@@ -31,16 +31,14 @@ export function AdminOverview() {
     return <OverviewSkeleton />;
   }
 
-  const failedWebhooks = (billing.data?.webhooks ?? []).filter(
-    (webhook) => webhook.processingStatus === "dead_letter" || webhook.lastError !== null,
-  ).length;
+  const failedWebhooks = billing.isError ? "Unavailable" : (billing.data?.stats.failedWebhooks ?? 0);
   const failedPayments = (operations.data ?? []).filter(
     (operation) => operation.status === "failed" || operation.status === "manual_review",
   ).length;
   const items = [
     {
       title: "Open support tickets",
-      count: tickets.data?.count ?? 0,
+      count: tickets.isError ? "Unavailable" : (tickets.data?.count ?? 0),
       description: "Customer questions waiting for an administrator response.",
       to: "/admin/support" as const,
       visible: webConfig.ticketsEnabled,
@@ -58,7 +56,7 @@ export function AdminOverview() {
     },
     {
       title: "Failed payment operations",
-      count: failedPayments,
+      count: operations.isError ? "Unavailable" : failedPayments,
       description: paymentEnabled
         ? "Checkout or subscription operations requiring attention."
         : "Payments are not enabled for this profile.",

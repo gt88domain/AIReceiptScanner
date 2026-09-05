@@ -116,10 +116,6 @@ export type PaymentPresentation = {
   billingNoteKey: "flexible_cancel_anytime" | "billed_annually" | "one_time_purchase";
   suffixKey: "per_month" | "per_year" | null;
   badgeKey: "best_value" | null;
-  title: string;
-  billingNote: string;
-  suffix: string | null;
-  badge: string | null;
 };
 
 /** Backward-compatible name for existing payment callers. */
@@ -133,10 +129,6 @@ export const PAYMENT_PRESENTATIONS: Record<MembershipPresentationKind, PaymentPr
     billingNoteKey: "flexible_cancel_anytime",
     suffixKey: "per_month",
     badgeKey: null,
-    title: "Monthly",
-    billingNote: "Flexible, cancel anytime",
-    suffix: "/mo",
-    badge: null,
   },
   yearly: {
     kind: "yearly",
@@ -144,10 +136,6 @@ export const PAYMENT_PRESENTATIONS: Record<MembershipPresentationKind, PaymentPr
     billingNoteKey: "billed_annually",
     suffixKey: "per_year",
     badgeKey: "best_value",
-    title: "Yearly",
-    billingNote: "Billed annually",
-    suffix: "/yr",
-    badge: "BEST VALUE",
   },
   lifetime: {
     kind: "lifetime",
@@ -155,10 +143,6 @@ export const PAYMENT_PRESENTATIONS: Record<MembershipPresentationKind, PaymentPr
     billingNoteKey: "one_time_purchase",
     suffixKey: null,
     badgeKey: null,
-    title: "Lifetime",
-    billingNote: "One-time purchase",
-    suffix: null,
-    badge: null,
   },
 } as const;
 

@@ -299,7 +299,7 @@ describe("administrator RPC authorization", () => {
           entityType: "failed_job_event",
           entityId: failedJobEventId,
           before: null,
-          after: { resolution: "retried" },
+          after: expect.objectContaining({ resolution: "retried" }),
         }),
         expect.objectContaining({
           action: "billing.webhook.dead-letter-acknowledged",

@@ -85,6 +85,20 @@ export const Header = () => {
   }, []);
 
   React.useEffect(() => {
+    const desktopQuery = window.matchMedia("(min-width: 1024px)");
+    const handleDesktopLayout = (event: MediaQueryListEvent | MediaQueryList) => {
+      if (!event.matches) return;
+      clearCloseTimer();
+      setMenuState(false);
+      setIsClosing(false);
+    };
+
+    desktopQuery.addEventListener("change", handleDesktopLayout);
+    handleDesktopLayout(desktopQuery);
+    return () => desktopQuery.removeEventListener("change", handleDesktopLayout);
+  }, [clearCloseTimer]);
+
+  React.useEffect(() => {
     const shouldLockScroll = menuState || isClosing;
     if (!shouldLockScroll) return;
 

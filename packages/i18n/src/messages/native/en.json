@@ -70,6 +70,17 @@
     "home": "Home",
     "profile": "Profile"
   },
+  "home": {
+    "welcome": "Welcome",
+    "welcomeNamed": "Welcome, {{name}}",
+    "description": "Manage your account and get the most from your membership.",
+    "membershipTitle": "Membership",
+    "membershipDescription": "View available plans, restore purchases, and check your current access.",
+    "membershipAction": "View membership",
+    "profileTitle": "Your profile",
+    "profileDescription": "Update your details, security settings, and preferences.",
+    "profileAction": "Open profile"
+  },
   "auth": {
     "signIn": "Sign In",
     "signUp": "Sign Up",
@@ -99,6 +110,8 @@
     "orContinueWith": "Or continue with",
     "signInWithApple": "Sign in with Apple",
     "signInWithGoogle": "Sign in with Google",
+    "signInWithGithub": "Sign in with GitHub",
+    "emailVerified": "Email verified. Sign in to continue.",
     "emailTab": "Email",
     "phoneTab": "Phone",
     "noAccount": "Don't have an account?",

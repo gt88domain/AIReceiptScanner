@@ -36,12 +36,11 @@ Every retained executable has one explicit guarded object:
 | `check-development-isolation.mjs` | Development-only packages excluded from production paths |
 | `check-expo-auth-compatibility.mjs` | Server/mobile Better Auth version compatibility |
 | `check-module-feature-todo.mjs` | Module decision CSV schema and lifecycle fields |
-| `check-product-profiles.mjs` | Profile definitions, fixtures, and Wrangler examples |
+| `check-product-profiles.mjs` | Profile definitions and Wrangler examples |
 | `check-production-identity.mjs` | Production artifacts without demo identity or placeholder resources |
 | `check-public-config-leaks.mjs` | Built public assets without private configuration values |
 | `check-repository-facts.mjs` | Repository facts against executable workspace configuration |
 | `check-security-headers.ts` | Web response security-header contract |
-| `check-template-modifications.mjs` | Downstream core modifications against the adoption manifest |
 | `check-web-performance-budget.mjs` | Combined Web performance reports against declared budgets |
 | `check-wrangler-types.mjs` | Generated Worker binding types against source declarations |
 | `measure-homepage-assets.mjs` | Homepage asset count and byte measurements |

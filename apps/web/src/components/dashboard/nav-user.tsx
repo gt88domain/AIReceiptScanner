@@ -21,6 +21,7 @@ import useDialogState from "@/hooks/use-dialog-state";
 import { useCurrentSubscription } from "@/hooks/use-payments";
 import { useTranslations } from "@/i18n";
 import type { CurrentUser } from "@/lib/auth/auth-server";
+import { webConfig } from "@/configs/web-config";
 import { UserInfo } from "../shared/user-info";
 
 export function NavUser({ user }: { user: CurrentUser }) {
@@ -29,6 +30,7 @@ export function NavUser({ user }: { user: CurrentUser }) {
   const [open, setOpen] = useDialogState();
   const { hasLifetime, hasSubscription } = useCurrentSubscription({
     includePlan: false,
+    enabled: webConfig.billingEnabled,
   });
 
   return (
@@ -66,7 +68,7 @@ export function NavUser({ user }: { user: CurrentUser }) {
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              {hasSubscription || hasLifetime ? null : (
+              {!webConfig.billingEnabled || hasSubscription || hasLifetime ? null : (
                 <>
                   <DropdownMenuGroup>
                     <DropdownMenuItem asChild>

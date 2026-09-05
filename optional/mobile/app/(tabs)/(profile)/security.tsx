@@ -13,7 +13,7 @@ import { useAuth } from "@/providers/auth-provider";
 import { useTabBarVisibility } from "@/providers/tab-bar-provider";
 import { getVisibleUserEmail } from "@repo/shared";
 
-function formatProviderName(provider: "github" | "google", t: (key: string) => string) {
+function formatProviderName(provider: "apple" | "github" | "google", t: (key: string) => string) {
   return t(`auth.providers.${provider}`);
 }
 

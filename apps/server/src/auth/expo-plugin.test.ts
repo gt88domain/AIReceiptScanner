@@ -50,101 +50,11 @@ test("Expo auth plugin only permits exp origins during development", () => {
   }
 });
 
-test("Expo authorization proxy signs the provider state before redirecting", async () => {
-  const plugin = createExpoAuthPlugin();
-  const result = await plugin.endpoints.expoAuthorizationProxy({
-    asResponse: true,
-    query: {
-      authorizationURL: "https://oauth.example.test/authorize?state=provider-state",
-    },
-    context: {
-      baseURL: "https://api.example.test",
-      secret: "test-secret",
-      createAuthCookie: (name: string, attributes: Record<string, unknown>) => ({
-        name: `better-auth.${name}`,
-        attributes,
-      }),
-    },
-  });
-
-  assert.equal(result.status, 302);
-  assert.equal(
-    result.headers.get("location"),
-    "https://oauth.example.test/authorize?state=provider-state",
-  );
-  assert.match(result.headers.get("set-cookie") ?? "", /better-auth\.state=/);
-});
-
-test("Expo authorization proxy stores an OAuth state without signing it", async () => {
-  const plugin = createExpoAuthPlugin();
-  const result = await plugin.endpoints.expoAuthorizationProxy({
-    asResponse: true,
-    query: {
-      authorizationURL: "https://oauth.example.test/authorize",
-      oauthState: "oauth-state",
-    },
-    context: {
-      baseURL: "https://api.example.test",
-      secret: "test-secret",
-      createAuthCookie: (name: string, attributes: Record<string, unknown>) => ({
-        name: `better-auth.${name}`,
-        attributes,
-      }),
-    },
-  });
-
-  assert.equal(result.status, 302);
-  assert.match(result.headers.get("set-cookie") ?? "", /better-auth\.oauth_state=oauth-state/);
-});
-
-test("Expo authorization proxy rejects a provider URL without state", async () => {
-  const plugin = createExpoAuthPlugin();
-  const result = await plugin.endpoints.expoAuthorizationProxy({
-    asResponse: true,
-    query: { authorizationURL: "https://oauth.example.test/authorize" },
-    context: {
-      baseURL: "https://api.example.test",
-      secret: "test-secret",
-      createAuthCookie: (name: string, attributes: Record<string, unknown>) => ({
-        name: `better-auth.${name}`,
-        attributes,
-      }),
-    },
-  });
-
-  assert.equal(result.status, 400);
-});
-
-test("Expo authorization proxy rejects unsafe redirect targets", async () => {
-  const plugin = createExpoAuthPlugin();
-
-  for (const authorizationURL of [
-    "http://oauth.example.test/authorize?state=provider-state",
-    "https://api.example.test/authorize?state=provider-state",
-    "https://oauth.example.test/authorize#fragment",
-  ]) {
-    const result = await plugin.endpoints.expoAuthorizationProxy({
-      asResponse: true,
-      query: { authorizationURL },
-      context: {
-        baseURL: "https://api.example.test",
-        secret: "test-secret",
-        createAuthCookie: (name: string, attributes: Record<string, unknown>) => ({
-          name: `better-auth.${name}`,
-          attributes,
-        }),
-      },
-    });
-
-    assert.equal(result.status, 400);
-  }
-});
-
 test("Expo auth plugin records the pinned compatibility version", () => {
   assert.equal(createExpoAuthPlugin().version, EXPO_AUTH_PLUGIN_COMPAT_VERSION);
 });
 
-test("Expo callback forwards cookies only to a trusted custom scheme", async () => {
+test("Expo callback strips cookies even for a trusted custom scheme", async () => {
   const headers = new Headers({
     location: "easystarter-native://callback",
     "set-cookie": "session=opaque; Path=/; HttpOnly",
@@ -156,10 +66,8 @@ test("Expo callback forwards cookies only to a trusted custom scheme", async () 
     setHeader: (name: string, value: string) => headers.set(name, value),
   });
 
-  assert.equal(
-    headers.get("location"),
-    "easystarter-native://callback?cookie=session%3Dopaque%3B+Path%3D%2F%3B+HttpOnly",
-  );
+  assert.equal(headers.get("location"), "easystarter-native://callback");
+  assert.equal(headers.get("set-cookie"), null);
 });
 
 test("Expo callback does not forward cookies to an untrusted redirect", async () => {

@@ -158,6 +158,7 @@ export async function createCreditCheckoutSession(
         creditOrderId: orderId,
         provider: creditPackage.web.provider,
       },
+      trialDays: null,
       idempotencyKey: claim.operation.operationKey,
       ...(resolvedCustomerId ? { customerId: resolvedCustomerId } : {}),
       ...(resolvedCustomerEmail ? { customerEmail: resolvedCustomerEmail } : {}),

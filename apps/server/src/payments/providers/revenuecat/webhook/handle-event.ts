@@ -1,4 +1,6 @@
 import { and, eq } from "drizzle-orm";
+import { env } from "cloudflare:workers";
+import { resolveProviderPriceEnvironment } from "@/lib/provider-price-environment";
 import {
   markCreditOrderRefunded,
   recordNativeCreditOrderPurchase,
@@ -181,6 +183,15 @@ export async function handleRevenueCatEvent(db: Database, payload: unknown) {
     return;
   }
 
+  // Enforce isolation here as well as on new deliveries: the inbox also replays
+  // verified historical payloads without invoking the provider parser again.
+  if (event.environment !== "SANDBOX" && event.environment !== "PRODUCTION") {
+    throw new NonRetryableWebhookError("REVENUECAT_ENVIRONMENT_REQUIRES_MANUAL_REVIEW");
+  }
+  const expectedEnvironment =
+    resolveProviderPriceEnvironment(env) === "prod" ? "PRODUCTION" : "SANDBOX";
+  if (event.environment !== expectedEnvironment) return;
+
   if (event.type === "TRANSFER") {
     const fromAppUserIds = event.transferred_from ?? [];
     const toAppUserIds = event.transferred_to ?? [];
@@ -293,8 +304,7 @@ export async function handleRevenueCatEvent(db: Database, payload: unknown) {
     }
 
     if (event.type === "CANCELLATION") {
-      // Refunds revoke only the remaining unspent credits from the original purchase.
-      await revokeCreditPurchase(db, {
+      const recovery = await revokeCreditPurchase(db, {
         user: { userId },
         originalSourceProvider: "revenuecat",
         originalSourceId: providerTransactionId,
@@ -305,6 +315,9 @@ export async function handleRevenueCatEvent(db: Database, payload: unknown) {
           cancelReason: event.cancel_reason ?? null,
         },
       });
+      // Refund delivery can precede the purchase/order webhook. Keep the verified
+      // event retryable until its original order exists instead of acknowledging it.
+      if (!recovery) throw new Error("REVENUECAT_CREDIT_REFUND_PURCHASE_NOT_READY");
       await markCreditOrderRefunded(db, {
         sourceProvider: "revenuecat",
         providerPaymentId: providerTransactionId,

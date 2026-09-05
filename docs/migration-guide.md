@@ -25,7 +25,7 @@ System. Payments and Support are conditional. It does not replace Domains,
 Quotes, Submit, or other product operations.
 
 Use an **in-place upgrade** when the downstream has a usable template remote
-and `.template/source.json`, protected differences are small and recorded, and
+and `.template/source.json`, protected differences are small and reviewable, and
 D1 migration history can move forward continuously. It preserves deployment
 identity and data, but needs deliberate conflict resolution.
 
@@ -34,9 +34,9 @@ repository has broad, unrecorded core edits, no credible upstream baseline, or
 product code is already separable. A fresh repository still needs a data-owner,
 cutover, and rollback decision; it is never permission to recreate data.
 
-Compare protected-core overlap and `MOD-xxxx` records, product-versus-copied
-template code, D1 migration continuity, and the cost of keeping two production
-entry points during rollback. There is no safe automatic threshold.
+Compare protected-core overlap from the Git diff, product-versus-copied template
+code, D1 migration continuity, and the cost of keeping two production entry
+points during rollback. There is no safe automatic threshold.
 
 For a normal in-place adoption, consume a released tag, not `template/main`:
 
@@ -109,8 +109,8 @@ traffic rollback or forward fix, and cutover decision before any write. Applied
 structural migrations are immutable.
 
 Update `.template/source.json` only after the released tag is adopted and
-validation passes. Each protected Core/Platform deviation needs one active
-`MOD-xxxx` record. Put product behaviour in a module, not an undocumented core fork.
+validation passes. Document each protected Core/Platform deviation in the PR
+or commit message. Put product behaviour in a module, not an undocumented core fork.
 
 ## Acceptance and cutover
 

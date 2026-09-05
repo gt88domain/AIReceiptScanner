@@ -203,6 +203,7 @@
     "orContinueWith": "Or continue with",
     "loginWithGithub": "Login with Github",
     "loginWithGoogle": "Login with Google",
+    "loginWithApple": "Login with Apple",
     "enterEmail": "Enter your email",
     "enterPassword": "Enter your password",
     "termsAgreement": "By clicking continue, you agree to our <termsLink>Terms of Service</termsLink> and <privacyLink>Privacy Policy</privacyLink>.",

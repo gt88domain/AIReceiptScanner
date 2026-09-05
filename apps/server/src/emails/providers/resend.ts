@@ -27,7 +27,7 @@ export function createResendEmailProvider({
 
   return {
     key: "resend",
-    async send({ from, to, subject, html, text, template }: SendEmailParams) {
+    async send({ from, to, replyTo, subject, html, text, template }: SendEmailParams) {
       const resolvedFrom = from ?? defaultFrom;
       if (!resolvedFrom) {
         throw new Error("Email service is not configured with a from address");
@@ -42,7 +42,7 @@ export function createResendEmailProvider({
         throw new Error("Email content is missing");
       }
 
-      const base = { from: resolvedFrom, to, subject };
+      const base = { from: resolvedFrom, to, subject, ...(replyTo ? { replyTo } : {}) };
 
       const payload: CreateEmailOptions = renderedHtml
         ? ({ ...base, html: renderedHtml, text: renderedText } as CreateEmailOptions)

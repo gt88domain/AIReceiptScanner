@@ -6,7 +6,7 @@ import { user } from "@/db/schema/auth";
 import { isRequestRateLimited } from "@/handlers/request-rate-limit";
 import { logSafeError } from "@/lib/safe-error";
 import { adminTicketsProcedure, ticketsProcedure } from "@/lib/orpc";
-import { createAdminAuditLogBatchItem, recordAdminAuditLog } from "@/modules/audit";
+import { createAdminAuditLogBatchItem } from "@/modules/audit";
 import type { Context } from "@/lib/context";
 
 const ticketStatusSchema = z.enum(ticketStatusValues);
@@ -91,23 +91,25 @@ export const ticketsRouter = {
       }
       const now = new Date();
       const id = crypto.randomUUID();
-      await context.db.insert(ticket).values({
-        id,
-        userId: context.session!.user.id,
-        subject: input.subject,
-        status: "open",
-        metadata: input.metadata ?? null,
-        createdAt: now,
-        updatedAt: now,
-      });
-      await context.db.insert(ticketMessage).values({
-        id: crypto.randomUUID(),
-        ticketId: id,
-        authorUserId: context.session!.user.id,
-        authorRole: "user",
-        body: input.body,
-        createdAt: now,
-      });
+      await context.db.batch([
+        context.db.insert(ticket).values({
+          id,
+          userId: context.session!.user.id,
+          subject: input.subject,
+          status: "open",
+          metadata: input.metadata ?? null,
+          createdAt: now,
+          updatedAt: now,
+        }),
+        context.db.insert(ticketMessage).values({
+          id: crypto.randomUUID(),
+          ticketId: id,
+          authorUserId: context.session!.user.id,
+          authorRole: "user",
+          body: input.body,
+          createdAt: now,
+        }),
+      ]);
       return getTicketDetail(context, id);
     }),
   reply: ticketsProcedure
@@ -120,18 +122,20 @@ export const ticketsRouter = {
       if (item.status === "closed")
         throw new ORPCError("BAD_REQUEST", { message: "Closed tickets cannot be replied to" });
       const now = new Date();
-      await context.db.insert(ticketMessage).values({
-        id: crypto.randomUUID(),
-        ticketId: item.id,
-        authorUserId: context.session!.user.id,
-        authorRole: "user",
-        body: input.body,
-        createdAt: now,
-      });
-      await context.db
-        .update(ticket)
-        .set({ status: "open", updatedAt: now })
-        .where(eq(ticket.id, item.id));
+      await context.db.batch([
+        context.db.insert(ticketMessage).values({
+          id: crypto.randomUUID(),
+          ticketId: item.id,
+          authorUserId: context.session!.user.id,
+          authorRole: "user",
+          body: input.body,
+          createdAt: now,
+        }),
+        context.db
+          .update(ticket)
+          .set({ status: "open", updatedAt: now })
+          .where(eq(ticket.id, item.id)),
+      ]);
       return getTicketDetail(context, item.id);
     }),
   listAdmin: adminTicketsProcedure
@@ -209,17 +213,23 @@ export const ticketsRouter = {
     .handler(async ({ context, input }) => {
       const item = await getTicketDetail(context, input.ticketId);
       const now = new Date();
-      await context.db
-        .update(ticket)
-        .set({ status: "closed", closedAt: now, updatedAt: now })
-        .where(eq(ticket.id, item.id));
-      await recordAdminAuditLog(context.db, {
-        actor: context.session!.user,
-        action: "tickets.closed",
-        entity: { type: "ticket", id: item.id },
-        before: { status: item.status },
-        after: { status: "closed" },
-      });
+      await context.db.batch([
+        context.db
+          .update(ticket)
+          .set({ status: "closed", closedAt: now, updatedAt: now })
+          .where(eq(ticket.id, item.id)),
+        createAdminAuditLogBatchItem(
+          context.db,
+          {
+            actor: context.session!.user,
+            action: "tickets.closed",
+            entity: { type: "ticket", id: item.id },
+            before: { status: item.status },
+            after: { status: "closed" },
+          },
+          now,
+        ),
+      ]);
       return getTicketDetail(context, item.id);
     }),
   countOpenAdmin: adminTicketsProcedure

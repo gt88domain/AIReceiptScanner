@@ -9,11 +9,11 @@
   "queues": {
     "producers": [{ "binding": "JOB_QUEUE", "queue": "replace-account-app-jobs" }],
     "consumers": [
-      { "queue": "replace-account-app-jobs", "max_batch_size": 10, "max_batch_timeout": 5, "max_retries": 3, "dead_letter_queue": "replace-account-app-jobs-dlq" },
+      { "queue": "replace-account-app-jobs", "max_batch_size": 1, "max_batch_timeout": 5, "max_retries": 3, "dead_letter_queue": "replace-account-app-jobs-dlq" },
       { "queue": "replace-account-app-jobs-dlq", "max_batch_size": 10, "max_batch_timeout": 5, "max_retries": 10 }
     ]
   },
-  "triggers": { "crons": ["*/10 * * * *"] },
+  "triggers": { "crons": ["* * * * *"] },
   "vars": {
     "NODE_ENV": "production",
     "PAYMENTS_PRICE_ENV": "prod",

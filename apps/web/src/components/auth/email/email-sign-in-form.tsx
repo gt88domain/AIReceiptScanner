@@ -10,12 +10,16 @@ import { Input } from "@/components/ui/input";
 import { getAuthUrls } from "@/configs/web-config";
 import { useTranslations } from "@/i18n";
 import { authClient } from "@/lib/auth/auth-client";
-import { sanitizeReturnTo } from "@/lib/auth/require-user";
+import { resolvePostAuthReturnTo } from "@/lib/auth/require-user";
 
 export function EmailSignInForm() {
   const t = useTranslations();
-  const search = useSearch({ strict: false }) as { returnTo?: string };
-  const returnTo = sanitizeReturnTo(search.returnTo);
+  const search = useSearch({ strict: false }) as {
+    returnTo?: string;
+    planId?: string;
+    priceId?: string;
+  };
+  const returnTo = resolvePostAuthReturnTo(search);
   const form = useForm({
     defaultValues: { email: "", password: "" },
     onSubmit: async ({ value }) => {

@@ -118,10 +118,14 @@ export default function CreditsScreen() {
                   {t("credits.balanceLabel")}
                 </Text>
                 <View className="mt-2">
-                  <AnimatedNumberText
-                    value={credits.balance?.balance ?? 0}
-                    className="text-4xl font-bold"
-                  />
+                  {credits.isBalanceLoading ? (
+                    <Skeleton className="h-10 w-24 rounded-md" />
+                  ) : (
+                    <AnimatedNumberText
+                      value={credits.balance?.balance ?? 0}
+                      className="text-4xl font-bold"
+                    />
+                  )}
                 </View>
               </View>
               <View className="size-12 items-center justify-center rounded-2xl bg-accent/10">
@@ -158,6 +162,19 @@ export default function CreditsScreen() {
                 className="mt-3 h-10 self-start"
                 variant="secondary"
                 onPress={() => void retryPaymentsSync()}
+              >
+                <Button.Label className="font-bold">{t("common.retry")}</Button.Label>
+              </Button>
+            </View>
+          ) : null}
+
+          {credits.error ? (
+            <View className="mt-5 rounded-2xl border border-warning/30 bg-warning/10 p-4">
+              <Text className="text-sm leading-5 text-muted">{credits.error.message}</Text>
+              <Button
+                className="mt-3 h-10 self-start"
+                variant="secondary"
+                onPress={() => void credits.retry()}
               >
                 <Button.Label className="font-bold">{t("common.retry")}</Button.Label>
               </Button>

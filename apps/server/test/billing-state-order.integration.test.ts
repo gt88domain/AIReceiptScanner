@@ -367,7 +367,10 @@ describe("billing state event ordering", () => {
         .select()
         .from(creditTransaction)
         .where(eq(creditTransaction.sourceId, `checkout_session:${sessionId}`));
-      expect(order).toMatchObject({ status: "completed", providerPaymentId: null });
+      expect(order).toMatchObject({
+        status: "completed",
+        providerPaymentId: `checkout_session:${sessionId}`,
+      });
       expect(transaction).toMatchObject({
         userId,
         sourceProvider: "stripe",

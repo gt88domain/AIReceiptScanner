@@ -1,0 +1,2 @@
+module,area,slug_or_route,issue_type,severity,evidence,problem,suggested_fix,effort_hours,block_release
+server-payments,subscription-state,/api/webhooks/stripe,conflict,P1,apps/server/src/payments/providers/stripe/webhook/invoice-events.ts:63|apps/server/src/payments/providers/stripe/webhook/subscription-events.ts:86|apps/server/src/payments/infrastructure/repositories/billing-store.ts:36,发票处理器用推导状态和数据库旧价格及取消标记整行回写每个订阅行自己的事件水位；较新的发票先到会阻止随后到达的较早订阅事件更新真实价格和取消状态，后续更新事件可自愈,以 Stripe Subscription 快照为订阅字段唯一真相；删除发票自行推导状态及携带旧值整行回写的路径并改成读取当前 Subscription 后交给统一订阅同步入口,4,no

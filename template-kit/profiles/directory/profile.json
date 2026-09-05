@@ -4,6 +4,7 @@
     "admin": true,
     "jobs": true,
     "storage": false,
+    "tickets": false,
     "mobile": false,
     "web": { "billing": false, "credits": false, "creditPurchases": false },
     "native": { "billing": false, "credits": false, "creditPurchases": false }

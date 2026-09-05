@@ -3,14 +3,18 @@ import { useSearch } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { getAuthUrls } from "@/configs/web-config";
 import { authClient } from "@/lib/auth/auth-client";
-import { sanitizeReturnTo } from "@/lib/auth/require-user";
+import { resolvePostAuthReturnTo } from "@/lib/auth/require-user";
 
-type SocialProvider = "github" | "google";
+type SocialProvider = "apple" | "github" | "google";
 
 export function useSocialSignIn() {
   const [loading, setLoading] = useState<SocialProvider | null>(null);
-  const search = useSearch({ strict: false }) as { returnTo?: string };
-  const returnTo = sanitizeReturnTo(search.returnTo);
+  const search = useSearch({ strict: false }) as {
+    returnTo?: string;
+    planId?: string;
+    priceId?: string;
+  };
+  const returnTo = resolvePostAuthReturnTo(search);
 
   const signIn = (provider: SocialProvider) => {
     const authUrls = getAuthUrls({ returnTo });
