@@ -1,0 +1,20 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "ainovel-v2-preview-api",
+  "main": "src/ainovel-preview.ts",
+  "compatibility_date": "2026-08-30",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ainovel-public",
+      "database_id": "1c7326f1-0940-4806-bbe0-874add621d0c"
+    }
+  ],
+  "vars": {
+    "NODE_ENV": "preview",
+    "WEBSITE_URL": "https://ainovel-v2-preview.gt88hel.workers.dev",
+    "SERVER_URL": "https://ainovel-v2-preview-api.gt88hel.workers.dev"
+  }
+}
