@@ -128,9 +128,9 @@ const appConfig: AppConfig = {
     // Native credit system settings and purchasable in-app credit packages.
     credits: {
       // Controls whether native credit screens and queries are available.
-      enabled: true,
+      enabled: false,
       // Allows native store purchases for credit packages.
-      purchasesEnabled: true,
+      purchasesEnabled: false,
       // Optional signup grant; disabled in the paid-product baseline.
       signupGrant: creditSignupGrant,
       // Credit packages available through native in-app purchases.
@@ -139,9 +139,9 @@ const appConfig: AppConfig = {
     // Native app metadata overrides.
     app: {
       // Native app display name.
-      name: "TanStack Template",
+      name: "AINovel",
       // Deep-link scheme used by the native app.
-      nativeScheme: "com.aiarticles.template",
+      nativeScheme: "com.ainovel.desktop",
     },
     // Native deep-link and legal document routes.
     routes: {
@@ -157,7 +157,7 @@ const appConfig: AppConfig = {
     // Native subscription and lifetime payment settings.
     payments: {
       // Enables native billing runtime paths.
-      enabled: true,
+      enabled: false,
       // Provider used for native purchases.
       provider: "revenuecat",
       // iOS in-app purchase catalog.

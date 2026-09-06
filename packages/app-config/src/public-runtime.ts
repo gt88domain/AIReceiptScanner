@@ -8,18 +8,20 @@ import type { ProductFeatureOverrides } from "./product-profiles";
  * Keep catalogs, provider price IDs, and native-only settings out of this entry.
  */
 export const publicRuntimeConfig = {
-  appName: "Your App",
-  supportEmail: "support@example.com",
+  appName: "AINovel",
+  supportEmail: "info@ainovel.com",
   defaultThemePresetKey: "clean-slate",
   features: {
-    admin: true,
-    billing: true,
-    credits: true,
-    creditPurchases: true,
+    admin: false,
+    // Desktop-app memberships and generation credits are integrated only once
+    // their entitlement API and live prices are available.
+    billing: false,
+    credits: false,
+    creditPurchases: false,
     storage: false,
     tickets: isBackofficePreviewTicketsEnabled(),
-    newsletter: true,
-    contactForm: true,
+    newsletter: false,
+    contactForm: false,
   },
   auth: {
     publicSignupEnabled: true,
