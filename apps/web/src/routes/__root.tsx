@@ -3,7 +3,6 @@ import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from "@tanst
 import { lazy, Suspense } from "react";
 import { DefaultCatchBoundary } from "@/components/feedback/default-catch-boundary";
 import { NavigationProgress } from "@/components/layout/navigation-progress";
-import { webConfig } from "@/configs/web-config";
 import { getCurrentLocale } from "@/i18n";
 import type { OrpcUtils } from "@/utils/orpc";
 import appCss from "../styles/index.css?url";
@@ -28,7 +27,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: webConfig.AppName,
+        title: "AINovel | AI-Powered Stories",
       },
     ],
     links: [
