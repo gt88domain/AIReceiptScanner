@@ -8,7 +8,8 @@ import {
   getPublicRelatedNovels,
 } from "@/modules/novels/detail-loader";
 import { NotFound404 } from "@/components/feedback/404/not-found-404";
-import { buildNoIndexHead, buildSeoHead } from "@/utils/seo";
+import { buildNovelDetailJsonLd } from "@/modules/novels/schema";
+import { buildNoIndexHead, buildSeoHead, resolveSiteOrigin } from "@/utils/seo";
 
 export const Route = createFileRoute("/novels/$slug")({
   params: { parse: (params) => ({ slug: z.string().min(1).max(160).parse(params.slug) }) },
@@ -36,27 +37,7 @@ export const Route = createFileRoute("/novels/$slug")({
       description: novel?.seoDescription ?? novel?.summary,
       image: novel?.coverUrl ?? undefined,
       imageAlt: novel?.title ? `${novel.title} cover` : undefined,
-      ldJson: novel
-        ? {
-            "@context": "https://schema.org",
-            "@graph": [
-              {
-                "@type": "Book",
-                name: novel.title,
-                description: novel.summary,
-                image: novel.coverUrl ?? undefined,
-                genre: novel.genre,
-              },
-              {
-                "@type": "BreadcrumbList",
-                itemListElement: [
-                  { "@type": "ListItem", position: 1, name: "Stories" },
-                  { "@type": "ListItem", position: 2, name: novel.title },
-                ],
-              },
-            ],
-          }
-        : undefined,
+      ldJson: novel ? buildNovelDetailJsonLd(resolveSiteOrigin(), novel) : undefined,
       robots: novel?.seoNoindex ? "noindex,follow" : undefined,
       title: novel?.seoTitle ?? (novel?.title ? `${novel.title} | AINovel` : "AI Story | AINovel"),
     });
