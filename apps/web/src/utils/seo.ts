@@ -8,7 +8,7 @@ import { defaultLocale, supportedLocales } from "@/i18n/config";
 
 type JsonLdPrimitive = string | number | boolean | null;
 type JsonLdValue = JsonLdPrimitive | JsonLdObject | JsonLdValue[];
-type JsonLdObject = {
+export type JsonLdObject = {
   [key: string]: JsonLdValue | undefined;
 };
 
@@ -108,6 +108,14 @@ function resolveOrigin(): string {
   }
 
   return "http://localhost:3000";
+}
+
+/**
+ * Site origin for structured-data builders that must emit absolute URLs
+ * (schema.org image/url fields, breadcrumb items, sitemap links).
+ */
+export function resolveSiteOrigin(): string {
+  return resolveOrigin();
 }
 
 /**

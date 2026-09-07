@@ -6,8 +6,13 @@ import {
   getPublicNovelChapters,
 } from "@/modules/novels/detail-loader";
 import { NovelPublicShell } from "@/modules/novels/novel-public-shell";
+import {
+  buildChapterMetaDescription,
+  buildNovelChapterJsonLd,
+  resolveChapterHeadline,
+} from "@/modules/novels/schema";
 import { NotFound404 } from "@/components/feedback/404/not-found-404";
-import { buildNoIndexHead, buildSeoHead } from "@/utils/seo";
+import { buildNoIndexHead, buildSeoHead, resolveSiteOrigin } from "@/utils/seo";
 
 export const Route = createFileRoute("/novels/$slug/chapter/$number")({
   loader: async ({ params }) => {
@@ -33,24 +38,10 @@ export const Route = createFileRoute("/novels/$slug/chapter/$number")({
     }
     return buildSeoHead({
       canonicalPath: `/novels/${novel.slug}/chapter/${chapter.number}`,
-      description: chapter
-        ? `Read ${chapter.title} from ${novel?.title ?? "AINovel"}.`
-        : "Read an AI story chapter on AINovel.",
-      ldJson:
-        chapter && novel
-          ? {
-              "@context": "https://schema.org",
-              "@type": "Article",
-              headline: chapter.title,
-              isPartOf: { "@type": "Book", name: novel.title },
-              wordCount: chapter.wordCount,
-            }
-          : undefined,
+      description: buildChapterMetaDescription(chapter),
+      ldJson: buildNovelChapterJsonLd(resolveSiteOrigin(), novel, chapter),
       robots: novel?.seoNoindex ? "noindex,follow" : undefined,
-      title:
-        chapter && novel
-          ? `${chapter.title} | ${novel.title} | AINovel`
-          : "Story chapter | AINovel",
+      title: `${resolveChapterHeadline(chapter, novel)} - ${novel.title} | AINovel`,
     });
   },
   notFoundComponent: () => <NotFound404 />,
@@ -87,7 +78,9 @@ function NovelChapterRoute() {
             <p className="text-xs font-bold tracking-[.18em] text-sky-600">
               CHAPTER {chapter.number}
             </p>
-            <h1 className="mt-2 font-serif text-4xl text-slate-900">{chapter.title}</h1>
+            <h1 className="mt-2 font-serif text-4xl text-slate-900">
+              {resolveChapterHeadline(chapter, novel)}
+            </h1>
             <p className="mt-3 text-sm text-slate-500">
               {chapter.wordCount.toLocaleString()} words
             </p>
@@ -103,11 +96,24 @@ function NovelChapterRoute() {
           aria-label="Chapter navigation"
         >
           {previous ? (
-            <ChapterLink chapter={previous} direction="Previous" slug={novel.slug} />
+            <ChapterLink
+              chapter={previous}
+              direction="Previous"
+              slug={novel.slug}
+              headline={resolveChapterHeadline(previous, novel)}
+            />
           ) : (
             <span />
           )}
-          {next ? <ChapterLink chapter={next} direction="Next" slug={novel.slug} alignEnd /> : null}
+          {next ? (
+            <ChapterLink
+              chapter={next}
+              direction="Next"
+              slug={novel.slug}
+              alignEnd
+              headline={resolveChapterHeadline(next, novel)}
+            />
+          ) : null}
         </nav>
       </main>
     </NovelPublicShell>
@@ -118,11 +124,13 @@ function ChapterLink({
   alignEnd = false,
   chapter,
   direction,
+  headline,
   slug,
 }: {
   alignEnd?: boolean;
   chapter: { number: number; title: string };
   direction: string;
+  headline: string;
   slug: string;
 }) {
   return (
@@ -132,7 +140,7 @@ function ChapterLink({
       className={`min-h-11 rounded-xl border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:border-sky-400 hover:text-sky-700 ${alignEnd ? "sm:text-right" : ""}`}
     >
       <span className="block text-xs text-slate-500">{direction}</span>
-      <span className="block truncate font-medium">{chapter.title}</span>
+      <span className="block truncate font-medium">{headline}</span>
     </Link>
   );
 }
