@@ -5,8 +5,21 @@ const noIndexHeaders = {
   "X-Robots-Tag": "noindex, nofollow",
 };
 
-const allowedPreviewRoutes = new Set(["/", "/contact", "/design-system", "/privacy", "/terms"]);
-const allowedPreviewPrefixes = ["/blog/", "/docs/"];
+// AINovel preview allowlist: the public reader surface must be reachable for
+// acceptance testing before the domain switch (docs/plans/ainovel-v2-rebuild.md).
+const allowedPreviewRoutes = new Set(["/", "/design-system", "/sitemap.xml"]);
+const allowedPreviewPrefixes = [
+  "/announcements",
+  "/categories",
+  "/forums",
+  "/help",
+  "/library",
+  "/novels",
+  "/ranking",
+  "/resources",
+  "/tags",
+  "/worlds",
+];
 
 function isAllowedPreviewRoute(pathname) {
   const normalizedPath = pathname.length > 1 ? pathname.replace(/\/+$/u, "") : pathname;
@@ -35,10 +48,9 @@ export default {
   async fetch(request, env, ctx) {
     const { pathname } = new URL(request.url);
     if (pathname === "/robots.txt") {
+      // Keep search engines away from the preview deployment entirely; the
+      // real robots.txt only goes live with the production worker.
       return previewResponse("User-agent: *\nDisallow: /\n");
-    }
-    if (pathname === "/sitemap.xml") {
-      return previewResponse("Not Found", { status: 404 });
     }
     if (request.method !== "GET" && request.method !== "HEAD") {
       return readOnlyResponse();
