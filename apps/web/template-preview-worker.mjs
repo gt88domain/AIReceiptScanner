@@ -44,6 +44,59 @@ function readOnlyResponse() {
   });
 }
 
+// The preview surface is anonymous and read-only (cookies and Authorization
+// are stripped below), so SSR output is safe to serve from the edge cache.
+// Browsers keep no-store; only the edge copy gets a TTL.
+const EDGE_CACHE_TTL_SECONDS = 300;
+const cacheableContentTypes = ["text/html", "application/xml", "text/xml"];
+
+function isCacheableResponse(response) {
+  if (response.status !== 200) return false;
+  const contentType = response.headers.get("Content-Type") ?? "";
+  return cacheableContentTypes.some((type) => contentType.includes(type));
+}
+
+async function handleGet(request, env, ctx) {
+  const cacheKey = new Request(request.url, { method: "GET" });
+  const cache = caches.default;
+
+  const cached = await cache.match(cacheKey);
+  if (cached) {
+    const headers = new Headers(cached.headers);
+    headers.set("Cache-Control", noIndexHeaders["Cache-Control"]);
+    headers.set("X-Edge-Cache", "HIT");
+    return new Response(cached.body, { headers, status: cached.status });
+  }
+
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.delete("Authorization");
+  requestHeaders.delete("Cookie");
+  const response = await app.fetch(new Request(request, { headers: requestHeaders }), env, ctx);
+  const headers = new Headers(response.headers);
+  headers.delete("Set-Cookie");
+  for (const [name, value] of Object.entries(noIndexHeaders)) headers.set(name, value);
+  headers.set("X-Edge-Cache", "MISS");
+
+  if (isCacheableResponse(response)) {
+    const cacheHeaders = new Headers(headers);
+    cacheHeaders.set(
+      "Cache-Control",
+      `public, max-age=${EDGE_CACHE_TTL_SECONDS}, stale-while-revalidate=${EDGE_CACHE_TTL_SECONDS * 2}`,
+    );
+    const edgeCopy = new Response(response.clone().body, {
+      headers: cacheHeaders,
+      status: response.status,
+    });
+    ctx.waitUntil(cache.put(cacheKey, edgeCopy));
+  }
+
+  return new Response(response.body, {
+    headers,
+    status: response.status,
+    statusText: response.statusText,
+  });
+}
+
 export default {
   async fetch(request, env, ctx) {
     const { pathname } = new URL(request.url);
@@ -58,18 +111,6 @@ export default {
     if (!isAllowedPreviewRoute(pathname)) {
       return previewResponse("Not Found", { status: 404 });
     }
-
-    const requestHeaders = new Headers(request.headers);
-    requestHeaders.delete("Authorization");
-    requestHeaders.delete("Cookie");
-    const response = await app.fetch(new Request(request, { headers: requestHeaders }), env, ctx);
-    const headers = new Headers(response.headers);
-    headers.delete("Set-Cookie");
-    for (const [name, value] of Object.entries(noIndexHeaders)) headers.set(name, value);
-    return new Response(response.body, {
-      headers,
-      status: response.status,
-      statusText: response.statusText,
-    });
+    return handleGet(request, env, ctx);
   },
 };
