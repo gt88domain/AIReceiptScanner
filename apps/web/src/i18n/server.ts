@@ -3,10 +3,10 @@
  * Handles locale detection, redirects, and cookie management
  */
 
+import { parseLocaleCookieString } from "@repo/i18n";
 import {
   defaultLocale,
   extractLocaleFromPath,
-  isValidLocale,
   LOCALE_COOKIE,
   type Locale,
   shouldIgnorePath,
@@ -21,13 +21,7 @@ interface LocaleMiddlewareResult {
 /**
  * Parse locale from cookie header
  */
-function parseLocaleCookie(cookieHeader: string | null): Locale | null {
-  if (!cookieHeader) return null;
-
-  const match = new RegExp(`${LOCALE_COOKIE}=([^;]+)`).exec(cookieHeader);
-  const locale = match?.[1];
-  return locale && isValidLocale(locale) ? locale : null;
-}
+const parseLocaleCookie = parseLocaleCookieString;
 
 /**
  * Create Set-Cookie header value

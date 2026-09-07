@@ -8,7 +8,7 @@ import { createPaymentOperationError } from "@/lib/payment-operation-error";
 import { assertBackofficePreviewAllowsExternalActions } from "@/lib/backoffice-preview";
 
 /** Web payment providers that can create credit package checkout sessions. */
-const webCreditProviderEnum = z.enum(["stripe", "creem"]);
+const webCreditProviderEnum = z.enum(["stripe"]);
 
 /** Input schema for starting a web credit package checkout session. */
 const trustedWebsiteUrl = z.url().refine(

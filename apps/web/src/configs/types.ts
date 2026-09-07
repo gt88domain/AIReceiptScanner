@@ -1,9 +1,11 @@
+import type { PublicNavigationItem } from "@repo/app-config/public-runtime";
 import type { ThemePresetKey } from "./theme-presets";
 
 export interface WebConfig {
   AppName: string;
   AppUrl: string;
   supportEmail: string;
+  publicNavigation: readonly PublicNavigationItem[];
   adminEnabled: boolean;
   billingEnabled: boolean;
   creditsEnabled: boolean;

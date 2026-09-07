@@ -1,6 +1,8 @@
 import { deepMerge } from "@repo/shared";
-import { publicRuntimeConfig } from "./public-runtime";
+import { publicRuntimeConfig, resolvePublicRuntimeConfig } from "./public-runtime";
 import { productConfig } from "./product-config";
+import { resolveProfileBuildId } from "./profile-build-env";
+import { productProfileDefinitions } from "./profile-definitions";
 import type {
   AppCommonConfig,
   AppConfig,
@@ -9,8 +11,7 @@ import type {
   ResolvedWebCommonConfig,
 } from "./types";
 
-const { creditSignupGrant, membershipPlans, nativeCreditPackages, webCreditPackages } =
-  productConfig;
+const { membershipPlans, nativeCreditPackages, webCreditPackages } = productConfig;
 
 const appConfig: AppConfig = {
   // Shared defaults inherited by web and native unless a platform overrides them.
@@ -31,8 +32,6 @@ const appConfig: AppConfig = {
       enabled: publicRuntimeConfig.features.credits,
       // Allows web checkout for credit packages. Disable to keep grants/usage without sales.
       purchasesEnabled: publicRuntimeConfig.features.creditPurchases,
-      // Optional signup grant; disabled in the paid-product baseline.
-      signupGrant: creditSignupGrant,
       // Credit packages available through web checkout.
       packages: webCreditPackages,
     },
@@ -70,10 +69,10 @@ const appConfig: AppConfig = {
               id: "monthly",
               provider: "stripe",
               test: {
-                providerPriceId: "price_1SwIdZ4uQgMehpGvGlktz1NL",
+                providerPriceId: "replace-with-stripe-test-pro-monthly-price-id",
               },
               prod: {
-                providerPriceId: "price_1SwIdZ4uQgMehpGvGlktz1NL",
+                providerPriceId: "replace-with-stripe-live-pro-monthly-price-id",
               },
               currency: "usd",
               amountCents: 1000,
@@ -86,10 +85,10 @@ const appConfig: AppConfig = {
               id: "yearly",
               provider: "stripe",
               test: {
-                providerPriceId: "price_1SwIg44uQgMehpGvlW6FVytH",
+                providerPriceId: "replace-with-stripe-test-pro-yearly-price-id",
               },
               prod: {
-                providerPriceId: "price_1SwIg44uQgMehpGvlW6FVytH",
+                providerPriceId: "replace-with-stripe-live-pro-yearly-price-id",
               },
               currency: "usd",
               amountCents: 10000,
@@ -108,13 +107,13 @@ const appConfig: AppConfig = {
               id: "lifetime",
               provider: "stripe",
               test: {
-                providerPriceId: "price_1SwIgs4uQgMehpGvFYBteVsk",
+                providerPriceId: "replace-with-stripe-test-lifetime-price-id",
               },
               prod: {
-                providerPriceId: "price_1SwIgs4uQgMehpGvFYBteVsk",
+                providerPriceId: "replace-with-stripe-live-lifetime-price-id",
               },
               currency: "usd",
-              amountCents: 200000,
+              amountCents: 29900,
               priceType: "lifetime",
               status: "active",
             },
@@ -130,9 +129,9 @@ const appConfig: AppConfig = {
       // Controls whether native credit screens and queries are available.
       enabled: false,
       // Allows native store purchases for credit packages.
+      // AINovel baseline: paid features stay disabled until pricing and
+      // entitlement APIs are confirmed (see docs/plans/ainovel-v2-rebuild.md).
       purchasesEnabled: false,
-      // Optional signup grant; disabled in the paid-product baseline.
-      signupGrant: creditSignupGrant,
       // Credit packages available through native in-app purchases.
       packages: nativeCreditPackages,
     },
@@ -171,7 +170,7 @@ const appConfig: AppConfig = {
                 // Monthly iOS subscription product.
                 id: "monthly",
                 provider: "revenuecat",
-                providerPriceId: "tanstack_template_native_10_1m",
+                providerPriceId: "replace-with-revenuecat-ios-pro-monthly-product-id",
                 currency: "usd",
                 amountCents: 1000,
                 priceType: "subscription",
@@ -182,7 +181,7 @@ const appConfig: AppConfig = {
                 // Yearly iOS subscription product.
                 id: "yearly",
                 provider: "revenuecat",
-                providerPriceId: "tanstack_template_native_100_1y",
+                providerPriceId: "replace-with-revenuecat-ios-pro-yearly-product-id",
                 currency: "usd",
                 amountCents: 10000,
                 priceType: "subscription",
@@ -199,9 +198,9 @@ const appConfig: AppConfig = {
                 // Lifetime iOS product.
                 id: "lifetime",
                 provider: "revenuecat",
-                providerPriceId: "tanstack_template_native_299_lifetime",
+                providerPriceId: "replace-with-revenuecat-ios-lifetime-product-id",
                 currency: "usd",
-                amountCents: 299,
+                amountCents: 29900,
                 priceType: "lifetime",
                 status: "active",
               },
@@ -220,7 +219,7 @@ const appConfig: AppConfig = {
                 // Monthly Android subscription product.
                 id: "monthly",
                 provider: "revenuecat",
-                providerPriceId: "pro_monthly_android",
+                providerPriceId: "replace-with-revenuecat-android-pro-monthly-product-id",
                 currency: "usd",
                 amountCents: 800,
                 priceType: "subscription",
@@ -231,7 +230,7 @@ const appConfig: AppConfig = {
                 // Yearly Android subscription product.
                 id: "yearly",
                 provider: "revenuecat",
-                providerPriceId: "pro_yearly_android",
+                providerPriceId: "replace-with-revenuecat-android-pro-yearly-product-id",
                 currency: "usd",
                 amountCents: 8000,
                 priceType: "subscription",
@@ -267,20 +266,45 @@ export function resolveCommonConfig(): AppCommonConfig {
 
 export function resolveWebCommonConfig(): ResolvedWebCommonConfig {
   const commonConfig = resolvePlatformCommonConfig(appConfig.web);
+  const publicRuntime = resolvePublicRuntimeConfig();
   return {
     ...commonConfig,
-    credits: appConfig.web.credits,
+    credits: {
+      ...appConfig.web.credits,
+      enabled: publicRuntime.features.credits,
+      purchasesEnabled: publicRuntime.features.creditPurchases,
+      signupGrant: commonConfig.credits.signupGrant,
+    },
     routes: appConfig.web.routes,
-    payments: appConfig.web.payments,
+    payments: appConfig.web.payments
+      ? { ...appConfig.web.payments, enabled: publicRuntime.features.billing }
+      : undefined,
   };
 }
 
 export function resolveNativeCommonConfig(): ResolvedNativeCommonConfig {
   const commonConfig = resolvePlatformCommonConfig(appConfig.native);
+  const profileId = resolveProfileBuildId();
+  if (profileId && !(profileId in productProfileDefinitions)) {
+    throw new Error(`[app-config:UNKNOWN_PROFILE] ${profileId} is not an official profile.`);
+  }
+  const nativeFeatures = profileId
+    ? productProfileDefinitions[profileId as keyof typeof productProfileDefinitions].native
+    : undefined;
   return {
     ...commonConfig,
-    credits: appConfig.native.credits,
+    credits: {
+      ...appConfig.native.credits,
+      enabled: nativeFeatures?.credits ?? appConfig.native.credits.enabled,
+      purchasesEnabled: nativeFeatures?.creditPurchases ?? appConfig.native.credits.purchasesEnabled,
+      signupGrant: commonConfig.credits.signupGrant,
+    },
     routes: appConfig.native.routes,
-    payments: appConfig.native.payments,
+    payments: appConfig.native.payments
+      ? {
+          ...appConfig.native.payments,
+          enabled: nativeFeatures?.billing ?? appConfig.native.payments.enabled,
+        }
+      : undefined,
   };
 }

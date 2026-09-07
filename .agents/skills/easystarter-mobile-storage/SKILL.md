@@ -1,17 +1,16 @@
 ---
 name: easystarter-mobile-storage
-description: Configure Cloudflare R2 storage for EasyStarter Mobile. Use whenever the user mentions mobile file upload, avatar upload, image picker, R2 storage, Aliyun OSS, native storage, profile picture, or says "configure mobile storage", "set up file upload", "fix avatar upload", "storage not working on device".
+description: Configure Cloudflare R2 storage for EasyStarter Mobile. Use whenever the user mentions mobile file upload, avatar upload, image picker, R2 storage, native storage, profile picture, or says "configure mobile storage", "set up file upload", "fix avatar upload", "storage not working on device".
 ---
 
 # EasyStarter Mobile Storage
 
-Mobile file storage goes through the server's oRPC storage router -- the native app never talks to R2 or Aliyun OSS directly. The flow is: pick a file with `expo-image-picker`, upload it via the authenticated storage API, and get back a public URL. The storage config in `packages/app-config/src/app-config.ts` controls allowed MIME types, max file sizes, and key prefixes for both web and native.
+Mobile file storage goes through the server's oRPC storage router -- the native app never talks to R2 directly. The flow is: pick a file with `expo-image-picker`, upload it via the authenticated storage API, and get back a public URL. The storage config in `packages/app-config/src/app-config.ts` controls allowed MIME types, max file sizes, and key prefixes for both web and native.
 
 ## Decision Tree
 
 - **Enable/disable storage** -> Section 1 (config switch)
 - **Configure R2 bucket** -> Section 2 (Cloudflare bindings)
-- **Switch to Aliyun OSS** -> Section 3 (provider switch)
 - **Fix upload failing on device** -> Section 4 (server URL + auth)
 - **Change allowed file types or sizes** -> Section 5 (config)
 
@@ -23,7 +22,7 @@ Storage is enabled via a single flag in `packages/app-config/src/app-config.ts`:
 // packages/app-config/src/app-config.ts — common.storage
 storage: {
   enabled: true,
-  provider: "r2",            // "r2" or "aliyun-oss"
+  provider: "r2",            // Active storage provider
   publicPath: "/api/storage",
   keyPrefixes: {
     avatar: "avatars",
@@ -82,24 +81,16 @@ if (providerKey === "r2") {
 
 For local development, Wrangler creates a local R2 simulator automatically.
 
-## Section 3: Aliyun OSS (Alternative Provider)
+## Section 3: Provider Status
 
-To switch to Aliyun OSS, change `provider` in config and set the secrets:
+Cloudflare R2 is the only active storage provider. The previous optional provider is preserved under `archive/` for reference and is not loaded by the application.
 
 ```typescript
 // packages/app-config/src/app-config.ts
 storage: {
-  provider: "aliyun-oss",  // switch from "r2"
+  provider: "r2",
 },
 ```
-
-| Variable | Where | Scope |
-|----------|-------|-------|
-| `ALIBABA_CLOUD_ACCESS_KEY_ID` | `apps/server/.dev.vars` | Secret -- reused from SMS if set |
-| `ALIBABA_CLOUD_ACCESS_KEY_SECRET` | `apps/server/.dev.vars` | Secret |
-| `ALIYUN_OSS_BUCKET` | `apps/server/.dev.vars` | Bucket name |
-| `ALIYUN_OSS_REGION` | `apps/server/.dev.vars` | e.g. `oss-cn-hangzhou` |
-| `ALIYUN_OSS_ENDPOINT` | `apps/server/.dev.vars` | e.g. `oss-cn-hangzhou.aliyuncs.com` |
 
 ## Section 4: Native Upload Flow
 

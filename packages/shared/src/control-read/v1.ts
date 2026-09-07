@@ -2,7 +2,9 @@ import { z } from "zod";
 
 export const controlReadV1SchemaVersion = 1 as const;
 
-const controlDateSchema = z.date();
+// Transport responses serialize Date instances as ISO strings; coercion preserves
+// the Date contract for in-process and parsed HTTP consumers alike.
+const controlDateSchema = z.coerce.date();
 const controlEmptyInputSchema = z.object({}).strict();
 const controlIntegrationStatusSchema = z.enum(["configured", "disabled", "missing"]);
 
@@ -118,6 +120,7 @@ export const controlBillingOverviewSchema = z.object({
     activeSubscriptions: z.number(),
     successfulPurchases: z.number(),
     pendingWebhooks: z.number(),
+    failedWebhooks: z.number(),
   }),
   subscriptions: z.array(
     z.object({

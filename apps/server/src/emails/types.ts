@@ -7,6 +7,7 @@ export type EmailProviderKey = "resend";
 export type SendEmailParams = {
   from?: string;
   to: EmailRecipient;
+  replyTo?: EmailRecipient;
   subject: string;
   html?: string;
   text?: string;

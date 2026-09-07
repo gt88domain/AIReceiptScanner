@@ -9,7 +9,11 @@ export const DEFAULT_JOB_TYPES = [
 /** Built-in suggestions plus product-owned names such as `novel.chapter.generate`. */
 export type JobType = (typeof DEFAULT_JOB_TYPES)[number] | (string & {});
 
-export type JobQueueMessage = { jobId: string };
+export type JobQueueMessage = {
+  jobId: string;
+  /** Omitted only by pre-generation producers; those deliveries cannot cross an admin retry. */
+  outboxId?: string;
+};
 
 export type JobHandlerInput = {
   id: string;

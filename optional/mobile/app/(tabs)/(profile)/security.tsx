@@ -13,7 +13,7 @@ import { useAuth } from "@/providers/auth-provider";
 import { useTabBarVisibility } from "@/providers/tab-bar-provider";
 import { getVisibleUserEmail } from "@repo/shared";
 
-function formatProviderName(provider: "github" | "google", t: (key: string) => string) {
+function formatProviderName(provider: "apple" | "github" | "google", t: (key: string) => string) {
   return t(`auth.providers.${provider}`);
 }
 
@@ -21,15 +21,18 @@ export default function SecurityScreen() {
   const { t } = useTranslation();
   const { toastError, toastSuccess } = useToast();
   const { user } = useAuth();
+  const [successColor, mutedColor] = useThemeColor(["success", "muted"]);
+  const [isSending, setIsSending] = useState(false);
+  const passwordStatus = useQuery({
+    ...orpc.users.getPasswordStatus.queryOptions(),
+    enabled: Boolean(user),
+  });
+
+  useTabBarVisibility(true);
+
   if (!user) {
     return null;
   }
-
-  const [successColor, mutedColor] = useThemeColor(["success", "muted"]);
-  const [isSending, setIsSending] = useState(false);
-  const passwordStatus = useQuery(orpc.users.getPasswordStatus.queryOptions());
-
-  useTabBarVisibility(true);
 
   const visibleEmail = getVisibleUserEmail(user);
   const hasPassword = passwordStatus.data?.hasPassword ?? false;

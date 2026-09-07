@@ -10,6 +10,7 @@ import {
   type ControlReadV1,
 } from "@repo/shared/control-read";
 import { ZodError } from "zod";
+import { logSafeError } from "@/lib/safe-error";
 import { resolveControlReadHttpConfig, type ControlReadHttpConfig } from "./config";
 
 type ControlReadHttpEnvironment = Readonly<{
@@ -145,11 +146,11 @@ export function createControlReadHttpHandler<Environment extends ControlReadHttp
     if (request.method !== "GET") return response(405, "METHOD_NOT_ALLOWED");
 
     const assertion = request.headers.get("cf-access-jwt-assertion");
-    if (!assertion) return response(403, "FORBIDDEN");
+    if (!assertion) return response(403, "CONTROL_FORBIDDEN");
     try {
       await verifyAccessJwt(assertion, config);
     } catch {
-      return response(403, "FORBIDDEN");
+      return response(403, "CONTROL_FORBIDDEN");
     }
 
     try {
@@ -159,9 +160,9 @@ export function createControlReadHttpHandler<Environment extends ControlReadHttp
       const result = await control[call.method](call.input as never);
       return Response.json(result, { headers: jsonHeaders });
     } catch (error) {
-      return error instanceof ZodError
-        ? response(400, "INVALID_INPUT")
-        : response(503, "CONTROL_UNAVAILABLE");
+      if (error instanceof ZodError) return response(400, "CONTROL_INVALID_INPUT");
+      logSafeError(`Control HTTP read failed for ${route}`, error);
+      return response(503, "CONTROL_UNAVAILABLE");
     }
   };
 }

@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { readdir, readFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 const root = process.cwd();
@@ -23,7 +23,7 @@ const highRiskRoots = [
 function usage() {
   console.log(`Usage: pnpm template:upgrade-check [--from vX.Y.Z] [--to vX.Y.Z] [--remote template] [--profile profile-id] [--json] [--verbose]
 
-Read-only downstream upgrade assessment. It never fetches, merges, rebases, writes manifests, runs migrations, or changes the working tree.`);
+Read-only downstream upgrade assessment. It never fetches, merges, rebases, runs migrations, or changes the working tree.`);
 }
 
 function option(name) {
@@ -93,18 +93,6 @@ async function readProtectedRoots() {
   }
 }
 
-async function readModificationPaths() {
-  const directory = path.join(root, ".template", "modifications");
-  const files = await readdir(directory).catch(() => []);
-  const paths = [];
-  for (const file of files.filter((entry) => /^MOD-\d{4}\.json$/.test(entry)).sort()) {
-    const modification = await readJson(path.join(directory, file));
-    if (modification.status !== "active") continue;
-    for (const modifiedPath of modification.paths ?? []) paths.push(normalize(modifiedPath));
-  }
-  return paths;
-}
-
 function resolveTag(ref) {
   return git("rev-parse", "--verify", `${ref}^{commit}`);
 }
@@ -117,7 +105,7 @@ function latestReleaseTag() {
   return git("tag", "--list", "v*", "--sort=-v:refname").split("\n").find(Boolean);
 }
 
-function riskFor({ upstreamChanged, downstreamChanged, overlap, sourceModifiedPaths }) {
+function riskFor({ upstreamChanged, downstreamChanged, overlap }) {
   const upstreamDatabase = upstreamChanged.filter((file) => inRoots(file, databaseRoots));
   const downstreamDatabase = downstreamChanged.filter((file) => inRoots(file, databaseRoots));
   if (upstreamDatabase.length > 0 && downstreamDatabase.length > 0) {
@@ -135,10 +123,10 @@ function riskFor({ upstreamChanged, downstreamChanged, overlap, sourceModifiedPa
       migrationRisk: "none",
     };
   }
-  if (overlap.length > 0 || sourceModifiedPaths.length > 0) {
+  if (overlap.length > 0) {
     return {
       level: "medium",
-      reason: "Protected configuration or manifest paths overlap.",
+      reason: "Protected configuration paths overlap.",
       migrationRisk: "none",
     };
   }
@@ -237,14 +225,10 @@ async function main() {
     const upstreamChanged = listChangedFiles(fromCommit, targetCommit);
     const downstreamChanged = listChangedFiles(fromCommit, "HEAD");
     const downstreamProtected = downstreamChanged.filter((file) => inRoots(file, protectedRoots));
-    const sourceModifiedPaths = await readModificationPaths();
     const overlap = upstreamChanged.filter(
-      (file) =>
-        inRoots(file, protectedRoots) &&
-        (downstreamProtected.includes(file) ||
-          sourceModifiedPaths.some((modified) => overlaps(file, modified))),
+      (file) => inRoots(file, protectedRoots) && downstreamProtected.includes(file),
     );
-    const assessed = riskFor({ upstreamChanged, downstreamChanged, overlap, sourceModifiedPaths });
+    const assessed = riskFor({ upstreamChanged, downstreamChanged, overlap });
     const profileId = option("--profile");
     const suggestedConfigurationChanges = profileId === "directory-lite"
       ? [
@@ -260,7 +244,6 @@ async function main() {
       target: { version: toVersion, commit: targetCommit },
       upstreamChangedFiles: upstreamChanged,
       downstreamProtectedFiles: downstreamProtected,
-      downstreamModificationPaths: sourceModifiedPaths,
       overlappingProtectedPaths: overlap,
       database: {
         upstream: upstreamChanged.filter((file) => inRoots(file, databaseRoots)),

@@ -1,6 +1,6 @@
 ---
 name: easystarter-mobile-auth
-description: Configure EasyStarter Mobile authentication end-to-end. Use whenever the user mentions mobile login, Apple sign-in, native auth, Google OAuth on mobile, email/password on native, email OTP, phone SMS login, OAuth callback, deep link, app scheme, Better Auth Expo, or says "configure mobile auth", "set up Apple login", "fix native sign-in", "auth callback not working", "session not persisting on device".
+description: Configure EasyStarter Mobile authentication end-to-end. Use whenever the user mentions mobile login, Apple sign-in, native auth, Google OAuth on mobile, email/password on native, email OTP, OAuth callback, deep link, app scheme, Better Auth Expo, or says "configure mobile auth", "set up Apple login", "fix native sign-in", "auth callback not working", "session not persisting on device".
 ---
 
 # EasyStarter Mobile Auth
@@ -26,7 +26,6 @@ auth: {
   methods: {
     emailPasswordEnabled: true,   // email + password form
     emailOtpEnabled: true,        // email one-time code
-    smsEnabled: true,             // phone SMS OTP (Aliyun, China only)
     githubEnabled: true,          // GitHub OAuth (NOT shown on mobile)
     googleEnabled: true,          // Google OAuth button
     appleEnabled: true,           // Apple Sign-In (iOS only)
@@ -42,7 +41,6 @@ auth: {
   methods: {
     emailPasswordEnabled: commonConfig.auth.methods.emailPasswordEnabled ?? false,
     emailOtpEnabled: commonConfig.auth.methods.emailOtpEnabled ?? false,
-    smsEnabled: commonConfig.auth.methods.smsEnabled ?? false,
     githubEnabled: commonConfig.auth.methods.githubEnabled ?? false,
     googleEnabled: commonConfig.auth.methods.googleEnabled ?? false,
     appleEnabled: commonConfig.auth.methods.appleEnabled ?? false,
@@ -75,7 +73,6 @@ export const authClient = createAuthClient({
       storage: SecureStore,
     }),
     emailOTPClient(),
-    phoneNumberClient(),
   ],
 });
 ```

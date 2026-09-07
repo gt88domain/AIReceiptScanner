@@ -19,6 +19,7 @@ type CategoryLoaderData = {
     name: string;
     count: number;
   }>;
+  totalCount: number;
   posts: Array<{
     slug: string;
     title: string;
@@ -78,7 +79,8 @@ const serverLoader = createServerFn({
       return null;
     }
 
-    const posts = sortBlogPagesByDateDesc(getPublishedBlogPages(locale)).filter((post) =>
+    const allPosts = getPublishedBlogPages(locale);
+    const posts = sortBlogPagesByDateDesc(allPosts).filter((post) =>
       post.data.categories.includes(slug),
     );
     const authorPages = authorSource.getPages(locale);
@@ -92,7 +94,7 @@ const serverLoader = createServerFn({
     );
     const categoryCountBySlug = new Map<string, number>();
 
-    getPublishedBlogPages(locale).forEach((post) => {
+    allPosts.forEach((post) => {
       post.data.categories.forEach((categorySlug) => {
         categoryCountBySlug.set(categorySlug, (categoryCountBySlug.get(categorySlug) ?? 0) + 1);
       });
@@ -114,6 +116,8 @@ const serverLoader = createServerFn({
         .filter((item) => item.slug.length > 0 && item.count > 0)
         .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name)),
 
+      totalCount: allPosts.length,
+
       posts: posts.map((post) => ({
         slug: post.slugs.join("/"),
         title: post.data.title,
@@ -131,7 +135,7 @@ const serverLoader = createServerFn({
 function RouteComponent() {
   const t = useTranslations("contentBlog");
   const locale = useLocale();
-  const { selectedCategory, categories, posts } = Route.useLoaderData();
+  const { selectedCategory, categories, posts, totalCount } = Route.useLoaderData();
 
   return (
     <main className="mx-auto w-full max-w-7xl px-4 pt-28 pb-16 sm:px-6 lg:px-8">
@@ -142,6 +146,7 @@ function RouteComponent() {
         </p>
         <BlogCategoryFilter
           categories={categories}
+          totalCount={totalCount}
           selectedCategorySlug={selectedCategory.slug}
           allLabel={t("allCategories")}
           selectCategoryLabel={t("selectCategory")}

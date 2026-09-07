@@ -7,12 +7,14 @@ import {
 } from "@/credits";
 import type { Database } from "@/db";
 import {
+  applyBillingPurchaseEvent,
   findPurchaseByProviderIntent,
   upsertBillingPurchaseIfNewer,
 } from "../../../infrastructure/repositories/billing-store";
 import { NonRetryableWebhookError } from "../../../application/webhook-observability";
 import { reconcileActivatedPriceWithExistingSubscriptions } from "../../shared/activated-price-effects";
 import { resolveUserFromMetadata } from "./owner-resolver";
+import { assertStripePurchaseMatchesCatalog } from "./purchase-validation";
 
 /**
  * Handles successful payment intents and ensures purchase records are updated.
@@ -84,7 +86,9 @@ export async function handleStripeChargeRefunded(
   const paymentIntentId =
     typeof charge.payment_intent === "string" ? charge.payment_intent : charge.payment_intent?.id;
 
-  if (!paymentIntentId) return;
+  if (!paymentIntentId) {
+    throw new NonRetryableWebhookError("REFUND_WITHOUT_PAYMENT_INTENT_REQUIRES_MANUAL_REVIEW");
+  }
 
   const revokedCreditPurchase = await revokeCreditPurchaseBySource(db, {
     originalSourceProvider: "stripe",
@@ -100,7 +104,9 @@ export async function handleStripeChargeRefunded(
   }
 
   const existing = await findPurchaseByProviderIntent(db, "stripe", paymentIntentId);
-  if (!existing) return;
+  if (!existing) {
+    throw new NonRetryableWebhookError("SUBSCRIPTION_OR_UNKNOWN_REFUND_REQUIRES_MANUAL_REVIEW");
+  }
   await upsertBillingPurchaseIfNewer(db, {
     userId: existing.userId,
     provider: existing.provider,
@@ -190,6 +196,20 @@ async function upsertPurchaseFromPaymentIntent(
     return;
   }
 
+  // Persisted ownership/catalog identity wins for an existing purchase. Provider
+  // metadata is used only to create the first local row.
+  const recordedPlanId = existing?.planId ?? metadata.planId;
+  const recordedPriceId = existing?.priceId ?? metadata.priceId;
+  if (input.status === "succeeded" && recordedPlanId && recordedPriceId) {
+    assertStripePurchaseMatchesCatalog({
+      providerResourceId: paymentIntentId,
+      planId: recordedPlanId,
+      priceId: recordedPriceId,
+      amountCents: input.paymentIntent.amount_received,
+      currency: input.paymentIntent.currency,
+    });
+  }
+
   if (!existing) {
     if (metadata.kind === "credit_purchase") {
       console.error("Stripe credit payment skipped because it has no immutable credit order", {
@@ -210,7 +230,7 @@ async function upsertPurchaseFromPaymentIntent(
       return;
     }
 
-    const applied = await upsertBillingPurchaseIfNewer(db, {
+    const outcome = await applyBillingPurchaseEvent(db, {
       userId: user.userId,
       provider: "stripe",
       providerPaymentIntentId: paymentIntentId,
@@ -222,13 +242,13 @@ async function upsertPurchaseFromPaymentIntent(
       providerEventId: input.providerEventId,
     });
 
-    if (applied && input.status === "succeeded") {
+    if (outcome !== "stale" && input.status === "succeeded") {
       await reconcileActivatedPriceWithExistingSubscriptions(db, user, priceId);
     }
     return;
   }
 
-  const applied = await upsertBillingPurchaseIfNewer(db, {
+  const outcome = await applyBillingPurchaseEvent(db, {
     userId: existing.userId,
     provider: existing.provider,
     providerPaymentIntentId: existing.providerPaymentIntentId,
@@ -240,7 +260,7 @@ async function upsertPurchaseFromPaymentIntent(
     providerEventId: input.providerEventId,
   });
 
-  if (applied && input.status === "succeeded") {
+  if (outcome !== "stale" && input.status === "succeeded") {
     await reconcileActivatedPriceWithExistingSubscriptions(
       db,
       { userId: existing.userId },
@@ -279,9 +299,11 @@ async function updatePurchaseStatusFromDispute(
   const paymentIntentRef = dispute.payment_intent;
   const paymentIntentId =
     typeof paymentIntentRef === "string" ? paymentIntentRef : paymentIntentRef?.id;
-  if (!paymentIntentId) return;
+  if (!paymentIntentId) {
+    throw new NonRetryableWebhookError("DISPUTE_WITHOUT_PAYMENT_INTENT_REQUIRES_MANUAL_REVIEW");
+  }
 
-  await recordCreditPaymentDispute(db, {
+  const creditDispute = await recordCreditPaymentDispute(db, {
     provider: "stripe",
     providerDisputeId: dispute.id,
     providerPaymentId: paymentIntentId,
@@ -291,6 +313,11 @@ async function updatePurchaseStatusFromDispute(
     providerEventAt,
     providerEventId,
   });
+
+  const existingPurchase = await findPurchaseByProviderIntent(db, "stripe", paymentIntentId);
+  if (!creditDispute && !existingPurchase) {
+    throw new NonRetryableWebhookError("SUBSCRIPTION_OR_UNKNOWN_DISPUTE_REQUIRES_MANUAL_REVIEW");
+  }
 
   const status = mapDisputeStatusToPurchaseStatus(dispute.status);
   if (!status) return;

@@ -44,6 +44,7 @@ export type ProductionConfigInput = {
     websiteUrl: string;
     serverUrl: string;
     nodeEnv: string;
+    paymentPriceEnv?: string;
     oauthClientIds: { github: string; google: string; apple: string };
     controlReadHttpHost: string;
     controlAccessTeamDomain: string;
@@ -65,6 +66,7 @@ export type ProductionConfigInput = {
     email: ResolvedEmailConfig;
     oauth: { github: boolean; google: boolean; apple: boolean };
     productionPriceIds: Array<{ label: string; production: string; test: string }>;
+    productionProductIds: Array<{ label: string; value: string }>;
   };
 };
 
@@ -72,7 +74,7 @@ const PLACEHOLDER_VALUE = /(?:^|[-_.])(?:your|replace|placeholder|template)(?:$|
 const PLACEHOLDER_HOSTNAME = /(^|\.)(?:example\.com|localhost|local|invalid)$|\.example$/i;
 const ZERO_D1_ID = "00000000-0000-0000-0000-000000000000";
 const IPV4_ADDRESS = /^\d{1,3}(?:\.\d{1,3}){3}$/;
-const SUPPORTED_PAYMENT_PROVIDERS = new Set(["stripe", "creem", "waffo", "revenuecat"]);
+const SUPPORTED_PAYMENT_PROVIDERS = new Set(["stripe", "revenuecat"]);
 
 function add(messages: ValidationMessage[], code: string, message: string) {
   messages.push({ code, message });
@@ -231,25 +233,6 @@ function validateProviderSecrets(
         }
         break;
       }
-      case "creem": {
-        const key = required(values, "CREEM_API_KEY", errors);
-        if (key && !key.startsWith("creem_live_")) {
-          add(errors, "INVALID_CREEM_API_KEY", "CREEM_API_KEY must be a live key for production.");
-        }
-        required(values, "CREEM_WEBHOOK_SECRET", errors);
-        break;
-      }
-      case "waffo":
-        required(values, "WAFFO_MERCHANT_ID", errors);
-        required(values, "WAFFO_PRIVATE_KEY", errors);
-        if (values.WAFFO_ENVIRONMENT?.trim() !== "prod") {
-          add(
-            errors,
-            "INVALID_WAFFO_ENVIRONMENT",
-            "WAFFO_ENVIRONMENT must be prod when Waffo is enabled.",
-          );
-        }
-        break;
       case "revenuecat":
         required(values, "REVENUECAT_WEBHOOK_SECRET", errors);
         break;
@@ -295,16 +278,6 @@ export function listRequiredSecrets(input: ProductionConfigInput): string[] {
       case "stripe":
         names.add("STRIPE_SECRET_KEY");
         names.add("STRIPE_WEBHOOK_SECRET");
-        break;
-      case "creem":
-        names.add("CREEM_API_KEY");
-        names.add("CREEM_WEBHOOK_SECRET");
-        break;
-      case "waffo":
-        names.add("WAFFO_MERCHANT_ID");
-        names.add("WAFFO_PRIVATE_KEY");
-        // Delivered as a secret; without it the runtime falls back to test mode.
-        names.add("WAFFO_ENVIRONMENT");
         break;
       case "revenuecat":
         names.add("REVENUECAT_WEBHOOK_SECRET");
@@ -390,6 +363,14 @@ export function validateProductionConfigResult(
 
   if (server.nodeEnv !== "production") {
     add(errors, "INVALID_NODE_ENV", "NODE_ENV must be production in server wrangler.jsonc.");
+  }
+  const usesProviderPrices = features.billing || features.credits;
+  if (usesProviderPrices && server.paymentPriceEnv !== "prod") {
+    add(
+      errors,
+      "INVALID_PAYMENTS_PRICE_ENV",
+      'PAYMENTS_PRICE_ENV must be "prod" in the production server wrangler.jsonc.',
+    );
   }
   if (productionEnv && productionEnv.ENVIRONMENT?.trim() !== "production") {
     add(errors, "INVALID_ENVIRONMENT", "ENVIRONMENT must be production in .env.production.");
@@ -549,9 +530,9 @@ export function validateProductionConfigResult(
     );
   } else if (publicFormsEnabled && !hasTurnstileSiteKey) {
     add(
-      warnings,
-      "PUBLIC_FORM_PROTECTION_DISABLED",
-      "Public forms have no Turnstile protection. Configure Cloudflare WAF rate limiting in production.",
+      errors,
+      "MISSING_PUBLIC_FORM_PROTECTION",
+      "Public forms require VITE_TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY in production.",
     );
   }
 
@@ -620,6 +601,17 @@ export function validateProductionConfigResult(
           errors,
           "SAME_TEST_AND_PRODUCTION_PRICE",
           `${price.label} production price ID must differ from its test price ID.`,
+        );
+      }
+    }
+  }
+  if (features.native.billing || features.native.creditPurchases) {
+    for (const product of requirements.productionProductIds) {
+      if (isPlaceholderValue(product.value)) {
+        add(
+          errors,
+          "INVALID_PRODUCTION_PRODUCT_ID",
+          `${product.label} must replace the template placeholder with a production product ID.`,
         );
       }
     }

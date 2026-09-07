@@ -3,6 +3,16 @@ import { type CreateEmailOptions, Resend } from "resend";
 import { logSafeError } from "../../lib/safe-error";
 import type { EmailService, SendEmailParams } from "../types";
 
+export async function resolveEmailContent({
+  html,
+  template,
+  text,
+}: Pick<SendEmailParams, "html" | "template" | "text">) {
+  const renderedHtml = template ? await render(template) : html;
+  const renderedText = text ?? (template ? await render(template, { plainText: true }) : undefined);
+  return { html: renderedHtml, text: renderedText };
+}
+
 /**
  * Resend email provider factory
  */
@@ -17,22 +27,26 @@ export function createResendEmailProvider({
 
   return {
     key: "resend",
-    async send({ from, to, subject, html, text, template }: SendEmailParams) {
+    async send({ from, to, replyTo, subject, html, text, template }: SendEmailParams) {
       const resolvedFrom = from ?? defaultFrom;
       if (!resolvedFrom) {
         throw new Error("Email service is not configured with a from address");
       }
 
-      const renderedHtml = template ? await render(template) : html;
-      if (!renderedHtml && !text) {
+      const { html: renderedHtml, text: renderedText } = await resolveEmailContent({
+        html,
+        template,
+        text,
+      });
+      if (!renderedHtml && !renderedText) {
         throw new Error("Email content is missing");
       }
 
-      const base = { from: resolvedFrom, to, subject };
+      const base = { from: resolvedFrom, to, subject, ...(replyTo ? { replyTo } : {}) };
 
       const payload: CreateEmailOptions = renderedHtml
-        ? ({ ...base, html: renderedHtml } as CreateEmailOptions)
-        : ({ ...base, text: text ?? "" } as CreateEmailOptions);
+        ? ({ ...base, html: renderedHtml, text: renderedText } as CreateEmailOptions)
+        : ({ ...base, text: renderedText ?? "" } as CreateEmailOptions);
 
       const { error } = await client.emails.send(payload);
 

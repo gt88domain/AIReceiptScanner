@@ -52,7 +52,7 @@ pnpm fmt:check
 pnpm build
 pnpm profiles:build -- --profile=directory-lite
 pnpm perf:budget
-pnpm template:audit-modifications
+pnpm template:check-modifications
 ```
 
 任何一项失败：停止、报告失败输出，不要绕过。

@@ -4,7 +4,7 @@ import type { DeepPartial } from "@repo/shared";
 export const SUPPORTED_EMAIL_PROVIDERS = ["none", "resend"] as const;
 
 /** Supported web payment providers available in app configuration. */
-export const SUPPORTED_WEB_PAYMENT_PROVIDERS = ["stripe", "creem", "waffo"] as const;
+export const SUPPORTED_WEB_PAYMENT_PROVIDERS = ["stripe"] as const;
 
 /** Supported native payment providers available in app configuration. */
 export const SUPPORTED_NATIVE_PAYMENT_PROVIDERS = ["revenuecat"] as const;
@@ -15,8 +15,17 @@ export const SUPPORTED_SERVER_PAYMENT_PROVIDERS = [
   ...SUPPORTED_NATIVE_PAYMENT_PROVIDERS,
 ] as const;
 
+/** Retired provider identifiers accepted only when reading historical billing records. */
+export const HISTORICAL_SERVER_PAYMENT_PROVIDERS = ["creem", "waffo"] as const;
+
+/** Provider identifiers that may already exist in persisted billing rows. */
+export const PERSISTED_SERVER_PAYMENT_PROVIDERS = [
+  ...SUPPORTED_SERVER_PAYMENT_PROVIDERS,
+  ...HISTORICAL_SERVER_PAYMENT_PROVIDERS,
+] as const;
+
 /** Supported storage providers available in app configuration. */
-export const SUPPORTED_STORAGE_PROVIDERS = ["r2", "aliyun-oss"] as const;
+export const SUPPORTED_STORAGE_PROVIDERS = ["r2"] as const;
 
 /** Union type of all supported email provider keys. */
 export type EmailProviderKey = (typeof SUPPORTED_EMAIL_PROVIDERS)[number];
@@ -32,6 +41,9 @@ export type EmailCapabilities = {
 
 /** Union type of all supported server payment provider keys. */
 export type ServerPaymentProviderKey = (typeof SUPPORTED_SERVER_PAYMENT_PROVIDERS)[number];
+
+/** Active and retired identifiers that can be returned by historical billing reads. */
+export type PersistedServerPaymentProviderKey = (typeof PERSISTED_SERVER_PAYMENT_PROVIDERS)[number];
 
 /** Union type of all supported web payment provider keys. */
 export type WebPaymentProviderKey = (typeof SUPPORTED_WEB_PAYMENT_PROVIDERS)[number];
@@ -237,7 +249,7 @@ export type AppCreditsConfig = {
   /** Toggle that enables credit system paths. */
   enabled?: boolean;
   /** Allows this platform to sell configured credit packages through billing. */
-  purchasesEnabled?: boolean;
+  purchasesEnabled: boolean;
   /** Purchasable credit packages. */
   packages: CreditPackageConfig[];
   /** One-time signup grant. */
@@ -330,6 +342,8 @@ export type AppCommonConfig = {
     /** Maximum file sizes in bytes mapped by upload purpose. */
     maxFileSizes: Record<StorageUploadPurpose, number>;
   };
+  /** Global, one-time free-credit grant rule. */
+  credits: Pick<AppCreditsConfig, "signupGrant">;
   /** Product feature entitlements keyed by a stable capability name. */
   featureCapabilities: Record<string, FeatureCapabilityConfig>;
   /** Product-level membership catalog shared by all platforms. */

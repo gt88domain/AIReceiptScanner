@@ -7,6 +7,7 @@ import { env } from "cloudflare:workers";
 import { createApp } from "@/app/create-app";
 import type { ServerRuntimeConfig } from "@/lib/runtime-config";
 import { buildRuntimeAppRouter } from "@/routers/runtime-router";
+import { platformContractRouter } from "@/routers";
 import { describe, expect, it } from "vitest";
 
 const disabledEmail: ResolvedEmailConfig = {
@@ -47,6 +48,21 @@ function nestedRouter(router: object, namespace: string): object {
 }
 
 describe("runtime platform composition", () => {
+  it("keeps the full runtime namespace contract synchronized", () => {
+    const config = runtimeConfig("full-saas");
+    const router = buildRuntimeAppRouter(config.composition);
+    const expectedNamespaces = Object.keys(platformContractRouter).filter(
+      (namespace) => namespace !== "tickets" || config.composition.modules.tickets,
+    );
+    expect(Object.keys(router).sort()).toEqual(expectedNamespaces.sort());
+    expect(Object.keys(nestedRouter(router, "admin")).sort()).toEqual(
+      Object.keys(nestedRouter(platformContractRouter, "admin")).sort(),
+    );
+    expect(Object.keys(nestedRouter(router, "web")).sort()).toEqual(
+      Object.keys(nestedRouter(platformContractRouter, "web")).sort(),
+    );
+  });
+
   it("keeps the full SaaS Worker surface", () => {
     const router = buildRuntimeAppRouter(runtimeConfig("full-saas").composition);
     expect(Object.hasOwn(router, "storage")).toBe(true);

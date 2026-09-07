@@ -1,6 +1,6 @@
 ---
 name: easystarter-web-stripe-payments
-description: Configure Stripe payments for EasyStarter Web end-to-end. Use whenever the user mentions Stripe, payments, subscriptions, checkout, billing portal, pricing plans, webhook secret, price IDs, test cards, lifetime purchase, or wants to set up, debug, or switch Web payment providers. Also use when the user says "set up Stripe", "configure payments", "add subscription plans", "fix webhook", "switch from Creem to Stripe", or asks why checkout fails or webhook returns errors.
+description: Configure Stripe payments for EasyStarter Web end-to-end. Use whenever the user mentions Stripe, payments, subscriptions, checkout, billing portal, pricing plans, webhook secret, price IDs, test cards, lifetime purchase, or asks why checkout fails or webhook returns errors.
 ---
 
 # EasyStarter Web Stripe Payments
@@ -12,7 +12,6 @@ Stripe integration connects four pieces: the **payment plans in `app-config.ts`*
 - **Set up Stripe from scratch** → Read `references/stripe-setup-guide.md` for the full walkthrough
 - **Add or change a plan/price** → Section 1 (plan config) + create the Price in Stripe first
 - **Fix checkout/webhook errors** → Section 3 (webhook) + Section 5 (common mistakes)
-- **Switch from Creem to Stripe** → Section 2 (provider switch)
 - **Production go-live** → Section 4 (production setup)
 
 ## Section 1: Payment Plan Configuration
@@ -23,7 +22,7 @@ All plans are defined in `packages/app-config/src/app-config.ts` under `web.paym
 // packages/app-config/src/app-config.ts — lines ~261-334
 payments: {
   enabled: true,
-  provider: "stripe",   // or "creem"
+  provider: "stripe",
   plans: [
     {
       id: "free",
@@ -81,8 +80,8 @@ payments: {
 
 - **`providerPriceId` must be a real Stripe Price ID** (`price_...`) — create the Price in Stripe Dashboard first, then copy the ID here
 - **`test` and `prod` use separate Price IDs** — test prices come from a Stripe Sandbox, production prices from the live account
-- The runtime auto-selects `test` vs `prod` based on `NODE_ENV` (see `resolveProviderPriceEnvironment()` in `packages/app-config/src/payments/web.ts`)
-- **`amountCents` must match the Stripe Price** — this is for UI display, not for charging. A mismatch confuses users but doesn't break billing
+- Set `PAYMENTS_PRICE_ENV` explicitly to `test` or `prod`; it chooses which configured Price ID the server uses and must be `prod` when `NODE_ENV=production`
+- **`amountCents` and `currency` must match the Stripe Price** — successful lifetime webhooks with a mismatch are rejected for manual review instead of granting access
 - **Plan `id` values are stable** — translations, billing logic, and order history reference them. Don't rename after launch
 - Set `status: "archived"` to hide a plan from the pricing page without breaking existing subscribers
 
@@ -94,7 +93,7 @@ The provider is set in one place:
 // packages/app-config/src/app-config.ts
 web: {
   payments: {
-    provider: "stripe",   // switch to "creem" to use Creem instead
+    provider: "stripe",
   },
 },
 ```
@@ -104,7 +103,7 @@ The server payment router automatically uses the matching provider implementatio
 - Webhook handler: `apps/server/src/payments/providers/stripe/webhook/handle-event.ts`
 - Web payment routes: `apps/server/src/routers/web/payments.ts`
 
-**Switching providers**: change `provider` to `"creem"`, update env vars, and update price IDs. Keep the old provider code — don't delete it.
+Stripe is the only active Web payment provider. Update its price IDs and environment variables for each deployment.
 
 ## Section 3: Environment Variables
 
@@ -112,8 +111,9 @@ The server payment router automatically uses the matching provider implementatio
 |----------|-------|-------|
 | `STRIPE_SECRET_KEY` | `apps/server/.dev.vars` + `.env.production` | `sk_test_...` for dev, `sk_live_...` for production |
 | `STRIPE_WEBHOOK_SECRET` | `apps/server/.dev.vars` + `.env.production` | `whsec_...` from Stripe CLI (dev) or Dashboard (prod) |
+| `PAYMENTS_PRICE_ENV` | `apps/server/.dev.vars` + Worker environment config | Explicitly select `test` or `prod`; production must use `prod` |
 
-Both are secrets — never put them in `wrangler.jsonc` or Web env files.
+`STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` are secrets — never put them in `wrangler.jsonc` or Web env files. `PAYMENTS_PRICE_ENV` is non-secret Worker configuration.
 
 ## Section 4: Webhook Configuration
 

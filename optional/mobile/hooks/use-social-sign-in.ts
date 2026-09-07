@@ -2,13 +2,12 @@ import * as AppleAuthentication from "expo-apple-authentication";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { getAuthConfig } from "@/configs/app-config";
 import { useToast } from "@/hooks/use-toast";
 import { authClient } from "@/lib/auth/auth.client";
+import { startNativeOAuth } from "@/lib/auth/oauth-handoff";
+import { useAuth } from "@/providers/auth-provider";
 
-type SocialProvider = "apple" | "google";
-
-const authConfig = getAuthConfig();
+type SocialProvider = "apple" | "github" | "google";
 
 function getSocialSignInErrorMessage(error: unknown, fallbackMessage: string) {
   if (error && typeof error === "object" && "error" in error) {
@@ -64,6 +63,7 @@ export function useSocialSignIn() {
   const router = useRouter();
   const { t } = useTranslation();
   const { toastError, toastSuccess } = useToast();
+  const { refetchSession } = useAuth();
 
   const signIn = async (provider: SocialProvider) => {
     if (provider === "apple") {
@@ -114,21 +114,13 @@ export function useSocialSignIn() {
     }
 
     try {
-      await authClient.signIn.social(
-        {
-          provider,
-          callbackURL: authConfig.callbackURL,
-          errorCallbackURL: authConfig.callbackURL,
-        },
-        {
-          onRequest: () => {
-            setLoading(provider);
-          },
-          onError: (error) => {
-            toastError(getSocialSignInErrorMessage(error, t("common.error")));
-          },
-        },
-      );
+      setLoading(provider);
+      if (await startNativeOAuth(provider)) {
+        await refetchSession();
+        router.dismissTo("/(tabs)/(home)");
+      }
+    } catch (error) {
+      toastError(getSocialSignInErrorMessage(error, t("common.error")));
     } finally {
       setLoading(null);
     }

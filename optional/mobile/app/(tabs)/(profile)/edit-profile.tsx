@@ -111,6 +111,10 @@ export default function EditProfileScreen() {
     },
   });
 
+  React.useEffect(() => {
+    form.reset({ name: user?.name || "" });
+  }, [form, user?.name]);
+
   return (
     <>
       <KeyboardAwareScrollView

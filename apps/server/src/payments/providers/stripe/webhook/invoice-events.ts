@@ -1,9 +1,7 @@
 import type Stripe from "stripe";
 import type { Database } from "@/db";
-import {
-  findSubscriptionByProviderId,
-  upsertBillingSubscriptionIfNewer,
-} from "../../../infrastructure/repositories/billing-store";
+import { retrieveStripeSubscription } from "../provider";
+import { handleStripeSubscription } from "./subscription-events";
 
 export async function handleStripeInvoicePaid(
   db: Database,
@@ -11,7 +9,7 @@ export async function handleStripeInvoicePaid(
   providerEventAt: Date,
   providerEventId: string,
 ) {
-  await updateSubscriptionFromInvoice(db, invoice, "active", providerEventAt, providerEventId);
+  await syncSubscriptionFromInvoice(db, invoice, providerEventAt, providerEventId);
 }
 
 /**
@@ -23,7 +21,7 @@ export async function handleStripeInvoicePaymentFailed(
   providerEventAt: Date,
   providerEventId: string,
 ) {
-  await updateSubscriptionFromInvoice(db, invoice, "past_due", providerEventAt, providerEventId);
+  await syncSubscriptionFromInvoice(db, invoice, providerEventAt, providerEventId);
 }
 
 /**
@@ -35,28 +33,17 @@ export async function handleStripeInvoiceMarkedUncollectible(
   providerEventAt: Date,
   providerEventId: string,
 ) {
-  await updateSubscriptionFromInvoice(db, invoice, "unpaid", providerEventAt, providerEventId);
+  await syncSubscriptionFromInvoice(db, invoice, providerEventAt, providerEventId);
 }
 
 /**
- * Handles invoice.voided.
+ * Invoices trigger a refresh but never infer subscription status, price or period.
+ * Use the complete Stripe Subscription snapshot and the same guarded writer as
+ * subscription webhooks. Provider failures propagate to the durable inbox retry.
  */
-export async function handleStripeInvoiceVoided(
+async function syncSubscriptionFromInvoice(
   db: Database,
   invoice: Stripe.Invoice,
-  providerEventAt: Date,
-  providerEventId: string,
-) {
-  await updateSubscriptionFromInvoice(db, invoice, "unpaid", providerEventAt, providerEventId);
-}
-
-/**
- * Updates local subscription rows from invoice lifecycle events.
- */
-async function updateSubscriptionFromInvoice(
-  db: Database,
-  invoice: Stripe.Invoice,
-  status: "active" | "past_due" | "unpaid",
   providerEventAt: Date,
   providerEventId: string,
 ) {
@@ -66,25 +53,6 @@ async function updateSubscriptionFromInvoice(
     typeof subscriptionRef === "string" ? subscriptionRef : subscriptionRef.id;
   if (!providerSubscriptionId) return;
 
-  const existing = await findSubscriptionByProviderId(db, "stripe", providerSubscriptionId);
-  if (!existing || existing.status === "canceled") return;
-  const linePeriodEnd = invoice.lines?.data?.at(0)?.period?.end;
-  const currentPeriodEnd =
-    typeof linePeriodEnd === "number" ? new Date(linePeriodEnd * 1000) : null;
-
-  await upsertBillingSubscriptionIfNewer(db, {
-    userId: existing.userId,
-    provider: existing.provider,
-    providerSubscriptionId: existing.providerSubscriptionId,
-    providerCustomerId: existing.providerCustomerId,
-    planId: existing.planId,
-    priceId: existing.priceId,
-    status,
-    currentPeriodEnd: currentPeriodEnd ?? existing.currentPeriodEnd,
-    cancelAtPeriodEnd: existing.cancelAtPeriodEnd,
-    startedAt: existing.startedAt,
-    endedAt: existing.endedAt,
-    providerEventAt,
-    providerEventId,
-  });
+  const subscription = await retrieveStripeSubscription(providerSubscriptionId);
+  await handleStripeSubscription(db, subscription, providerEventAt, providerEventId);
 }

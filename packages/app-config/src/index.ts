@@ -5,7 +5,7 @@ export {
 } from "./app-config";
 export { publicRuntimeConfig, resolvePublicRuntimeConfig } from "./public-runtime";
 export { productConfig } from "./product-config";
-export type { PublicRuntimeConfig } from "./public-runtime";
+export type { PublicNavigationItem, PublicRuntimeConfig } from "./public-runtime";
 export { resolveEmailConfig } from "./email-config";
 export type { ResolvedEmailConfig } from "./email-config";
 export { resolveStorageConfig } from "./storage-config";
@@ -79,6 +79,7 @@ export {
   type NativePlanConfig,
   type PriceType,
   type ProviderPriceEnvironment,
+  type PersistedServerPaymentProviderKey,
   type ServerPaymentProviderKey,
   type StorageProviderKey,
   type StorageUploadPurpose,
@@ -89,6 +90,8 @@ export {
 } from "./types";
 
 export {
+  HISTORICAL_SERVER_PAYMENT_PROVIDERS,
+  PERSISTED_SERVER_PAYMENT_PROVIDERS,
   SUPPORTED_EMAIL_PROVIDERS,
   SUPPORTED_NATIVE_PAYMENT_PROVIDERS,
   SUPPORTED_SERVER_PAYMENT_PROVIDERS,

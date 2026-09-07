@@ -300,7 +300,7 @@ describe("product features", () => {
               amount: 1,
               status: "archived",
               web: {
-                provider: "creem",
+                provider: "stripe",
                 test: { providerPriceId: "test" },
                 prod: { providerPriceId: "prod" },
                 currency: "usd",
@@ -310,7 +310,7 @@ describe("product features", () => {
           ],
         },
         nativePayments: { enabled: true, provider: "revenuecat" },
-        nativeCredits: { enabled: true, packages: [] },
+        nativeCredits: { enabled: true, purchasesEnabled: false, packages: [] },
       }),
     ).toEqual(["stripe"]);
   });

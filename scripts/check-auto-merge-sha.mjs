@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 
-const workflows = [".github/workflows/auto-merge.yml", ".github/workflows/quality.yml"];
+const workflows = [".github/workflows/auto-merge.yml"];
 
 let checked = 0;
 for (const workflow of workflows) {
@@ -36,12 +36,23 @@ if (checked === 0) {
       new URL(".github/workflows/auto-merge.yml", `file://${root}/`),
       "utf8",
     );
+    const qualitySource = await readFile(
+      new URL(".github/workflows/quality.yml", `file://${root}/`),
+      "utf8",
+    );
     const adoptionGuard = autoMergeSource.indexOf("const isUpstreamAdoption =");
     const squashMerge = autoMergeSource.indexOf('merge_method: "squash"');
     assert.ok(adoptionGuard >= 0 && adoptionGuard < squashMerge);
+    assert.match(autoMergeSource, /repository_dispatch:/);
+    assert.match(autoMergeSource, /types: \[release-checks-complete\]/);
+    assert.match(autoMergeSource, /if \(dispatchedRelease && !isGeneratedRelease\) return;/);
     assert.match(autoMergeSource, /filenames\.includes\("\.template\/source\.json"\)/);
     assert.match(autoMergeSource, /labels\.has\("upstream-adoption"\)/);
     assert.match(autoMergeSource, /if \(isUpstreamAdoption\) return;/);
+    assert.doesNotMatch(qualitySource, /github\.rest\.pulls\.merge/);
+    assert.match(qualitySource, /github\.rest\.repos\.createDispatchEvent/);
+    assert.match(qualitySource, /event_type: "release-checks-complete"/);
+    assert.match(qualitySource, /pull-requests: read/);
   } catch (error) {
     if (error?.code !== "ENOENT") throw error;
   }

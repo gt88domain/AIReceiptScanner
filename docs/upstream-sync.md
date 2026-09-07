@@ -22,14 +22,10 @@ release notes have been evaluated.
 
 Copy `template-kit/downstream-manifest.example.json` and
 `template-kit/downstream-manifest.schema.json` to `.template/`, naming the
-former `source.json`. Copy `template-kit/modification.schema.json` and create
-one `.template/modifications/MOD-xxxx.json` file for each protected Core or
-Platform deviation. Set the exact release tag and commit in source.json. The
-CI check rejects protected changes without exactly one active record.
-
-Modification classes are `upstream-candidate`, `product-specific`, and
-`temporary-workaround`. The latter requires a removal condition and deadline;
-the first requires an upstream issue or PR reference.
+former `source.json`. Set the exact release tag and commit in source.json.
+Record any protected Core
+or Platform deviation in the adoption PR description and review it with the
+regular Git diff.
 
 Resolve conflicts by keeping product behavior in product modules and accepting
 template fixes in core modules. A conflict in auth, migrations, billing,
@@ -37,8 +33,8 @@ credits, jobs, storage, or shared packages is an upstream-contract review, not
 a place to paste product logic.
 
 `pnpm template:upgrade-check` is read-only. It reports upstream changes,
-protected-path overlap, and database risk without fetching, merging, changing
-the manifest, or running migrations. It blocks migration-history changes on
+protected-path overlap, and database risk without fetching, merging, or
+running migrations. It blocks migration-history changes on
 both sides. Review that report before merging a released tag; EasyStarter never
 updates downstream repositories automatically.
 
@@ -71,7 +67,7 @@ dry-run result; add the tooling in that product's deliberately reviewed
 adoption PR.
 
 After each sync, run `pnpm install --frozen-lockfile`, `pnpm lint`,
-`pnpm check-types`, `pnpm test`, and `pnpm build`. Update the manifest's
-release and commit only after these checks pass. Open a Draft PR for the
+`pnpm check-types`, `pnpm test`, and `pnpm build`. Update the source release
+and commit only after these checks pass. Open a Draft PR for the
 adoption, resolve and review its conflicts, then merge it without treating the
 template update as a production deployment.

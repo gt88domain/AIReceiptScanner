@@ -1,34 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
-  CN_PHONE_NUMBER_REGEX,
   getVisibleUserContact,
   getVisibleUserEmail,
   getVisibleUserName,
   isPhoneCompatibilityEmail,
   isPhoneUser,
-  normalizePhoneDigits,
 } from "../phone";
-
-describe("phone validation", () => {
-  it("accepts a valid CN mobile number", () => {
-    expect(CN_PHONE_NUMBER_REGEX.test("+8613800138000")).toBe(true);
-  });
-
-  it.each([
-    ["missing + prefix", "8613800138000"],
-    ["wrong country code", "+8513800138000"],
-    ["too short", "+861380013800"],
-    ["too long", "+86138001380000"],
-    ["contains letters", "+8613800aaa138"],
-  ])("rejects %s", (_, input) => {
-    expect(CN_PHONE_NUMBER_REGEX.test(input)).toBe(false);
-  });
-
-  it("normalizePhoneDigits strips non-digits", () => {
-    expect(normalizePhoneDigits("+86 138-0013-8000")).toBe("8613800138000");
-    expect(normalizePhoneDigits("(+86) 138 0013 8000")).toBe("8613800138000");
-  });
-});
 
 describe("isPhoneCompatibilityEmail", () => {
   it("matches the expected placeholder shape", () => {

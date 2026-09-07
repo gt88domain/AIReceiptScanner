@@ -13,13 +13,16 @@ import { webConfig } from "@/configs/web-config";
 import { useOrpc } from "@/hooks/use-orpc";
 import { cn } from "@/lib/utils";
 import type { CurrentUser } from "@/lib/auth/auth-server";
+import { getVisibleUserEmail, getVisibleUserName } from "@repo/shared";
 
 export function HelpPage({ user }: { user: CurrentUser }) {
   const orpc = useOrpc();
   const availability = useQuery(orpc.users.getContactAvailability.queryOptions());
   const [turnstileToken, setTurnstileToken] = useState("");
   const [turnstileResetNonce, setTurnstileResetNonce] = useState(0);
-  const canSend = availability.data?.available === true && Boolean(user.email);
+  const visibleEmail = getVisibleUserEmail(user);
+  const visibleName = getVisibleUserName(user);
+  const canSend = availability.data?.available === true && Boolean(visibleEmail);
   const form = useForm({
     defaultValues: { message: "", subject: "", website: "" },
     onSubmit: async ({ value }) => {
@@ -27,26 +30,33 @@ export function HelpPage({ user }: { user: CurrentUser }) {
         toast.error("Complete the verification before sending your message.");
         return;
       }
-      const response = await fetch("/api/contact", {
-        body: JSON.stringify({
-          name: user.name ?? "Account user",
-          email: user.email,
-          message: `Subject: ${value.subject}\n\n${value.message}`,
-          website: value.website,
-          turnstileToken,
-        }),
-        headers: { "Content-Type": "application/json" },
-        method: "POST",
-      });
-      const payload = (await response.json().catch(() => null)) as { sent?: boolean } | null;
-      if (!response.ok || !payload?.sent) {
+      try {
+        const response = await fetch("/api/contact", {
+          body: JSON.stringify({
+            name: visibleName ?? "Account user",
+            email: visibleEmail,
+            message: `Subject: ${value.subject}\n\n${value.message}`,
+            website: value.website,
+            turnstileToken,
+          }),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+        });
+        const payload = (await response.json().catch(() => null)) as { sent?: boolean } | null;
+        if (!response.ok || !payload?.sent) {
+          setTurnstileToken("");
+          setTurnstileResetNonce((nonce) => nonce + 1);
+          toast.error(
+            response.status === 404 || response.status === 503
+              ? "Contact is unavailable here. Please use the email link below."
+              : "Your message could not be sent.",
+          );
+          return;
+        }
+      } catch {
         setTurnstileToken("");
         setTurnstileResetNonce((nonce) => nonce + 1);
-        toast.error(
-          response.status === 404 || response.status === 503
-            ? "Contact is unavailable here. Please use the email link below."
-            : "Your message could not be sent.",
-        );
+        toast.error("Your message could not be sent.");
         return;
       }
       form.reset();

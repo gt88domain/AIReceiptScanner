@@ -12,8 +12,10 @@ Before editing, classify the request:
   `apps/*/src/modules/<domain>`, product config, content, or theme; read this
   file and the closest module README.
 - Reusable template/platform: before changing auth, payments, credits, Jobs,
-  storage, DB lifecycle, packages, or CI, read `GOVERNANCE.md`,
-  `docs/architecture-boundaries.md`, and the current baseline audit.
+  storage, DB lifecycle, packages, or CI, read
+  `docs/architecture-boundaries.md` and the latest relevant dated audit.
+  Audits are historical evidence; verify current facts in executable
+  configuration.
 - Existing-app/provider migration: create `docs/migration/00-audit.md` through
   `05-cutover.md` in their documented order before feature code.
 - Production operation: read the relevant runbook and require explicit user
@@ -21,8 +23,10 @@ Before editing, classify the request:
 
 Use [the repository map](docs/repo-map.md) for change navigation and
 [the architecture map](docs/architecture-map.md) for topology and critical
-flows. `template-kit/repository-facts.json` is the only machine-readable source
-for repository facts and enforced import boundaries; do not create a second
+flows. [`GOVERNANCE.md`](GOVERNANCE.md) is a non-normative pointer to operating
+references; this file remains the sole normative instruction source.
+`template-kit/repository-facts.json` is the only machine-readable source for
+repository facts and enforced import boundaries; do not create a second
 hard-coded rule set or generated repo map.
 
 ## Working style
@@ -206,9 +210,11 @@ Common commands:
 
 ## Task-specific guidance
 
-- Skills live in `.agents/skills` and `.codex/skills`. If a task names or
-  clearly matches one, read its `SKILL.md` and use only the minimal applicable
-  set for that turn.
+- Active repository skills live in `.agents/skills`. If a task names or clearly
+  matches one, read its `SKILL.md` and use only the minimal applicable set for
+  that turn. Dormant reference skills live in `.agents/skills-archive`; they
+  are historical inputs, not active instructions, and must be restored in a
+  focused change before use.
 - For Figma work, fetch exact-node design context and a screenshot before
   coding; reuse returned assets, avoid new icon packages, translate output into
   project conventions, and validate the result against the screenshot.

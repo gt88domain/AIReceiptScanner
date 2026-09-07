@@ -1,0 +1,2 @@
+module,area,slug_or_route,issue_type,severity,evidence,problem,suggested_fix,effort_hours,block_release
+server-payments,billing-portal,,broken,P1,apps/server/src/payments/application/portal.ts:10|apps/server/src/payments/application/billing-status.ts:109|packages/app-config/src/payments/web.ts:302,仅有 past_due 或 unpaid 订阅的用户失去当前会员权益后 canManageBilling 为 false；即使存在本人 Stripe customer 也无法创建账单门户会话来更新付款方式或处理欠费,将门户资格与会员权益解耦；按当前用户所属 Stripe customer 及账单记录确定可管理状态并保留用户归属校验,2,no

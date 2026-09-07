@@ -26,13 +26,16 @@ function getServiceBinding() {
 function createBrowserQueryClient() {
   let queryClient: QueryClient;
   queryClient = createQueryClient({
-    onError: (error) => {
+    onError: (error, failedQuery) => {
       const message = error instanceof Error ? error.message : "Unknown error";
       toast.error(`Error: ${message}`, {
         action: {
           label: "retry",
           onClick: () => {
-            void queryClient.invalidateQueries();
+            void queryClient.refetchQueries({
+              predicate: (query) => query.queryHash === failedQuery.queryHash,
+              type: "all",
+            });
           },
         },
       });

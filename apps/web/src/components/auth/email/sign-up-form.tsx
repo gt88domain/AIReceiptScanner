@@ -1,7 +1,7 @@
 import { useForm } from "@tanstack/react-form";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Loader2Icon } from "lucide-react";
-import { FaGithub, FaGoogle } from "react-icons/fa";
+import { FaApple, FaGithub, FaGoogle } from "react-icons/fa";
 import { toast } from "sonner";
 import z from "zod";
 import { PasswordInput } from "@/components/shared/password-input";
@@ -24,7 +24,9 @@ import { cn } from "@/lib/utils";
 import { TermsAgreement } from "../terms-agreement";
 
 const hasSocialSignUpMethods =
-  webConfig.auth.methods.githubEnabled || webConfig.auth.methods.googleEnabled;
+  webConfig.auth.methods.appleEnabled ||
+  webConfig.auth.methods.githubEnabled ||
+  webConfig.auth.methods.googleEnabled;
 
 export function SignupForm({ className, ...props }: React.ComponentProps<"div">) {
   const t = useTranslations();
@@ -236,6 +238,20 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"div">)
                         )}
                         <FaGoogle className="mr-2" />
                         Google
+                      </Button>
+                    ) : null}
+                    {webConfig.auth.methods.appleEnabled ? (
+                      <Button
+                        variant="outline"
+                        type="button"
+                        disabled={socialLoading !== null}
+                        onClick={() => socialSignIn("apple")}
+                      >
+                        {socialLoading === "apple" && (
+                          <Loader2Icon className="size-4 animate-spin" />
+                        )}
+                        <FaApple className="mr-2" />
+                        Apple
                       </Button>
                     ) : null}
                   </Field>

@@ -118,7 +118,5 @@
         ]
       }
     ]
-  },
-  "guidanceFiles": ["AGENTS.md", "CLAUDE.md", "openspec/project.md"],
-  "requiredGuidance": ["pnpm test", "GOVERNANCE.md"]
+  }
 }

@@ -1,6 +1,6 @@
 # Use a canonical Membership Catalog for membership semantics
 
-Membership semantics should be owned by a canonical Membership Catalog in `packages/app-config`, not inferred from web payment configuration or duplicated between web and native payment catalogs. We choose canonical membership plans first, with platform and provider identifiers attached as adapter data, because membership tier and entitlement semantics are product concepts while Stripe, Creem, and RevenueCat identifiers are provider concerns.
+Membership semantics should be owned by a canonical Membership Catalog in `packages/app-config`, not inferred from web payment configuration or duplicated between web and native payment catalogs. We choose canonical membership plans first, with platform and provider identifiers attached as adapter data, because membership tier and entitlement semantics are product concepts while Stripe and RevenueCat identifiers are provider concerns.
 
 ## Considered Options
 

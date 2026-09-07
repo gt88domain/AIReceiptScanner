@@ -40,7 +40,11 @@ export function createContactHandler(
     if (!challenge.ok) {
       return c.json({ error: challenge.error, code: challenge.code }, challenge.status);
     }
-    if (isRequestRateLimited(c.req.raw, "contact", retryAfterMs)) {
+    if (
+      isRequestRateLimited(c.req.raw, "contact", retryAfterMs, {
+        cloudflareOnly: true,
+      })
+    ) {
       return c.json({ error: "Please wait a minute before trying again" }, 429, {
         "Retry-After": String(retryAfterMs / 1_000),
       });
@@ -50,7 +54,8 @@ export function createContactHandler(
     try {
       await emailService.send({
         to: recipient,
-        subject: `[Contact] ${parsed.data.name}`,
+        replyTo: parsed.data.email,
+        subject: `[Contact] ${parsed.data.name.replace(/[\r\n]+/g, " ")}`,
         text: `From: ${parsed.data.name} <${parsed.data.email}>\n\n${parsed.data.message}`,
       });
     } catch (error) {

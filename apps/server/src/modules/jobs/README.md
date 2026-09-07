@@ -2,7 +2,7 @@
 
 Use a Job for short, retryable background work such as AI generation, image
 processing, or exports. A request creates a durable D1 `job` and outbox record;
-the outbox publishes only the job id to Cloudflare Queues. The consumer records
+the outbox publishes the job id and its delivery-generation `outboxId` to Cloudflare Queues. The consumer records
 `pending`, `running`, `succeeded`, `failed`, or `cancelled` state in D1.
 
 Create both queues before deploying the Worker:
@@ -59,6 +59,16 @@ the configured DLQ. Its consumer writes one `failed_job_event` row;
 admins can list, retry, or ignore unresolved events. A refund is intentionally
 domain-owned: perform the verified credit/payment refund first, then mark the
 event `refunded` with `resolveFailedJobEvent`.
+
+Future `runAfter` jobs stay in the durable outbox until the scheduled dispatcher
+finds them due. Early deliveries are parked back in the outbox and acknowledged,
+without consuming the Queue retry budget. Admin retry rotates `outboxId`; both
+the main consumer and DLQ reject old generations. Legacy messages without this
+field are accepted only before the first generation-aware admin retry. Deploy
+the producer and both consumers together; an old consumer cannot enforce this
+generation contract. DLQ terminalization and incident history are transactional.
+An accepted admin retry, its queued event and audit are committed together;
+temporary publish failure leaves the outbox for the scheduled dispatcher.
 
 Use Cloudflare Workflows directly—not this module—for long-lived, multi-step,
 sleeping, or human-approval processes. Do not add a generic workflow wrapper.

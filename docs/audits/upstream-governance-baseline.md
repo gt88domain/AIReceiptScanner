@@ -1,4 +1,8 @@
-# Upstream governance baseline audit
+# Historical upstream governance baseline audit
+
+> This is a dated snapshot, not current repository navigation. Use the live
+> configuration, `template-kit/repository-facts.json`, and `docs/repo-map.md`
+> for current facts.
 
 Date: 2026-08-02
 Audited commit: `c0d5a6757a812f84206a8431ab6141533f4679ca` (`main`)

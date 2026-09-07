@@ -5,8 +5,8 @@ import { AdminPageHeader } from "@/components/dashboard/admin/admin-page-header"
 import { requireAdminRouteAccess } from "@/lib/auth/admin-route";
 
 const searchSchema = z.object({
-  page: z.number().optional().default(0),
-  size: z.number().optional().default(10),
+  page: z.coerce.number().int().min(0).catch(0),
+  size: z.coerce.number().int().min(1).max(100).catch(10),
   search: z.string().optional().default(""),
   sort: z.string().optional().default("createdAt:desc"),
 });

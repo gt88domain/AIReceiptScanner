@@ -44,7 +44,6 @@ export async function createContext({ context, runtimeConfig }: CreateContextOpt
     ? getStorageProvider({
         storage: storageBinding,
         provider: runtimeConfig.storage.provider,
-        aliyunOssEnv: context.env,
       })
     : undefined;
   const email =

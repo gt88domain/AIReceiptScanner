@@ -1,0 +1,2 @@
+module,area,slug_or_route,issue_type,severity,evidence,problem,suggested_fix,effort_hours,block_release
+server-db,legacy-credit-recovery,,unfinished,P1,apps/server/src/db/migrations/0020_cultured_tattoo.sql:63|apps/server/src/credits/application/legacy-recovery-audit.ts:19|docs/money-operations-v0.4.9.md:9,迁移把所有历史订单默认标为 exact；文档要求运行 legacy audit 但审计函数没有脚本或运行入口，发布流程可跳过该步骤并让有历史退款争议的订单进入自动恢复逻辑,提供一次性可执行审计命令并记录完成证据后才允许该迁移对应的恢复逻辑上线,4,no

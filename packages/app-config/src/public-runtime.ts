@@ -3,6 +3,11 @@ import { isBackofficePreviewTicketsEnabled, resolveProfileBuildId } from "./prof
 import { productFeatureOverrides } from "./product-feature-overrides";
 import type { ProductFeatureOverrides } from "./product-profiles";
 
+export type PublicNavigationItem = Readonly<{
+  label: string;
+  href: string;
+}>;
+
 /**
  * Browser-safe configuration used by public routes and the base client runtime.
  * Keep catalogs, provider price IDs, and native-only settings out of this entry.
@@ -11,6 +16,7 @@ export const publicRuntimeConfig = {
   appName: "AINovel",
   supportEmail: "info@ainovel.com",
   defaultThemePresetKey: "clean-slate",
+  publicNavigation: [] as readonly PublicNavigationItem[],
   features: {
     admin: false,
     // Desktop-app memberships and generation credits are integrated only once
@@ -41,8 +47,16 @@ export const publicRuntimeConfig = {
   },
 } as const;
 
-export type PublicRuntimeConfig = Omit<typeof publicRuntimeConfig, "features"> & {
+export type PublicRuntimeConfig = Omit<
+  typeof publicRuntimeConfig,
+  "auth" | "features" | "publicNavigation"
+> & {
+  auth: {
+    publicSignupEnabled: boolean;
+    methods: { [Key in keyof typeof publicRuntimeConfig.auth.methods]: boolean };
+  };
   features: { [Key in keyof typeof publicRuntimeConfig.features]: boolean };
+  publicNavigation: readonly PublicNavigationItem[];
 };
 
 export function resolvePublicRuntimeConfig(

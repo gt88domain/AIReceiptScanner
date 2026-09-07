@@ -28,8 +28,6 @@ interface Footer7Props {
   }>;
 }
 
-const currentYear = new Date().getFullYear();
-
 export const Footer = ({
   logo = {
     url: webConfig.AppUrl,
@@ -63,6 +61,7 @@ export const Footer = ({
     },
   ];
   const resolvedDescription = description ?? footerT("description");
+  const currentYear = new Date().getFullYear();
   // ponytail: social accounts belong to the template adopter, so no upstream profile is rendered by default.
   const resolvedSocialLinks = socialLinks ?? [];
   const resolvedCopyright =

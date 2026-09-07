@@ -1,0 +1,2 @@
+module,area,slug_or_route,issue_type,severity,evidence,problem,suggested_fix,effort_hours,block_release
+web-public-api,contact,/api/contact,unfinished,P1,apps/server/src/handlers/contact.ts:55|apps/server/src/emails/types.ts:7|apps/server/src/emails/providers/resend.ts:30,提交者邮箱只写入正文且发送接口不支持 Reply-To；收件人直接回复时不会发给提交者,给 SendEmailParams 增加 replyTo 并由 Resend provider 透传且联系表单设为 parsed.data.email,1,no

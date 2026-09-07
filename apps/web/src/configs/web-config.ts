@@ -34,6 +34,7 @@ export const webConfig: WebConfig = {
   AppName: publicRuntime.appName,
   AppUrl: resolveAppUrl(),
   supportEmail: publicRuntime.supportEmail,
+  publicNavigation: publicRuntime.publicNavigation,
   adminEnabled: publicRuntime.features.admin,
   billingEnabled: publicRuntime.features.billing,
   creditsEnabled: publicRuntime.features.credits,
@@ -62,11 +63,11 @@ export const webConfig: WebConfig = {
  * Get auth callback URLs with locale prefix
  * URLs are generated dynamically to match current user's locale
  */
-export function getAuthUrls(): AuthUrls {
+export function getAuthUrls(options: { returnTo?: string } = {}): AuthUrls {
   const localizedBaseUrl = getLocalizedBaseUrl();
 
   return {
-    callbackURL: `${localizedBaseUrl}/dashboard`,
+    callbackURL: `${localizedBaseUrl}${options.returnTo ?? "/dashboard"}`,
     errorCallbackURL: `${localizedBaseUrl}${webRoutes.authSignIn}`,
     resetPasswordCallbackURL: `${localizedBaseUrl}${webRoutes.authResetPassword}`,
   };

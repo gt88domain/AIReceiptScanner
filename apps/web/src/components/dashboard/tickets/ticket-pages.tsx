@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
 import { Loader2Icon, MessageSquareTextIcon, PlusIcon } from "lucide-react";
 import { useState } from "react";
@@ -27,16 +27,22 @@ function TicketComposer({
   pending,
 }: {
   label: string;
-  onSubmit: (body: string) => void;
+  onSubmit: (body: string) => Promise<void>;
   pending: boolean;
 }) {
   const [body, setBody] = useState("");
   return (
     <form
       className="space-y-3"
-      onSubmit={(event) => {
+      onSubmit={async (event) => {
         event.preventDefault();
-        if (body.trim()) onSubmit(body.trim());
+        if (!body.trim()) return;
+        try {
+          await onSubmit(body.trim());
+          setBody("");
+        } catch {
+          // The mutation owns error reporting; keep the draft available for retry.
+        }
       }}
     >
       <textarea
@@ -59,6 +65,7 @@ function TicketThread({
   replyLabel,
   onReply,
   replyPending,
+  viewerRole,
 }: {
   ticket: {
     subject: string;
@@ -66,8 +73,9 @@ function TicketThread({
     messages: Array<{ id: string; authorRole: "user" | "admin"; body: string; createdAt: Date }>;
   };
   replyLabel: string;
-  onReply: (body: string) => void;
+  onReply: (body: string) => Promise<void>;
   replyPending: boolean;
+  viewerRole: "user" | "admin";
 }) {
   return (
     <div className="space-y-4">
@@ -82,7 +90,12 @@ function TicketThread({
           <Card key={message.id}>
             <CardHeader className="pb-2">
               <CardDescription>
-                {message.authorRole === "admin" ? "Support" : "You"} ·{" "}
+                {message.authorRole === viewerRole
+                  ? "You"
+                  : message.authorRole === "admin"
+                    ? "Support"
+                    : "Customer"}{" "}
+                ·{" "}
                 {dateTimeFormatter.format(message.createdAt)}
               </CardDescription>
             </CardHeader>
@@ -193,10 +206,17 @@ export function MyTicketsPage() {
 export function MyTicketDetailPage({ ticketId }: { ticketId: string }) {
   const orpc = useOrpc();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const ticket = useQuery(orpc.tickets.getMine.queryOptions({ input: { id: ticketId } }));
   const reply = useMutation({
     ...orpc.tickets.reply.mutationOptions(),
-    onSuccess: () => router.invalidate(),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: orpc.tickets.getMine.key() }),
+        queryClient.invalidateQueries({ queryKey: orpc.tickets.listMine.key() }),
+        router.invalidate(),
+      ]);
+    },
     onError: (error) => toast.error(errorMessage(error)),
   });
   if (ticket.isPending) return <Skeleton className="h-80 w-full" />;
@@ -207,7 +227,10 @@ export function MyTicketDetailPage({ ticketId }: { ticketId: string }) {
       ticket={ticket.data}
       replyLabel="Send reply"
       replyPending={reply.isPending}
-      onReply={(body) => reply.mutate({ ticketId, body })}
+      viewerRole="user"
+      onReply={async (body) => {
+        await reply.mutateAsync({ ticketId, body });
+      }}
     />
   );
 }
@@ -275,15 +298,30 @@ export function AdminTicketsPage() {
 export function AdminTicketDetailPage({ ticketId }: { ticketId: string }) {
   const orpc = useOrpc();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const ticket = useQuery(orpc.tickets.getAdmin.queryOptions({ input: { id: ticketId } }));
   const reply = useMutation({
     ...orpc.tickets.replyAdmin.mutationOptions(),
-    onSuccess: () => router.invalidate(),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: orpc.tickets.getAdmin.key() }),
+        queryClient.invalidateQueries({ queryKey: orpc.tickets.listAdmin.key() }),
+        queryClient.invalidateQueries({ queryKey: orpc.tickets.countOpenAdmin.key() }),
+        router.invalidate(),
+      ]);
+    },
     onError: (error) => toast.error(errorMessage(error)),
   });
   const close = useMutation({
     ...orpc.tickets.closeAdmin.mutationOptions(),
-    onSuccess: () => router.invalidate(),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: orpc.tickets.getAdmin.key() }),
+        queryClient.invalidateQueries({ queryKey: orpc.tickets.listAdmin.key() }),
+        queryClient.invalidateQueries({ queryKey: orpc.tickets.countOpenAdmin.key() }),
+        router.invalidate(),
+      ]);
+    },
     onError: (error) => toast.error(errorMessage(error)),
   });
   if (ticket.isPending) return <Skeleton className="h-80 w-full" />;
@@ -296,7 +334,10 @@ export function AdminTicketDetailPage({ ticketId }: { ticketId: string }) {
         ticket={ticket.data}
         replyLabel="Send reply"
         replyPending={reply.isPending}
-        onReply={(body) => reply.mutate({ ticketId, body })}
+        viewerRole="admin"
+        onReply={async (body) => {
+          await reply.mutateAsync({ ticketId, body });
+        }}
       />
       {ticket.data.status !== "closed" ? (
         <Button

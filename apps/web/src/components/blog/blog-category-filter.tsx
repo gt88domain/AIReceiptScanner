@@ -76,6 +76,7 @@ interface CategoryItem {
 
 interface BlogCategoryFilterProps {
   categories: CategoryItem[];
+  totalCount: number;
   selectedCategorySlug?: string;
   allLabel: string;
   selectCategoryLabel: string;
@@ -83,11 +84,11 @@ interface BlogCategoryFilterProps {
 
 export function BlogCategoryFilter({
   categories,
+  totalCount,
   selectedCategorySlug,
   allLabel,
   selectCategoryLabel,
 }: BlogCategoryFilterProps) {
-  const totalCount = categories.reduce((sum, item) => sum + item.count, 0);
   const selectedCategory = categories.find((item) => item.slug === selectedCategorySlug);
   const mobileLabel = selectedCategory?.name ?? allLabel;
 

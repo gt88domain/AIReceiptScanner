@@ -5,7 +5,6 @@ import { dirname, join } from "node:path";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const profilesRoot = join(root, "template-kit", "profiles");
-const fixturesRoot = join(root, "template-kit", "fixtures", "profiles");
 const profileIds = ["full-saas", "account-app", "directory", "directory-lite"];
 const zeroD1Id = "00000000-0000-0000-0000-000000000000";
 
@@ -90,17 +89,17 @@ for (const id of profileIds) {
     readFile(join(directory, "wrangler.server.example.jsonc"), "utf8"),
     readFile(join(directory, "wrangler.web.example.jsonc"), "utf8"),
   ]);
-  const [profile, server, web, fixture] = await Promise.all([
+  const [profile, server, web] = await Promise.all([
     readJson(join(directory, "profile.json")),
     readJson(join(directory, "wrangler.server.example.jsonc")),
     readJson(join(directory, "wrangler.web.example.jsonc")),
-    readJson(join(fixturesRoot, `${id}.json`)),
   ]);
   const descriptor = buildDescriptor(id);
   const profileFeatures = {
     admin: descriptor.composition.features.admin,
     jobs: descriptor.composition.features.jobs,
     storage: descriptor.composition.features.storage,
+    tickets: descriptor.composition.features.tickets,
     mobile: descriptor.composition.features.mobile,
     web: descriptor.composition.features.web,
     native: descriptor.composition.features.native,
@@ -111,12 +110,6 @@ for (const id of profileIds) {
   }
   if ((profile.features.storage === true) !== profile.expectedResources.includes("R2")) {
     fail(`${id} storage feature and expected resources disagree.`);
-  }
-  if (
-    JSON.stringify(profile.features) !== JSON.stringify(fixture.expectedFeatures) ||
-    JSON.stringify(profile.expectedResources) !== JSON.stringify(fixture.requiredResources)
-  ) {
-    fail(`${id} profile metadata and fixture disagree.`);
   }
   if (
     JSON.stringify(profile.features) !== JSON.stringify(profileFeatures) ||

@@ -26,3 +26,9 @@ describe("webConfig auth methods", () => {
     expect("emailOtpEnabled" in webConfig.auth.methods).toBe(false);
   });
 });
+
+describe("webConfig public navigation", () => {
+  it("does not invent product routes", () => {
+    expect(webConfig.publicNavigation).toEqual([]);
+  });
+});

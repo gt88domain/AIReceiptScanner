@@ -1,18 +1,23 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { CreditCardIcon, ExternalLinkIcon, Loader2Icon } from "lucide-react";
-import { type ComponentProps, useEffect } from "react";
+import { type ComponentProps, useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { PricingMatrix } from "@/components/landing-page/tailark/pricing/pricing-matrix";
 import { PricingSkeletonGrid } from "@/components/landing-page/tailark/pricing/pricing-skeleton-grid";
 import { SubscriptionStatusBadge } from "@/components/shared/subscription-status-badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getBillingUrls, webConfig } from "@/configs/web-config";
-import { useBillingStatusQuery, usePaymentPlansQuery } from "@/hooks/use-payments";
+import {
+  billingStatusKeys,
+  useBillingStatusQuery,
+  usePaymentPlansQuery,
+} from "@/hooks/use-payments";
 import { useOrpc } from "@/hooks/use-orpc";
 import { useTranslations } from "@/i18n";
 import { resolveCheckoutPolicyDecision } from "@repo/app-config/membership";
@@ -32,6 +37,10 @@ type PricingMatrixIsCtaDisabled = NonNullable<PricingMatrixProps["isCtaDisabled"
 
 /** File-based route definition for the authenticated billing settings page. */
 export const Route = createFileRoute("/_authed/(dashboard)/settings/billing")({
+  validateSearch: z.object({
+    planId: z.string().optional(),
+    priceId: z.string().optional(),
+  }),
   beforeLoad: () => {
     if (!webConfig.billingEnabled) {
       throw redirect({ to: "/dashboard" });
@@ -43,15 +52,19 @@ export const Route = createFileRoute("/_authed/(dashboard)/settings/billing")({
 /** Billing settings page for subscriptions and membership plans. */
 function RouteComponent() {
   const orpc = useOrpc();
+  const queryClient = useQueryClient();
   const t = useTranslations("dashboard.billing");
   const tPricing = useTranslations("landingPage.pricing");
   const plansQuery = usePaymentPlansQuery();
   const statusQuery = useBillingStatusQuery();
   const billingUrls = getBillingUrls();
+  const { planId: requestedPlanId, priceId: requestedPriceId } = Route.useSearch();
+  const startedCheckoutRef = useRef<string | null>(null);
 
   const createCheckout = useMutation({
     ...orpc.web.payments.createCheckoutSession.mutationOptions(),
     onSuccess: ({ url }) => {
+      void queryClient.invalidateQueries({ queryKey: billingStatusKeys.all });
       openProviderCheckoutUrl(url);
     },
     onError: (error: Error) => {
@@ -62,7 +75,7 @@ function RouteComponent() {
   const createPortal = useMutation({
     ...orpc.web.payments.createPortalSession.mutationOptions(),
     onSuccess: ({ url }) => {
-      openProviderCheckoutUrl(url, { newTab: billingProvider === "waffo" });
+      openProviderCheckoutUrl(url);
     },
     onError: (error: Error) => {
       toast.error(`${t("portalError")}: ${error.message}`);
@@ -71,7 +84,7 @@ function RouteComponent() {
   const upgradeSubscription = useMutation({
     ...orpc.web.payments.upgradeSubscription.mutationOptions(),
     onSuccess: async () => {
-      await statusQuery.refetch();
+      await queryClient.invalidateQueries({ queryKey: billingStatusKeys.all });
       toast.success(t("upgradeSuccess"));
     },
     onError: (error: Error) => {
@@ -110,7 +123,7 @@ function RouteComponent() {
     const targetProvider = findPriceProvider(plansQuery.data!, priceMeta.priceId);
     const canUseDirectProviderUpgrade =
       decision.action === "upgrade" &&
-      (billingProvider === "stripe" || billingProvider === "creem") &&
+      billingProvider === "stripe" &&
       targetProvider === billingProvider;
 
     if (canUseDirectProviderUpgrade) {
@@ -138,6 +151,51 @@ function RouteComponent() {
     });
   };
 
+  useEffect(() => {
+    if (
+      !requestedPlanId ||
+      !requestedPriceId ||
+      !plansQuery.data ||
+      plansQuery.isError ||
+      statusQuery.isLoading ||
+      statusQuery.isError ||
+      startedCheckoutRef.current === `${requestedPlanId}:${requestedPriceId}`
+    ) {
+      return;
+    }
+
+    const requestedPlan = plansQuery.data.find((plan) => plan.id === requestedPlanId);
+    const requestedPrice = requestedPlan?.prices.find((price) => price.id === requestedPriceId);
+    if (!requestedPlan || !requestedPrice || requestedPrice.status !== "active") {
+      return;
+    }
+
+    startedCheckoutRef.current = `${requestedPlanId}:${requestedPriceId}`;
+    onSelectPrice({
+      planId: requestedPlan.id,
+      priceMeta: {
+        priceId: requestedPrice.id,
+        currency: requestedPrice.currency,
+        priceType: requestedPrice.priceType,
+        interval: requestedPrice.interval,
+        trialDays: requestedPrice.trialDays,
+      },
+      paymentFrequency:
+        requestedPrice.priceType === "lifetime"
+          ? "lifetime"
+          : requestedPrice.interval === "year"
+            ? "yearly"
+            : "monthly",
+    });
+  }, [
+    plansQuery.data,
+    plansQuery.isError,
+    requestedPlanId,
+    requestedPriceId,
+    statusQuery.isError,
+    statusQuery.isLoading,
+  ]);
+
   /** Resolves the primary CTA label for each pricing option. */
   const getCtaLabel: PricingMatrixGetCtaLabel = ({ priceMeta }) => {
     if (!priceMeta) {
@@ -157,10 +215,6 @@ function RouteComponent() {
       return t("currentPlanCta");
     }
     if (decision.reason === "subscription_upgrade") {
-      const targetProvider = findPriceProvider(plansQuery.data!, priceMeta.priceId);
-      if (billingProvider === "waffo" && targetProvider === billingProvider) {
-        return t("upgradeUnavailable");
-      }
       return t("upgradeSubscription");
     }
     if (decision.reason === "already_lifetime") {
@@ -178,7 +232,7 @@ function RouteComponent() {
     if (!priceMeta) {
       return true;
     }
-    if (statusQuery.isLoading || ctaPending) {
+    if (statusQuery.isLoading || statusQuery.isError || ctaPending) {
       return true;
     }
 
@@ -187,30 +241,8 @@ function RouteComponent() {
       priceType: priceMeta.priceType,
       interval: priceMeta.interval,
     });
-    const targetProvider = findPriceProvider(plansQuery.data!, priceMeta.priceId);
-    if (
-      decision.reason === "subscription_upgrade" &&
-      billingProvider === "waffo" &&
-      targetProvider === billingProvider
-    ) {
-      return true;
-    }
-
     return decision.action === "disabled";
   };
-
-  useEffect(() => {
-    // Stripe can leave a subscription incomplete while payment confirmation is still settling.
-    if (subscriptionStatus !== "incomplete") {
-      return;
-    }
-
-    const interval = setInterval(() => {
-      statusQuery.refetch();
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [subscriptionStatus, statusQuery.refetch]);
 
   return (
     <div className="space-y-6">
@@ -228,6 +260,16 @@ function RouteComponent() {
               <Skeleton className="h-4 w-40" />
               <Skeleton className="h-4 w-56" />
             </div>
+          ) : statusQuery.isError || !statusQuery.data ? (
+            <Alert variant="destructive">
+              <AlertTitle>Billing status unavailable</AlertTitle>
+              <AlertDescription>
+                <p>Your current membership could not be loaded.</p>
+                <Button onClick={() => void statusQuery.refetch()} size="sm" variant="outline">
+                  Retry
+                </Button>
+              </AlertDescription>
+            </Alert>
           ) : (
             <div className="rounded-lg border bg-muted/20 p-4">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -279,6 +321,16 @@ function RouteComponent() {
               className="items-stretch gap-6"
               gridClassName="max-w-none gap-4 xl:grid-cols-3"
             />
+          ) : plansQuery.isError ? (
+            <Alert variant="destructive">
+              <AlertTitle>Plan catalog unavailable</AlertTitle>
+              <AlertDescription>
+                <p>Available plans could not be loaded.</p>
+                <Button onClick={() => void plansQuery.refetch()} size="sm" variant="outline">
+                  Retry
+                </Button>
+              </AlertDescription>
+            </Alert>
           ) : plansQuery.data?.length ? (
             <PricingMatrix
               plans={plansQuery.data}

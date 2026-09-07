@@ -121,9 +121,17 @@ export function useCredits() {
     async (packageId: string): Promise<NativeCreditPurchaseResult> => {
       setIsPurchasing(true);
       setError(null);
-      const previousBalance = balanceQuery.data?.balance ?? null;
+      let previousBalance = balanceQuery.data?.balance ?? null;
 
       try {
+        if (previousBalance === null) {
+          const baseline = await balanceQuery.refetch();
+          if (baseline.error || !baseline.data) {
+            throw baseline.error ?? new Error("Unable to load the current credit balance");
+          }
+          previousBalance = baseline.data.balance;
+        }
+
         // The local SDK success only confirms store purchase completion; it never mutates balance.
         await nativePayments.purchaseCreditPackage({ packageId });
         if (!mountedRef.current) {
@@ -169,17 +177,24 @@ export function useCredits() {
     };
   }, []);
 
+  const retry = useCallback(async () => {
+    setError(null);
+    await Promise.all([packagesQuery.refetch(), balanceQuery.refetch()]);
+  }, [balanceQuery, packagesQuery]);
+
   return {
     balance: balanceQuery.data ?? null,
     packages: packagesQuery.data ?? [],
     isAvailable,
     isLoading: balanceQuery.isLoading || packagesQuery.isLoading,
+    isBalanceLoading: balanceQuery.isLoading,
     isPackagesLoading: packagesQuery.isLoading,
     isPurchasing,
     isSyncing,
-    error,
+    error: error ?? packagesQuery.error ?? balanceQuery.error,
     purchase,
     refetchCredits,
+    retry,
   };
 }
 

@@ -1,9 +1,9 @@
 import { ACTIVE_SUBSCRIPTION_STATUSES, type NormalizedPlan } from "@repo/app-config/payments/web";
-import { SUPPORTED_WEB_PAYMENT_PROVIDERS, type ServerPaymentProviderKey } from "@repo/app-config";
 import { toNullable } from "@repo/shared";
 import { and, desc, eq } from "drizzle-orm";
 import type { Database } from "@/db";
 import { billingPurchase, billingSubscription } from "@/db/schema/payments";
+import { findBillingCustomer } from "../infrastructure/repositories/billing-store";
 import {
   findBillingPlanById,
   findBillingPriceById,
@@ -100,18 +100,17 @@ export async function getBillingStatus(db: Database, user: BillingUser): Promise
     );
   }
 
-  const billingProvider =
+  const entitlementProvider =
     currentEntitlement.source === "subscription"
       ? (activeSubscription?.provider ?? null)
       : currentEntitlement.source === "lifetime"
         ? (activePurchase?.provider ?? null)
         : null;
-  const canManageBilling =
-    (currentEntitlement.source === "subscription" || currentEntitlement.source === "lifetime") &&
-    billingProvider !== null &&
-    (SUPPORTED_WEB_PAYMENT_PROVIDERS as readonly ServerPaymentProviderKey[]).includes(
-      billingProvider,
-    );
+  // A customer must retain access to invoices and payment methods after entitlement ends.
+  const stripeCustomer = await findBillingCustomer(db, { userId: user.userId, provider: "stripe" });
+  // Keep a current native entitlement's provider intact: checkout/upgrade policy also uses it.
+  const billingProvider = entitlementProvider ?? (stripeCustomer ? "stripe" : null);
+  const canManageBilling = billingProvider === "stripe" && Boolean(stripeCustomer);
 
   return {
     userId: user.userId,

@@ -29,6 +29,7 @@ export const Header = () => {
 
   const menuItems = React.useMemo<MenuItem[]>(
     () => [
+      ...webConfig.publicNavigation.map(({ label, href }) => ({ name: label, href })),
       ...(webConfig.blogPublic ? [{ name: t("menu.blog"), to: "/blog" }] : []),
       ...(webConfig.contactFormEnabled ? [{ name: t("menu.contact"), to: "/contact" }] : []),
       ...(webConfig.docsPublic ? [{ name: t("menu.docs"), href: "/docs" }] : []),
@@ -82,6 +83,20 @@ export const Header = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  React.useEffect(() => {
+    const desktopQuery = window.matchMedia("(min-width: 1024px)");
+    const handleDesktopLayout = (event: MediaQueryListEvent | MediaQueryList) => {
+      if (!event.matches) return;
+      clearCloseTimer();
+      setMenuState(false);
+      setIsClosing(false);
+    };
+
+    desktopQuery.addEventListener("change", handleDesktopLayout);
+    handleDesktopLayout(desktopQuery);
+    return () => desktopQuery.removeEventListener("change", handleDesktopLayout);
+  }, [clearCloseTimer]);
 
   React.useEffect(() => {
     const shouldLockScroll = menuState || isClosing;

@@ -1,32 +1,19 @@
-import { getSetCookie } from "@better-auth/expo/client";
-import * as SecureStore from "expo-secure-store";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as React from "react";
 import { ActivityIndicator, View } from "react-native";
-import { getFirstSearchParam, getSearchParamArray } from "@repo/shared";
+import { getFirstSearchParam } from "@repo/shared";
 import { useTranslation } from "react-i18next";
-import { getAuthConfig } from "@/configs/app-config";
 import { useToast } from "@/hooks/use-toast";
 import { authClient } from "@/lib/auth/auth.client";
+import { completeNativeOAuth } from "@/lib/auth/oauth-handoff";
 import { useAuth } from "@/providers/auth-provider";
 import { dismissToHome, dismissToSignIn } from "@/utils/route";
-
-const authConfig = getAuthConfig();
-
-function mergeAuthCookies(cookieParams: string[]): string | null {
-  let nextCookie = SecureStore.getItem(authConfig.cookieStorageKey) ?? undefined;
-  for (const cookieParam of cookieParams) {
-    nextCookie = getSetCookie(cookieParam, nextCookie);
-  }
-  return nextCookie ?? null;
-}
 
 type RunAuthCallbackFlowOptions = {
   errorParam: string | undefined;
   flowParam: string | undefined;
-  cookieParams: string[];
+  handoffParam: string | undefined;
   missingCookieMessage: string;
-  invalidCookieMessage: string;
   signInSuccessMessage: string;
   onError: (message: string) => void;
   onSuccess: (message: string) => void;
@@ -40,9 +27,8 @@ type RunAuthCallbackFlowOptions = {
 async function runAuthCallbackFlow({
   errorParam,
   flowParam,
-  cookieParams,
+  handoffParam,
   missingCookieMessage,
-  invalidCookieMessage,
   signInSuccessMessage,
   onError,
   onSuccess,
@@ -57,20 +43,19 @@ async function runAuthCallbackFlow({
     return;
   }
 
-  if (cookieParams.length === 0) {
+  if (flowParam === "verify-email") {
+    onSuccess(signInSuccessMessage);
+    onNavigateSignIn();
+    return;
+  }
+
+  if (!handoffParam) {
     onError(missingCookieMessage);
     onNavigateSignIn();
     return;
   }
 
-  const nextCookie = mergeAuthCookies(cookieParams);
-  if (!nextCookie) {
-    onError(invalidCookieMessage);
-    onNavigateSignIn();
-    return;
-  }
-
-  SecureStore.setItem(authConfig.cookieStorageKey, nextCookie);
+  await completeNativeOAuth(handoffParam);
 
   const sessionResult = await authClient.getSession();
   if (isUnmounted()) {
@@ -78,11 +63,11 @@ async function runAuthCallbackFlow({
   }
 
   if (sessionResult.data?.user) {
-    if (flowParam === "verify-email") {
-      onSuccess(signInSuccessMessage);
+    await onRefetchSession();
+    if (isUnmounted()) {
+      return;
     }
     onNavigateHome();
-    onRefetchSession();
     return;
   }
 
@@ -110,11 +95,11 @@ export default function AuthCallbackScreen() {
   });
 
   const params = useLocalSearchParams<{
-    cookie?: string | string[];
+    expoFlow?: string | string[];
     error?: string | string[];
     flow?: string | string[];
   }>();
-  const cookieParams = React.useMemo(() => getSearchParamArray(params.cookie), [params.cookie]);
+  const handoffParam = React.useMemo(() => getFirstSearchParam(params.expoFlow), [params.expoFlow]);
   const errorParam = React.useMemo(() => getFirstSearchParam(params.error), [params.error]);
   const flowParam = React.useMemo(() => getFirstSearchParam(params.flow), [params.flow]);
   const handleKey = React.useMemo(
@@ -122,9 +107,9 @@ export default function AuthCallbackScreen() {
       JSON.stringify({
         error: errorParam ?? null,
         flow: flowParam ?? null,
-        cookie: cookieParams,
+        handoff: handoffParam ?? null,
       }),
-    [cookieParams, errorParam, flowParam],
+    [handoffParam, errorParam, flowParam],
   );
 
   React.useEffect(() => {
@@ -153,10 +138,9 @@ export default function AuthCallbackScreen() {
     runAuthCallbackFlow({
       errorParam,
       flowParam,
-      cookieParams,
+      handoffParam,
       missingCookieMessage: t("auth.callbackCookieMissing"),
-      invalidCookieMessage: t("auth.callbackCookieInvalid"),
-      signInSuccessMessage: t("auth.signInSuccess"),
+      signInSuccessMessage: t("auth.emailVerified"),
       onError: (message) => actionsRef.current.toastError(message),
       onSuccess: (message) => actionsRef.current.toastSuccess(message),
       onNavigateHome: () => actionsRef.current.navigateHome(),
@@ -168,7 +152,7 @@ export default function AuthCallbackScreen() {
       actionsRef.current.toastError(message);
       actionsRef.current.navigateSignIn();
     });
-  }, [cookieParams, errorParam, flowParam, handleKey, t]);
+  }, [handoffParam, errorParam, flowParam, handleKey, t]);
 
   return (
     <View className="flex-1 items-center justify-center">

@@ -8,7 +8,7 @@ import {
   type ControlSystemV1,
   type ControlUsersInputV1,
 } from "@repo/shared/control-read";
-import { and, asc, count, desc, eq, gte, inArray, isNull, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
 import templateVersion from "../../../../../template-version.json";
 import { normalizeAvatarForOutput } from "@/auth/avatar-policy";
 import type { Database } from "@/db";
@@ -223,22 +223,6 @@ export function getAdminIntegrationsReadModel({
       ),
     },
     {
-      id: "creem",
-      category: "payments" as const,
-      status: configurationStatus(
-        features.web.billing && paymentProvider === "creem",
-        Boolean(env.CREEM_API_KEY && env.CREEM_WEBHOOK_SECRET),
-      ),
-    },
-    {
-      id: "waffo",
-      category: "payments" as const,
-      status: configurationStatus(
-        features.web.billing && paymentProvider === "waffo",
-        Boolean(env.WAFFO_MERCHANT_ID && env.WAFFO_PRIVATE_KEY),
-      ),
-    },
-    {
       id: "revenuecat",
       category: "payments" as const,
       status: configurationStatus(features.native.billing, Boolean(env.REVENUECAT_WEBHOOK_SECRET)),
@@ -307,11 +291,12 @@ export async function getAdminBillingOverviewReadModel({
     activeSubscriptionCount,
     successfulPurchaseCount,
     pendingWebhookCount,
+    failedWebhookCount,
     subscriptions,
     purchases,
     webhooks,
   ] = await Promise.all([
-    db.select({ count: count() }).from(user),
+    db.select({ count: count() }).from(user).where(isNull(user.deletedAt)),
     db
       .select({ count: count() })
       .from(billingSubscription)
@@ -324,6 +309,12 @@ export async function getAdminBillingOverviewReadModel({
       .select({ count: count() })
       .from(billingEvent)
       .where(eq(billingEvent.processingStatus, "pending")),
+    db
+      .select({ count: count() })
+      .from(billingEvent)
+      .where(
+        or(eq(billingEvent.processingStatus, "dead_letter"), isNotNull(billingEvent.lastError)),
+      ),
     db
       .select({
         id: billingSubscription.id,
@@ -376,6 +367,7 @@ export async function getAdminBillingOverviewReadModel({
       activeSubscriptions: activeSubscriptionCount.at(0)?.count ?? 0,
       successfulPurchases: successfulPurchaseCount.at(0)?.count ?? 0,
       pendingWebhooks: pendingWebhookCount.at(0)?.count ?? 0,
+      failedWebhooks: failedWebhookCount.at(0)?.count ?? 0,
     },
     subscriptions,
     purchases,

@@ -1,13 +1,16 @@
 import { ORPCError } from "@orpc/server";
-import { and, eq, isNotNull, isNull } from "drizzle-orm";
+import { and, eq, exists, isNotNull, isNull, ne, notExists } from "drizzle-orm";
 import { getVisibleUserName } from "@repo/shared";
 import { z } from "zod";
 import { account, session, user } from "@/db/schema/auth";
+import { billingSubscription } from "@/db/schema/payments";
 import type { Context } from "@/lib/context";
 import { buildDeletedAccountUserUpdate } from "@/lib/auth-session-guard";
 import { isContactDeliveryAvailable } from "@/lib/contact-delivery";
 import { protectedProcedure, publicProcedure } from "@/lib/orpc";
-import { getStoragePublicBaseUrl, getUserStoragePrefix, parseStoragePublicUrl } from "@/storage";
+import { getStoragePublicBaseUrl, parseStoragePublicUrl } from "@/storage";
+import { findOwnedAssetByStorageKey } from "@/modules/assets/repository";
+import { backfillCurrentAvatarAsset, deleteAsset } from "@/modules/assets/service";
 import {
   normalizeAvatarForOutput,
   normalizeAvatarUrl,
@@ -32,21 +35,23 @@ function normalizeUserForOutput(userItem: z.infer<typeof userSchema>, serverUrl:
   return { ...normalized, name: getVisibleUserName(normalized) };
 }
 
-async function deleteOwnedAvatar(context: Context, userId: string, image: string) {
+async function deleteTrackedAvatar(context: Context, userId: string, image: string) {
   if (!context.storage) return;
   const publicBaseUrl = getStoragePublicBaseUrl(context.env.SERVER_URL);
   const parsedStorageUrl = parseStoragePublicUrl(publicBaseUrl, image);
-  if (!parsedStorageUrl?.key.startsWith(getUserStoragePrefix("avatar", userId))) {
-    return;
-  }
+  if (!parsedStorageUrl) return;
+  const record = await findOwnedAssetByStorageKey(context.db, parsedStorageUrl.key, userId);
+  if (!record) return;
 
-  await context.storage.delete(parsedStorageUrl.key).catch((error) => {
-    console.error("Failed to delete unused avatar", {
-      error: error instanceof Error ? error.message : "Unknown error",
-      key: parsedStorageUrl.key,
-      userId,
-    });
-  });
+  await deleteAsset(context.db, context.storage, { assetId: record.id, ownerId: userId }).catch(
+    (error) => {
+      console.error("Failed to delete unused avatar", {
+        error: error instanceof Error ? error.message : "Unknown error",
+        assetId: record.id,
+        userId,
+      });
+    },
+  );
 }
 
 export const usersRouter = {
@@ -124,20 +129,42 @@ export const usersRouter = {
         });
       }
 
-      const billingStatus = context.payments
-        ? await context.payments.getBillingStatus({ userId })
-        : null;
-      if (billingStatus?.hasActiveSubscription) {
+      // Entitlement loss does not end the provider's ability to renew or collect debt.
+      // Guard the mutation itself so a concurrent subscription update cannot bypass it.
+      const noUnsettledSubscription = context.payments
+        ? notExists(
+            db
+              .select({ id: billingSubscription.id })
+              .from(billingSubscription)
+              .where(
+                and(
+                  eq(billingSubscription.userId, userId),
+                  ne(billingSubscription.status, "canceled"),
+                ),
+              ),
+          )
+        : undefined;
+      const accountWasDeleted = exists(
+        db
+          .select({ id: user.id })
+          .from(user)
+          .where(and(eq(user.id, userId), eq(user.deletedAt, deletedAt))),
+      );
+      const [deletion] = await db.batch([
+        db
+          .update(user)
+          .set(buildDeletedAccountUserUpdate(currentUser, deletedAt))
+          .where(and(eq(user.id, userId), isNull(user.deletedAt), noUnsettledSubscription)),
+        // Release provider identities and credentials together with the old sessions.
+        // Billing records and signup-grant claims remain attached to the tombstoned user.
+        db.delete(account).where(and(eq(account.userId, userId), accountWasDeleted)),
+        db.delete(session).where(and(eq(session.userId, userId), accountWasDeleted)),
+      ]);
+      if (deletion.meta.changes !== 1) {
         throw new ORPCError("BAD_REQUEST", {
           message: context.t("errors.activeSubscriptionDeletion"),
         });
       }
-
-      await db
-        .update(user)
-        .set(buildDeletedAccountUserUpdate(currentUser, deletedAt))
-        .where(eq(user.id, userId));
-      await db.delete(session).where(eq(session.userId, userId));
       return { success: true };
     }),
 
@@ -180,6 +207,13 @@ export const usersRouter = {
           : null;
       let updatedUser: typeof user.$inferSelect | undefined;
       try {
+        if (currentUser?.image && currentUser.image !== normalizedInput.image && context.storage) {
+          await backfillCurrentAvatarAsset(context.db, context.storage, {
+            ownerId: userId,
+            publicBaseUrl: getStoragePublicBaseUrl(context.env.SERVER_URL),
+          });
+        }
+
         [updatedUser] = await db
           .update(user)
           .set({
@@ -196,13 +230,13 @@ export const usersRouter = {
         }
       } catch (error) {
         if (stagedAvatar) {
-          await deleteOwnedAvatar(context, userId, stagedAvatar);
+          await deleteTrackedAvatar(context, userId, stagedAvatar);
         }
         throw error;
       }
 
       if (currentUser?.image && currentUser.image !== updatedUser.image) {
-        await deleteOwnedAvatar(context, userId, currentUser.image);
+        await deleteTrackedAvatar(context, userId, currentUser.image);
       }
 
       return normalizeUserForOutput(updatedUser, context.env.SERVER_URL);

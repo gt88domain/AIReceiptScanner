@@ -5,6 +5,7 @@
     "**/node_modules/**",
     "**/.turbo/**",
     "**/.wrangler/**",
+    "**/worker-configuration.d.ts",
     "**/src/db/migrations/meta/**"
   ]
 }

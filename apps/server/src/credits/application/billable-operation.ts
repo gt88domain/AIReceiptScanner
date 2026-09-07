@@ -1,11 +1,11 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull, or, sql } from "drizzle-orm";
 import type { Database } from "@/db";
-import { billableOperation, creditTransaction } from "@/db/schema/credits";
+import { billableOperation, creditAccount, creditTransaction } from "@/db/schema/credits";
 import {
   assertCreditsEnabled,
   assertCreditAccountNotOnBillingHold,
   assertPositiveAmount,
-  createAccountGrantUpdate,
+  createBatchChangeGuard,
   findTransactionBySource,
   runCreditBatch,
 } from "./internal";
@@ -221,35 +221,106 @@ export async function failBillableOperation(db: Database, input: FailBillableOpe
     sourceId: operation.id,
   };
   const existingRefund = await findTransactionBySource(db, refundSource);
+  const usage = operation.creditTransactionId
+    ? await db
+        .select()
+        .from(creditTransaction)
+        .where(eq(creditTransaction.id, operation.creditTransactionId))
+        .limit(1)
+        .then(([row]) => row ?? null)
+    : await findTransactionBySource(db, {
+        sourceProvider: "app",
+        sourceType: "usage",
+        sourceId: operation.id,
+      });
+  const charged =
+    usage !== null &&
+    usage.userId === operation.userId &&
+    usage.sourceProvider === "app" &&
+    usage.sourceType === "usage" &&
+    usage.sourceId === operation.id &&
+    usage.amount === -operation.calculatedCost;
+
+  if (!charged || !usage) {
+    await db
+      .update(billableOperation)
+      .set({ status: "failed", failureReason: input.failureReason, updatedAt: new Date() })
+      .where(
+        and(
+          eq(billableOperation.id, operation.id),
+          eq(billableOperation.status, operation.status),
+        ),
+      );
+    return (await findOperation(db, input)) ?? operation;
+  }
+
   if (!existingRefund) {
     const now = new Date();
+    // Raw SQL parameters bypass Drizzle's timestamp encoder; D1 stores these
+    // columns as Unix seconds, matching the schema's timestamp mode.
+    const nowSeconds = Math.floor(now.getTime() / 1000);
     const metadata: CreditMetadata = {
       feature: operation.feature,
       operationId: operation.operationId,
       reason: input.failureReason,
     };
     await runCreditBatch(db, [
-      db.insert(creditTransaction).values({
-        id: crypto.randomUUID(),
-        userId: operation.userId,
-        amount: operation.calculatedCost,
-        remainingAmount: operation.calculatedCost,
-        sourceProvider: "app",
-        sourceType: "refund",
-        sourceId: operation.id,
-        packageId: null,
-        expiresAt: null,
-        metadata,
-        createdAt: now,
-        updatedAt: now,
-      }),
-      createAccountGrantUpdate(db, operation.userId, operation.calculatedCost, now),
+      db
+        .update(billableOperation)
+        .set({
+          status: "refunded",
+          creditTransactionId: usage.id,
+          failureReason: input.failureReason,
+          updatedAt: now,
+        })
+        .where(
+          and(
+            eq(billableOperation.id, operation.id),
+            eq(billableOperation.status, operation.status),
+            or(
+              eq(billableOperation.creditTransactionId, usage.id),
+              isNull(billableOperation.creditTransactionId),
+            ),
+          ),
+        ),
+      db.insert(creditTransaction).select(
+        db
+          .select({
+            id: sql<string>`${crypto.randomUUID()}`.as("id"),
+            userId: sql<string>`${operation.userId}`.as("user_id"),
+            amount: sql<number>`${operation.calculatedCost}`.as("amount"),
+            remainingAmount: sql<number>`${operation.calculatedCost}`.as("remaining_amount"),
+            sourceProvider: sql<"app">`'app'`.as("source_provider"),
+            sourceType: sql<"refund">`'refund'`.as("source_type"),
+            sourceId: sql<string>`${operation.id}`.as("source_id"),
+            packageId: sql<string | null>`null`.as("package_id"),
+            expiresAt: sql<Date | null>`null`.as("expires_at"),
+            metadata: sql<string>`${JSON.stringify(metadata)}`.as("metadata"),
+            createdAt: sql<number>`${nowSeconds}`.as("created_at"),
+            updatedAt: sql<number>`${nowSeconds}`.as("updated_at"),
+          })
+          .from(billableOperation)
+          .where(and(eq(billableOperation.id, operation.id), sql`changes() = 1`))),
+      db
+        .update(creditAccount)
+        .set({
+          balance: sql`${creditAccount.balance} + ${operation.calculatedCost}`,
+          totalGranted: sql`${creditAccount.totalGranted} + ${operation.calculatedCost}`,
+          updatedAt: now,
+        })
+        .where(and(eq(creditAccount.userId, operation.userId), sql`changes() = 1`)),
+      createBatchChangeGuard(db, refundSource),
     ]);
+  } else {
+    await db
+      .update(billableOperation)
+      .set({ status: "refunded", failureReason: input.failureReason, updatedAt: new Date() })
+      .where(
+        and(
+          eq(billableOperation.id, operation.id),
+          eq(billableOperation.status, operation.status),
+        ),
+      );
   }
-
-  await db
-    .update(billableOperation)
-    .set({ status: "refunded", failureReason: input.failureReason, updatedAt: new Date() })
-    .where(eq(billableOperation.id, operation.id));
   return (await findOperation(db, input)) ?? operation;
 }

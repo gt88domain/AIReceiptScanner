@@ -1,5 +1,6 @@
 import { useForm } from "@tanstack/react-form";
 import { MaterialIcons } from "@expo/vector-icons";
+import { resolveNativeCommonConfig } from "@repo/app-config";
 import { useRouter } from "expo-router";
 import { Button, Spinner, useThemeColor } from "heroui-native";
 import { useTranslation } from "react-i18next";
@@ -10,10 +11,14 @@ import * as React from "react";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import * as z from "zod";
 import { Text } from "@/components/ui/text";
-import { appConfig } from "@/configs/app-config";
+import { ExternalLink } from "@/components/external-link";
+import { appConfig, getAuthConfig } from "@/configs/app-config";
 import { useToast } from "@/hooks/use-toast";
 import { authClient } from "@/lib/auth/auth.client";
 import { getErrorMessage } from "@/utils/error";
+
+const nativeRoutes = resolveNativeCommonConfig().routes;
+const webAppUrl = process.env.EXPO_PUBLIC_WEB_APP_URL;
 
 export function SignUpForm() {
   const router = useRouter();
@@ -46,6 +51,7 @@ export function SignUpForm() {
           email: value.email,
           password: value.password,
           name: value.name,
+          callbackURL: `${getAuthConfig().callbackURL}?flow=verify-email`,
         },
         {
           onRequest: () => {},
@@ -61,10 +67,6 @@ export function SignUpForm() {
       );
     },
   });
-
-  function onTermsPress() {
-    console.log("Open terms and conditions");
-  }
 
   return (
     <>
@@ -259,9 +261,22 @@ export function SignUpForm() {
                 </Pressable>
               </View>
 
-              <Pressable onPress={onTermsPress} className="mt-4">
+              <View className="mt-4 items-center gap-2">
                 <Text className="text-center text-xs text-muted">{t("auth.termsAgreement")}</Text>
-              </Pressable>
+                <View className="flex-row items-center gap-2">
+                  <ExternalLink href={webAppUrl + nativeRoutes.termsOfService}>
+                    <Text className="text-xs font-medium text-link">
+                      {t("settings.termsOfService")}
+                    </Text>
+                  </ExternalLink>
+                  <Text className="text-xs text-muted">&bull;</Text>
+                  <ExternalLink href={webAppUrl + nativeRoutes.privacyPolicy}>
+                    <Text className="text-xs font-medium text-link">
+                      {t("settings.privacyPolicy")}
+                    </Text>
+                  </ExternalLink>
+                </View>
+              </View>
             </Animated.View>
           </View>
         </View>

@@ -21,6 +21,20 @@ anonymous form endpoints, and any public write API. Record path/method, counting
 characteristic, threshold/window, action, exceptions, owner, alert, and review
 date. Start from observed traffic; do not copy a universal request count.
 
+For the public forms, create separate rules for the production custom domain
+with these expressions:
+
+```text
+http.request.method eq "POST" and http.request.uri.path eq "/api/contact"
+http.request.method eq "POST" and http.request.uri.path eq "/api/newsletter/subscribe"
+```
+
+Count by Cloudflare's verified source IP, choose each threshold from observed
+legitimate traffic, and use a managed challenge or block response with a review
+date. Apply equivalent rules to a directly reachable API hostname, or remove
+that public route, so callers cannot bypass the Web hostname. Workers.dev test
+URLs are not a substitute for a production custom-domain WAF policy.
+
 ## Implementation constraints
 
 - Do not use Workers KV as a strict distributed counter: concurrent writes can
@@ -31,6 +45,9 @@ date. Start from observed traffic; do not copy a universal request count.
   failure behavior, and load expectations in its owning domain.
 - Return a stable `429` and a bounded retry hint for application-enforced
   limits. Never make a client-side hidden button the enforcement mechanism.
+- Public write endpoints use only `cf-connecting-ip`. Requests without that
+  trusted header share a conservative fallback bucket; forwarded and real-IP
+  headers are never used as attacker identity on those endpoints.
 - A limit cannot grant authorization. Keep authentication, capability, credit,
   and idempotency checks independent of it.
 

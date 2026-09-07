@@ -3,13 +3,17 @@ import {
   PRICE_TYPES,
   SUBSCRIPTION_STATUSES,
 } from "@repo/app-config/payments/web";
-import { SUPPORTED_SERVER_PAYMENT_PROVIDERS } from "@repo/app-config";
+import {
+  PERSISTED_SERVER_PAYMENT_PROVIDERS,
+  SUPPORTED_SERVER_PAYMENT_PROVIDERS,
+} from "@repo/app-config";
 import { z } from "zod";
 
 /**
  * Supported provider enum schema.
  */
 export const providerEnum = z.enum(SUPPORTED_SERVER_PAYMENT_PROVIDERS);
+const persistedProviderEnum = z.enum(PERSISTED_SERVER_PAYMENT_PROVIDERS);
 
 /**
  * Price type enum schema.
@@ -68,7 +72,7 @@ export const planSchema = z.object({
  */
 export const billingStatusSchema = z.object({
   userId: z.string(),
-  billingProvider: providerEnum.nullable(),
+  billingProvider: persistedProviderEnum.nullable(),
   canManageBilling: z.boolean(),
   activePlan: z
     .object({
@@ -93,7 +97,7 @@ export const billingStatusSchema = z.object({
     .object({
       id: z.string(),
       userId: z.string(),
-      provider: providerEnum,
+      provider: persistedProviderEnum,
       providerSubscriptionId: z.string(),
       providerCustomerId: z.string(),
       planId: z.string(),
@@ -111,7 +115,7 @@ export const billingStatusSchema = z.object({
     .object({
       id: z.string(),
       userId: z.string(),
-      provider: providerEnum,
+      provider: persistedProviderEnum,
       providerPaymentIntentId: z.string(),
       planId: z.string(),
       priceId: z.string(),
@@ -123,11 +127,11 @@ export const billingStatusSchema = z.object({
     .nullable(),
 });
 
-/** A safe, user-facing payment history row. Provider identifiers stay server-side. */
+/** A safe, user-facing payment history row. Provider resource IDs stay server-side. */
 export const purchaseHistoryItemSchema = z.object({
   type: z.enum(["subscription", "membership", "credits"]),
   label: z.string(),
-  provider: providerEnum,
+  provider: persistedProviderEnum,
   status: z.string(),
   amountCents: z.number().int().nullable(),
   currency: z.string().nullable(),
@@ -135,9 +139,19 @@ export const purchaseHistoryItemSchema = z.object({
   completedAt: z.date().nullable(),
 });
 
-export const purchaseHistorySchema = z.array(purchaseHistoryItemSchema);
+export const purchaseHistoryCursorSchema = z.object({
+  createdAt: z.date(),
+  type: purchaseHistoryItemSchema.shape.type,
+  id: z.string(),
+});
+
+export const purchaseHistorySchema = z.object({
+  items: z.array(purchaseHistoryItemSchema),
+  nextCursor: purchaseHistoryCursorSchema.nullable(),
+});
 
 export type PurchaseHistoryItem = z.infer<typeof purchaseHistoryItemSchema>;
+export type PurchaseHistoryCursor = z.infer<typeof purchaseHistoryCursorSchema>;
 
 /**
  * Billing status TypeScript type inferred from schema.

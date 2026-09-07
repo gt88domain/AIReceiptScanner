@@ -9,10 +9,11 @@ import { useSocialSignIn } from "@/hooks/use-social-sign-in";
 import { useThemePreference } from "@/providers/theme-provider";
 
 const isAppleSignInVisible = appConfig.auth.methods.appleEnabled && Platform.OS === "ios";
+const isGithubSignInVisible = appConfig.auth.methods.githubEnabled;
 const isGoogleSignInVisible = appConfig.auth.methods.googleEnabled;
 
 export function hasVisibleSocialSignInMethods() {
-  return isAppleSignInVisible || isGoogleSignInVisible;
+  return isAppleSignInVisible || isGithubSignInVisible || isGoogleSignInVisible;
 }
 
 export function SocialSignInButtons() {
@@ -63,6 +64,29 @@ export function SocialSignInButtons() {
               <AntDesign name="google" className="mr-1" size={20} color={foregroundColor} />
               <Text className="text-lg font-medium text-foreground">
                 {t("auth.signInWithGoogle")}
+              </Text>
+            </View>
+          )}
+        </Button>
+      ) : null}
+
+      {isGithubSignInVisible ? (
+        <Button
+          variant="outline"
+          onPress={() => socialSignIn("github")}
+          isDisabled={socialLoading !== null}
+          className="mt-3 h-12 flex-row items-center justify-center rounded-md"
+        >
+          {socialLoading === "github" ? (
+            <View className="flex-row items-center">
+              <Spinner size="sm" className="mr-2 text-foreground" />
+              <Text className="text-lg font-medium text-foreground">{t("auth.signingIn")}</Text>
+            </View>
+          ) : (
+            <View className="flex-row items-center">
+              <AntDesign name="github" className="mr-1" size={20} color={foregroundColor} />
+              <Text className="text-lg font-medium text-foreground">
+                {t("auth.signInWithGithub")}
               </Text>
             </View>
           )}

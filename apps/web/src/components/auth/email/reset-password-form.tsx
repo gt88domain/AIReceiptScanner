@@ -14,9 +14,9 @@ import { cn } from "@/lib/utils";
 export function ResetPasswordForm({ className, ...props }: React.ComponentProps<"div">) {
   const t = useTranslations();
   const navigate = useNavigate();
-  const { token } = useSearch({
+  const { token, error } = useSearch({
     from: "/(auth)/auth/reset-password",
-    select: (search) => ({ token: search.token }),
+    select: (search) => ({ token: search.token, error: search.error }),
   });
 
   const form = useForm({
@@ -57,6 +57,24 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentProps<
         }),
     },
   });
+
+  if (!token || error) {
+    return (
+      <div className={cn("flex w-full max-w-sm flex-col gap-4", className)} {...props}>
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-xl">{t("resetPassword.invalidToken")}</CardTitle>
+            <CardDescription>{error ?? t("resetPassword.description")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link to="/auth/sign-in">{t("resetPassword.backToSignIn")}</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className={cn("flex w-full max-w-sm flex-col gap-4", className)} {...props}>

@@ -1,9 +1,7 @@
 import type { ServerPaymentProviderKey } from "@repo/app-config";
 import type { PaymentProvider } from "../public/types";
-import { createCreemPaymentProvider } from "./creem/provider";
 import { createRevenueCatPaymentProvider } from "./revenuecat/provider";
 import { createStripePaymentProvider } from "./stripe/provider";
-import { createWaffoPaymentProvider } from "./waffo/provider";
 
 /**
  * Caches provider instances to avoid repeated SDK initialization.
@@ -31,9 +29,7 @@ export function getPaymentProvider(providerKey?: ServerPaymentProviderKey): Paym
   }
 
   const providers: Record<ServerPaymentProviderKey, () => PaymentProvider> = {
-    creem: createCreemPaymentProvider,
     stripe: createStripePaymentProvider,
-    waffo: createWaffoPaymentProvider,
     revenuecat: createRevenueCatPaymentProvider,
   };
 

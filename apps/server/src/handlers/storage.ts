@@ -11,6 +11,16 @@ import type { ServerRuntimeConfig } from "../lib/runtime-config";
 import { resolveStorageBinding } from "../lib/storage-binding";
 import { getStorageProvider, parseStoragePath } from "../storage";
 
+const EXECUTABLE_CONTENT_TYPES = new Set([
+  "text/html",
+  "application/xhtml+xml",
+  "image/svg+xml",
+  "text/xml",
+  "application/xml",
+  "text/javascript",
+  "application/javascript",
+]);
+
 /**
  * Handle file serving/download
  *
@@ -45,7 +55,6 @@ export async function handleFileServe(
   const storageProvider = getStorageProvider({
     storage: storageBinding,
     provider: runtimeConfig.storage.provider,
-    aliyunOssEnv: c.env,
   });
   const file = await storageProvider.get(parsedStoragePath.key);
 
@@ -55,12 +64,15 @@ export async function handleFileServe(
 
   const headers = new Headers();
 
-  // Set content type from metadata
-  if (file.httpMetadata?.contentType) {
+  const storedContentType = file.httpMetadata?.contentType?.split(";")[0].trim().toLowerCase();
+  if (storedContentType && EXECUTABLE_CONTENT_TYPES.has(storedContentType)) {
+    headers.set("Content-Type", "application/octet-stream");
+    headers.set("Content-Disposition", "attachment");
+  } else if (file.httpMetadata?.contentType) {
     headers.set("Content-Type", file.httpMetadata.contentType);
   }
 
-  headers.set("Cache-Control", "public, max-age=86400");
+  headers.set("Cache-Control", "public, max-age=300");
 
   // Set ETag for cache validation
   headers.set("ETag", file.etag);

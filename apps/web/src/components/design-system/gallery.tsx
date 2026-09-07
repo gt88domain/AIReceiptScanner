@@ -2,19 +2,6 @@ import { MoonIcon, SlidersHorizontalIcon, SparklesIcon, SunIcon } from "lucide-r
 import { useState, type ReactNode } from "react";
 import "./gallery.css";
 import { Prose } from "@/components/content/prose";
-import { ListingEmptyState } from "@/components/listing/listing-empty-state";
-import { ListingErrorState } from "@/components/listing/listing-error-state";
-import { ListingFacetRail } from "@/components/listing/listing-facet-rail";
-import { ListingGrid } from "@/components/listing/listing-grid";
-import { ListingLoadMore } from "@/components/listing/listing-load-more";
-import { ListingLoadingState } from "@/components/listing/listing-loading-state";
-import { ListingMediaCard } from "@/components/listing/listing-media-card";
-import { ListingPagination } from "@/components/listing/listing-pagination";
-import { ListingRank } from "@/components/listing/listing-rank";
-import { ListingSaveButton } from "@/components/listing/listing-save-button";
-import { ListingSearchInput } from "@/components/listing/listing-search-input";
-import { ListingSortSelect } from "@/components/listing/listing-sort-select";
-import { ListingToolbar } from "@/components/listing/listing-toolbar";
 import { useTheme } from "@/components/providers/theme-provider";
 import {
   Breadcrumb,
@@ -34,6 +21,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
@@ -174,9 +170,8 @@ export function DesignSystemGallery() {
             Design system gallery
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-ink-muted">
-            Every shared public primitive, in every skin. Page frames (ListingPage, RankingPage,
-            PublicDetailLayout) compose these pieces and were validated separately. The global
-            header above remains product-owned navigation.
+            Every shared public primitive, in every skin. The global header above remains
+            product-owned navigation.
           </p>
         </header>
 
@@ -272,116 +267,130 @@ export function DesignSystemGallery() {
           index="02"
           title="Search results composition"
         >
-          <ListingToolbar
-            ariaLabel="Demo controls"
-            search={
-              <ListingSearchInput
-                label="Search"
-                onQueryChange={setQuery}
-                onSubmit={(value) => {
-                  setSubmittedQuery(value);
-                  resetVisibleItems();
-                }}
+          <div className="flex flex-wrap items-center gap-3">
+            <form
+              className="flex min-w-64 flex-1 items-center gap-2"
+              onSubmit={(event) => {
+                event.preventDefault();
+                setSubmittedQuery(query);
+                resetVisibleItems();
+              }}
+            >
+              <Input
+                aria-label="Search"
+                onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search resources"
-                query={query}
-                submitLabel="Search"
+                value={query}
               />
-            }
-            sort={
-              <ListingSortSelect
-                label="Sort"
-                onValueChange={setSort}
-                options={[
-                  { label: "Popular", value: "popular" },
-                  { label: "Alphabetical", value: "alphabetical" },
-                ]}
-                value={sort}
-              />
-            }
-            actions={
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    aria-label="More result filters"
-                    className="size-11 rounded-full border-line bg-surface-raised text-ink shadow-none"
-                    size="icon"
-                    variant="outline"
-                  >
-                    <SlidersHorizontalIcon aria-hidden="true" className="size-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className={cn("w-52 border-line bg-surface text-ink", `skin-${skin}`)}
+              <Button type="submit" variant="outline">
+                Search
+              </Button>
+            </form>
+            <Select
+              onValueChange={(value) => {
+                setSort(value);
+                resetVisibleItems();
+              }}
+              value={sort}
+            >
+              <SelectTrigger aria-label="Sort" className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="popular">Popular</SelectItem>
+                <SelectItem value="alphabetical">Alphabetical</SelectItem>
+              </SelectContent>
+            </Select>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  aria-label="More result filters"
+                  className="size-11 rounded-full border-line bg-surface-raised text-ink shadow-none"
+                  size="icon"
+                  variant="outline"
                 >
-                  <DropdownMenuLabel>Result filters</DropdownMenuLabel>
-                  <DropdownMenuCheckboxItem
-                    checked={featuredOnly}
-                    onCheckedChange={(checked) => {
-                      setFeaturedOnly(Boolean(checked));
-                      resetVisibleItems();
-                    }}
-                  >
-                    Featured only
-                  </DropdownMenuCheckboxItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onSelect={() => {
-                      setFeaturedOnly(false);
-                      resetVisibleItems();
-                    }}
-                  >
-                    Clear filters
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            }
-            summary={`${filteredItems.length} result${filteredItems.length === 1 ? "" : "s"}`}
-          />
+                  <SlidersHorizontalIcon aria-hidden="true" className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className={cn("w-52 border-line bg-surface text-ink", `skin-${skin}`)}
+              >
+                <DropdownMenuLabel>Result filters</DropdownMenuLabel>
+                <DropdownMenuCheckboxItem
+                  checked={featuredOnly}
+                  onCheckedChange={(checked) => {
+                    setFeaturedOnly(Boolean(checked));
+                    resetVisibleItems();
+                  }}
+                >
+                  Featured only
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={() => {
+                    setFeaturedOnly(false);
+                    resetVisibleItems();
+                  }}
+                >
+                  Clear filters
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <p className="text-sm text-ink-muted">
+              {filteredItems.length} result{filteredItems.length === 1 ? "" : "s"}
+            </p>
+          </div>
 
           {visibleItems.length > 0 ? (
             <>
-              <ListingGrid
-                ariaLabel="Search results"
-                columns={4}
-                getItemKey={(item) => item.id}
-                items={visibleItems}
-                renderItem={(item, index) => (
-                  <ListingMediaCard
-                    description={item.description}
-                    footer={<DemoStats item={item} />}
-                    media={<DemoMedia tone={index} />}
-                    mediaAction={<ListingSaveButton label={`Save ${item.title}`} saved={false} />}
-                    title={item.title}
-                  />
-                )}
-              />
+              <div
+                aria-label="Search results"
+                className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+              >
+                {visibleItems.map((item, index) => (
+                  <DemoCard item={item} key={item.id} tone={index} />
+                ))}
+              </div>
               {visibleItems.length < sortedItems.length ? (
-                <ListingLoadMore
-                  label="Load more"
-                  onClick={() => setVisibleCount((count) => count + 4)}
-                />
+                <div className="flex justify-center">
+                  <Button onClick={() => setVisibleCount((count) => count + 4)} variant="outline">
+                    Load more
+                  </Button>
+                </div>
               ) : null}
             </>
           ) : (
-            <ListingEmptyState
-              description="Try another query, tab, or filter."
-              title="No results"
-            />
+            <DemoState description="Try another query, tab, or filter." title="No results" />
           )}
 
           <div className="rounded-card border border-dashed border-line p-4">
             <p className="mb-3 text-xs font-semibold tracking-wide text-ink-muted uppercase">
               Crawlable page links remain available when SEO requires them
             </p>
-            <ListingPagination
-              ariaLabel="Demo pages"
-              currentPage={1}
-              hrefForPage={(page) => `/design-system?page=${page}`}
-              nextLabel="Next"
-              previousLabel="Previous"
-              totalPages={3}
-            />
+            <nav aria-label="Demo pages" className="flex items-center gap-2">
+              <Button disabled size="sm" variant="outline">
+                Previous
+              </Button>
+              {[1, 2, 3].map((page) => (
+                <a
+                  aria-current={page === 1 ? "page" : undefined}
+                  className={cn(
+                    "rounded-full px-3 py-1 text-sm font-semibold",
+                    page === 1
+                      ? "bg-skin-accent text-skin-on-accent"
+                      : "text-ink-muted hover:text-ink",
+                  )}
+                  href={`/design-system?page=${page}`}
+                  key={page}
+                >
+                  {page}
+                </a>
+              ))}
+              <Button size="sm" variant="outline">
+                Next
+              </Button>
+            </nav>
           </div>
         </GallerySection>
 
@@ -390,72 +399,50 @@ export function DesignSystemGallery() {
           index="03"
           title="Cards"
         >
-          <ListingGrid
-            ariaLabel="Demo cards"
-            columns={4}
-            getItemKey={(item) => item.id}
-            items={demoItems.slice(0, 4)}
-            renderItem={(item, index) => (
-              <ListingMediaCard
-                description={item.description}
-                footer={<DemoStats item={item} />}
-                media={<DemoMedia tone={index} />}
-                mediaAction={<ListingSaveButton label={`Save ${item.title}`} saved={index === 0} />}
-                mediaVariant={index % 2 === 0 ? "bleed" : "framed"}
-                title={item.title}
-              />
-            )}
-          />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {demoItems.slice(0, 4).map((item, index) => (
+              <DemoCard item={item} key={item.id} tone={index} />
+            ))}
+          </div>
         </GallerySection>
 
         <GallerySection
-          description="Desktop rail; on mobile it moves to a drawer."
+          description="Facets compose checkbox and select primitives; on mobile they move to a drawer."
           index="04"
           title="Facet rail"
         >
-          <div className="max-w-sm">
-            <ListingFacetRail
-              category={{
-                allChildrenLabel: "All",
-                allLabel: "All",
-                label: "Category",
-                onValueChange: () => undefined,
-                options: [
-                  {
-                    children: [
-                      { label: "Writing", value: "writing" },
-                      { label: "Design", value: "design" },
-                    ],
-                    label: "Product",
-                    value: "product",
-                  },
-                  { label: "Research", value: "research" },
-                  { label: "Creative", value: "creative" },
-                ],
-                subcategoryLabel: "Subcategory",
-                value: "product",
-              }}
-              clearLabel="Clear filters"
-              onClear={() => undefined}
-              quickFilters={{
-                label: "Quick filters",
-                onValueChange: () => undefined,
-                options: [
-                  { label: "New", value: "new" },
-                  { label: "Popular", value: "popular" },
-                ],
-                value: "new",
-              }}
-              tags={{
-                label: "Tags",
-                onToggle: () => undefined,
-                options: [
-                  { label: "Editorial", value: "editorial" },
-                  { label: "Interactive", value: "interactive" },
-                ],
-                selectedValues: ["editorial"],
-              }}
-            />
+          <div className="max-w-sm space-y-4 rounded-card border border-line bg-surface p-4">
+            <div>
+              <p className="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+                Category
+              </p>
+              <Select defaultValue="product">
+                <SelectTrigger className="mt-2 w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="product">Product</SelectItem>
+                  <SelectItem value="research">Research</SelectItem>
+                  <SelectItem value="creative">Creative</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <p className="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+                Quick filters
+              </p>
+              <div className="mt-2 flex gap-2">
+                <Button size="sm" variant="outline">
+                  New
+                </Button>
+                <Button size="sm" variant="outline">
+                  Popular
+                </Button>
+              </div>
+            </div>
+            <Button className="w-full" size="sm" variant="ghost">
+              Clear filters
+            </Button>
           </div>
         </GallerySection>
 
@@ -470,7 +457,15 @@ export function DesignSystemGallery() {
                 key={item.id}
                 className="flex items-center gap-4 p-4 transition-colors hover:bg-surface-hover sm:gap-6 sm:px-6"
               >
-                <ListingRank label={`Rank ${index + 1}`} rank={index + 1} />
+                <span
+                  aria-label={`Rank ${index + 1}`}
+                  className={cn(
+                    "w-8 text-center font-mono text-lg font-bold",
+                    index < 3 ? "text-skin-accent-ink" : "text-ink-muted",
+                  )}
+                >
+                  {index + 1}
+                </span>
                 <div className="flex min-w-0 flex-1 items-center gap-4">
                   <div className="hidden size-16 shrink-0 place-items-center rounded-control border border-line bg-hero-skin sm:grid">
                     <SparklesIcon aria-hidden="true" className="size-6 text-skin-accent-ink" />
@@ -487,17 +482,21 @@ export function DesignSystemGallery() {
 
         <GallerySection description="Empty, error, and loading." index="06" title="States">
           <div className="grid gap-4 lg:grid-cols-3">
-            <ListingEmptyState
-              description="Try changing the query or filters."
-              title="No results"
-            />
-            <ListingErrorState
+            <DemoState description="Try changing the query or filters." title="No results" />
+            <DemoState
+              action={
+                <Button onClick={() => undefined} size="sm" variant="outline">
+                  Retry
+                </Button>
+              }
               description="The request failed."
-              onRetry={() => undefined}
-              retryLabel="Retry"
               title="Something went wrong"
             />
-            <ListingLoadingState columns={1} count={1} />
+            <div className="rounded-card border border-line bg-surface p-4">
+              <Skeleton className="h-32 w-full" />
+              <Skeleton className="mt-3 h-4 w-2/3" />
+              <Skeleton className="mt-2 h-4 w-1/2" />
+            </div>
           </div>
         </GallerySection>
 
@@ -572,6 +571,48 @@ function GallerySection({
   );
 }
 
+function DemoCard({ item, tone }: { item: (typeof demoItems)[number]; tone: number }) {
+  return (
+    <article className="overflow-hidden rounded-card border border-line bg-surface shadow-raised">
+      <div className="relative aspect-[4/3] bg-hero-skin">
+        <DemoMedia tone={tone} />
+        <button
+          aria-label={`Save ${item.title}`}
+          className="absolute top-3 right-3 grid size-9 place-items-center rounded-full border border-line bg-surface text-ink-muted transition-colors hover:text-ink"
+          type="button"
+        >
+          ♡
+        </button>
+      </div>
+      <div className="p-4">
+        <h3 className="truncate text-base font-bold">{item.title}</h3>
+        <p className="mt-1 line-clamp-2 text-sm text-ink-muted">{item.description}</p>
+        <p className="mt-3 truncate text-xs font-semibold text-ink-muted">
+          ★ {item.rating}　♡ {item.saves}　◉ {item.views} views
+        </p>
+      </div>
+    </article>
+  );
+}
+
+function DemoState({
+  action,
+  description,
+  title,
+}: {
+  action?: ReactNode;
+  description: string;
+  title: string;
+}) {
+  return (
+    <div className="rounded-card border border-dashed border-line p-10 text-center">
+      <h3 className="text-base font-bold">{title}</h3>
+      <p className="mt-1 text-sm text-ink-muted">{description}</p>
+      {action ? <div className="mt-4">{action}</div> : null}
+    </div>
+  );
+}
+
 function DemoMedia({ tone }: { tone: number }) {
   return (
     <div className="grid size-full place-items-center bg-hero-skin p-6">
@@ -582,13 +623,5 @@ function DemoMedia({ tone }: { tone: number }) {
         <SparklesIcon aria-hidden="true" className="size-10 text-skin-accent-ink" />
       </div>
     </div>
-  );
-}
-
-function DemoStats({ item }: { item: (typeof demoItems)[number] }) {
-  return (
-    <p className="truncate text-xs font-semibold text-ink-muted">
-      ★ {item.rating}　♡ {item.saves}　◉ {item.views} views
-    </p>
   );
 }

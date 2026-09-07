@@ -73,3 +73,9 @@ catalogs live in `packages/app-config/src/product-config.ts`. Resolver types,
 feature dependency rules, and profiles remain protected platform code. Email is
 independent of the profile resource list: disable it with the documented email
 contract when a product has no outbound-mail need.
+
+Web build verification is deliberately separate from infrastructure profiles.
+`apps/web/content-surface.profile.json` declares whether a product emits a
+static or runtime sitemap and whether it retains the template's development
+gallery. A runtime sitemap still needs a product-owned deployed smoke check;
+the repository check cannot validate D1-backed URLs from build artifacts.

@@ -15,13 +15,30 @@ export async function createAdminAuditLog(
     after: AuditSnapshot | null;
   },
 ) {
+  const { record, command } = createAdminAuditLogCommand(db, input);
+  await command;
+  return record;
+}
+
+export function createAdminAuditLogCommand(
+  db: Database,
+  input: {
+    actorId: string;
+    actorEmail: string;
+    action: string;
+    entityType: string;
+    entityId: string;
+    before: AuditSnapshot | null;
+    after: AuditSnapshot | null;
+  },
+  now = new Date(),
+) {
   const record: AdminAuditLog = {
     id: crypto.randomUUID(),
     ...input,
-    createdAt: new Date(),
+    createdAt: now,
   };
-  await db.insert(adminAuditLog).values(record);
-  return record;
+  return { record, command: db.insert(adminAuditLog).values(record) };
 }
 
 export async function listAdminAuditLogs(db: Database, input: { limit: number; offset: number }) {

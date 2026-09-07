@@ -1,4 +1,4 @@
-import { and, eq, isNull, lte, or, sql } from "drizzle-orm";
+import { and, eq, isNull, lte, ne, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { Database } from "@/db";
 import { paymentOperation, type PaymentOperation } from "@/db/schema/payments";
@@ -9,6 +9,7 @@ const OPERATION_LEASE_MS = 5 * 60 * 1000;
 const MAX_PAYMENT_OPERATION_ATTEMPTS = 4;
 const PAYMENT_OPERATION_RETRY_BASE_MS = 60_000;
 const PAYMENT_OPERATION_RETRY_MAX_MS = 60 * 60 * 1000;
+const PROVIDER_IDEMPOTENCY_REQUEUE_WINDOW_MS = 23 * 60 * 60 * 1000;
 const requestEnvelopeSchema = z.object({
   version: z.literal(1),
   payload: z.record(z.string(), z.unknown()),
@@ -138,6 +139,39 @@ export async function claimPaymentOperation(
 ) {
   if (operation.status === "manual_review") throw new Error("PAYMENT_OPERATION_MANUAL_REVIEW");
   if (operation.status === "completed" || operation.status === "provider_succeeded") return null;
+  if (
+    operation.idempotencyMode === "native" &&
+    now.getTime() - operation.createdAt.getTime() > PROVIDER_IDEMPOTENCY_REQUEUE_WINDOW_MS
+  ) {
+    await db
+      .update(paymentOperation)
+      .set({
+        status: "manual_review",
+        manualReviewCode: "PAYMENT_OPERATION_IDEMPOTENCY_WINDOW_EXPIRED",
+        leaseToken: null,
+        leaseUntil: null,
+        nextRetryAt: null,
+        retryable: false,
+        updatedAt: now,
+      })
+      .where(
+        and(
+          eq(paymentOperation.id, operation.id),
+          or(
+            eq(paymentOperation.status, "pending"),
+            eq(paymentOperation.status, "failed"),
+            and(
+              eq(paymentOperation.status, "processing"),
+              or(isNull(paymentOperation.leaseUntil), lte(paymentOperation.leaseUntil, now)),
+            ),
+          ),
+        ),
+      );
+    // A successful CAS isolates this operation without aborting the rest of a
+    // recovery batch. If another worker won the race, returning unclaimed also
+    // prevents this stale caller from issuing a provider request.
+    return null;
+  }
   if (operation.status === "processing" && operation.leaseUntil && operation.leaseUntil > now) {
     throw new Error("PAYMENT_OPERATION_IN_PROGRESS");
   }
@@ -368,4 +402,113 @@ export async function retryPaymentOperation(db: Database, operationId: string, n
     })
     .where(eq(paymentOperation.id, operationId));
   return true;
+}
+
+/** Resolves a manual-review operation without permitting an unsafe duplicate provider call. */
+export async function resolvePaymentOperationManualReview(
+  db: Database,
+  operationId: string,
+  resolution: "requeue" | "mark_failed",
+  now = new Date(),
+) {
+  const [operation] = await db
+    .select({
+      attemptCount: paymentOperation.attemptCount,
+      createdAt: paymentOperation.createdAt,
+      idempotencyMode: paymentOperation.idempotencyMode,
+      lastError: paymentOperation.lastError,
+      manualReviewCode: paymentOperation.manualReviewCode,
+      scopeKey: paymentOperation.scopeKey,
+      status: paymentOperation.status,
+    })
+    .from(paymentOperation)
+    .where(eq(paymentOperation.id, operationId))
+    .limit(1);
+
+  if (!operation || operation.status !== "manual_review") {
+    return { resolved: false, reason: "NOT_IN_MANUAL_REVIEW" as const };
+  }
+  if (resolution === "requeue" && operation.idempotencyMode !== "native") {
+    return { resolved: false, reason: "UNSAFE_NON_IDEMPOTENT_RETRY" as const };
+  }
+  if (
+    resolution === "requeue" &&
+    now.getTime() - operation.createdAt.getTime() > PROVIDER_IDEMPOTENCY_REQUEUE_WINDOW_MS
+  ) {
+    return { resolved: false, reason: "IDEMPOTENCY_WINDOW_EXPIRED" as const };
+  }
+  if (resolution === "requeue" && operation.scopeKey) {
+    const [activeScope] = await db
+      .select({ id: paymentOperation.id })
+      .from(paymentOperation)
+      .where(
+        and(
+          eq(paymentOperation.scopeKey, operation.scopeKey),
+          ne(paymentOperation.id, operationId),
+          or(
+            eq(paymentOperation.status, "pending"),
+            eq(paymentOperation.status, "processing"),
+            eq(paymentOperation.status, "provider_succeeded"),
+          ),
+        ),
+      )
+      .limit(1);
+    if (activeScope) {
+      return { resolved: false, reason: "ACTIVE_SCOPE_CONFLICT" as const };
+    }
+  }
+
+  let resolved: { id: string } | undefined;
+  try {
+    [resolved] = await db
+      .update(paymentOperation)
+      .set({
+        status: resolution === "requeue" ? "pending" : "failed",
+        attemptCount: resolution === "requeue" ? 0 : operation.attemptCount,
+        manualReviewCode: resolution === "requeue" ? null : operation.manualReviewCode,
+        lastError: resolution === "requeue" ? null : operation.lastError,
+        leaseToken: null,
+        leaseUntil: null,
+        nextRetryAt: resolution === "requeue" ? now : null,
+        retryable: resolution === "requeue",
+        updatedAt: now,
+      })
+      .where(
+        and(eq(paymentOperation.id, operationId), eq(paymentOperation.status, "manual_review")),
+      )
+      .returning({ id: paymentOperation.id });
+  } catch (error) {
+    if (resolution === "requeue" && operation.scopeKey) {
+      const [activeScope] = await db
+        .select({ id: paymentOperation.id })
+        .from(paymentOperation)
+        .where(
+          and(
+            eq(paymentOperation.scopeKey, operation.scopeKey),
+            ne(paymentOperation.id, operationId),
+            or(
+              eq(paymentOperation.status, "pending"),
+              eq(paymentOperation.status, "processing"),
+              eq(paymentOperation.status, "provider_succeeded"),
+            ),
+          ),
+        )
+        .limit(1);
+      if (activeScope) {
+        return { resolved: false, reason: "ACTIVE_SCOPE_CONFLICT" as const };
+      }
+    }
+    throw error;
+  }
+
+  return {
+    resolved: Boolean(resolved),
+    reason: resolved ? null : ("STATUS_CHANGED" as const),
+    previous: {
+      status: operation.status,
+      attemptCount: operation.attemptCount,
+      manualReviewCode: operation.manualReviewCode,
+      lastError: operation.lastError,
+    },
+  };
 }

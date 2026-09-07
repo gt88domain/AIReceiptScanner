@@ -11,6 +11,7 @@ import {
   createDefaultProductDescriptor,
   resolveEmailConfig,
   resolveCommonConfig,
+  resolveNativeCommonConfig,
   resolveWebCommonConfig,
 } from "@repo/app-config";
 import {
@@ -123,7 +124,7 @@ function configuredProductionPriceIds(
     for (const price of plan.prices ?? []) {
       if (price.status !== "archived" && price.provider === "stripe") {
         prices.push({
-          label: `Stripe plan ${plan.id}/${price.id}`,
+          label: `packages/app-config/src/app-config.ts appConfig.web.payments.plans[${plan.id}].prices[${price.id}]`,
           production: price.prod?.providerPriceId ?? "",
           test: price.test?.providerPriceId ?? "",
         });
@@ -133,13 +134,53 @@ function configuredProductionPriceIds(
   for (const creditPackage of features.web.creditPurchases ? web.credits.packages : []) {
     if (creditPackage.status !== "archived" && creditPackage.web?.provider === "stripe") {
       prices.push({
-        label: `Stripe credits ${creditPackage.id}`,
+        label: `packages/app-config/src/product-config.ts productConfig.webCreditPackages[${creditPackage.id}].web`,
         production: creditPackage.web.prod?.providerPriceId ?? "",
         test: creditPackage.web.test?.providerPriceId ?? "",
       });
     }
   }
   return prices;
+}
+
+function configuredProductionProductIds(
+  features: ReturnType<typeof createDefaultProductDescriptor>["composition"]["features"],
+) {
+  const products: Array<{ label: string; value: string }> = [];
+  const native = resolveNativeCommonConfig();
+
+  if (features.native.billing) {
+    for (const platform of ["ios", "android"] as const) {
+      for (const plan of native.payments?.[platform]?.plans ?? []) {
+        if (plan.status === "archived") continue;
+        for (const price of plan.prices ?? []) {
+          if (price.status !== "archived") {
+            products.push({
+              label: `packages/app-config/src/app-config.ts appConfig.native.payments.${platform}.plans[${plan.id}].prices[${price.id}].providerPriceId`,
+              value: price.providerPriceId,
+            });
+          }
+        }
+      }
+    }
+  }
+
+  if (features.native.creditPurchases) {
+    for (const creditPackage of native.credits.packages) {
+      if (creditPackage.status === "archived") continue;
+      for (const platform of ["ios", "android"] as const) {
+        const product = creditPackage.native?.[platform];
+        if (product && product.status !== "archived") {
+          products.push({
+            label: `packages/app-config/src/product-config.ts productConfig.nativeCreditPackages[${creditPackage.id}].native.${platform}.providerProductId`,
+            value: product.providerProductId,
+          });
+        }
+      }
+    }
+  }
+
+  return products;
 }
 
 async function loadProductionConfig(
@@ -208,6 +249,7 @@ async function loadProductionConfig(
       websiteUrl: value(serverVars, "WEBSITE_URL"),
       serverUrl: value(serverVars, "SERVER_URL"),
       nodeEnv: value(serverVars, "NODE_ENV"),
+      paymentPriceEnv: value(serverVars, "PAYMENTS_PRICE_ENV"),
       oauthClientIds: {
         github: value(serverVars, "GITHUB_CLIENT_ID"),
         google: value(serverVars, "GOOGLE_CLIENT_ID"),
@@ -241,6 +283,7 @@ async function loadProductionConfig(
         apple: common.auth.methods.appleEnabled === true,
       },
       productionPriceIds: configuredProductionPriceIds(features),
+      productionProductIds: configuredProductionProductIds(features),
     },
   };
 }
@@ -302,6 +345,7 @@ function selfCheck() {
       CONTACT_RECIPIENT: "support@acme.test",
       STRIPE_SECRET_KEY: "sk_live_test",
       STRIPE_WEBHOOK_SECRET: "whsec_test",
+      TURNSTILE_SECRET_KEY: "turnstile_secret",
     },
     expectedEnv: {
       EXPECTED_SERVER_WORKER: "acme-api",
@@ -322,6 +366,7 @@ function selfCheck() {
       websiteUrl: "https://app.acme.test",
       serverUrl: "https://api.acme.test",
       nodeEnv: "production",
+      paymentPriceEnv: "prod",
       oauthClientIds: { github: "", google: "", apple: "" },
       controlReadHttpHost: "",
       controlAccessTeamDomain: "",
@@ -335,7 +380,7 @@ function selfCheck() {
       serverUrl: "https://api.acme.test",
       buildWebsiteUrl: "https://app.acme.test",
       buildServerUrl: "https://api.acme.test",
-      turnstileSiteKey: "",
+      turnstileSiteKey: "turnstile_site_key",
     },
     requirements: {
       features: createProductFeatures({
@@ -351,6 +396,7 @@ function selfCheck() {
       productionPriceIds: [
         { label: "Stripe plan pro/monthly", production: "price_live", test: "price_test" },
       ],
+      productionProductIds: [],
     },
   };
 
@@ -359,9 +405,55 @@ function selfCheck() {
 
   assert.deepEqual(errors(validInput), []);
   assert.match(
+    errors({
+      ...validInput,
+      server: { ...validInput.server, paymentPriceEnv: "" },
+    }).join("\n"),
+    /PAYMENTS_PRICE_ENV must be "prod"/,
+  );
+  assert.match(
+    errors({
+      ...validInput,
+      server: { ...validInput.server, paymentPriceEnv: "test" },
+    }).join("\n"),
+    /PAYMENTS_PRICE_ENV must be "prod"/,
+  );
+  assert.ok(
     validateProductionConfigResult({
       ...validInput,
-      web: { ...validInput.web, turnstileSiteKey: "site-key" },
+      productionEnv: {
+        ...validInput.productionEnv,
+        REVENUECAT_WEBHOOK_SECRET: "revenuecat_webhook_secret",
+      },
+      requirements: {
+        ...validInput.requirements,
+        features: createProductFeatures({
+          admin: true,
+          jobs: true,
+          mobile: true,
+          storage: true,
+          web: { billing: true, credits: true, creditPurchases: true },
+          native: { billing: true, credits: true, creditPurchases: true },
+        }),
+        paymentProviders: new Set(["stripe", "revenuecat"]),
+        productionProductIds: [
+          {
+            label:
+              "packages/app-config/src/app-config.ts appConfig.native.payments.ios.plans[pro].prices[monthly].providerPriceId",
+            value: "replace-with-revenuecat-ios-product-id",
+          },
+        ],
+      },
+    }).errors.some(
+      ({ code, message }) =>
+        code === "INVALID_PRODUCTION_PRODUCT_ID" &&
+        message.includes("packages/app-config/src/app-config.ts"),
+    ),
+  );
+  assert.match(
+    validateProductionConfigResult({
+      ...validInput,
+      web: { ...validInput.web, turnstileSiteKey: "" },
     })
       .errors.map(({ code }) => code)
       .join("\n"),
@@ -408,17 +500,21 @@ function selfCheck() {
   assert.match(
     validateProductionConfigResult({
       ...validInput,
-      productionEnv: { ...validInput.productionEnv, TURNSTILE_SECRET_KEY: "secret" },
+      productionEnv: { ...validInput.productionEnv, TURNSTILE_SECRET_KEY: "" },
     })
       .errors.map(({ code }) => code)
       .join("\n"),
     /PARTIAL_TURNSTILE_CONFIGURATION/,
   );
   assert.match(
-    validateProductionConfigResult(validInput)
-      .warnings.map(({ code }) => code)
+    validateProductionConfigResult({
+      ...validInput,
+      productionEnv: { ...validInput.productionEnv, TURNSTILE_SECRET_KEY: "" },
+      web: { ...validInput.web, turnstileSiteKey: "" },
+    })
+      .errors.map(({ code }) => code)
       .join("\n"),
-    /PUBLIC_FORM_PROTECTION_DISABLED/,
+    /MISSING_PUBLIC_FORM_PROTECTION/,
   );
   assert.match(
     errors({
@@ -498,7 +594,7 @@ function selfCheck() {
       STRIPE_WEBHOOK_SECRET: undefined,
     },
     expectedEnv: validInput.expectedEnv,
-    server: { ...validInput.server, bucketName: undefined },
+    server: { ...validInput.server, bucketName: undefined, paymentPriceEnv: undefined },
     requirements: {
       ...validInput.requirements,
       features: createProductFeatures({
@@ -510,6 +606,7 @@ function selfCheck() {
       }),
       paymentProviders: new Set<string>(),
       productionPriceIds: [],
+      productionProductIds: [],
     },
   };
   assert.deepEqual(errors(directoryInput), []);
@@ -624,27 +721,6 @@ function selfCheck() {
     validateProductionConfigResult(presenceInput).errors.every(
       ({ code }) => code !== "INVALID_ENVIRONMENT",
     ),
-  );
-  // Waffo presence must include WAFFO_ENVIRONMENT (missing silently means test mode).
-  const waffoInput: ProductionConfigInput = {
-    ...validInput,
-    productionEnv: undefined,
-    requirements: {
-      ...validInput.requirements,
-      paymentProviders: new Set(["waffo"]),
-      productionPriceIds: [],
-    },
-  };
-  const waffoRequired = listRequiredSecrets(waffoInput);
-  assert.ok(waffoRequired.includes("WAFFO_ENVIRONMENT"));
-  assert.match(
-    validateProductionConfigResult({
-      ...waffoInput,
-      liveSecrets: waffoRequired.filter((n) => n !== "WAFFO_ENVIRONMENT"),
-    })
-      .errors.map(({ code }) => code)
-      .join("\n"),
-    /MISSING_LIVE_SECRET/,
   );
 }
 

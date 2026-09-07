@@ -1,4 +1,5 @@
 import { env } from "cloudflare:workers";
+import { timingSafeEqual } from "node:crypto";
 import { HTTPException } from "hono/http-exception";
 import type {
   CreateCheckoutInput,
@@ -32,9 +33,15 @@ function isValidWebhookAuthorization(
     ? expectedAuthorization
     : `Bearer ${expectedAuthorization}`;
 
-  return (
-    normalizedHeader === expectedAuthorization || normalizedHeader === expectedBearerAuthorization
-  );
+  const encoder = new TextEncoder();
+  return [expectedAuthorization, expectedBearerAuthorization].some((expected) => {
+    const actualBytes = encoder.encode(normalizedHeader);
+    const expectedBytes = encoder.encode(expected);
+    return (
+      actualBytes.byteLength === expectedBytes.byteLength &&
+      timingSafeEqual(actualBytes, expectedBytes)
+    );
+  });
 }
 
 function parseRevenueCatWebhook(rawBody: string): RevenueCatWebhookEnvelope {

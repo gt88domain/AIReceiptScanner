@@ -1,4 +1,5 @@
 import { env, exports } from "cloudflare:workers";
+import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { completeCreditOrderPurchase, getBalance } from "@/credits";
 import { createDb } from "@/db";
@@ -67,5 +68,56 @@ describe.skipIf(!productFeatures.credits)("credit order fulfillment", () => {
     });
 
     await expect(getBalance(db, user)).resolves.toMatchObject({ balance: 17 });
+  });
+
+  it("fulfills a verified payment that arrives after local order expiration", async () => {
+    const user = await createUser();
+    const orderId = crypto.randomUUID();
+    const now = new Date();
+    await db.insert(creditOrder).values({
+      id: orderId,
+      userId: user.userId,
+      packageId: "late-package",
+      provider: "stripe",
+      providerSessionId: "cs_late",
+      providerPaymentId: null,
+      status: "expired",
+      creditAmount: 23,
+      amountCents: 699,
+      currency: "usd",
+      ledgerTransactionId: null,
+      expiresAt: new Date(now.getTime() - 1),
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    const firstCompletion = await completeCreditOrderPurchase(db, {
+      orderId,
+      sourceProvider: "stripe",
+      sourceId: "pi_late",
+      providerSessionId: "cs_late",
+      providerPaymentId: "pi_late",
+      providerAmountCents: 699,
+      providerCurrency: "usd",
+    });
+    const repeatedCompletion = await completeCreditOrderPurchase(db, {
+      orderId,
+      sourceProvider: "stripe",
+      sourceId: "pi_late",
+      providerSessionId: "cs_late",
+      providerPaymentId: "pi_late",
+      providerAmountCents: 699,
+      providerCurrency: "usd",
+    });
+
+    await expect(getBalance(db, user)).resolves.toMatchObject({ balance: 23 });
+    const [order] = await db.select().from(creditOrder).where(eq(creditOrder.id, orderId));
+    expect(order).toMatchObject({
+      status: "completed",
+      providerPaymentId: "pi_late",
+      ledgerTransactionId: expect.any(String),
+    });
+    expect(firstCompletion?.ledgerTransactionId).toBe(order?.ledgerTransactionId);
+    expect(repeatedCompletion?.ledgerTransactionId).toBe(order?.ledgerTransactionId);
   });
 });

@@ -1,13 +1,9 @@
-import {
-  creditsConfig,
-  normalizeCreditsConfig,
-  type NormalizedCreditPackage,
-} from "@repo/app-config/credits";
-import { and, count, desc, eq, gt, lte } from "drizzle-orm";
+import type { NormalizedCreditPackage } from "@repo/app-config/credits";
+import { and, count, desc, eq, gt, lte, sql } from "drizzle-orm";
 import type { Database } from "@/db";
 import { creditAccount, creditOrder, creditTransaction } from "@/db/schema/credits";
 import { toPublicCreditOrder } from "./orders";
-import { EXPIRING_WINDOW_DAYS, addDays, assertCreditsEnabled } from "./internal";
+import { EXPIRING_WINDOW_DAYS, addDays, assertCreditsEnabled, getConfig } from "./internal";
 import { ensureSignupGrant } from "./signup-grant";
 import { getSpendableBalance } from "./spendable-balance";
 import type {
@@ -65,7 +61,7 @@ function toPublicPackage(
 }
 
 export function listPackages(input: ListPackagesInput): CreditPackage[] {
-  const config = normalizeCreditsConfig(creditsConfig);
+  const config = getConfig();
   if (!config.enabled) {
     return [];
   }
@@ -91,8 +87,8 @@ export async function getBalance(
 
   const now = new Date();
   const expiringBefore = addDays(now, EXPIRING_WINDOW_DAYS);
-  const expiringRows = await db
-    .select({ remainingAmount: creditTransaction.remainingAmount })
+  const [expiringRow] = await db
+    .select({ amount: sql<number>`coalesce(sum(${creditTransaction.remainingAmount}), 0)` })
     .from(creditTransaction)
     .where(
       and(
@@ -102,7 +98,7 @@ export async function getBalance(
         lte(creditTransaction.expiresAt, expiringBefore),
       ),
     );
-  const expiringCredits = expiringRows.reduce((sum, row) => sum + row.remainingAmount, 0);
+  const expiringCredits = expiringRow?.amount ?? 0;
 
   return {
     userId: input.userId,

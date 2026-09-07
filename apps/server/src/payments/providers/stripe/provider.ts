@@ -1,4 +1,5 @@
 import { env } from "cloudflare:workers";
+import { HTTPException } from "hono/http-exception";
 import Stripe from "stripe";
 import type {
   CreateCheckoutInput,
@@ -32,6 +33,11 @@ function requireStripeSecretKey() {
     throw new Error("STRIPE_SECRET_KEY is not configured");
   }
   return env.STRIPE_SECRET_KEY;
+}
+
+/** Reads the provider-owned subscription snapshot for invoice-triggered reconciliation. */
+export async function retrieveStripeSubscription(subscriptionId: string) {
+  return new Stripe(requireStripeSecretKey()).subscriptions.retrieve(subscriptionId);
 }
 
 /**
@@ -195,14 +201,16 @@ export function createStripePaymentProvider(): PaymentProvider {
     async parseWebhookEvent(input: WebhookInput): Promise<ParsedWebhookEvent> {
       const signature = input.signature ?? undefined;
       if (!signature) {
-        throw new Error("Missing Stripe webhook signature");
+        throw new HTTPException(400, { message: "Invalid Stripe webhook signature" });
       }
 
-      const event = await stripe.webhooks.constructEventAsync(
-        input.rawBody,
-        signature,
-        requireWebhookSecret(),
-      );
+      let event: Stripe.Event;
+      const webhookSecret = requireWebhookSecret();
+      try {
+        event = await stripe.webhooks.constructEventAsync(input.rawBody, signature, webhookSecret);
+      } catch {
+        throw new HTTPException(400, { message: "Invalid Stripe webhook signature" });
+      }
 
       return {
         providerEventId: event.id,

@@ -1,0 +1,2 @@
+module,area,slug_or_route,issue_type,severity,evidence,problem,suggested_fix,effort_hours,block_release
+mobile-home,home-screen,/,unfinished,P1,optional/mobile/app/(tabs)/(home)/index.tsx:1|optional/mobile/app/(tabs)/_layout.tsx:38,底部导航公开了 Home 主入口但页面只渲染硬编码 Home 文本且没有功能内容,用 v5 已确定的首页内容替换占位页；若 v5 不提供首页则删除 home tab 并把实际主页面设为默认入口,4,no

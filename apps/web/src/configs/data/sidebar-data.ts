@@ -34,11 +34,11 @@ export function createSidebarData(
   manifests: readonly BackofficeModule[] = registeredBackofficeModules,
 ): SidebarData {
   const visibility = resolveBackofficeVisibility({
+    tickets: ticketsEnabled,
     web: {
       billing: billingEnabled,
       credits: creditsEnabled,
       creditPurchases: creditPurchasesEnabled,
-      tickets: ticketsEnabled,
     },
   });
   const modules = resolveBackofficeModules(manifests, {
@@ -158,11 +158,11 @@ export function createAdministrationNavGroup(
   manifests: readonly BackofficeModule[] = registeredBackofficeModules,
 ): SidebarData["navGroups"][number] {
   const visibility = resolveBackofficeVisibility({
+    tickets: ticketsEnabled,
     web: {
       billing: billingEnabled,
       credits: false,
       creditPurchases: creditPurchasesEnabled,
-      tickets: ticketsEnabled,
     },
   });
   const modules = resolveBackofficeModules(manifests, {

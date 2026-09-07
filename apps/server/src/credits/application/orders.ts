@@ -1,5 +1,4 @@
 import type { CreditOrder } from "../../db/schema/credits";
-import { creditsConfig, findCreditPackageById } from "@repo/app-config/credits";
 import { and, eq } from "drizzle-orm";
 import type { Database } from "@/db";
 import { creditOrder } from "@/db/schema/credits";
@@ -14,7 +13,11 @@ import {
   readCheckoutOperationResult,
   savePaymentOperationProviderResult,
 } from "@/payments/application/payment-operation";
-import { assertCreditAccountNotOnBillingHold, assertCreditsEnabled } from "./internal";
+import {
+  assertCreditAccountNotOnBillingHold,
+  assertCreditsEnabled,
+  findConfiguredCreditPackageById,
+} from "./internal";
 import { grantCredits } from "./grant";
 import type {
   CompleteCreditOrderPurchaseInput,
@@ -59,7 +62,7 @@ export async function createCreditCheckoutSession(
   assertCreditsEnabled();
   await assertCreditAccountNotOnBillingHold(db, input.user.userId);
   const now = new Date();
-  const creditPackage = findCreditPackageById(creditsConfig, input.packageId);
+  const creditPackage = findConfiguredCreditPackageById(input.packageId);
   if (!creditPackage || creditPackage.status !== "active" || !creditPackage.web) {
     throw new Error("Credit package not available");
   }
@@ -78,6 +81,8 @@ export async function createCreditCheckoutSession(
   const provider = getPaymentProvider(creditPackage.web.provider);
   const requestedOrderId = crypto.randomUUID();
   const operationId = input.operationId ?? crypto.randomUUID();
+  const resolvedCustomerId = existingCustomer?.providerCustomerId ?? null;
+  const resolvedCustomerEmail = existingCustomer?.email ?? input.customerEmail ?? null;
   const operationRequest = await createPaymentOperationRequest({
     provider: creditPackage.web.provider,
     mode: "payment",
@@ -87,6 +92,8 @@ export async function createCreditCheckoutSession(
     amountCents: creditPackage.web.amountCents,
     currency: creditPackage.web.currency,
     returnUrl: new URL(input.returnUrl).toString(),
+    customerReference: resolvedCustomerId,
+    customerEmail: resolvedCustomerEmail,
   });
   const operation = await getOrCreatePaymentOperation(db, {
     userId: input.user.userId,
@@ -151,13 +158,10 @@ export async function createCreditCheckoutSession(
         creditOrderId: orderId,
         provider: creditPackage.web.provider,
       },
+      trialDays: null,
       idempotencyKey: claim.operation.operationKey,
-      ...(existingCustomer?.providerCustomerId
-        ? { customerId: existingCustomer.providerCustomerId }
-        : {}),
-      ...((existingCustomer?.email ?? input.customerEmail)
-        ? { customerEmail: existingCustomer?.email ?? input.customerEmail! }
-        : {}),
+      ...(resolvedCustomerId ? { customerId: resolvedCustomerId } : {}),
+      ...(resolvedCustomerEmail ? { customerEmail: resolvedCustomerEmail } : {}),
     });
 
     const stored = {
@@ -246,7 +250,10 @@ export async function completeCreditOrderPurchase(
   if ((order.status === "completed" && order.ledgerTransactionId) || order.status === "refunded") {
     return order;
   }
-  if (order.status !== "pending") {
+  // Expiration only closes an abandoned checkout locally. A later, verified provider
+  // success still wins because the immutable order snapshot and amount checks above
+  // prove exactly what was paid for.
+  if (order.status !== "pending" && order.status !== "expired") {
     throw new Error("Credit order cannot be completed from its current state");
   }
 

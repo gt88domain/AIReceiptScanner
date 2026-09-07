@@ -110,10 +110,10 @@ export const featureDependencyRules = {
 
 function isCreditPurchasesEnabled(config: {
   enabled?: boolean;
-  purchasesEnabled?: boolean;
+  purchasesEnabled: boolean;
   packages: readonly unknown[];
 }) {
-  return config.enabled === true && (config.purchasesEnabled ?? config.packages.length > 0);
+  return config.enabled === true && config.purchasesEnabled;
 }
 
 /** Creates a public, provider-secret-free contract for production or feature-matrix tests. */

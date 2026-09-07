@@ -1,11 +1,11 @@
 import { hashNamespacedValue } from "@repo/shared";
-import { and, count, eq, gte } from "drizzle-orm";
+import { and, count, eq, gte, notExists, sql } from "drizzle-orm";
 import type { Database } from "@/db";
 import { user as authUser } from "@/db/schema/auth";
-import { creditSignupGrantClaim, creditTransaction } from "@/db/schema/credits";
+import { creditAccount, creditSignupGrantClaim, creditTransaction } from "@/db/schema/credits";
 import {
   addDays,
-  createAccountGrantUpdate,
+  createBatchChangeGuard,
   ensureCreditAccount,
   findTransactionBySource,
   getConfig,
@@ -123,35 +123,102 @@ async function grantSignupCredits(
     now: Date;
   },
 ) {
+  const claimId = crypto.randomUUID();
+  const transactionId = crypto.randomUUID();
+  const expiresAt = input.expiresAt ?? null;
+  const metadata = input.metadata ?? null;
+  const emailAlreadyGranted = notExists(
+    db
+      .select({ id: creditSignupGrantClaim.id })
+      .from(creditSignupGrantClaim)
+      .where(
+        and(
+          eq(creditSignupGrantClaim.emailHash, input.emailHash),
+          eq(creditSignupGrantClaim.status, "granted"),
+        ),
+      ),
+  );
+  const ipHasCapacity =
+    input.ipHash === null
+      ? undefined
+      : sql`(
+          SELECT COUNT(*)
+          FROM ${creditSignupGrantClaim}
+          WHERE ${creditSignupGrantClaim.ipHash} = ${input.ipHash}
+            AND ${creditSignupGrantClaim.status} = 'granted'
+            AND ${creditSignupGrantClaim.createdAt} >= ${subtractHours(
+              input.now,
+              SIGNUP_GRANT_IP_WINDOW_HOURS,
+            )}
+        ) < ${SIGNUP_GRANT_IP_CLAIM_LIMIT}`;
+  const userAgentHasCapacity =
+    input.userAgentHash === null
+      ? undefined
+      : sql`(
+          SELECT COUNT(*)
+          FROM ${creditSignupGrantClaim}
+          WHERE ${creditSignupGrantClaim.userAgentHash} = ${input.userAgentHash}
+            AND ${creditSignupGrantClaim.status} = 'granted'
+            AND ${creditSignupGrantClaim.createdAt} >= ${addDays(
+              input.now,
+              -SIGNUP_GRANT_USER_AGENT_WINDOW_DAYS,
+            )}
+        ) < ${SIGNUP_GRANT_USER_AGENT_CLAIM_LIMIT}`;
+  const claimEligibility = and(
+    emailAlreadyGranted,
+    ...(ipHasCapacity ? [ipHasCapacity] : []),
+    ...(userAgentHasCapacity ? [userAgentHasCapacity] : []),
+  );
+
   try {
     await runCreditBatch(db, [
-      db.insert(creditTransaction).values({
-        id: crypto.randomUUID(),
-        userId: input.user.userId,
-        amount: input.amount,
-        remainingAmount: input.amount,
-        sourceProvider: input.sourceProvider,
-        sourceType: input.sourceType,
-        sourceId: input.sourceId,
-        packageId: input.packageId ?? null,
-        expiresAt: input.expiresAt ?? null,
-        metadata: input.metadata ?? null,
-        createdAt: input.now,
-        updatedAt: input.now,
-      }),
-      createAccountGrantUpdate(db, input.user.userId, input.amount, input.now),
-      db.insert(creditSignupGrantClaim).values({
-        id: crypto.randomUUID(),
-        userId: input.user.userId,
-        emailHash: input.emailHash,
-        ipHash: input.ipHash,
-        userAgentHash: input.userAgentHash,
-        grantedAmount: input.amount,
-        status: "granted",
-        reason: "eligible",
-        createdAt: input.now,
-        updatedAt: input.now,
-      }),
+      db.insert(creditSignupGrantClaim).select(
+        db
+          .select({
+            id: sql<string>`${claimId}`.as("id"),
+            userId: sql<string>`${input.user.userId}`.as("user_id"),
+            emailHash: sql<string>`${input.emailHash}`.as("email_hash"),
+            ipHash: sql<string | null>`${input.ipHash}`.as("ip_hash"),
+            userAgentHash: sql<string | null>`${input.userAgentHash}`.as("user_agent_hash"),
+            grantedAmount: sql<number>`${input.amount}`.as("granted_amount"),
+            status: sql<"granted">`'granted'`.as("status"),
+            reason: sql<"eligible">`'eligible'`.as("reason"),
+            createdAt: sql<Date>`${input.now}`.as("created_at"),
+            updatedAt: sql<Date>`${input.now}`.as("updated_at"),
+          })
+          .from(authUser)
+          .where(and(eq(authUser.id, input.user.userId), claimEligibility)),
+      ),
+      db.insert(creditTransaction).select(
+        db
+          .select({
+            id: sql<string>`${transactionId}`.as("id"),
+            userId: creditSignupGrantClaim.userId,
+            amount: sql<number>`${input.amount}`.as("amount"),
+            remainingAmount: sql<number>`${input.amount}`.as("remaining_amount"),
+            sourceProvider: sql<string>`${input.sourceProvider}`.as("source_provider"),
+            sourceType: sql<string>`${input.sourceType}`.as("source_type"),
+            sourceId: sql<string>`${input.sourceId}`.as("source_id"),
+            packageId: sql<string | null>`${input.packageId ?? null}`.as("package_id"),
+            expiresAt: sql<Date | null>`${expiresAt}`.as("expires_at"),
+            metadata: sql<string | null>`${metadata ? JSON.stringify(metadata) : null}`.as(
+              "metadata",
+            ),
+            createdAt: sql<Date>`${input.now}`.as("created_at"),
+            updatedAt: sql<Date>`${input.now}`.as("updated_at"),
+          })
+          .from(creditSignupGrantClaim)
+          .where(and(eq(creditSignupGrantClaim.id, claimId), sql`changes() = 1`)),
+      ),
+      db
+        .update(creditAccount)
+        .set({
+          balance: sql`${creditAccount.balance} + ${input.amount}`,
+          totalGranted: sql`${creditAccount.totalGranted} + ${input.amount}`,
+          updatedAt: input.now,
+        })
+        .where(and(eq(creditAccount.userId, input.user.userId), sql`changes() = 1`)),
+      createBatchChangeGuard(db, input),
     ]);
   } catch (error) {
     const existing = await findTransactionBySource(db, input);
@@ -281,7 +348,8 @@ export async function ensureSignupGrant(
     return;
   }
 
-  await grantSignupCredits(db, {
+  await ensureCreditAccount(db, user.userId);
+  const granted = await grantSignupCredits(db, {
     user,
     amount: grant.amount,
     ...grantSource,
@@ -292,4 +360,14 @@ export async function ensureSignupGrant(
     userAgentHash,
     now,
   });
+  if (!granted) {
+    await recordBlockedSignupGrantClaim(db, {
+      userId: user.userId,
+      emailHash,
+      ipHash,
+      userAgentHash,
+      reason: "eligibility_changed",
+      now,
+    });
+  }
 }

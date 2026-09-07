@@ -1,12 +1,15 @@
-import { and, asc, eq, inArray, isNull, lte, or, sql } from "drizzle-orm";
+import { and, asc, eq, exists, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import type { Database } from "@/db";
-import { failedJobEvent, job, jobOutbox, type Job } from "@/db/schema/jobs";
+import { failedJobEvent, job, jobEvent, jobOutbox, type Job } from "@/db/schema/jobs";
+import { adminAuditLog } from "@/db/schema/audit";
 import { createLeaseToken, leaseUntil } from "@/lib/lease";
 import { logSafeError, redactErrorText } from "@/lib/safe-error";
 import { recordJobEvent } from "./job.events";
 import type { JobQueueMessage, JobType } from "./job.types";
+import { JOB_RETRY_GENERATION_PREFIX } from "./job.delivery";
 
 const JOB_OUTBOX_LEASE_MS = 5 * 60 * 1000;
+export const MAX_JOB_DELIVERIES = 4;
 
 export type CreateJobInput = {
   idempotencyKey: string;
@@ -52,8 +55,8 @@ export function createJobService(db: Database, queue: Pick<Queue<JobQueueMessage
     if (!idempotencyKey) throw new Error("Job idempotencyKey is required.");
     const payloadHash = await hashJobPayload(input.payload);
     const maxAttempts = input.maxAttempts ?? 3;
-    if (!Number.isInteger(maxAttempts) || maxAttempts < 1) {
-      throw new Error("Job maxAttempts must be a positive integer.");
+    if (!Number.isInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > MAX_JOB_DELIVERIES) {
+      throw new Error(`Job maxAttempts must be an integer from 1 to ${MAX_JOB_DELIVERIES}.`);
     }
     const record: Job = {
       id: crypto.randomUUID(),
@@ -135,6 +138,14 @@ export function createJobService(db: Database, queue: Pick<Queue<JobQueueMessage
       .where(
         and(
           eq(jobOutbox.id, outboxId),
+          exists(
+            db
+              .select({ id: job.id })
+              .from(job)
+              .where(
+                and(eq(job.id, jobOutbox.jobId), eq(job.status, "pending"), lte(job.runAfter, now)),
+              ),
+          ),
           or(
             eq(jobOutbox.status, "pending"),
             and(
@@ -148,7 +159,7 @@ export function createJobService(db: Database, queue: Pick<Queue<JobQueueMessage
     if (!outbox) return;
 
     try {
-      await queue.send({ jobId: outbox.jobId }, { contentType: "json" });
+      await queue.send({ jobId: outbox.jobId, outboxId: outbox.id }, { contentType: "json" });
       await db
         .update(jobOutbox)
         .set({
@@ -190,12 +201,17 @@ export function createJobService(db: Database, queue: Pick<Queue<JobQueueMessage
     const pending = await db
       .select({ id: jobOutbox.id })
       .from(jobOutbox)
+      .innerJoin(job, eq(job.id, jobOutbox.jobId))
       .where(
-        or(
-          eq(jobOutbox.status, "pending"),
-          and(
-            eq(jobOutbox.status, "publishing"),
-            or(isNull(jobOutbox.leaseUntil), lte(jobOutbox.leaseUntil, new Date())),
+        and(
+          eq(job.status, "pending"),
+          lte(job.runAfter, new Date()),
+          or(
+            eq(jobOutbox.status, "pending"),
+            and(
+              eq(jobOutbox.status, "publishing"),
+              or(isNull(jobOutbox.leaseUntil), lte(jobOutbox.leaseUntil, new Date())),
+            ),
           ),
         ),
       )
@@ -232,7 +248,11 @@ export function createJobService(db: Database, queue: Pick<Queue<JobQueueMessage
     return false;
   }
 
-  async function retryFailed(input: { failedJobEventId: string; resolvedBy: string }) {
+  async function retryFailed(input: {
+    failedJobEventId: string;
+    resolvedBy: string;
+    resolvedByEmail?: string;
+  }) {
     const [event] = await db
       .select({ id: failedJobEvent.id, jobId: failedJobEvent.jobId })
       .from(failedJobEvent)
@@ -242,6 +262,7 @@ export function createJobService(db: Database, queue: Pick<Queue<JobQueueMessage
 
     const now = new Date();
     const resolutionToken = createLeaseToken();
+    const outboxId = `${JOB_RETRY_GENERATION_PREFIX}${crypto.randomUUID()}`;
     const retryableState = sql`exists (
       select 1 from job where id = ${event.jobId} and status = 'failed'
     ) and exists (
@@ -281,6 +302,7 @@ export function createJobService(db: Database, queue: Pick<Queue<JobQueueMessage
       db
         .update(jobOutbox)
         .set({
+          id: outboxId,
           status: "pending",
           leaseToken: null,
           leaseUntil: null,
@@ -289,6 +311,38 @@ export function createJobService(db: Database, queue: Pick<Queue<JobQueueMessage
           updatedAt: now,
         })
         .where(and(eq(jobOutbox.jobId, event.jobId), eventIsClaimed)),
+      db.insert(jobEvent).select(
+        db
+          .select({
+            id: sql<string>`${crypto.randomUUID()}`.as("id"),
+            jobId: sql<string>`${event.jobId}`.as("job_id"),
+            type: sql`'queued'`.as("type"),
+            detail: sql`'retried from DLQ'`.as("detail"),
+            createdAt: sql<number>`${Math.floor(now.getTime() / 1000)}`.as("created_at"),
+          })
+          .from(failedJobEvent)
+          .where(and(eq(failedJobEvent.id, event.id), eventIsClaimed)),
+      ),
+      ...(input.resolvedByEmail
+        ? [
+            db.insert(adminAuditLog).select(
+              db
+                .select({
+                  id: sql<string>`${crypto.randomUUID()}`.as("id"),
+                  actorId: sql<string>`${input.resolvedBy}`.as("actor_id"),
+                  actorEmail: sql<string>`${input.resolvedByEmail}`.as("actor_email"),
+                  action: sql`'jobs.failed.retried'`.as("action"),
+                  entityType: sql`'failed_job_event'`.as("entity_type"),
+                  entityId: sql<string>`${event.id}`.as("entity_id"),
+                  before: sql`null`.as("before"),
+                  after: sql`${JSON.stringify({ resolution: "retried", outboxId })}`.as("after"),
+                  createdAt: sql<number>`${Math.floor(now.getTime() / 1000)}`.as("created_at"),
+                })
+                .from(failedJobEvent)
+                .where(and(eq(failedJobEvent.id, event.id), eventIsClaimed)),
+            ),
+          ]
+        : []),
       db
         .update(failedJobEvent)
         .set({
@@ -301,22 +355,16 @@ export function createJobService(db: Database, queue: Pick<Queue<JobQueueMessage
           and(eq(failedJobEvent.id, event.id), eq(failedJobEvent.resolutionToken, resolutionToken)),
         ),
     ]);
-    if (
-      updates[0].meta.changes !== 1 ||
-      updates[1].meta.changes !== 1 ||
-      updates[2].meta.changes !== 1 ||
-      updates[3].meta.changes !== 1
-    ) {
+    if (updates.some((update) => update.meta.changes !== 1)) {
       return false;
     }
-    await recordJobEvent(db, { jobId: event.jobId, type: "queued", detail: "retried from DLQ" });
-    await publishOutboxRecordForJob(event.jobId);
+    try {
+      await publishOutboxRecord(outboxId);
+    } catch (error) {
+      // The accepted retry and its audit are durable; Cron will publish the pending outbox.
+      logSafeError("Failed to publish a retried job", error, { jobId: event.jobId, outboxId });
+    }
     return true;
-  }
-
-  async function publishOutboxRecordForJob(jobId: string) {
-    const [outbox] = await db.select().from(jobOutbox).where(eq(jobOutbox.jobId, jobId)).limit(1);
-    if (outbox) await publishOutboxRecord(outbox.id);
   }
 
   return { cancel, create, flushOutbox, retryFailed };

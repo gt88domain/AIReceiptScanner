@@ -21,19 +21,14 @@ export { toError } from "./error";
 export { hashNamespacedValue, toHex } from "./hash";
 export { getClientIp, normalizeHeaderValue } from "./ip";
 export {
-  CN_DIAL_PREFIX,
-  CN_LOCAL_PHONE_DIGITS,
-  CN_PHONE_NUMBER_REGEX,
   getVisibleUserContact,
   getVisibleUserEmail,
   getVisibleUserName,
   isPhoneCompatibilityEmail,
   isPhoneUser,
-  normalizePhoneDigits,
   PHONE_COMPATIBILITY_EMAIL_DIGEST_LENGTH,
   PHONE_COMPATIBILITY_EMAIL_DOMAIN,
   PHONE_COMPATIBILITY_EMAIL_PREFIX,
-  toCnE164PhoneNumber,
 } from "./phone";
 
 export { getFirstSearchParam, getSearchParamArray } from "./search-param";
