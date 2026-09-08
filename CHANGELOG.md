@@ -3,6 +3,28 @@
 All notable template changes are released through Release Please and follow
 [Semantic Versioning](https://semver.org/).
 
+## [5.1.0](https://github.com/gt88domain/easystarter-template/compare/v5.0.3...v5.1.0) (2026-09-08)
+
+
+### Features
+
+* **server:** novels public-read module + preview worker ([ece1004](https://github.com/gt88domain/easystarter-template/commit/ece1004b7d02f8d6bf7ce42cb05908cc210c0761))
+* **web:** public image assets for reader pages ([f3a9290](https://github.com/gt88domain/easystarter-template/commit/f3a92900ddff6a4a3a85baf45d053a2630799b0a))
+* **web:** reader pages, discovery & public SEO routes ([b951fd9](https://github.com/gt88domain/easystarter-template/commit/b951fd93ad7266171c47f4a2820bfb4607e49217))
+
+
+### Bug Fixes
+
+* **novels:** complete Book schema & breadcrumb URLs on detail page ([b601ee3](https://github.com/gt88domain/easystarter-template/commit/b601ee32815577da45d3fb6bab7194c50ad33394))
+* **novels:** de-duplicate chapter titles & complete Article schema ([018592e](https://github.com/gt88domain/easystarter-template/commit/018592ef0092531216fe363434cf3064747d6c34))
+* **template:** remove accidental AINovel product code ([#148](https://github.com/gt88domain/easystarter-template/issues/148)) ([bf223bd](https://github.com/gt88domain/easystarter-template/commit/bf223bd07e20d2a140821471ba8da66f69026ab2))
+* **web:** allow AINovel reader routes in the preview guard worker ([aa7ed59](https://github.com/gt88domain/easystarter-template/commit/aa7ed5960f1e683aed391493c8195d38fe03ebc7))
+
+
+### Performance Improvements
+
+* **web:** edge-cache anonymous SSR pages in the preview guard worker ([f326654](https://github.com/gt88domain/easystarter-template/commit/f32665454401e95747e10bcfb348ea395750e91f))
+
 ## [5.0.3](https://github.com/gt88domain/easystarter-template/compare/v5.0.2...v5.0.3) (2026-09-06)
 
 
