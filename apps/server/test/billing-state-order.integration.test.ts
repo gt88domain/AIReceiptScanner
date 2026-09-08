@@ -4,11 +4,7 @@ import { describe, expect, it } from "vitest";
 import { createDb } from "@/db";
 import { user } from "@/db/schema/auth";
 import { creditOrder, creditTransaction } from "@/db/schema/credits";
-import {
-  billingOutbox,
-  billingPurchase,
-  billingSubscription,
-} from "@/db/schema/payments";
+import { billingOutbox, billingPurchase, billingSubscription } from "@/db/schema/payments";
 import {
   upsertBillingPurchaseIfNewer,
   upsertBillingSubscriptionIfNewer,
@@ -273,9 +269,7 @@ describe("billing state event ordering", () => {
       currency: mismatch.currency,
     });
 
-    await expect(handleStripeEvent(db, event)).rejects.toThrow(
-      "amount or currency does not match",
-    );
+    await expect(handleStripeEvent(db, event)).rejects.toThrow("amount or currency does not match");
     await expect(
       db
         .select()
@@ -306,82 +300,79 @@ describe("billing state event ordering", () => {
     ).resolves.toHaveLength(0);
   });
 
-  it(
-    "uses a checkout-session source only for a verified credit order without a PaymentIntent",
-    async () => {
-      const db = createDb(env.DB);
-      const userId = crypto.randomUUID();
-      const orderId = crypto.randomUUID();
-      const sessionId = crypto.randomUUID();
-      const now = new Date("2026-08-20T14:00:00.000Z");
-      await db.insert(user).values({
-        id: userId,
-        name: "Synthetic checkout source",
-        email: `${userId}@example.test`,
-        emailVerified: true,
-        phoneNumber: null,
-        phoneNumberVerified: false,
-        image: null,
-        createdAt: now,
-        updatedAt: now,
-        deletedAt: null,
-      });
-      await db.insert(creditOrder).values({
-        id: orderId,
+  it("uses a checkout-session source only for a verified credit order without a PaymentIntent", async () => {
+    const db = createDb(env.DB);
+    const userId = crypto.randomUUID();
+    const orderId = crypto.randomUUID();
+    const sessionId = crypto.randomUUID();
+    const now = new Date("2026-08-20T14:00:00.000Z");
+    await db.insert(user).values({
+      id: userId,
+      name: "Synthetic checkout source",
+      email: `${userId}@example.test`,
+      emailVerified: true,
+      phoneNumber: null,
+      phoneNumberVerified: false,
+      image: null,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+    });
+    await db.insert(creditOrder).values({
+      id: orderId,
+      userId,
+      packageId: "starter",
+      provider: "stripe",
+      providerSessionId: sessionId,
+      providerPaymentId: null,
+      status: "pending",
+      creditAmount: 100,
+      amountCents: 499,
+      currency: "usd",
+      ledgerTransactionId: null,
+      expiresAt: null,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    await handleStripeEvent(
+      db,
+      stripeCheckoutCompletedEvent({
+        eventId: crypto.randomUUID(),
+        eventAt: now,
+        sessionId,
         userId,
-        packageId: "starter",
-        provider: "stripe",
-        providerSessionId: sessionId,
-        providerPaymentId: null,
-        status: "pending",
-        creditAmount: 100,
+        paymentIntentId: null,
+        paymentStatus: "paid",
         amountCents: 499,
         currency: "usd",
-        ledgerTransactionId: null,
-        expiresAt: null,
-        createdAt: now,
-        updatedAt: now,
-      });
+        metadata: {
+          kind: "credit_purchase",
+          creditPackageId: "starter",
+          creditOrderId: orderId,
+        },
+      }),
+    );
 
-      await handleStripeEvent(
-        db,
-        stripeCheckoutCompletedEvent({
-          eventId: crypto.randomUUID(),
-          eventAt: now,
-          sessionId,
-          userId,
-          paymentIntentId: null,
-          paymentStatus: "paid",
-          amountCents: 499,
-          currency: "usd",
-          metadata: {
-            kind: "credit_purchase",
-            creditPackageId: "starter",
-            creditOrderId: orderId,
-          },
-        }),
-      );
-
-      const [order] = await db.select().from(creditOrder).where(eq(creditOrder.id, orderId));
-      const [transaction] = await db
-        .select()
-        .from(creditTransaction)
-        .where(eq(creditTransaction.sourceId, `checkout_session:${sessionId}`));
-      expect(order).toMatchObject({
-        status: "completed",
-        providerPaymentId: `checkout_session:${sessionId}`,
-      });
-      expect(transaction).toMatchObject({
-        userId,
-        sourceProvider: "stripe",
-        sourceType: "purchase",
-        sourceId: `checkout_session:${sessionId}`,
-      });
-      await expect(
-        db.select().from(billingPurchase).where(eq(billingPurchase.userId, userId)),
-      ).resolves.toHaveLength(0);
-    },
-  );
+    const [order] = await db.select().from(creditOrder).where(eq(creditOrder.id, orderId));
+    const [transaction] = await db
+      .select()
+      .from(creditTransaction)
+      .where(eq(creditTransaction.sourceId, `checkout_session:${sessionId}`));
+    expect(order).toMatchObject({
+      status: "completed",
+      providerPaymentId: `checkout_session:${sessionId}`,
+    });
+    expect(transaction).toMatchObject({
+      userId,
+      sourceProvider: "stripe",
+      sourceType: "purchase",
+      sourceId: `checkout_session:${sessionId}`,
+    });
+    await expect(
+      db.select().from(billingPurchase).where(eq(billingPurchase.userId, userId)),
+    ).resolves.toHaveLength(0);
+  });
 
   it("does not change subscription access when an invoice is voided", async () => {
     const db = createDb(env.DB);

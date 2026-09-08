@@ -15,18 +15,18 @@ export const productConfig = {
     features: {
       admin: publicRuntimeConfig.features.admin,
       tickets: resolvedPublicRuntimeConfig.features.tickets,
-      jobs: false,
+      jobs: true,
       mobile: false,
       docs: contentSurfaceFlags.docs,
       blog: contentSurfaceFlags.blog,
     },
     app: {
       name: publicRuntimeConfig.appName,
-      nativeScheme: "com.ainovel.desktop",
+      nativeScheme: "com.aiarticles.template",
       supportEmail: publicRuntimeConfig.supportEmail,
-      websiteUrl: "https://ainovel.com",
-      socialUrl: "https://ainovel.com",
-      appStoreUrl: "https://ainovel.com/download",
+      websiteUrl: "https://demo.aiarticles.com",
+      socialUrl: "https://x.com",
+      appStoreUrl: "https://apps.apple.com/app/id",
     },
     auth: {
       allowedRemoteAvatarHosts: ["avatars.githubusercontent.com", "lh3.googleusercontent.com"],
@@ -39,16 +39,16 @@ export const productConfig = {
       },
     },
     email: {
-      enabled: false,
-      provider: "none",
+      enabled: true,
+      provider: "resend",
       capabilities: {
-        verification: false,
-        passwordReset: false,
-        newsletter: false,
-        contactForm: false,
-        operationalAlerts: false,
+        verification: true,
+        passwordReset: true,
+        newsletter: true,
+        contactForm: true,
+        operationalAlerts: true,
       },
-      from: { localPart: "noreply", domain: "ainovel.com" },
+      from: { localPart: "noreply", domain: "mail.demo.aiarticles.com" },
     },
     credits: {
       signupGrant: {
@@ -58,10 +58,7 @@ export const productConfig = {
       },
     },
     storage: productStorageConfig,
-  } satisfies Pick<
-    AppCommonConfig,
-    "features" | "app" | "auth" | "email" | "credits" | "storage"
-  >,
+  } satisfies Pick<AppCommonConfig, "features" | "app" | "auth" | "email" | "credits" | "storage">,
   webCreditPackages: [
     {
       id: "starter",

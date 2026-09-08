@@ -12,8 +12,7 @@ export function isJobQueueMessage(value: unknown): value is JobQueueMessage {
     "jobId" in value &&
     typeof value.jobId === "string" &&
     value.jobId.length > 0 &&
-    (!("outboxId" in value) ||
-      (typeof value.outboxId === "string" && value.outboxId.length > 0))
+    (!("outboxId" in value) || (typeof value.outboxId === "string" && value.outboxId.length > 0))
   );
 }
 

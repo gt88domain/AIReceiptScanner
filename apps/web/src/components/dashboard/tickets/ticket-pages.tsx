@@ -95,8 +95,7 @@ function TicketThread({
                   : message.authorRole === "admin"
                     ? "Support"
                     : "Customer"}{" "}
-                ·{" "}
-                {dateTimeFormatter.format(message.createdAt)}
+                · {dateTimeFormatter.format(message.createdAt)}
               </CardDescription>
             </CardHeader>
             <CardContent className="whitespace-pre-wrap text-sm">{message.body}</CardContent>

@@ -35,7 +35,10 @@ export async function expireCredits(db: Database, now = new Date()) {
             and(
               eq(creditTransaction.sourceProvider, "system"),
               eq(creditTransaction.sourceType, "expiration"),
-              inArray(creditTransaction.sourceId, expirationSources.slice(index * 90, (index + 1) * 90)),
+              inArray(
+                creditTransaction.sourceId,
+                expirationSources.slice(index * 90, (index + 1) * 90),
+              ),
             ),
           ),
       ),

@@ -23,7 +23,7 @@ For Server local development use `apps/server/.dev.vars` (Wrangler loads it dire
 3. Create `apps/server/.production-safety.env` from its example and give it exactly the same Worker and host values as the Worker configurations. Create `apps/server/.env.production` only on the machine that rotates secrets.
 4. Set runtime secrets in `apps/server/.env.production`. `ADMIN_EMAILS` and `BETTER_AUTH_SECRET` are always required. `EMAIL_FROM` is the verified production sender used by Resend.
 5. If app configuration enables a payment provider or OAuth provider, supply
-   its production secrets and client identifiers. Stripe needs an `sk_live_`
+   its production secrets and client identifiers. Stripe needs an `rk_live_` or `sk_live_`
    secret and distinct, non-test production price IDs. Enabled native billing
    and credit purchases need product-owned RevenueCat IDs in
    `app-config.ts` and `product-config.ts`; preflight errors name the unresolved

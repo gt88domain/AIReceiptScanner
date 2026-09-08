@@ -11,6 +11,7 @@ Complete walkthrough for setting up Stripe payments from scratch. Covers Sandbox
 ## Step 1: Confirm Payment Provider
 
 In `packages/app-config/src/app-config.ts`, set:
+
 ```typescript
 web: {
   payments: {
@@ -40,6 +41,7 @@ The CLI does NOT auto-create Sandboxes. You must select one explicitly.
 3. Write to `STRIPE_SECRET_KEY` in `apps/server/.dev.vars`
 
 Verify the key belongs to the right account:
+
 ```bash
 stripe accounts retrieve --api-key "$STRIPE_SECRET_KEY"
 ```
@@ -160,9 +162,11 @@ pnpm dev:web+server
 ```
 
 1. Trigger a test event:
+
    ```bash
    stripe trigger checkout.session.completed --api-key "$STRIPE_SECRET_KEY"
    ```
+
    Confirm server logs show `POST /api/webhooks/stripe → 200`.
 
 2. Full checkout flow:
@@ -176,7 +180,8 @@ pnpm dev:web+server
 
 Do not create production prices unless the user explicitly confirms the live Stripe account.
 
-1. Get the live secret key (`sk_live_...`) from the live Stripe account
+1. Prefer a least-privilege live restricted key (`rk_live_...`); a live secret key
+   (`sk_live_...`) remains supported
 2. Write to `STRIPE_SECRET_KEY` in `apps/server/.env.production`
 3. Create live Products/Prices in the live account (same structure as test)
 4. Write live `price_...` IDs to `prod.providerPriceId` in `app-config.ts`

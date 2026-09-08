@@ -8,7 +8,7 @@ import { defaultLocale, supportedLocales } from "@/i18n/config";
 
 type JsonLdPrimitive = string | number | boolean | null;
 type JsonLdValue = JsonLdPrimitive | JsonLdObject | JsonLdValue[];
-export type JsonLdObject = {
+type JsonLdObject = {
   [key: string]: JsonLdValue | undefined;
 };
 
@@ -65,17 +65,6 @@ const getRuntimeOrigin = createIsomorphicFn()
   })
   .client(() => window.location.origin);
 
-/** Whether the current route carries query parameters that should not be indexed. */
-export const hasSearchParams = createIsomorphicFn()
-  .server(() => {
-    try {
-      return new URL(getRequest().url).search.length > 0;
-    } catch {
-      return false;
-    }
-  })
-  .client(() => window.location.search.length > 0);
-
 function stripLocalePrefix(path: string): string {
   for (const locale of supportedLocales) {
     const prefix = `/${locale}`;
@@ -108,14 +97,6 @@ function resolveOrigin(): string {
   }
 
   return "http://localhost:3000";
-}
-
-/**
- * Site origin for structured-data builders that must emit absolute URLs
- * (schema.org image/url fields, breadcrumb items, sitemap links).
- */
-export function resolveSiteOrigin(): string {
-  return resolveOrigin();
 }
 
 /**

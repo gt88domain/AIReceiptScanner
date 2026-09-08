@@ -216,11 +216,11 @@ function validateProviderSecrets(
     switch (provider) {
       case "stripe": {
         const key = required(values, "STRIPE_SECRET_KEY", errors);
-        if (key && !key.startsWith("sk_live_")) {
+        if (key && !/^(?:rk|sk)_live_/.test(key)) {
           add(
             errors,
             "INVALID_STRIPE_SECRET_KEY",
-            "STRIPE_SECRET_KEY must be a live key for production.",
+            "STRIPE_SECRET_KEY must be an rk_live_ or sk_live_ key for production.",
           );
         }
         const webhookSecret = required(values, "STRIPE_WEBHOOK_SECRET", errors);

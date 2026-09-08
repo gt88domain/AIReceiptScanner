@@ -246,10 +246,7 @@ export async function failBillableOperation(db: Database, input: FailBillableOpe
       .update(billableOperation)
       .set({ status: "failed", failureReason: input.failureReason, updatedAt: new Date() })
       .where(
-        and(
-          eq(billableOperation.id, operation.id),
-          eq(billableOperation.status, operation.status),
-        ),
+        and(eq(billableOperation.id, operation.id), eq(billableOperation.status, operation.status)),
       );
     return (await findOperation(db, input)) ?? operation;
   }
@@ -300,7 +297,8 @@ export async function failBillableOperation(db: Database, input: FailBillableOpe
             updatedAt: sql<number>`${nowSeconds}`.as("updated_at"),
           })
           .from(billableOperation)
-          .where(and(eq(billableOperation.id, operation.id), sql`changes() = 1`))),
+          .where(and(eq(billableOperation.id, operation.id), sql`changes() = 1`)),
+      ),
       db
         .update(creditAccount)
         .set({
@@ -316,10 +314,7 @@ export async function failBillableOperation(db: Database, input: FailBillableOpe
       .update(billableOperation)
       .set({ status: "refunded", failureReason: input.failureReason, updatedAt: new Date() })
       .where(
-        and(
-          eq(billableOperation.id, operation.id),
-          eq(billableOperation.status, operation.status),
-        ),
+        and(eq(billableOperation.id, operation.id), eq(billableOperation.status, operation.status)),
       );
   }
   return (await findOperation(db, input)) ?? operation;

@@ -1,17 +1,7 @@
-import {
-  novelForumRouter,
-  novelPublicRouter,
-  novelWorldRouter,
-} from "./novels/router";
-
 /**
  * Product-domain router registry.
  *
- * The public AINovel surfaces live here rather than in template/platform
- * routers, keeping reader data separate from accounts and billing.
+ * New product modules register their public oRPC router here. Keep
+ * `routers/index.ts` for platform routes and this single registration point.
  */
-export const moduleRouters = {
-  forums: novelForumRouter,
-  novels: novelPublicRouter,
-  worlds: novelWorldRouter,
-};
+export const moduleRouters = {};

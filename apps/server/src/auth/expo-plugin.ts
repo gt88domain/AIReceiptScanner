@@ -70,25 +70,26 @@ export function createExpoAuthPlugin(d1?: D1Database) {
   }
 
   const expoAuthorizationProxy = createAuthEndpoint(
-  "/expo-authorization-proxy",
-  {
-    method: "GET",
-    query: z.object({
-      handoff: z.string().uuid(),
-    }),
-    metadata: HIDE_METADATA,
-  },
-  async (context) => {
-    const record = await consume(`expo:authorization:${context.query.handoff}`);
-    if (!record) throw new APIError("BAD_REQUEST", { message: "Invalid or expired native handoff" });
-    const { url, cookie } = JSON.parse(record.value) as { url: string; cookie: string };
-    // Only server-generated authorization URLs and state cookies are replayed.
-    context.setHeader("set-cookie", cookie);
-    context.setHeader("cache-control", "no-store");
-    context.setHeader("referrer-policy", "no-referrer");
-    return context.redirect(url);
-  },
-);
+    "/expo-authorization-proxy",
+    {
+      method: "GET",
+      query: z.object({
+        handoff: z.string().uuid(),
+      }),
+      metadata: HIDE_METADATA,
+    },
+    async (context) => {
+      const record = await consume(`expo:authorization:${context.query.handoff}`);
+      if (!record)
+        throw new APIError("BAD_REQUEST", { message: "Invalid or expired native handoff" });
+      const { url, cookie } = JSON.parse(record.value) as { url: string; cookie: string };
+      // Only server-generated authorization URLs and state cookies are replayed.
+      context.setHeader("set-cookie", cookie);
+      context.setHeader("cache-control", "no-store");
+      context.setHeader("referrer-policy", "no-referrer");
+      return context.redirect(url);
+    },
+  );
 
   const expoExchangeHandoff = createAuthEndpoint(
     "/expo-exchange-handoff",
@@ -99,7 +100,8 @@ export function createExpoAuthPlugin(d1?: D1Database) {
     },
     async (context) => {
       const record = await consume(`expo:result:${context.body.handoff}:${context.body.nonce}`);
-      if (!record) throw new APIError("BAD_REQUEST", { message: "Invalid or expired native handoff" });
+      if (!record)
+        throw new APIError("BAD_REQUEST", { message: "Invalid or expired native handoff" });
       context.setHeader("cache-control", "no-store");
       return context.json({ cookie: record.value });
     },
@@ -165,17 +167,24 @@ export function createExpoAuthPlugin(d1?: D1Database) {
             const cookie = context.context.responseHeaders?.get("set-cookie");
             context.context.responseHeaders?.delete("set-cookie");
             if (
-              !response || typeof response !== "object" || !("url" in response) ||
-              typeof response.url !== "string" || !cookie
-            ) return;
+              !response ||
+              typeof response !== "object" ||
+              !("url" in response) ||
+              typeof response.url !== "string" ||
+              !cookie
+            )
+              return;
             const record = await database()
-              .prepare("SELECT value FROM verification WHERE identifier = ? AND expires_at > ? LIMIT 1")
+              .prepare(
+                "SELECT value FROM verification WHERE identifier = ? AND expires_at > ? LIMIT 1",
+              )
               .bind(`expo:flow:${flow}`, Math.floor(Date.now() / 1000))
               .first<{ value: string }>();
             if (!record) throw new APIError("BAD_REQUEST", { message: "Native handoff expired" });
             const authorizationUrl = new URL(response.url);
             const state = authorizationUrl.searchParams.get("state");
-            if (!state) throw new APIError("BAD_REQUEST", { message: "Native handoff is missing state" });
+            if (!state)
+              throw new APIError("BAD_REQUEST", { message: "Native handoff is missing state" });
             const { nonce } = JSON.parse(record.value) as { nonce: string };
             await database()
               .prepare("UPDATE verification SET value = ?, updated_at = ? WHERE identifier = ?")
@@ -191,7 +200,10 @@ export function createExpoAuthPlugin(d1?: D1Database) {
             context.setHeader("cache-control", "no-store");
             // The nonce is delivered only to the initiating native HTTP client, not the browser.
             context.context.returned = {
-              url: proxy.toString(), redirect: false, handoff: flow, nonce,
+              url: proxy.toString(),
+              redirect: false,
+              handoff: flow,
+              nonce,
             };
           }),
         },

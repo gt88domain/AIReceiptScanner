@@ -3,17 +3,13 @@ import { buildWorkerHandler } from "./lib/worker-handler";
 import { createControlReadHttpHandler } from "./modules/control-read/http";
 import { createControlReadV1 } from "./modules/control-read";
 import { createControlReadDependencies } from "./modules/control-read/dependencies";
-import { registerNovelMobileReadRoutes } from "./modules/novels/mobile-http";
 import { createFetchHandler } from "./worker/create-fetch-handler";
 export { ControlReadEntrypoint } from "./worker/control-read-entrypoint";
 import { createJobWorkerHandlers } from "./worker/create-worker-handlers";
 import { serverRuntimeConfig } from "./worker/runtime";
 
 const runtimeConfig = serverRuntimeConfig;
-const app = createApp({
-  runtimeConfig,
-  publicReadRouteRegistrars: [registerNovelMobileReadRoutes],
-});
+const app = createApp({ runtimeConfig });
 const jobs = runtimeConfig.composition.modules.jobs
   ? createJobWorkerHandlers(runtimeConfig)
   : undefined;

@@ -48,7 +48,7 @@ export const webConfig: WebConfig = {
   docsPublic: import.meta.env.VITE_CONTENT_DOCS_PUBLIC === "true",
   blogPublic: import.meta.env.VITE_CONTENT_BLOG_PUBLIC === "true",
   auth: {
-    publicSignupEnabled: publicRuntime.auth.publicSignupEnabled,
+    publicSignupEnabled: publicRuntime.auth.publicSignupEnabled !== false,
     methods: {
       emailPasswordEnabled: publicRuntime.auth.methods.emailPassword,
       githubEnabled: publicRuntime.auth.methods.github,

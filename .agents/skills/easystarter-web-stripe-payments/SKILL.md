@@ -99,6 +99,7 @@ web: {
 ```
 
 The server payment router automatically uses the matching provider implementation:
+
 - Stripe: `apps/server/src/payments/providers/stripe/provider.ts`
 - Webhook handler: `apps/server/src/payments/providers/stripe/webhook/handle-event.ts`
 - Web payment routes: `apps/server/src/routers/web/payments.ts`
@@ -107,11 +108,11 @@ Stripe is the only active Web payment provider. Update its price IDs and environ
 
 ## Section 3: Environment Variables
 
-| Variable | Where | Notes |
-|----------|-------|-------|
-| `STRIPE_SECRET_KEY` | `apps/server/.dev.vars` + `.env.production` | `sk_test_...` for dev, `sk_live_...` for production |
-| `STRIPE_WEBHOOK_SECRET` | `apps/server/.dev.vars` + `.env.production` | `whsec_...` from Stripe CLI (dev) or Dashboard (prod) |
-| `PAYMENTS_PRICE_ENV` | `apps/server/.dev.vars` + Worker environment config | Explicitly select `test` or `prod`; production must use `prod` |
+| Variable                | Where                                               | Notes                                                                                        |
+| ----------------------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `STRIPE_SECRET_KEY`     | `apps/server/.dev.vars` + `.env.production`         | `sk_test_...` for dev; prefer `rk_live_...` in production, with `sk_live_...` also supported |
+| `STRIPE_WEBHOOK_SECRET` | `apps/server/.dev.vars` + `.env.production`         | `whsec_...` from Stripe CLI (dev) or Dashboard (prod)                                        |
+| `PAYMENTS_PRICE_ENV`    | `apps/server/.dev.vars` + Worker environment config | Explicitly select `test` or `prod`; production must use `prod`                               |
 
 `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` are secrets — never put them in `wrangler.jsonc` or Web env files. `PAYMENTS_PRICE_ENV` is non-secret Worker configuration.
 
@@ -168,7 +169,7 @@ stripe trigger checkout.session.completed --api-key "$STRIPE_SECRET_KEY"
 
 1. In Stripe Dashboard → Developers → Webhooks → Add endpoint
 2. URL: `{SERVER_URL}/api/webhooks/stripe`
-3. Select relevant events (checkout.session.completed, invoice.paid, customer.subscription.*, etc.)
+3. Select relevant events (checkout.session.completed, invoice.paid, customer.subscription.\*, etc.)
 4. Copy the Signing secret to `STRIPE_WEBHOOK_SECRET` in `apps/server/.env.production`
 
 ## Section 5: Common Mistakes
@@ -193,13 +194,13 @@ After any payment change:
 
 ## Related Files
 
-| File | Purpose |
-|------|---------|
-| `packages/app-config/src/app-config.ts` | Plan catalog, provider selection |
-| `packages/app-config/src/payments/web.ts` | Payment types, normalization, environment resolution |
-| `apps/server/src/payments/providers/stripe/provider.ts` | Stripe checkout session creation |
-| `apps/server/src/payments/providers/stripe/webhook/handle-event.ts` | Webhook event processing |
-| `apps/server/src/routers/web/payments.ts` | oRPC payment routes |
-| `apps/web/src/components/landing-page/tailark/pricing/pricing-section.tsx` | Pricing page UI |
-| `apps/web/src/routes/_authed/(dashboard)/settings/billing.tsx` | Billing management page |
-| `packages/shared/src/pricing-config.ts` | Shared pricing tier definitions |
+| File                                                                       | Purpose                                              |
+| -------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `packages/app-config/src/app-config.ts`                                    | Plan catalog, provider selection                     |
+| `packages/app-config/src/payments/web.ts`                                  | Payment types, normalization, environment resolution |
+| `apps/server/src/payments/providers/stripe/provider.ts`                    | Stripe checkout session creation                     |
+| `apps/server/src/payments/providers/stripe/webhook/handle-event.ts`        | Webhook event processing                             |
+| `apps/server/src/routers/web/payments.ts`                                  | oRPC payment routes                                  |
+| `apps/web/src/components/landing-page/tailark/pricing/pricing-section.tsx` | Pricing page UI                                      |
+| `apps/web/src/routes/_authed/(dashboard)/settings/billing.tsx`             | Billing management page                              |
+| `packages/shared/src/pricing-config.ts`                                    | Shared pricing tier definitions                      |

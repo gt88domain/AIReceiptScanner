@@ -31,7 +31,9 @@ export function AdminOverview() {
     return <OverviewSkeleton />;
   }
 
-  const failedWebhooks = billing.isError ? "Unavailable" : (billing.data?.stats.failedWebhooks ?? 0);
+  const failedWebhooks = billing.isError
+    ? "Unavailable"
+    : (billing.data?.stats.failedWebhooks ?? 0);
   const failedPayments = (operations.data ?? []).filter(
     (operation) => operation.status === "failed" || operation.status === "manual_review",
   ).length;

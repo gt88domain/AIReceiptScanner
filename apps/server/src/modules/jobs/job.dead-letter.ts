@@ -166,9 +166,14 @@ export async function consumeDeadLetterMessages(db: Database, batch: MessageBatc
                 jobId: job.id,
                 jobType: job.type,
                 payload: job.payload,
-                error: sql<string>`coalesce(${job.error}, 'Queue delivery budget exhausted')`.as("error"),
+                error: sql<string>`coalesce(${job.error}, 'Queue delivery budget exhausted')`.as(
+                  "error",
+                ),
                 attempts: job.attemptCount,
-                failedAt: sql<number>`coalesce(${job.completedAt}, ${Math.floor(now.getTime() / 1000)})`.as("failed_at"),
+                failedAt:
+                  sql<number>`coalesce(${job.completedAt}, ${Math.floor(now.getTime() / 1000)})`.as(
+                    "failed_at",
+                  ),
                 resolvedAt: sql`null`.as("resolved_at"),
                 resolvedBy: sql`null`.as("resolved_by"),
                 resolution: sql`null`.as("resolution"),

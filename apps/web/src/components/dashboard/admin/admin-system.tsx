@@ -223,7 +223,10 @@ function FailedJobsPanel() {
         {failedJobs.data?.data.length ? (
           <div className="divide-y">
             {failedJobs.data.data.map((event) => (
-              <div className="flex flex-wrap items-center justify-between gap-4 py-3" key={event.id}>
+              <div
+                className="flex flex-wrap items-center justify-between gap-4 py-3"
+                key={event.id}
+              >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{event.jobType}</p>
                   <p className="text-xs text-muted-foreground">

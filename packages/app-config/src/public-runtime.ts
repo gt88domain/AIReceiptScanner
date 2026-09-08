@@ -13,21 +13,19 @@ export type PublicNavigationItem = Readonly<{
  * Keep catalogs, provider price IDs, and native-only settings out of this entry.
  */
 export const publicRuntimeConfig = {
-  appName: "AINovel",
-  supportEmail: "info@ainovel.com",
+  appName: "Your App",
+  supportEmail: "support@example.com",
   defaultThemePresetKey: "clean-slate",
   publicNavigation: [] as readonly PublicNavigationItem[],
   features: {
-    admin: false,
-    // Desktop-app memberships and generation credits are integrated only once
-    // their entitlement API and live prices are available.
-    billing: false,
-    credits: false,
-    creditPurchases: false,
+    admin: true,
+    billing: true,
+    credits: true,
+    creditPurchases: true,
     storage: false,
     tickets: isBackofficePreviewTicketsEnabled(),
-    newsletter: false,
-    contactForm: false,
+    newsletter: true,
+    contactForm: true,
   },
   auth: {
     publicSignupEnabled: true,

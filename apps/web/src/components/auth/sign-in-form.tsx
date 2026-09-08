@@ -97,9 +97,7 @@ export function SignInForm({ className, ...props }: SignInFormProps) {
                       disabled={socialLoading !== null}
                       onClick={() => socialSignIn("apple")}
                     >
-                      {socialLoading === "apple" && (
-                        <Loader2Icon className="size-4 animate-spin" />
-                      )}
+                      {socialLoading === "apple" && <Loader2Icon className="size-4 animate-spin" />}
                       <FaApple className="mr-2" />
                       {t("auth.loginWithApple")}
                     </Button>

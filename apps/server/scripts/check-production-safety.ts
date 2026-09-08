@@ -568,7 +568,14 @@ function selfCheck() {
       ...validInput,
       productionEnv: { ...validInput.productionEnv, STRIPE_SECRET_KEY: "sk_test_test" },
     }).join("\n"),
-    /STRIPE_SECRET_KEY must be a live key/,
+    /STRIPE_SECRET_KEY must be an rk_live_ or sk_live_ key/,
+  );
+  assert.deepEqual(
+    errors({
+      ...validInput,
+      productionEnv: { ...validInput.productionEnv, STRIPE_SECRET_KEY: "rk_live_test" },
+    }),
+    [],
   );
   assert.match(
     errors({

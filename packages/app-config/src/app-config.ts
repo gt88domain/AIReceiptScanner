@@ -127,20 +127,18 @@ const appConfig: AppConfig = {
     // Native credit system settings and purchasable in-app credit packages.
     credits: {
       // Controls whether native credit screens and queries are available.
-      enabled: false,
+      enabled: true,
       // Allows native store purchases for credit packages.
-      // AINovel baseline: paid features stay disabled until pricing and
-      // entitlement APIs are confirmed (see docs/plans/ainovel-v2-rebuild.md).
-      purchasesEnabled: false,
+      purchasesEnabled: true,
       // Credit packages available through native in-app purchases.
       packages: nativeCreditPackages,
     },
     // Native app metadata overrides.
     app: {
       // Native app display name.
-      name: "AINovel",
+      name: "TanStack Template",
       // Deep-link scheme used by the native app.
-      nativeScheme: "com.ainovel.desktop",
+      nativeScheme: "com.aiarticles.template",
     },
     // Native deep-link and legal document routes.
     routes: {
@@ -156,7 +154,7 @@ const appConfig: AppConfig = {
     // Native subscription and lifetime payment settings.
     payments: {
       // Enables native billing runtime paths.
-      enabled: false,
+      enabled: true,
       // Provider used for native purchases.
       provider: "revenuecat",
       // iOS in-app purchase catalog.
@@ -296,7 +294,8 @@ export function resolveNativeCommonConfig(): ResolvedNativeCommonConfig {
     credits: {
       ...appConfig.native.credits,
       enabled: nativeFeatures?.credits ?? appConfig.native.credits.enabled,
-      purchasesEnabled: nativeFeatures?.creditPurchases ?? appConfig.native.credits.purchasesEnabled,
+      purchasesEnabled:
+        nativeFeatures?.creditPurchases ?? appConfig.native.credits.purchasesEnabled,
       signupGrant: commonConfig.credits.signupGrant,
     },
     routes: appConfig.native.routes,

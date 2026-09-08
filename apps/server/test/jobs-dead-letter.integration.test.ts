@@ -33,20 +33,32 @@ describe("job dead-letter queue", () => {
   it("keeps future jobs out of Queue and parks early main/DLQ deliveries until due", async () => {
     const db = createDb(env.DB);
     const sent: unknown[] = [];
-    const jobs = createJobService(db, { send: async (body) => {
-      sent.push(body);
-      return sentToQueue();
-    } });
+    const jobs = createJobService(db, {
+      send: async (body) => {
+        sent.push(body);
+        return sentToQueue();
+      },
+    });
     const future = await jobs.create({
-      idempotencyKey: `future:${crypto.randomUUID()}`, type: "ai.generate", payload: {},
+      idempotencyKey: `future:${crypto.randomUUID()}`,
+      type: "ai.generate",
+      payload: {},
       runAfter: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
     const [outbox] = await db.select().from(jobOutbox).where(eq(jobOutbox.jobId, future.id));
     expect(sent).toEqual([]);
     let calls = 0;
-    await expect(processJobMessage(db, { jobId: future.id, outboxId: outbox!.id }, {
-      "ai.generate": async () => { calls++; },
-    })).resolves.toBeNull();
+    await expect(
+      processJobMessage(
+        db,
+        { jobId: future.id, outboxId: outbox!.id },
+        {
+          "ai.generate": async () => {
+            calls++;
+          },
+        },
+      ),
+    ).resolves.toBeNull();
     const early = createDeadLetterBatch(future.id, outbox!.id);
     await consumeDeadLetterMessages(db, early.batch);
     expect(early.acknowledgements()).toBe(1);
@@ -54,18 +66,28 @@ describe("job dead-letter queue", () => {
     expect(calls).toBe(0);
     const [pending] = await db.select().from(job).where(eq(job.id, future.id));
     expect(pending).toMatchObject({ status: "pending", attemptCount: 0 });
-    expect(await db.select().from(failedJobEvent).where(eq(failedJobEvent.jobId, future.id))).toEqual([]);
+    expect(
+      await db.select().from(failedJobEvent).where(eq(failedJobEvent.jobId, future.id)),
+    ).toEqual([]);
 
     // An earlier future outbox must not occupy the dispatcher's bounded due-job slice.
     const due = await jobs.create({
-      idempotencyKey: `due:${crypto.randomUUID()}`, type: "ai.generate", payload: {},
+      idempotencyKey: `due:${crypto.randomUUID()}`,
+      type: "ai.generate",
+      payload: {},
       runAfter: new Date(Date.now() + 60_000),
     });
-    await db.update(job).set({ runAfter: new Date(Date.now() - 1_000) }).where(eq(job.id, due.id));
+    await db
+      .update(job)
+      .set({ runAfter: new Date(Date.now() - 1_000) })
+      .where(eq(job.id, due.id));
     await jobs.flushOutbox(1);
     expect(sent).toHaveLength(1);
     expect(sent[0]).toMatchObject({ jobId: due.id, outboxId: expect.any(String) });
-    await db.update(job).set({ runAfter: new Date(Date.now() - 1_000) }).where(eq(job.id, future.id));
+    await db
+      .update(job)
+      .set({ runAfter: new Date(Date.now() - 1_000) })
+      .where(eq(job.id, future.id));
     await jobs.flushOutbox();
     expect(sent).toHaveLength(2);
     expect(sent[1]).toEqual({ jobId: future.id, outboxId: outbox!.id });
@@ -75,13 +97,20 @@ describe("job dead-letter queue", () => {
     const db = createDb(env.DB);
     const jobs = createJobService(db, { send: async () => sentToQueue() });
     const created = await jobs.create({
-      idempotencyKey: `generation:${crypto.randomUUID()}`, type: "ai.generate", payload: {},
+      idempotencyKey: `generation:${crypto.randomUUID()}`,
+      type: "ai.generate",
+      payload: {},
     });
     const [original] = await db.select().from(jobOutbox).where(eq(jobOutbox.jobId, created.id));
     const first = createDeadLetterBatch(created.id, original!.id);
     await consumeDeadLetterMessages(db, first.batch);
-    const [incident] = await db.select().from(failedJobEvent).where(eq(failedJobEvent.jobId, created.id));
-    expect(await jobs.retryFailed({ failedJobEventId: incident!.id, resolvedBy: "admin" })).toBe(true);
+    const [incident] = await db
+      .select()
+      .from(failedJobEvent)
+      .where(eq(failedJobEvent.jobId, created.id));
+    expect(await jobs.retryFailed({ failedJobEventId: incident!.id, resolvedBy: "admin" })).toBe(
+      true,
+    );
     const [current] = await db.select().from(jobOutbox).where(eq(jobOutbox.jobId, created.id));
     expect(current!.id).not.toBe(original!.id);
 
@@ -93,13 +122,21 @@ describe("job dead-letter queue", () => {
     expect(stale.acknowledgements()).toBe(1);
     expect(legacy.acknowledgements()).toBe(1);
     let calls = 0;
-    const handlers = { "ai.generate": async () => { calls++; } };
-    await expect(processJobMessage(db, { jobId: created.id, outboxId: original!.id }, handlers)).resolves.toBeNull();
+    const handlers = {
+      "ai.generate": async () => {
+        calls++;
+      },
+    };
+    await expect(
+      processJobMessage(db, { jobId: created.id, outboxId: original!.id }, handlers),
+    ).resolves.toBeNull();
     await expect(processJobMessage(db, { jobId: created.id }, handlers)).resolves.toBeNull();
     expect(calls).toBe(0);
     const [pending] = await db.select().from(job).where(eq(job.id, created.id));
     expect(pending).toMatchObject({ status: "pending", attemptCount: 0 });
-    expect(await db.select().from(failedJobEvent).where(eq(failedJobEvent.jobId, created.id))).toHaveLength(1);
+    expect(
+      await db.select().from(failedJobEvent).where(eq(failedJobEvent.jobId, created.id)),
+    ).toHaveLength(1);
     await processJobMessage(db, { jobId: created.id, outboxId: current!.id }, handlers);
     expect(calls).toBe(1);
   });
@@ -108,28 +145,44 @@ describe("job dead-letter queue", () => {
     const db = createDb(env.DB);
     let rejectPublish = false;
     const sent: unknown[] = [];
-    const jobs = createJobService(db, { send: async (body) => {
-      if (rejectPublish) throw new Error("Queue temporarily unavailable");
-      sent.push(body);
-      return sentToQueue();
-    } });
+    const jobs = createJobService(db, {
+      send: async (body) => {
+        if (rejectPublish) throw new Error("Queue temporarily unavailable");
+        sent.push(body);
+        return sentToQueue();
+      },
+    });
     const created = await jobs.create({
-      idempotencyKey: `retry-publish:${crypto.randomUUID()}`, type: "ai.generate", payload: {},
+      idempotencyKey: `retry-publish:${crypto.randomUUID()}`,
+      type: "ai.generate",
+      payload: {},
     });
     await consumeDeadLetterMessages(db, createDeadLetterBatch(created.id).batch);
-    const [incident] = await db.select().from(failedJobEvent).where(eq(failedJobEvent.jobId, created.id));
+    const [incident] = await db
+      .select()
+      .from(failedJobEvent)
+      .where(eq(failedJobEvent.jobId, created.id));
     rejectPublish = true;
-    expect(await jobs.retryFailed({
-      failedJobEventId: incident!.id, resolvedBy: "admin", resolvedByEmail: "admin@example.test",
-    })).toBe(true);
+    expect(
+      await jobs.retryFailed({
+        failedJobEventId: incident!.id,
+        resolvedBy: "admin",
+        resolvedByEmail: "admin@example.test",
+      }),
+    ).toBe(true);
     const [pending] = await db.select().from(jobOutbox).where(eq(jobOutbox.jobId, created.id));
     expect(pending).toMatchObject({ status: "pending", leaseToken: null });
-    const audits = await db.select().from(adminAuditLog).where(eq(adminAuditLog.entityId, incident!.id));
+    const audits = await db
+      .select()
+      .from(adminAuditLog)
+      .where(eq(adminAuditLog.entityId, incident!.id));
     expect(audits).toHaveLength(1);
     expect(audits[0]).toMatchObject({ action: "jobs.failed.retried", actorId: "admin" });
     const history = await db.select().from(jobEvent).where(eq(jobEvent.jobId, created.id));
     expect(history.filter((event) => event.type === "queued")).toHaveLength(2);
-    expect(history.every((event) => event.createdAt.getFullYear() === new Date().getFullYear())).toBe(true);
+    expect(
+      history.every((event) => event.createdAt.getFullYear() === new Date().getFullYear()),
+    ).toBe(true);
     rejectPublish = false;
     await jobs.flushOutbox();
     expect(sent).toHaveLength(2);
@@ -140,7 +193,9 @@ describe("job dead-letter queue", () => {
     const db = createDb(env.DB);
     const jobs = createJobService(db, { send: async () => sentToQueue() });
     const created = await jobs.create({
-      idempotencyKey: `dlq-rollback:${crypto.randomUUID()}`, type: "ai.generate", payload: {},
+      idempotencyKey: `dlq-rollback:${crypto.randomUUID()}`,
+      type: "ai.generate",
+      payload: {},
     });
     await env.DB.prepare(`CREATE TRIGGER reject_dlq_incident BEFORE INSERT ON failed_job_event
       WHEN NEW.job_id = '${created.id}' BEGIN SELECT RAISE(ABORT, 'injected incident failure'); END`).run();
@@ -151,8 +206,12 @@ describe("job dead-letter queue", () => {
       expect(delivery.retryDelays).toEqual([60]);
       const [pending] = await db.select().from(job).where(eq(job.id, created.id));
       expect(pending).toMatchObject({ status: "pending", completedAt: null });
-      expect(await db.select().from(jobEvent).where(eq(jobEvent.jobId, created.id))).toHaveLength(1);
-      expect(await db.select().from(failedJobEvent).where(eq(failedJobEvent.jobId, created.id))).toEqual([]);
+      expect(await db.select().from(jobEvent).where(eq(jobEvent.jobId, created.id))).toHaveLength(
+        1,
+      );
+      expect(
+        await db.select().from(failedJobEvent).where(eq(failedJobEvent.jobId, created.id)),
+      ).toEqual([]);
     } finally {
       await env.DB.prepare("DROP TRIGGER reject_dlq_incident").run();
     }
@@ -288,8 +347,13 @@ describe("job dead-letter queue", () => {
         updatedAt: now,
       });
       await db.insert(jobOutbox).values({
-        id: crypto.randomUUID(), jobId, status: "published", attempts: 1,
-        publishedAt: now, createdAt: now, updatedAt: now,
+        id: crypto.randomUUID(),
+        jobId,
+        status: "published",
+        attempts: 1,
+        publishedAt: now,
+        createdAt: now,
+        updatedAt: now,
       });
 
       const queue = createDeadLetterBatch(jobId);

@@ -114,9 +114,7 @@ export function AdminPayments() {
                           {operation.status === "failed" ? (
                             <Button
                               disabled={retryOperation.isPending}
-                              onClick={() =>
-                                retryOperation.mutate({ operationId: operation.id })
-                              }
+                              onClick={() => retryOperation.mutate({ operationId: operation.id })}
                               size="sm"
                               variant="outline"
                             >

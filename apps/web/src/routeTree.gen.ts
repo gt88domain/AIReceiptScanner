@@ -10,29 +10,15 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SplatRouteImport } from './routes/$'
-import { Route as PageRouteImport } from './routes/$page'
 import { Route as PublicRouteRouteImport } from './routes/_public/route'
-import { Route as AnnouncementsRouteImport } from './routes/announcements'
 import { Route as BillingRouteRouteImport } from './routes/billing/route'
-import { Route as LibraryRouteImport } from './routes/library'
-import { Route as RankingRouteImport } from './routes/ranking'
-import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as authAuthRouteRouteImport } from './routes/(auth)/auth/route'
 import { Route as AutheddashboardRouteRouteImport } from './routes/_authed/(dashboard)/route'
 import { Route as ApiContactRouteImport } from './routes/api/contact'
 import { Route as ApiSearchRouteImport } from './routes/api/search'
 import { Route as BillingCancelRouteImport } from './routes/billing/cancel'
 import { Route as BillingSuccessRouteImport } from './routes/billing/success'
-import { Route as CategoriesSlugRouteImport } from './routes/categories/$slug'
 import { Route as DocsSplatRouteImport } from './routes/docs/$'
-import { Route as ForumsIndexRouteImport } from './routes/forums/index'
-import { Route as ForumsThreadIdRouteImport } from './routes/forums/$threadId'
-import { Route as NovelSlugRouteImport } from './routes/novel/$slug'
-import { Route as NovelsIndexRouteImport } from './routes/novels/index'
-import { Route as NovelsSlugRouteImport } from './routes/novels/$slug'
-import { Route as TagsSlugRouteImport } from './routes/tags/$slug'
-import { Route as WorldsIndexRouteImport } from './routes/worlds/index'
 import { Route as authAuthUnauthedRouteRouteImport } from './routes/(auth)/auth/_unauthed/route'
 import { Route as authAuthResetPasswordRouteImport } from './routes/(auth)/auth/reset-password'
 import { Route as AutheddashboardAdminRouteImport } from './routes/_authed/(dashboard)/admin'
@@ -43,10 +29,6 @@ import { Route as PubliclegalPrivacyRouteImport } from './routes/_public/(legal)
 import { Route as PubliclegalTermsRouteImport } from './routes/_public/(legal)/terms'
 import { Route as PublicmarketingContactRouteImport } from './routes/_public/(marketing)/contact'
 import { Route as ApiNewsletterSubscribeRouteImport } from './routes/api/newsletter/subscribe'
-import { Route as LibraryGenreSlugRouteImport } from './routes/library/genre/$slug'
-import { Route as NovelsCategoriesSlugRouteImport } from './routes/novels/categories/$slug'
-import { Route as NovelsGenreSlugRouteImport } from './routes/novels/genre/$slug'
-import { Route as TagsNovelsSlugRouteImport } from './routes/tags/novels/$slug'
 import { Route as authAuthUnauthedForgotPasswordRouteImport } from './routes/(auth)/auth/_unauthed/forgot-password'
 import { Route as authAuthUnauthedSignInRouteImport } from './routes/(auth)/auth/_unauthed/sign-in'
 import { Route as authAuthUnauthedSignUpRouteImport } from './routes/(auth)/auth/_unauthed/sign-up'
@@ -69,8 +51,6 @@ import { Route as PublicmarketinglandingPageIndexRouteImport } from './routes/_p
 import { Route as PublicmarketingBlogIndexRouteImport } from './routes/_public/(marketing)/blog/index'
 import { Route as PublicmarketingBlogSlugRouteImport } from './routes/_public/(marketing)/blog/$slug'
 import { Route as PublicmarketingDesignSystemIndexRouteImport } from './routes/_public/(marketing)/design-system/index'
-import { Route as NovelSlugChapterNumberRouteImport } from './routes/novel/$slug/chapter/$number'
-import { Route as NovelsSlugChapterNumberRouteImport } from './routes/novels/$slug/chapter/$number'
 import { Route as AutheddashboardAdminSupportIndexRouteImport } from './routes/_authed/(dashboard)/admin/support/index'
 import { Route as AutheddashboardAdminSupportTicketIdRouteImport } from './routes/_authed/(dashboard)/admin/support/$ticketId'
 import { Route as PublicmarketingBlogCategorySlugRouteImport } from './routes/_public/(marketing)/blog/category/$slug'
@@ -80,43 +60,13 @@ const SplatRoute = SplatRouteImport.update({
   path: '/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PageRoute = PageRouteImport.update({
-  id: '/$page',
-  path: '/$page',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PublicRouteRoute = PublicRouteRouteImport.update({
   id: '/_public',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AnnouncementsRoute = AnnouncementsRouteImport.update({
-  id: '/announcements',
-  path: '/announcements',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BillingRouteRoute = BillingRouteRouteImport.update({
   id: '/billing',
   path: '/billing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LibraryRoute = LibraryRouteImport.update({
-  id: '/library',
-  path: '/library',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RankingRoute = RankingRouteImport.update({
-  id: '/ranking',
-  path: '/ranking',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
-  id: '/robots.txt',
-  path: '/robots.txt',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const authAuthRouteRoute = authAuthRouteRouteImport.update({
@@ -149,51 +99,11 @@ const BillingSuccessRoute = BillingSuccessRouteImport.update({
   path: '/success',
   getParentRoute: () => BillingRouteRoute,
 } as any)
-const CategoriesSlugRoute = CategoriesSlugRouteImport.update({
-  id: '/categories/$slug',
-  path: '/categories/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const DocsSplatRoute = DocsSplatRouteImport.update({
   id: '/docs/$',
   path: '/docs/$',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/docs/$.lazy').then((d) => d.Route))
-const ForumsIndexRoute = ForumsIndexRouteImport.update({
-  id: '/forums/',
-  path: '/forums/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ForumsThreadIdRoute = ForumsThreadIdRouteImport.update({
-  id: '/forums/$threadId',
-  path: '/forums/$threadId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NovelSlugRoute = NovelSlugRouteImport.update({
-  id: '/novel/$slug',
-  path: '/novel/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NovelsIndexRoute = NovelsIndexRouteImport.update({
-  id: '/novels/',
-  path: '/novels/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NovelsSlugRoute = NovelsSlugRouteImport.update({
-  id: '/novels/$slug',
-  path: '/novels/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TagsSlugRoute = TagsSlugRouteImport.update({
-  id: '/tags/$slug',
-  path: '/tags/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const WorldsIndexRoute = WorldsIndexRouteImport.update({
-  id: '/worlds/',
-  path: '/worlds/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const authAuthUnauthedRouteRoute = authAuthUnauthedRouteRouteImport.update({
   id: '/_unauthed',
   getParentRoute: () => authAuthRouteRoute,
@@ -243,26 +153,6 @@ const PublicmarketingContactRoute = PublicmarketingContactRouteImport.update({
 const ApiNewsletterSubscribeRoute = ApiNewsletterSubscribeRouteImport.update({
   id: '/api/newsletter/subscribe',
   path: '/api/newsletter/subscribe',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LibraryGenreSlugRoute = LibraryGenreSlugRouteImport.update({
-  id: '/genre/$slug',
-  path: '/genre/$slug',
-  getParentRoute: () => LibraryRoute,
-} as any)
-const NovelsCategoriesSlugRoute = NovelsCategoriesSlugRouteImport.update({
-  id: '/novels/categories/$slug',
-  path: '/novels/categories/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NovelsGenreSlugRoute = NovelsGenreSlugRouteImport.update({
-  id: '/novels/genre/$slug',
-  path: '/novels/genre/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TagsNovelsSlugRoute = TagsNovelsSlugRouteImport.update({
-  id: '/tags/novels/$slug',
-  path: '/tags/novels/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const authAuthUnauthedForgotPasswordRoute =
@@ -394,16 +284,6 @@ const PublicmarketingDesignSystemIndexRoute =
     path: '/design-system/',
     getParentRoute: () => PublicRouteRoute,
   } as any)
-const NovelSlugChapterNumberRoute = NovelSlugChapterNumberRouteImport.update({
-  id: '/chapter/$number',
-  path: '/chapter/$number',
-  getParentRoute: () => NovelSlugRoute,
-} as any)
-const NovelsSlugChapterNumberRoute = NovelsSlugChapterNumberRouteImport.update({
-  id: '/chapter/$number',
-  path: '/chapter/$number',
-  getParentRoute: () => NovelsSlugRoute,
-} as any)
 const AutheddashboardAdminSupportIndexRoute =
   AutheddashboardAdminSupportIndexRouteImport.update({
     id: '/support/',
@@ -427,26 +307,12 @@ export interface FileRoutesByFullPath {
   '/': typeof PublicmarketinglandingPageIndexRoute
   '/billing': typeof BillingRouteRouteWithChildren
   '/$': typeof SplatRoute
-  '/$page': typeof PageRoute
-  '/announcements': typeof AnnouncementsRoute
-  '/library': typeof LibraryRouteWithChildren
-  '/ranking': typeof RankingRoute
-  '/robots.txt': typeof RobotsDottxtRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/auth': typeof authAuthRouteRouteWithChildren
   '/api/contact': typeof ApiContactRoute
   '/api/search': typeof ApiSearchRoute
   '/billing/cancel': typeof BillingCancelRoute
   '/billing/success': typeof BillingSuccessRoute
-  '/categories/$slug': typeof CategoriesSlugRoute
   '/docs/$': typeof DocsSplatRoute
-  '/forums/$threadId': typeof ForumsThreadIdRoute
-  '/novel/$slug': typeof NovelSlugRouteWithChildren
-  '/novels/$slug': typeof NovelsSlugRouteWithChildren
-  '/tags/$slug': typeof TagsSlugRoute
-  '/forums/': typeof ForumsIndexRoute
-  '/novels/': typeof NovelsIndexRoute
-  '/worlds/': typeof WorldsIndexRoute
   '/dashboard': typeof AutheddashboardDashboardRouteRoute
   '/auth/reset-password': typeof authAuthResetPasswordRoute
   '/admin': typeof AutheddashboardAdminRouteWithChildren
@@ -456,10 +322,6 @@ export interface FileRoutesByFullPath {
   '/terms': typeof PubliclegalTermsRoute
   '/contact': typeof PublicmarketingContactRoute
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
-  '/library/genre/$slug': typeof LibraryGenreSlugRoute
-  '/novels/categories/$slug': typeof NovelsCategoriesSlugRoute
-  '/novels/genre/$slug': typeof NovelsGenreSlugRoute
-  '/tags/novels/$slug': typeof TagsNovelsSlugRoute
   '/auth/forgot-password': typeof authAuthUnauthedForgotPasswordRoute
   '/auth/sign-in': typeof authAuthUnauthedSignInRoute
   '/auth/sign-up': typeof authAuthUnauthedSignUpRoute
@@ -476,8 +338,6 @@ export interface FileRoutesByFullPath {
   '/settings/security': typeof AutheddashboardSettingsSecurityRoute
   '/tickets/$ticketId': typeof AutheddashboardTicketsTicketIdRoute
   '/blog/$slug': typeof PublicmarketingBlogSlugRoute
-  '/novel/$slug/chapter/$number': typeof NovelSlugChapterNumberRoute
-  '/novels/$slug/chapter/$number': typeof NovelsSlugChapterNumberRoute
   '/admin/': typeof AutheddashboardAdminIndexRoute
   '/settings/': typeof AutheddashboardSettingsIndexRoute
   '/tickets/': typeof AutheddashboardTicketsIndexRoute
@@ -490,26 +350,12 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/billing': typeof BillingRouteRouteWithChildren
   '/$': typeof SplatRoute
-  '/$page': typeof PageRoute
-  '/announcements': typeof AnnouncementsRoute
-  '/library': typeof LibraryRouteWithChildren
-  '/ranking': typeof RankingRoute
-  '/robots.txt': typeof RobotsDottxtRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/auth': typeof authAuthRouteRouteWithChildren
   '/api/contact': typeof ApiContactRoute
   '/api/search': typeof ApiSearchRoute
   '/billing/cancel': typeof BillingCancelRoute
   '/billing/success': typeof BillingSuccessRoute
-  '/categories/$slug': typeof CategoriesSlugRoute
   '/docs/$': typeof DocsSplatRoute
-  '/forums/$threadId': typeof ForumsThreadIdRoute
-  '/novel/$slug': typeof NovelSlugRouteWithChildren
-  '/novels/$slug': typeof NovelsSlugRouteWithChildren
-  '/tags/$slug': typeof TagsSlugRoute
-  '/forums': typeof ForumsIndexRoute
-  '/novels': typeof NovelsIndexRoute
-  '/worlds': typeof WorldsIndexRoute
   '/dashboard': typeof AutheddashboardDashboardRouteRoute
   '/auth/reset-password': typeof authAuthResetPasswordRoute
   '/help': typeof AutheddashboardHelpRoute
@@ -518,10 +364,6 @@ export interface FileRoutesByTo {
   '/terms': typeof PubliclegalTermsRoute
   '/contact': typeof PublicmarketingContactRoute
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
-  '/library/genre/$slug': typeof LibraryGenreSlugRoute
-  '/novels/categories/$slug': typeof NovelsCategoriesSlugRoute
-  '/novels/genre/$slug': typeof NovelsGenreSlugRoute
-  '/tags/novels/$slug': typeof TagsNovelsSlugRoute
   '/auth/forgot-password': typeof authAuthUnauthedForgotPasswordRoute
   '/auth/sign-in': typeof authAuthUnauthedSignInRoute
   '/auth/sign-up': typeof authAuthUnauthedSignUpRoute
@@ -538,8 +380,6 @@ export interface FileRoutesByTo {
   '/settings/security': typeof AutheddashboardSettingsSecurityRoute
   '/tickets/$ticketId': typeof AutheddashboardTicketsTicketIdRoute
   '/blog/$slug': typeof PublicmarketingBlogSlugRoute
-  '/novel/$slug/chapter/$number': typeof NovelSlugChapterNumberRoute
-  '/novels/$slug/chapter/$number': typeof NovelsSlugChapterNumberRoute
   '/admin': typeof AutheddashboardAdminIndexRoute
   '/settings': typeof AutheddashboardSettingsIndexRoute
   '/tickets': typeof AutheddashboardTicketsIndexRoute
@@ -555,27 +395,13 @@ export interface FileRoutesById {
   '/_public': typeof PublicRouteRouteWithChildren
   '/billing': typeof BillingRouteRouteWithChildren
   '/$': typeof SplatRoute
-  '/$page': typeof PageRoute
-  '/announcements': typeof AnnouncementsRoute
-  '/library': typeof LibraryRouteWithChildren
-  '/ranking': typeof RankingRoute
-  '/robots.txt': typeof RobotsDottxtRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/(auth)/auth': typeof authAuthRouteRouteWithChildren
   '/_authed/(dashboard)': typeof AutheddashboardRouteRouteWithChildren
   '/api/contact': typeof ApiContactRoute
   '/api/search': typeof ApiSearchRoute
   '/billing/cancel': typeof BillingCancelRoute
   '/billing/success': typeof BillingSuccessRoute
-  '/categories/$slug': typeof CategoriesSlugRoute
   '/docs/$': typeof DocsSplatRoute
-  '/forums/$threadId': typeof ForumsThreadIdRoute
-  '/novel/$slug': typeof NovelSlugRouteWithChildren
-  '/novels/$slug': typeof NovelsSlugRouteWithChildren
-  '/tags/$slug': typeof TagsSlugRoute
-  '/forums/': typeof ForumsIndexRoute
-  '/novels/': typeof NovelsIndexRoute
-  '/worlds/': typeof WorldsIndexRoute
   '/(auth)/auth/_unauthed': typeof authAuthUnauthedRouteRouteWithChildren
   '/_authed/(dashboard)/dashboard': typeof AutheddashboardDashboardRouteRoute
   '/(auth)/auth/reset-password': typeof authAuthResetPasswordRoute
@@ -586,10 +412,6 @@ export interface FileRoutesById {
   '/_public/(legal)/terms': typeof PubliclegalTermsRoute
   '/_public/(marketing)/contact': typeof PublicmarketingContactRoute
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
-  '/library/genre/$slug': typeof LibraryGenreSlugRoute
-  '/novels/categories/$slug': typeof NovelsCategoriesSlugRoute
-  '/novels/genre/$slug': typeof NovelsGenreSlugRoute
-  '/tags/novels/$slug': typeof TagsNovelsSlugRoute
   '/(auth)/auth/_unauthed/forgot-password': typeof authAuthUnauthedForgotPasswordRoute
   '/(auth)/auth/_unauthed/sign-in': typeof authAuthUnauthedSignInRoute
   '/(auth)/auth/_unauthed/sign-up': typeof authAuthUnauthedSignUpRoute
@@ -606,8 +428,6 @@ export interface FileRoutesById {
   '/_authed/(dashboard)/settings/security': typeof AutheddashboardSettingsSecurityRoute
   '/_authed/(dashboard)/tickets/$ticketId': typeof AutheddashboardTicketsTicketIdRoute
   '/_public/(marketing)/blog/$slug': typeof PublicmarketingBlogSlugRoute
-  '/novel/$slug/chapter/$number': typeof NovelSlugChapterNumberRoute
-  '/novels/$slug/chapter/$number': typeof NovelsSlugChapterNumberRoute
   '/_authed/(dashboard)/admin/': typeof AutheddashboardAdminIndexRoute
   '/_authed/(dashboard)/settings/': typeof AutheddashboardSettingsIndexRoute
   '/_authed/(dashboard)/tickets/': typeof AutheddashboardTicketsIndexRoute
@@ -624,26 +444,12 @@ export interface FileRouteTypes {
     | '/'
     | '/billing'
     | '/$'
-    | '/$page'
-    | '/announcements'
-    | '/library'
-    | '/ranking'
-    | '/robots.txt'
-    | '/sitemap.xml'
     | '/auth'
     | '/api/contact'
     | '/api/search'
     | '/billing/cancel'
     | '/billing/success'
-    | '/categories/$slug'
     | '/docs/$'
-    | '/forums/$threadId'
-    | '/novel/$slug'
-    | '/novels/$slug'
-    | '/tags/$slug'
-    | '/forums/'
-    | '/novels/'
-    | '/worlds/'
     | '/dashboard'
     | '/auth/reset-password'
     | '/admin'
@@ -653,10 +459,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/contact'
     | '/api/newsletter/subscribe'
-    | '/library/genre/$slug'
-    | '/novels/categories/$slug'
-    | '/novels/genre/$slug'
-    | '/tags/novels/$slug'
     | '/auth/forgot-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
@@ -673,8 +475,6 @@ export interface FileRouteTypes {
     | '/settings/security'
     | '/tickets/$ticketId'
     | '/blog/$slug'
-    | '/novel/$slug/chapter/$number'
-    | '/novels/$slug/chapter/$number'
     | '/admin/'
     | '/settings/'
     | '/tickets/'
@@ -687,26 +487,12 @@ export interface FileRouteTypes {
   to:
     | '/billing'
     | '/$'
-    | '/$page'
-    | '/announcements'
-    | '/library'
-    | '/ranking'
-    | '/robots.txt'
-    | '/sitemap.xml'
     | '/auth'
     | '/api/contact'
     | '/api/search'
     | '/billing/cancel'
     | '/billing/success'
-    | '/categories/$slug'
     | '/docs/$'
-    | '/forums/$threadId'
-    | '/novel/$slug'
-    | '/novels/$slug'
-    | '/tags/$slug'
-    | '/forums'
-    | '/novels'
-    | '/worlds'
     | '/dashboard'
     | '/auth/reset-password'
     | '/help'
@@ -715,10 +501,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/contact'
     | '/api/newsletter/subscribe'
-    | '/library/genre/$slug'
-    | '/novels/categories/$slug'
-    | '/novels/genre/$slug'
-    | '/tags/novels/$slug'
     | '/auth/forgot-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
@@ -735,8 +517,6 @@ export interface FileRouteTypes {
     | '/settings/security'
     | '/tickets/$ticketId'
     | '/blog/$slug'
-    | '/novel/$slug/chapter/$number'
-    | '/novels/$slug/chapter/$number'
     | '/admin'
     | '/settings'
     | '/tickets'
@@ -751,27 +531,13 @@ export interface FileRouteTypes {
     | '/_public'
     | '/billing'
     | '/$'
-    | '/$page'
-    | '/announcements'
-    | '/library'
-    | '/ranking'
-    | '/robots.txt'
-    | '/sitemap.xml'
     | '/(auth)/auth'
     | '/_authed/(dashboard)'
     | '/api/contact'
     | '/api/search'
     | '/billing/cancel'
     | '/billing/success'
-    | '/categories/$slug'
     | '/docs/$'
-    | '/forums/$threadId'
-    | '/novel/$slug'
-    | '/novels/$slug'
-    | '/tags/$slug'
-    | '/forums/'
-    | '/novels/'
-    | '/worlds/'
     | '/(auth)/auth/_unauthed'
     | '/_authed/(dashboard)/dashboard'
     | '/(auth)/auth/reset-password'
@@ -782,10 +548,6 @@ export interface FileRouteTypes {
     | '/_public/(legal)/terms'
     | '/_public/(marketing)/contact'
     | '/api/newsletter/subscribe'
-    | '/library/genre/$slug'
-    | '/novels/categories/$slug'
-    | '/novels/genre/$slug'
-    | '/tags/novels/$slug'
     | '/(auth)/auth/_unauthed/forgot-password'
     | '/(auth)/auth/_unauthed/sign-in'
     | '/(auth)/auth/_unauthed/sign-up'
@@ -802,8 +564,6 @@ export interface FileRouteTypes {
     | '/_authed/(dashboard)/settings/security'
     | '/_authed/(dashboard)/tickets/$ticketId'
     | '/_public/(marketing)/blog/$slug'
-    | '/novel/$slug/chapter/$number'
-    | '/novels/$slug/chapter/$number'
     | '/_authed/(dashboard)/admin/'
     | '/_authed/(dashboard)/settings/'
     | '/_authed/(dashboard)/tickets/'
@@ -819,29 +579,12 @@ export interface RootRouteChildren {
   PublicRouteRoute: typeof PublicRouteRouteWithChildren
   BillingRouteRoute: typeof BillingRouteRouteWithChildren
   SplatRoute: typeof SplatRoute
-  PageRoute: typeof PageRoute
-  AnnouncementsRoute: typeof AnnouncementsRoute
-  LibraryRoute: typeof LibraryRouteWithChildren
-  RankingRoute: typeof RankingRoute
-  RobotsDottxtRoute: typeof RobotsDottxtRoute
-  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   authAuthRouteRoute: typeof authAuthRouteRouteWithChildren
   AutheddashboardRouteRoute: typeof AutheddashboardRouteRouteWithChildren
   ApiContactRoute: typeof ApiContactRoute
   ApiSearchRoute: typeof ApiSearchRoute
-  CategoriesSlugRoute: typeof CategoriesSlugRoute
   DocsSplatRoute: typeof DocsSplatRoute
-  ForumsThreadIdRoute: typeof ForumsThreadIdRoute
-  NovelSlugRoute: typeof NovelSlugRouteWithChildren
-  NovelsSlugRoute: typeof NovelsSlugRouteWithChildren
-  TagsSlugRoute: typeof TagsSlugRoute
-  ForumsIndexRoute: typeof ForumsIndexRoute
-  NovelsIndexRoute: typeof NovelsIndexRoute
-  WorldsIndexRoute: typeof WorldsIndexRoute
   ApiNewsletterSubscribeRoute: typeof ApiNewsletterSubscribeRoute
-  NovelsCategoriesSlugRoute: typeof NovelsCategoriesSlugRoute
-  NovelsGenreSlugRoute: typeof NovelsGenreSlugRoute
-  TagsNovelsSlugRoute: typeof TagsNovelsSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -853,13 +596,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/$page': {
-      id: '/$page'
-      path: '/$page'
-      fullPath: '/$page'
-      preLoaderRoute: typeof PageRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_public': {
       id: '/_public'
       path: ''
@@ -867,46 +603,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/announcements': {
-      id: '/announcements'
-      path: '/announcements'
-      fullPath: '/announcements'
-      preLoaderRoute: typeof AnnouncementsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/billing': {
       id: '/billing'
       path: '/billing'
       fullPath: '/billing'
       preLoaderRoute: typeof BillingRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/library': {
-      id: '/library'
-      path: '/library'
-      fullPath: '/library'
-      preLoaderRoute: typeof LibraryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ranking': {
-      id: '/ranking'
-      path: '/ranking'
-      fullPath: '/ranking'
-      preLoaderRoute: typeof RankingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/robots.txt': {
-      id: '/robots.txt'
-      path: '/robots.txt'
-      fullPath: '/robots.txt'
-      preLoaderRoute: typeof RobotsDottxtRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(auth)/auth': {
@@ -951,67 +652,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BillingSuccessRouteImport
       parentRoute: typeof BillingRouteRoute
     }
-    '/categories/$slug': {
-      id: '/categories/$slug'
-      path: '/categories/$slug'
-      fullPath: '/categories/$slug'
-      preLoaderRoute: typeof CategoriesSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/docs/$': {
       id: '/docs/$'
       path: '/docs/$'
       fullPath: '/docs/$'
       preLoaderRoute: typeof DocsSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/forums/': {
-      id: '/forums/'
-      path: '/forums'
-      fullPath: '/forums/'
-      preLoaderRoute: typeof ForumsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/forums/$threadId': {
-      id: '/forums/$threadId'
-      path: '/forums/$threadId'
-      fullPath: '/forums/$threadId'
-      preLoaderRoute: typeof ForumsThreadIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/novel/$slug': {
-      id: '/novel/$slug'
-      path: '/novel/$slug'
-      fullPath: '/novel/$slug'
-      preLoaderRoute: typeof NovelSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/novels/': {
-      id: '/novels/'
-      path: '/novels'
-      fullPath: '/novels/'
-      preLoaderRoute: typeof NovelsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/novels/$slug': {
-      id: '/novels/$slug'
-      path: '/novels/$slug'
-      fullPath: '/novels/$slug'
-      preLoaderRoute: typeof NovelsSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/tags/$slug': {
-      id: '/tags/$slug'
-      path: '/tags/$slug'
-      fullPath: '/tags/$slug'
-      preLoaderRoute: typeof TagsSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/worlds/': {
-      id: '/worlds/'
-      path: '/worlds'
-      fullPath: '/worlds/'
-      preLoaderRoute: typeof WorldsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(auth)/auth/_unauthed': {
@@ -1082,34 +727,6 @@ declare module '@tanstack/react-router' {
       path: '/api/newsletter/subscribe'
       fullPath: '/api/newsletter/subscribe'
       preLoaderRoute: typeof ApiNewsletterSubscribeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/library/genre/$slug': {
-      id: '/library/genre/$slug'
-      path: '/genre/$slug'
-      fullPath: '/library/genre/$slug'
-      preLoaderRoute: typeof LibraryGenreSlugRouteImport
-      parentRoute: typeof LibraryRoute
-    }
-    '/novels/categories/$slug': {
-      id: '/novels/categories/$slug'
-      path: '/novels/categories/$slug'
-      fullPath: '/novels/categories/$slug'
-      preLoaderRoute: typeof NovelsCategoriesSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/novels/genre/$slug': {
-      id: '/novels/genre/$slug'
-      path: '/novels/genre/$slug'
-      fullPath: '/novels/genre/$slug'
-      preLoaderRoute: typeof NovelsGenreSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/tags/novels/$slug': {
-      id: '/tags/novels/$slug'
-      path: '/tags/novels/$slug'
-      fullPath: '/tags/novels/$slug'
-      preLoaderRoute: typeof TagsNovelsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(auth)/auth/_unauthed/forgot-password': {
@@ -1266,20 +883,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicmarketingDesignSystemIndexRouteImport
       parentRoute: typeof PublicRouteRoute
     }
-    '/novel/$slug/chapter/$number': {
-      id: '/novel/$slug/chapter/$number'
-      path: '/chapter/$number'
-      fullPath: '/novel/$slug/chapter/$number'
-      preLoaderRoute: typeof NovelSlugChapterNumberRouteImport
-      parentRoute: typeof NovelSlugRoute
-    }
-    '/novels/$slug/chapter/$number': {
-      id: '/novels/$slug/chapter/$number'
-      path: '/chapter/$number'
-      fullPath: '/novels/$slug/chapter/$number'
-      preLoaderRoute: typeof NovelsSlugChapterNumberRouteImport
-      parentRoute: typeof NovelsSlugRoute
-    }
     '/_authed/(dashboard)/admin/support/': {
       id: '/_authed/(dashboard)/admin/support/'
       path: '/support'
@@ -1343,17 +946,6 @@ const BillingRouteRouteChildren: BillingRouteRouteChildren = {
 const BillingRouteRouteWithChildren = BillingRouteRoute._addFileChildren(
   BillingRouteRouteChildren,
 )
-
-interface LibraryRouteChildren {
-  LibraryGenreSlugRoute: typeof LibraryGenreSlugRoute
-}
-
-const LibraryRouteChildren: LibraryRouteChildren = {
-  LibraryGenreSlugRoute: LibraryGenreSlugRoute,
-}
-
-const LibraryRouteWithChildren =
-  LibraryRoute._addFileChildren(LibraryRouteChildren)
 
 interface authAuthUnauthedRouteRouteChildren {
   authAuthUnauthedForgotPasswordRoute: typeof authAuthUnauthedForgotPasswordRoute
@@ -1448,57 +1040,16 @@ const AutheddashboardRouteRouteChildren: AutheddashboardRouteRouteChildren = {
 const AutheddashboardRouteRouteWithChildren =
   AutheddashboardRouteRoute._addFileChildren(AutheddashboardRouteRouteChildren)
 
-interface NovelSlugRouteChildren {
-  NovelSlugChapterNumberRoute: typeof NovelSlugChapterNumberRoute
-}
-
-const NovelSlugRouteChildren: NovelSlugRouteChildren = {
-  NovelSlugChapterNumberRoute: NovelSlugChapterNumberRoute,
-}
-
-const NovelSlugRouteWithChildren = NovelSlugRoute._addFileChildren(
-  NovelSlugRouteChildren,
-)
-
-interface NovelsSlugRouteChildren {
-  NovelsSlugChapterNumberRoute: typeof NovelsSlugChapterNumberRoute
-}
-
-const NovelsSlugRouteChildren: NovelsSlugRouteChildren = {
-  NovelsSlugChapterNumberRoute: NovelsSlugChapterNumberRoute,
-}
-
-const NovelsSlugRouteWithChildren = NovelsSlugRoute._addFileChildren(
-  NovelsSlugRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   PublicRouteRoute: PublicRouteRouteWithChildren,
   BillingRouteRoute: BillingRouteRouteWithChildren,
   SplatRoute: SplatRoute,
-  PageRoute: PageRoute,
-  AnnouncementsRoute: AnnouncementsRoute,
-  LibraryRoute: LibraryRouteWithChildren,
-  RankingRoute: RankingRoute,
-  RobotsDottxtRoute: RobotsDottxtRoute,
-  SitemapDotxmlRoute: SitemapDotxmlRoute,
   authAuthRouteRoute: authAuthRouteRouteWithChildren,
   AutheddashboardRouteRoute: AutheddashboardRouteRouteWithChildren,
   ApiContactRoute: ApiContactRoute,
   ApiSearchRoute: ApiSearchRoute,
-  CategoriesSlugRoute: CategoriesSlugRoute,
   DocsSplatRoute: DocsSplatRoute,
-  ForumsThreadIdRoute: ForumsThreadIdRoute,
-  NovelSlugRoute: NovelSlugRouteWithChildren,
-  NovelsSlugRoute: NovelsSlugRouteWithChildren,
-  TagsSlugRoute: TagsSlugRoute,
-  ForumsIndexRoute: ForumsIndexRoute,
-  NovelsIndexRoute: NovelsIndexRoute,
-  WorldsIndexRoute: WorldsIndexRoute,
   ApiNewsletterSubscribeRoute: ApiNewsletterSubscribeRoute,
-  NovelsCategoriesSlugRoute: NovelsCategoriesSlugRoute,
-  NovelsGenreSlugRoute: NovelsGenreSlugRoute,
-  TagsNovelsSlugRoute: TagsNovelsSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

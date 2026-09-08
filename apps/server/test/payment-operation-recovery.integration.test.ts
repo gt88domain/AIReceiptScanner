@@ -106,12 +106,7 @@ describe("payment operation recovery payloads", () => {
       const [storedOperation] = await db
         .select()
         .from(paymentOperation)
-        .where(
-          eq(
-            paymentOperation.operationKey,
-            `${userId}:subscription_upgrade:${operationId}`,
-          ),
-        );
+        .where(eq(paymentOperation.operationKey, `${userId}:subscription_upgrade:${operationId}`));
       expect(storedSubscription).toMatchObject({ planId: "pro", priceId: "yearly" });
       expect(readPaymentOperationRequest(storedOperation!)).toMatchObject({
         targetPlanId: "pro",
@@ -328,9 +323,7 @@ describe("payment operation recovery payloads", () => {
       const [storedOperation] = await db
         .select()
         .from(paymentOperation)
-        .where(
-          eq(paymentOperation.operationKey, `${userId}:credit_checkout:${operationId}`),
-        );
+        .where(eq(paymentOperation.operationKey, `${userId}:credit_checkout:${operationId}`));
       expect(storedOperation).toMatchObject({ status: "completed" });
     } finally {
       createCheckout.mockRestore();
