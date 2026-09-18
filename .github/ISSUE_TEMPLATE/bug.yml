@@ -1,0 +1,19 @@
+name: Bug report
+description: Report a reproducible template defect.
+title: "fix: "
+labels: [bug]
+body:
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Include the template version, command, and smallest safe reproduction.
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact and scope
+      description: State whether auth, money, data, jobs, storage, or deployment is affected.
+    validations:
+      required: true

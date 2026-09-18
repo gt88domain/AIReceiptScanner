@@ -1,0 +1,3 @@
+module,area,slug_or_route,issue_type,severity,evidence,problem,suggested_fix,effort_hours,block_release
+server-credits,ledger-consumption,,broken,P2,apps/server/src/credits/application/consume.ts:99|apps/server/src/credits/application/consume.ts:110|apps/server/src/credits/application/internal.ts:12,积分分散在超过 40 个批次时会触发明确的 too fragmented 错误而非误报余额不足；这是已标注上限的交付限制,保留上限并在产品需要时通过积分合并或续处理流替代固定 40 条限制,4,no
+server-credits,ledger-idempotency,,broken,P1,apps/server/src/credits/application/grant.ts:18|apps/server/src/credits/application/grant.ts:45,积分来源唯一键冲突时直接返回既有流水而不核对用户金额或套餐；不匹配的赠送会被调用方当作本次成功,返回既有流水前核对 userId amount packageId；不匹配时抛出来源冲突错误,1,no

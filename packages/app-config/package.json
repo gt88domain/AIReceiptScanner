@@ -1,0 +1,85 @@
+{
+  "name": "@repo/app-config",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./config": {
+      "types": "./src/app-config.ts",
+      "import": "./src/app-config.ts",
+      "default": "./src/app-config.ts"
+    },
+    "./public-runtime": {
+      "types": "./src/public-runtime.ts",
+      "import": "./src/public-runtime.ts",
+      "default": "./src/public-runtime.ts"
+    },
+    "./content-flags": {
+      "types": "./src/content-flags.ts",
+      "import": "./src/content-flags.ts",
+      "default": "./src/content-flags.ts"
+    },
+    "./backoffice-visibility": {
+      "types": "./src/backoffice-visibility.ts",
+      "import": "./src/backoffice-visibility.ts",
+      "default": "./src/backoffice-visibility.ts"
+    },
+    "./credits": {
+      "types": "./src/credits.ts",
+      "import": "./src/credits.ts",
+      "default": "./src/credits.ts"
+    },
+    "./membership": {
+      "types": "./src/membership/index.ts",
+      "import": "./src/membership/index.ts",
+      "default": "./src/membership/index.ts"
+    },
+    "./payments/web": {
+      "types": "./src/payments/web.ts",
+      "import": "./src/payments/web.ts",
+      "default": "./src/payments/web.ts"
+    },
+    "./payments/web-policy": {
+      "types": "./src/payments/web-policy.ts",
+      "import": "./src/payments/web-policy.ts",
+      "default": "./src/payments/web-policy.ts"
+    },
+    "./payments/native": {
+      "types": "./src/payments/native.ts",
+      "import": "./src/payments/native.ts",
+      "default": "./src/payments/native.ts"
+    },
+    "./payments/shared": {
+      "types": "./src/payments/shared.ts",
+      "import": "./src/payments/shared.ts",
+      "default": "./src/payments/shared.ts"
+    },
+    "./storage": {
+      "types": "./src/storage/index.ts",
+      "import": "./src/storage/index.ts",
+      "default": "./src/storage/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "check-types": "tsc --noEmit",
+    "test": "vitest run src",
+    "test:watch": "vitest src",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
+  },
+  "dependencies": {
+    "@repo/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10"
+  }
+}

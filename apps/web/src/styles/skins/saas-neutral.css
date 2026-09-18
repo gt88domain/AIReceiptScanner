@@ -1,0 +1,42 @@
+@layer base {
+  :root,
+  .skin-saas-neutral {
+    --skin-page: linear-gradient(180deg, #fcfcfb 0%, #f5f6f5 100%);
+    --skin-surface: #ffffff;
+    --skin-surface-raised: #fafbfa;
+    --skin-surface-hover: #eef0ef;
+    --skin-surface-active: #e8ece9;
+    --skin-ink: #1f2933;
+    --skin-ink-muted: #65707a;
+    --skin-accent: #1f2933;
+    --skin-accent-ink: #43505b;
+    --skin-on-accent: #ffffff;
+    --skin-line: rgb(31 41 51 / 10%);
+    --skin-line-strong: rgb(31 41 51 / 24%);
+    --skin-hero: linear-gradient(145deg, #f4f1eb 0%, #ffffff 62%, #e7ede9 100%);
+    --skin-radius-card: 1rem;
+    --skin-radius-control: 0.625rem;
+    --skin-shadow-raised: 0 16px 40px -20px rgb(31 41 51 / 18%);
+    --skin-shadow-raised-hover: 0 24px 56px -20px rgb(31 41 51 / 24%);
+  }
+
+  :root.dark,
+  .dark .skin-saas-neutral {
+    --skin-page: linear-gradient(180deg, #151b20 0%, #1c252b 100%);
+    --skin-surface: #1f2933;
+    --skin-surface-raised: #26313a;
+    --skin-surface-hover: #33414d;
+    --skin-surface-active: #3a4a58;
+    --skin-ink: #f0f4f3;
+    --skin-ink-muted: #b3bdc4;
+    --skin-accent: #e4e9e7;
+    --skin-accent-ink: #d7dfdb;
+    --skin-on-accent: #182129;
+    --skin-line: rgb(225 236 232 / 14%);
+    --skin-line-strong: rgb(225 236 232 / 26%);
+    --skin-hero: linear-gradient(145deg, #29343b 0%, #202a31 62%, #26342f 100%);
+    --skin-shadow-raised: 0 16px 40px -20px rgb(0 0 0 / 55%), inset 0 1px 0 rgb(242 250 247 / 7%);
+    --skin-shadow-raised-hover:
+      0 24px 56px -20px rgb(0 0 0 / 65%), inset 0 1px 0 rgb(242 250 247 / 10%);
+  }
+}

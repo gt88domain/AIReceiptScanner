@@ -1,0 +1,59 @@
+name: Release Please
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release-please
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+      # GITHUB_TOKEN-created PRs do not emit pull_request events. Dispatch the
+      # same gates explicitly so the generic workflow_run auto-merge gate can
+      # treat a release PR exactly like any other ready PR.
+      - name: Dispatch checks for a release PR
+        if: steps.release-please.outputs.prs_created == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pulls } = await github.rest.pulls.list({
+              ...context.repo,
+              state: "open",
+              base: "main",
+              sort: "updated",
+              direction: "desc",
+              per_page: 100,
+            });
+            const pull = pulls.find(({ head }) => head.ref.startsWith("release-please--"));
+            if (!pull) core.setFailed("Release Please reported a PR, but no open release branch was found.");
+            if (!pull) return;
+
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              ...context.repo,
+              pull_number: pull.number,
+              per_page: 100,
+            });
+            const needsMobile = files.some(({ filename }) =>
+              filename.startsWith("optional/mobile/") ||
+              filename === "optional/pnpm-workspace.yaml" ||
+              filename === "optional/pnpm-lock.yaml" ||
+              ["packages/api-client/", "packages/app-config/", "packages/i18n/", "packages/shared/"].some((path) => filename.startsWith(path)),
+            );
+            const workflows = ["quality.yml", "osv-scanner.yml"];
+            if (needsMobile) workflows.push("mobile.yml");
+            await Promise.all(workflows.map((workflow_id) => github.rest.actions.createWorkflowDispatch({
+              ...context.repo,
+              workflow_id,
+              ref: pull.head.ref,
+            })));

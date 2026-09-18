@@ -1,0 +1,10 @@
+{
+  "$schema": "./downstream-manifest.schema.json",
+  "template": "easystarter-template",
+  "upstream": {
+    "repository": "https://github.com/gt88domain/easystarter-template",
+  "release": "v0.2.0",
+    "commit": "replace-with-the-release-commit"
+  },
+  "adoptedAt": "YYYY-MM-DD"
+}

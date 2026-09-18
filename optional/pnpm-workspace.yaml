@@ -1,0 +1,82 @@
+packages:
+  - mobile
+  - ../packages/api-client
+  - ../packages/app-config
+  - ../packages/i18n
+  - ../packages/shared
+
+# Metro resolves React Native dependencies through this workspace's node_modules.
+nodeLinker: hoisted
+
+publicHoistPattern:
+  - "*react*"
+  - "@tanstack/*"
+
+allowBuilds:
+  esbuild: true
+  workerd: true
+  msgpackr-extract: false
+  sharp: false
+  unrs-resolver: false
+
+catalog:
+  "@orpc/client": 1.14.8
+  "@orpc/tanstack-query": 1.14.8
+  "@types/react": 19.2.0
+  react: 19.2.3
+  react-dom: 19.2.3
+
+# Keep the optional dependency graph on the same reviewed security floor as core.
+overrides:
+  defu: 6.1.7
+  next: 16.2.11
+  '@xmldom/xmldom@0.8': 0.8.15
+  '@xmldom/xmldom@0.9': 0.9.12
+  brace-expansion@1: 1.1.18
+  brace-expansion@5.0.6: 5.0.8
+  esbuild@0.18.20: 0.28.1
+  esbuild@0.27.4: 0.28.1
+  decode-uri-component: 0.5.0
+  nanoid@3: 3.3.18
+  picomatch@2.3.1: 2.3.2
+  postcss@8.4.31: 8.5.18
+  sharp@0.34.5: 0.35.0
+  uuid@7.0.3: 11.1.1
+  esm-env: "npm:esm-env-runtime@^0.1.1"
+  '@better-auth/expo': 1.6.23
+  better-auth: 1.6.23
+  '@tanstack/form-core': 1.33.2
+  '@tanstack/react-form': 1.33.2
+  react-native-reanimated: 4.3.1
+  '@types/lodash': 4.17.24
+  baseline-browser-mapping: 2.11.0
+  jose: 6.2.4
+  js-yaml: 4.3.1
+
+minimumReleaseAgeExclude:
+  - '@expo/cli@56.1.21'
+  - '@expo/config-plugins@56.0.14'
+  - '@expo/config@56.0.13'
+  - '@expo/fingerprint@0.19.9'
+  - '@expo/image-utils@0.10.4'
+  - '@expo/metro-config@56.0.18'
+  - '@expo/prebuild-config@56.0.21'
+  - '@expo/require-utils@56.1.6'
+  - '@expo/router-server@56.0.17'
+  - babel-preset-expo@56.0.18
+  - expo-asset@56.0.21
+  - expo-constants@56.0.22
+  - expo-modules-autolinking@56.0.21
+  - expo-modules-core@56.0.22
+  - expo@56.0.18
+  - '@expo/metro-runtime@56.0.18'
+  - '@expo/ui@56.0.23'
+  - expo-dev-client@56.0.24
+  - expo-dev-launcher@56.0.25
+  - expo-dev-menu@56.0.21
+  - expo-image-picker@56.0.22
+  - expo-linking@56.0.16
+  - expo-router@56.2.17
+  - expo-splash-screen@56.0.14
+  - expo-updates@56.0.23
+  - expo-web-browser@56.0.6

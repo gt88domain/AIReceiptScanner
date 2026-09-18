@@ -1,0 +1,60 @@
+type UserIdentityLike = {
+  id?: string | null;
+  name?: string | null;
+  email?: string | null;
+  phoneNumber?: string | null;
+};
+
+// Compatibility matchers remain only for historical phone-era rows. Phone
+// login is not registered and no production path creates these addresses.
+export const PHONE_COMPATIBILITY_EMAIL_DOMAIN = "phone-auth.invalid";
+export const PHONE_COMPATIBILITY_EMAIL_PREFIX = "phone-";
+export const PHONE_COMPATIBILITY_EMAIL_DIGEST_LENGTH = 16;
+
+const PHONE_COMPATIBILITY_EMAIL_REGEX = new RegExp(
+  `^${PHONE_COMPATIBILITY_EMAIL_PREFIX}[0-9a-f]{${PHONE_COMPATIBILITY_EMAIL_DIGEST_LENGTH}}@${PHONE_COMPATIBILITY_EMAIL_DOMAIN.replaceAll(".", "\\.")}$`,
+  "i",
+);
+
+export function isPhoneCompatibilityEmail(email: string | null | undefined): boolean {
+  if (!email) return false;
+  return PHONE_COMPATIBILITY_EMAIL_REGEX.test(email);
+}
+
+function hashString(value: string): number {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i++) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function getStableUserSuffix(user: UserIdentityLike): string {
+  const seed = user.id ?? user.email ?? user.phoneNumber ?? "phone-user";
+  return hashString(seed).toString(36).padStart(6, "0").slice(-6).toUpperCase();
+}
+
+// Hide compatibility emails (phone-only accounts) from user-facing surfaces.
+export function getVisibleUserEmail(user: UserIdentityLike): string | null {
+  const email = user.email ?? null;
+  return isPhoneCompatibilityEmail(email) ? null : email;
+}
+
+export function isPhoneUser(user: UserIdentityLike): boolean {
+  return Boolean(user.phoneNumber);
+}
+
+export function getVisibleUserName(user: UserIdentityLike): string | null {
+  const name = user.name ?? null;
+  if (!isPhoneUser(user)) return name;
+
+  const isPhoneName = name === user.phoneNumber;
+  if (name && !isPhoneName) return name;
+
+  return `User ${getStableUserSuffix(user)}`;
+}
+
+export function getVisibleUserContact(user: UserIdentityLike): string | null {
+  return getVisibleUserEmail(user) ?? user.phoneNumber ?? null;
+}

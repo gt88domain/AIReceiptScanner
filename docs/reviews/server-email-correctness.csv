@@ -1,0 +1,2 @@
+module,area,slug_or_route,issue_type,severity,evidence,problem,suggested_fix,effort_hours,block_release
+server-email,newsletter-request-limit,/api/newsletter/subscribe,broken,P1,apps/server/src/app/register-email-routes.ts:15|apps/server/src/handlers/newsletter.ts:12|apps/server/src/handlers/newsletter.ts:13,订阅接口允许最长 2048 字符 Turnstile token 和 320 字符邮箱但入口将整个 JSON 请求限制为 1024 字节；字段满足输入约束的请求仍可能在挑战验证前收到 413,将请求体上限提高至能容纳邮箱、2048 字符 token 和 JSON 开销的 4KiB并保留字段级长度限制,0.5,no

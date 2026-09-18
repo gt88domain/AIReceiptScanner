@@ -1,0 +1,76 @@
+import { describe, expect, it } from "vitest";
+import {
+  resolveCommonConfig,
+  resolveNativeCommonConfig,
+  resolveWebCommonConfig,
+} from "../app-config";
+import { mergeCreditsConfigs, normalizeCreditsConfig } from "../credits";
+
+describe("platform credit config", () => {
+  it("keeps the signup grant common while platform purchase settings remain platform-specific", () => {
+    expect(resolveCommonConfig().credits.signupGrant?.enabled).toBe(false);
+    expect(resolveWebCommonConfig().credits).toBeDefined();
+    expect(resolveNativeCommonConfig().credits).toBeDefined();
+  });
+
+  it("merges enabled platform credit packages without leaking disabled platform packages", () => {
+    const merged = mergeCreditsConfigs([
+      {
+        enabled: false,
+        purchasesEnabled: false,
+        packages: [
+          {
+            id: "starter",
+            amount: 100,
+            web: {
+              provider: "stripe",
+              test: { providerPriceId: "price_web_test" },
+              prod: { providerPriceId: "price_web_prod" },
+              currency: "usd",
+              amountCents: 499,
+            },
+          },
+        ],
+      },
+      {
+        enabled: true,
+        purchasesEnabled: false,
+        packages: [
+          {
+            id: "starter",
+            amount: 100,
+            native: {
+              ios: {
+                provider: "revenuecat",
+                providerProductId: "starter_ios",
+                currency: "usd",
+                amountCents: 499,
+              },
+            },
+          },
+        ],
+      },
+    ]);
+
+    const [creditPackage] = normalizeCreditsConfig(merged, "test").packages;
+
+    expect(merged.enabled).toBe(true);
+    expect(creditPackage?.web).toBeNull();
+    expect(creditPackage?.native.ios?.providerProductId).toBe("starter_ios");
+    expect(creditPackage).not.toHaveProperty("titleKey");
+    expect(creditPackage).not.toHaveProperty("descriptionKey");
+  });
+
+  it("keeps signup grants and web subscription trials off in the paid baseline", () => {
+    const web = resolveWebCommonConfig();
+    const native = resolveNativeCommonConfig();
+
+    expect(web.credits.signupGrant?.enabled).toBe(false);
+    expect(native.credits.signupGrant?.enabled).toBe(false);
+    expect(
+      web.payments?.plans
+        .flatMap((plan) => plan.prices ?? [])
+        .every((price) => price.trialDays == null),
+    ).toBe(true);
+  });
+});

@@ -1,0 +1,69 @@
+import { ORPCError, os } from "@orpc/server";
+import { requireAdmin as requireAdminGuard, requireUser } from "@/auth/guards";
+import type { Context } from "./context";
+import { createSafeOrpcError } from "./safe-error";
+
+type ServerFeature = "admin" | "billing" | "credits" | "storage" | "tickets";
+
+export const o = os.$context<Context>();
+
+const safeErrorMiddleware = o.middleware(async ({ next }) => {
+  try {
+    return await next();
+  } catch (error) {
+    throw createSafeOrpcError(error);
+  }
+});
+
+export const publicProcedure = o.use(safeErrorMiddleware);
+
+const requireAuth = o.middleware(async ({ context, next }) => {
+  await requireUser(context);
+  return next();
+});
+
+export const protectedProcedure = publicProcedure.use(requireAuth);
+
+function requireFeature(feature: ServerFeature) {
+  return o.middleware(async ({ context, next }) => {
+    if (!context.runtimeConfig.features[feature]) {
+      throw new ORPCError("NOT_FOUND", {
+        message: "Feature unavailable",
+        data: { code: "FEATURE_DISABLED" },
+      });
+    }
+    return next();
+  });
+}
+
+const requireWebCreditPurchases = o.middleware(async ({ context, next }) => {
+  if (!context.runtimeConfig.features.web.creditPurchases) {
+    throw new ORPCError("NOT_FOUND", {
+      message: "Feature unavailable",
+      data: { code: "FEATURE_DISABLED" },
+    });
+  }
+  return next();
+});
+
+export const billingProcedure = publicProcedure.use(requireFeature("billing"));
+export const protectedBillingProcedure = protectedProcedure.use(requireFeature("billing"));
+export const creditsProcedure = publicProcedure.use(requireFeature("credits"));
+export const protectedCreditsProcedure = protectedProcedure.use(requireFeature("credits"));
+export const webCreditPurchaseProcedure = protectedCreditsProcedure.use(requireWebCreditPurchases);
+export const storageProcedure = protectedProcedure.use(requireFeature("storage"));
+export const ticketsProcedure = protectedProcedure.use(requireFeature("tickets"));
+
+const requireAdminMiddleware = o.middleware(async ({ context, next }) => {
+  await requireAdminGuard(context);
+  return next();
+});
+
+/** Use this for every procedure that can read or change administrator-only data. */
+export const adminProcedure = protectedProcedure
+  .use(requireFeature("admin"))
+  .use(requireAdminMiddleware);
+export const adminTicketsProcedure = protectedProcedure
+  .use(requireFeature("tickets"))
+  .use(requireFeature("admin"))
+  .use(requireAdminMiddleware);

@@ -1,0 +1,11 @@
+{
+  "name": "replace-full-saas-web-worker",
+  "main": "./src/server.ts",
+  "compatibility_date": "2026-07-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "routes": [{ "pattern": "replace-domain.example", "custom_domain": true }],
+  "assets": { "not_found_handling": "single-page-application" },
+  "services": [{ "binding": "API_SERVICE", "service": "replace-full-saas-api-worker" }],
+  "vars": { "VITE_APP_URL": "https://replace-domain.example", "VITE_SERVER_URL": "https://api.replace-domain.example" },
+  "observability": { "logs": { "enabled": true, "invocation_logs": true }, "traces": { "enabled": false } }
+}

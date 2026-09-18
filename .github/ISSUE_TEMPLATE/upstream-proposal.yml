@@ -1,0 +1,18 @@
+name: Upstream proposal
+description: Propose a reusable platform capability or extension point.
+title: "feat(template): "
+labels: [upstream]
+body:
+  - type: textarea
+    id: reuse
+    attributes:
+      label: Reuse case
+      description: Explain why a downstream product module or existing extension point is insufficient.
+    validations:
+      required: true
+  - type: textarea
+    id: contract
+    attributes:
+      label: Proposed contract and compatibility impact
+    validations:
+      required: true

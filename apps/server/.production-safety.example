@@ -1,0 +1,7 @@
+# Exact production resources this checkout is allowed to deploy to.
+# Copy to .production-safety.env and replace every blank with a real value.
+# Never commit the copied file.
+EXPECTED_WEB_HOST=<production-domain>
+EXPECTED_API_HOST=api.<production-domain>
+EXPECTED_WEB_WORKER=<production-web-worker-name>
+EXPECTED_SERVER_WORKER=<production-api-worker-name>

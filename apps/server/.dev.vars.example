@@ -1,0 +1,57 @@
+# Local development environment variables for Wrangler
+# This file is automatically loaded by `wrangler dev`
+# Copy this file to .dev.vars and fill in your actual values
+
+NODE_ENV=development
+PAYMENTS_PRICE_ENV=test
+# EasyStarter Server URLs guide: https://www.easystarter.dev/zh/docs/web/deploy-server
+WEBSITE_URL=http://localhost:3000
+
+# Better Auth - https://www.easystarter.dev/zh/docs/web/integrations/authentication
+# Provider docs: https://better-auth.com/docs/installation
+BETTER_AUTH_SECRET=
+SERVER_URL=http://localhost:3001
+
+
+# Cloudflare - https://www.easystarter.dev/zh/docs/web/integrations/cloudflare
+# D1 database guide: https://www.easystarter.dev/zh/docs/web/integrations/database
+# Provider console: https://dash.cloudflare.com/profile/api-tokens
+CLOUDFLARE_ACCOUNT_ID=
+CLOUDFLARE_API_TOKEN=
+CLOUDFLARE_D1_DATABASE_ID=
+
+# Github OAuth - https://www.easystarter.dev/zh/docs/web/integrations/authentication
+# Provider console: https://github.com/settings/developers
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+
+# Google OAuth - https://www.easystarter.dev/zh/docs/web/integrations/authentication
+# Provider console: https://console.cloud.google.com/apis/credentials
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+# Apple OAuth / Sign in with Apple (native idToken flow)
+# Docs:
+# - https://docs.expo.dev/versions/latest/sdk/apple-authentication/
+# Native iOS bundle id (example: com.example.app), should match app.json ios.bundleIdentifier
+APPLE_APP_BUNDLE_IDENTIFIER=
+
+# Resend Email - https://www.easystarter.dev/zh/docs/web/integrations/email
+# Provider console: https://resend.com/api-keys
+RESEND_API_KEY=
+# Server-only contact recipient. Required only when Contact Form is enabled.
+CONTACT_RECIPIENT=
+
+# R2 Storage - https://www.easystarter.dev/zh/docs/web/integrations/storage
+# Provider console: https://dash.cloudflare.com/
+# Public URL for accessing R2 stored files (e.g., https://pub-xxx.r2.dev or your custom domain)
+R2_PUBLIC_URL=
+
+# Stripe - https://www.easystarter.dev/zh/docs/web/integrations/stripe
+# Provider docs: https://stripe.com/docs/keys
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+
+# RevenueCat - https://www.easystarter.dev/zh/docs/web/deploy-server
+# Provider docs: https://www.easystarter.dev/zh/docs/mobile/integrations/revenuecat
+REVENUECAT_WEBHOOK_SECRET=

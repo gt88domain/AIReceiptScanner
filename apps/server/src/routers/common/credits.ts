@@ -1,0 +1,70 @@
+import { ORPCError } from "@orpc/server";
+import { z } from "zod";
+import { CREDIT_SOURCE_TYPES } from "@/db/schema/credits";
+import {
+  creditBalanceSchema,
+  creditPackageSchema,
+  creditPlatformSchema,
+  listCreditOrdersOutputSchema,
+  listCreditTransactionsOutputSchema,
+} from "@/credits/public/schemas";
+import type { Context } from "@/lib/context";
+import { requireCreditsService } from "@/lib/credits-access";
+import { creditsProcedure, protectedCreditsProcedure } from "@/lib/orpc";
+
+/** Resolves the authenticated user for protected credit endpoints. */
+function resolveCreditUser(context: Context): { userId: string } {
+  const userId = context.session?.user.id;
+  if (!userId) {
+    throw new ORPCError("UNAUTHORIZED", {
+      message: context.t("errors.unauthorized"),
+    });
+  }
+
+  return { userId };
+}
+
+/** Input schema for package listing by client platform. */
+const listPackagesInputSchema = z.object({
+  platform: creditPlatformSchema.default("web"),
+});
+
+/** Shared input schema for paginated credit lists. */
+const paginatedCreditsInputSchema = z.object({
+  page: z.number().int().min(1).default(1),
+  perPage: z.number().int().min(1).max(50).default(10),
+});
+
+/** Input schema for paginated ledger history. */
+const listTransactionsInputSchema = paginatedCreditsInputSchema.extend({
+  sourceType: z.enum(CREDIT_SOURCE_TYPES).optional(),
+});
+
+/** Common credit API routes shared by web and native clients. */
+export const creditsRouter = {
+  listPackages: creditsProcedure
+    .input(listPackagesInputSchema)
+    .output(z.array(creditPackageSchema))
+    .handler(({ context, input }) => requireCreditsService(context).listPackages(input)),
+
+  getBalance: protectedCreditsProcedure.output(creditBalanceSchema).handler(({ context }) => {
+    const user = resolveCreditUser(context);
+    return requireCreditsService(context).getBalance(user);
+  }),
+
+  listTransactions: protectedCreditsProcedure
+    .input(listTransactionsInputSchema)
+    .output(listCreditTransactionsOutputSchema)
+    .handler(({ context, input }) => {
+      const user = resolveCreditUser(context);
+      return requireCreditsService(context).listTransactions({ user, ...input });
+    }),
+
+  listOrders: protectedCreditsProcedure
+    .input(paginatedCreditsInputSchema)
+    .output(listCreditOrdersOutputSchema)
+    .handler(({ context, input }) => {
+      const user = resolveCreditUser(context);
+      return requireCreditsService(context).listOrders({ user, ...input });
+    }),
+};

@@ -1,0 +1,675 @@
+{
+  "common": {
+    "documents": "Documents",
+    "cancel": "Cancel",
+    "continue": "Continue",
+    "search": "Search",
+    "searchPlaceholder": "Type a command or search...",
+    "noResults": "No results found.",
+    "signIn": "Sign In",
+    "signOut": "Sign out",
+    "dashboard": "Dashboard"
+  },
+  "contentDocs": {
+    "title": "Documentation",
+    "empty": "Content is being prepared."
+  },
+  "contentBlog": {
+    "title": "Articles",
+    "description": "Product updates and useful information.",
+    "empty": "Content is being prepared.",
+    "allCategories": "All categories",
+    "selectCategory": "Select a category",
+    "backToBlog": "Back to articles",
+    "loading": "Loading article…",
+    "readMore": "Read more",
+    "onThisPage": "On this page"
+  },
+  "dataTable": {
+    "viewOptions": {
+      "view": "View",
+      "toggleColumns": "Toggle columns",
+      "searchColumns": "Search columns...",
+      "noColumns": "No columns found."
+    }
+  },
+  "locale": {
+    "switchLanguage": "Switch language"
+  },
+  "landingPage": {
+    "hero": {
+      "announcement": "Your product, your design",
+      "title": "A clean foundation. The rest is yours.",
+      "subtitle": "Auth, billing, data, and deployment are ready. Replace this starter surface with an experience made for your audience.",
+      "startBuilding": "Start Building",
+      "requestDemo": "Read the docs",
+      "appScreenAlt": "app screen",
+      "principlesLabel": "Starter principles",
+      "ready": "Ready to adapt",
+      "foundation": {
+        "title": "Keep the foundation",
+        "description": "Security, data ownership, and deployment stay predictable."
+      },
+      "product": {
+        "title": "Own the product layer",
+        "description": "Routes, copy, information architecture, and visual direction belong to you."
+      },
+      "performance": {
+        "title": "Ship less by default",
+        "description": "No stock imagery, showcase animation, or product claims enter the starter page."
+      }
+    },
+    "header": {
+      "menu": {
+        "features": "Features",
+        "integrations": "Integrations",
+        "pricing": "Pricing",
+        "faq": "FAQ",
+        "blog": "Blog",
+        "contact": "Contact",
+        "docs": "Docs"
+      },
+      "actions": {
+        "openMenu": "Open Menu",
+        "closeMenu": "Close Menu"
+      }
+    },
+    "pricing": {
+      "title": "Pricing",
+      "subtitle": "Choose the best plan for your needs",
+      "discount": "Save {percent}%",
+      "freeLabel": "Free",
+      "frequencies": {
+        "monthly": "Monthly",
+        "yearly": "Yearly",
+        "lifetime": "Lifetime"
+      },
+      "cta": {
+        "subscribe": "Subscribe",
+        "getStarted": "Get started"
+      },
+      "badge": {
+        "popular": "🔥 Most Popular",
+        "bestValue": "BEST VALUE"
+      },
+      "billingNote": {
+        "flexibleCancelAnytime": "Flexible, cancel anytime",
+        "billedAnnually": "Billed annually",
+        "oneTimePurchase": "One-time purchase"
+      },
+      "enterprise": {
+        "title": "Enterprise",
+        "price": "Custom",
+        "description": "Tailored for enterprise teams.",
+        "features": {
+          "first": "Dedicated integrations and features",
+          "second": "Enterprise-grade security and compliance",
+          "third": "Customer success and SLA"
+        },
+        "cta": "Contact sales"
+      },
+      "periods": {
+        "oneTime": "One-time",
+        "perYear": "Per year",
+        "perMonth": "Per month"
+      },
+      "trial": {
+        "newUserDays": "{days}-day free trial (new users only)"
+      },
+      "plans": {
+        "free": {
+          "name": "Free",
+          "description": "For personal projects and testing.",
+          "features": ["Basic access", "Community support", "Single workspace"]
+        },
+        "pro": {
+          "name": "Pro",
+          "description": "For growing teams that need more power.",
+          "features": ["Everything in Free", "Priority support", "Team collaboration"]
+        },
+        "lifetime": {
+          "name": "Lifetime",
+          "description": "One-time payment for long-term use.",
+          "features": ["All Pro features", "One-time payment", "Lifetime updates"]
+        }
+      }
+    },
+    "footer": {
+      "description": "A dependable starting point for a product with its own point of view.",
+      "copyright": "© {year} {appName}. All rights reserved.",
+      "newsletter": {
+        "title": "Get product updates",
+        "description": "A short, useful note when we ship something worth sharing.",
+        "emailLabel": "Email address",
+        "placeholder": "you@example.com",
+        "submit": "Subscribe",
+        "submitting": "Adding…",
+        "privacy": "No spam. Unsubscribe any time.",
+        "success": "You're subscribed.",
+        "error": "We couldn't subscribe you. Please try again.",
+        "rateLimited": "Please wait a minute before trying again."
+      },
+      "social": {
+        "github": "GitHub",
+        "twitter": "Twitter"
+      },
+      "sections": {
+        "product": {
+          "title": "Product",
+          "links": {
+            "overview": "Overview",
+            "pricing": "Pricing",
+            "features": "Features"
+          }
+        },
+        "resources": {
+          "title": "Resources",
+          "links": {
+            "privacy": "Privacy",
+            "terms": "Terms",
+            "docs": "Docs",
+            "blog": "Blog",
+            "contact": "Contact"
+          }
+        }
+      }
+    }
+  },
+  "contact": {
+    "eyebrow": "Contact",
+    "title": "How can we help?",
+    "description": "Tell us what you are building, what you need, or where you are stuck. We will reply by email.",
+    "formTitle": "Send a message",
+    "formDescription": "We usually reply within one business day.",
+    "name": "Name",
+    "email": "Email",
+    "message": "Message",
+    "messagePlaceholder": "What would you like to discuss?",
+    "submit": "Send message",
+    "submitting": "Sending…",
+    "success": "Thanks — your message has been sent.",
+    "error": "We could not send your message. Please try again or email us directly.",
+    "rateLimited": "Please wait a minute before sending another message.",
+    "validation": {
+      "name": "Enter at least 2 characters.",
+      "email": "Enter a valid email address.",
+      "message": "Enter at least 10 characters."
+    }
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "emailPasswordMode": "Password",
+    "orContinueWith": "Or continue with",
+    "loginWithGithub": "Login with Github",
+    "loginWithGoogle": "Login with Google",
+    "loginWithApple": "Login with Apple",
+    "enterEmail": "Enter your email",
+    "enterPassword": "Enter your password",
+    "termsAgreement": "By clicking continue, you agree to our <termsLink>Terms of Service</termsLink> and <privacyLink>Privacy Policy</privacyLink>.",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "validation": {
+      "invalidEmail": "Invalid email address",
+      "passwordRequired": "Password is required",
+      "nameMinLength": "Name must be at least 2 characters",
+      "passwordMinLength": "Password must be at least 8 characters",
+      "passwordsNotMatch": "Passwords do not match"
+    }
+  },
+  "signIn": {
+    "title": "Welcome back",
+    "description": "Sign in with your email and password",
+    "emailTab": "Email",
+    "login": "Login",
+    "loggingIn": "Logging in...",
+    "forgotPassword": "Forgot your password?",
+    "noAccount": "Don't have an account?",
+    "signUp": "Sign Up",
+    "success": "Sign in successful"
+  },
+  "signUp": {
+    "title": "Create your account",
+    "description": "Enter your email below to create your account",
+    "name": "Name",
+    "enterName": "Enter your name",
+    "confirmPassword": "Confirm Password",
+    "confirmYourPassword": "Confirm your password",
+    "emailDescription": "We'll use this to contact you. We will not share your email with anyone else.",
+    "passwordMinLength": "Must be at least 8 characters long.",
+    "createAccount": "Create Account",
+    "hasAccount": "Already have an account?",
+    "signIn": "Sign In",
+    "success": "Sign up successful",
+    "checkEmail": "Please check your email, we have sent a verification email.",
+    "checkEmailTitle": "Check your email to verify",
+    "checkEmailDescription": "We sent a verification email to {email}. Open it and click the verification link to finish signing up.",
+    "checkEmailHint": "If you do not see the email, check your spam folder or try again later.",
+    "checkEmailAction": "Got it"
+  },
+  "forgotPassword": {
+    "title": "Reset Password",
+    "description": "Enter your email and we'll send you a reset link",
+    "sendResetLink": "Send Reset Link",
+    "sendingResetLink": "Sending...",
+    "backToSignIn": "Back to Sign In",
+    "success": "Reset link sent to your email"
+  },
+  "resetPassword": {
+    "title": "Reset Password",
+    "description": "Enter your new password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
+    "confirmNewPassword": "Confirm your new password",
+    "reset": "Reset Password",
+    "resetting": "Resetting...",
+    "backToSignIn": "Back to Sign In",
+    "success": "Password reset successfully",
+    "invalidToken": "Invalid or expired reset token"
+  },
+  "notFound": {
+    "title": "404",
+    "description": "The page you're looking for doesn't exist. It may have been moved or deleted.",
+    "goHome": "Go Home",
+    "goBack": "Go Back"
+  },
+  "credits": {
+    "packages": {
+      "starter": {
+        "title": "Starter Credits",
+        "description": "{count} credits for light usage."
+      },
+      "growth": {
+        "title": "Growth Credits",
+        "description": "{count} credits for larger workflows."
+      }
+    }
+  },
+  "dashboard": {
+    "nav": {
+      "general": "General",
+      "dashboard": "Dashboard",
+      "users": "Users",
+      "admin": "Administrator",
+      "administration": "Administration",
+      "overview": "Overview",
+      "analytics": "Analytics",
+      "payments": "Payments",
+      "integrations": "Integrations",
+      "audit": "Audit",
+      "system": "System",
+      "other": "Other",
+      "settings": "Settings",
+      "profile": "Profile",
+      "security": "Security",
+      "billing": "Billing",
+      "credits": "Credits",
+      "creditPurchase": "Buy credits",
+      "creditTransactions": "Credit transactions",
+      "account": "Account",
+      "apps": "Apps",
+      "purchases": "Purchases",
+      "help": "Help",
+      "contact": "Contact support",
+      "tickets": "My tickets",
+      "support": "Support",
+      "appearance": "Appearance",
+      "notifications": "Notifications",
+      "display": "Display",
+      "upgradeToPro": "Upgrade to Pro",
+      "home": "Home",
+      "signOut": "Sign out",
+      "signOutDialog": {
+        "title": "Sign out",
+        "description": "Are you sure you want to sign out? You will need to sign in again to access your account.",
+        "confirm": "Sign out"
+      }
+    },
+    "home": {
+      "title": "Welcome back, {name}",
+      "description": "Your account foundation is ready. Add the product workflows your SaaS needs next.",
+      "profileTitle": "Profile",
+      "profileDescription": "Set the name your customers and teammates see.",
+      "profileAction": "Edit profile",
+      "billingTitle": "Billing",
+      "billingDescription": "Configure plans when you are ready to sell.",
+      "billingAction": "View billing",
+      "creditsTitle": "Credits",
+      "creditsDescription": "Use this optional ledger for usage-based products.",
+      "creditsAction": "Manage credits",
+      "creditsBalance": "{count} credits available",
+      "securityTitle": "Security",
+      "securityVerified": "Email verified",
+      "securityUnverified": "Email verification needed",
+      "securityAction": "Review security"
+    },
+    "billing": {
+      "title": "Billing",
+      "description": "Manage your subscription and payment methods.",
+      "currentPlan": "Current plan",
+      "free": "Free",
+      "subscriptionSyncing": "Activating subscription. This may take a moment.",
+      "manageBilling": "Manage billing",
+      "manageInStore": "Manage in store",
+      "storeManagedMessage": "This subscription is still managed through the App Store or Google Play. If you switch to web billing, please cancel the app subscription in the store to avoid duplicate charges.",
+      "storeManagedPlansDescription": "Plan changes and cancellation for this subscription must be managed in the store.",
+      "plansTitle": "Available plans",
+      "plansDescription": "Choose a plan that fits your team.",
+      "membershipTypes": {
+        "monthly": "Monthly",
+        "yearly": "Yearly",
+        "lifetime": "Lifetime",
+        "subscription": "Subscription"
+      },
+      "lifetimeLabel": "Lifetime",
+      "startCheckout": "Start checkout",
+      "currentPlanCta": "Current plan",
+      "upgradeSubscription": "Upgrade now",
+      "alreadyLifetime": "Lifetime already active",
+      "downgradeNotAllowed": "Only upgrades are allowed",
+      "checkoutError": "Checkout failed",
+      "portalError": "Portal failed",
+      "upgradeError": "Upgrade failed",
+      "upgradeSuccess": "Subscription upgraded successfully.",
+      "upgradeUnavailable": "Upgrade unavailable",
+      "noPlans": "No plans available.",
+      "checkoutDecisionErrors": {
+        "already_lifetime": "You already have lifetime membership.",
+        "downgrade_or_same_tier": "Only upgrades are allowed for your current membership.",
+        "subscription_upgrade": "You can upgrade your subscription interval in-app.",
+        "current_price": "This is your current plan.",
+        "ok": "Checkout is available.",
+        "default": "Checkout is not available for this plan."
+      }
+    },
+    "credits": {
+      "title": "Credits",
+      "description": "Buy and review account credits shared across web and mobile.",
+      "purchaseTitle": "Buy credits",
+      "purchaseDescription": "Purchase credit packages shared across web and mobile.",
+      "balanceLabel": "Current balance",
+      "balanceDescription": "Purchased credits do not expire. Free credits may expire based on account rules.",
+      "expiringNotice": "{count} credits expire within 7 days.",
+      "buy": "Buy",
+      "checkoutError": "Credit checkout failed",
+      "orderCreditedToast": "{packageName} credits delivered.",
+      "viewTransactions": "View history",
+      "refresh": "Refresh",
+      "transactionsTitle": "Recent transactions",
+      "transactionsPageTitle": "Credit transactions",
+      "transactionsDescription": "Review recent credit balance changes.",
+      "loading": "Loading...",
+      "emptyPackages": "No credit packages are available.",
+      "emptyTransactions": "No credit activity yet.",
+      "transactionColumns": {
+        "type": "Type",
+        "package": "Package",
+        "source": "Source",
+        "amount": "Amount",
+        "date": "Date"
+      },
+      "transactionSources": {
+        "system": "System",
+        "app": "App",
+        "admin": "Admin",
+        "web": "Web purchase",
+        "native": "In-app purchase"
+      },
+      "transactionFilters": {
+        "all": "All",
+        "purchase": "Purchases",
+        "usage": "Spending"
+      },
+      "pagination": {
+        "rowsPerPage": "Rows per page",
+        "total": "{total} total",
+        "pageInfo": "Page {page} of {pageCount}",
+        "previous": "Previous page",
+        "next": "Next page"
+      },
+      "transactions": {
+        "signupGrant": "Signup grant",
+        "purchase": "Credit purchase",
+        "refund": "Refund",
+        "usage": "Usage",
+        "expiration": "Expired credits",
+        "adjustment": "Adjustment"
+      }
+    },
+    "users": {
+      "title": "Registered users",
+      "description": "Read-only administrator view of registered accounts.",
+      "refresh": "Refresh",
+      "table": {
+        "avatar": "Avatar",
+        "name": "Name",
+        "email": "Email",
+        "contact": "Contact",
+        "status": "Status",
+        "verified": "Verified",
+        "unverified": "Unverified",
+        "searchPlaceholder": "Search by name or contact...",
+        "noResults": "No results."
+      },
+      "actions": {
+        "deleteSuccess": "User deleted successfully",
+        "deleteError": "Delete failed: {message}",
+        "openMenu": "Open menu",
+        "edit": "Edit",
+        "deleting": "Deleting...",
+        "delete": "Delete"
+      },
+      "pagination": {
+        "rowsPerPage": "Rows per page",
+        "total": "{total} total",
+        "pageInfo": "Page {page} of {pageCount}",
+        "previous": "Previous page",
+        "next": "Next page"
+      }
+    },
+    "sections": {
+      "totalRevenue": "Total Revenue",
+      "newCustomers": "New Customers",
+      "activeAccounts": "Active Accounts",
+      "growthRate": "Growth Rate",
+      "trendingUp": "Trending up this month",
+      "trendingDown": "Down {percent}% this period",
+      "visitorsLast6Months": "Visitors for the last 6 months",
+      "acquisitionAttention": "Acquisition needs attention",
+      "strongRetention": "Strong user retention",
+      "engagementExceed": "Engagement exceed targets",
+      "steadyPerformance": "Steady performance increase",
+      "meetsGrowth": "Meets growth projections"
+    },
+    "settings": {
+      "home": {
+        "title": "Account center",
+        "description": "Manage your profile, billing, credits, and account security in one place.",
+        "profileTitle": "Profile",
+        "profileDescription": "Update the account details customers and teammates see.",
+        "profileAction": "Edit profile",
+        "billingTitle": "Billing",
+        "billingDescription": "Review your subscription, plans, and payment options.",
+        "billingAction": "Manage billing",
+        "creditsTitle": "Credits",
+        "creditsDescription": "Review your balance, buy credits, and see usage history.",
+        "creditsAction": "Manage credits",
+        "securityTitle": "Security",
+        "securityDescription": "Review how you sign in and keep the account secure.",
+        "securityAction": "Review security"
+      },
+      "profile": {
+        "title": "Profile",
+        "description": "This is how others will see you on the site.",
+        "name": "Name",
+        "namePlaceholder": "Enter your name",
+        "nameDescription": "This is your public display name. It can be your real name or a pseudonym.",
+        "nameMinLength": "Name must be at least 2 characters.",
+        "nameMaxLength": "Name must be at most 20 characters.",
+        "email": "Email",
+        "emailDescription": "Your email address is used for sign in and notifications.",
+        "phone": "Phone number",
+        "phoneDescription": "A legacy phone number may be shown for migrated accounts. SMS sign-in is unavailable.",
+        "notLinked": "Not linked",
+        "avatar": "Avatar",
+        "avatarDescription": "This is your profile picture.",
+        "changeAvatar": "Change Avatar",
+        "avatarUploading": "Uploading...",
+        "avatarUploadSuccess": "Avatar updated successfully",
+        "avatarUploadError": "Failed to upload avatar",
+        "avatarInvalidType": "Please upload a valid image file (JPEG, PNG, GIF, or WebP)",
+        "avatarTooLarge": "Image is too large. Maximum size is 5MB",
+        "save": "Save Changes",
+        "saving": "Saving...",
+        "success": "Profile updated successfully.",
+        "error": "Failed to update profile."
+      }
+    },
+    "security": {
+      "title": "Security",
+      "description": "Manage password settings for your account.",
+      "socialDescription": "Your account security is managed through your social login provider.",
+      "loading": "Loading...",
+      "loginMethods": {
+        "socialLogin": "Social Login",
+        "socialLoginActive": "You're signed in with your social account",
+        "active": "Active"
+      },
+      "security": {
+        "title": "Security Status",
+        "socialLoginSecurity": "Your account is secured by {providers}. These platforms use industry-standard security measures including two-factor authentication."
+      },
+      "password": {
+        "title": "Password",
+        "description": "Set or reset your password for email sign-in.",
+        "hasPassword": "A password is set for this account.",
+        "sendReset": "Send Reset Email",
+        "sendingReset": "Sending...",
+        "resetSent": "Reset email sent.",
+        "statusError": "Unable to load password status."
+      },
+      "phone": {
+        "title": "Legacy phone account",
+        "verified": "Verified",
+        "verifiedNumber": "Verified number: {phoneNumber}"
+      }
+    }
+  },
+  "billingSuccess": {
+    "title": "Payment successful",
+    "description": "Thanks for upgrading. Your access will be updated shortly.",
+    "syncingTitle": "Confirming your subscription status",
+    "syncingDescription": "You'll be redirected to billing once activation is complete.",
+    "goToBilling": "Go to billing",
+    "refreshStatus": "Refresh status",
+    "manualRefreshDescription": "We could not confirm the updated access yet. Open billing to review the current status, then refresh if needed."
+  },
+  "billingCancel": {
+    "title": "Payment canceled",
+    "description": "No worries. You can resume checkout anytime.",
+    "backToBilling": "Back to billing",
+    "choosePlan": "Choose a plan",
+    "backToDashboard": "Back to dashboard"
+  },
+  "seo": {
+    "home": {
+      "description": "EasyStarter is a production-ready foundation for paid web products, with authentication, billing, i18n, and Cloudflare deployment built in."
+    },
+    "noIndex": {
+      "descriptionTemplate": "{page} pages are private workflows and are excluded from search indexing.",
+      "pages": {
+        "auth": "Authentication",
+        "billing": "Billing",
+        "dashboard": "Dashboard",
+        "notFound": "Not found"
+      }
+    }
+  },
+  "legal": {
+    "common": {
+      "lastUpdatedLabel": "Last updated",
+      "contactLabel": "Contact",
+      "effectiveDate": "2026-02-20"
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "description": "This Privacy Policy explains what information we collect, how we use it, and your choices when using our services.",
+      "sections": {
+        "informationCollect": {
+          "title": "Information We Collect",
+          "content": "We may collect account details, profile information, usage data, and technical data such as device type, browser, and IP address."
+        },
+        "howWeUse": {
+          "title": "How We Use Information",
+          "content": "We use information to provide and improve the service, authenticate users, process billing, communicate updates, and prevent abuse."
+        },
+        "informationSharing": {
+          "title": "Information Sharing",
+          "content": "We do not sell personal information. We may share data with trusted processors and partners only as needed to operate the service."
+        },
+        "dataRetention": {
+          "title": "Data Retention",
+          "content": "We retain personal data for as long as needed to provide services, meet legal obligations, resolve disputes, and enforce agreements."
+        },
+        "security": {
+          "title": "Security",
+          "content": "We apply reasonable technical and organizational safeguards to protect your data, but no system can guarantee absolute security."
+        },
+        "cookies": {
+          "title": "Cookies and Similar Technologies",
+          "content": "We use cookies and similar technologies to keep you signed in, remember preferences, analyze traffic, and improve product performance."
+        },
+        "yourRights": {
+          "title": "Your Rights and Choices",
+          "content": "Depending on your region, you may request access, correction, deletion, portability, or restriction of your personal information."
+        },
+        "contactUs": {
+          "title": "Contact Us",
+          "content": "If you have privacy questions or requests, contact our support team."
+        }
+      }
+    },
+    "terms": {
+      "title": "Terms of Service",
+      "description": "These Terms of Service govern your access to and use of our products and services.",
+      "sections": {
+        "accountResponsibilities": {
+          "title": "Account Responsibilities",
+          "content": "You are responsible for maintaining account security and for all activity under your account credentials."
+        },
+        "acceptableUse": {
+          "title": "Acceptable Use",
+          "content": "You agree not to misuse the service, interfere with operations, violate laws, or attempt unauthorized access."
+        },
+        "intellectualProperty": {
+          "title": "Intellectual Property",
+          "content": "All service content, branding, and software are protected by applicable intellectual property laws unless otherwise stated."
+        },
+        "billingAndRefunds": {
+          "title": "Billing and Refunds",
+          "content": "Paid plans are billed according to selected terms. Unless required by law, fees are non-refundable after the billing cycle starts."
+        },
+        "disclaimers": {
+          "title": "Disclaimers",
+          "content": "The service is provided on an \"as is\" and \"as available\" basis without warranties of any kind, to the extent permitted by law."
+        },
+        "liabilityLimit": {
+          "title": "Limitation of Liability",
+          "content": "To the maximum extent permitted by law, we are not liable for indirect, incidental, or consequential damages."
+        },
+        "termination": {
+          "title": "Termination",
+          "content": "We may suspend or terminate access if you materially breach these terms or use the service in a harmful manner."
+        },
+        "changesToTerms": {
+          "title": "Changes to These Terms",
+          "content": "We may update these terms from time to time. Continued use after updates means you accept the revised terms."
+        },
+        "contactUs": {
+          "title": "Contact Us",
+          "content": "For questions about these terms, please contact our support team."
+        }
+      }
+    }
+  }
+}

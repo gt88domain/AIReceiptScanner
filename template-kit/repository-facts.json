@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 2,
+  "packageManager": "pnpm@11.13.1",
+  "defaultBranch": "main",
+  "workspacePatterns": ["apps/*", "packages/*"],
+  "applications": {
+    "web": "apps/web",
+    "server": "apps/server",
+    "mobile": "optional/mobile",
+    "default": ["web", "server"],
+    "optional": ["mobile"]
+  },
+  "requiredRootScripts": ["lint", "fmt:check", "check-types", "test", "build", "db:check", "profiles:check"],
+  "optionalRootScripts": ["mobile:dev", "mobile:check"],
+  "runtime": {
+    "api": "Cloudflare Workers",
+    "businessDataOwner": "apps/server",
+    "database": "Cloudflare D1",
+    "webApiBinding": "API_SERVICE"
+  },
+  "governance": {
+    "productRoots": ["apps/server/src/modules", "apps/web/src/modules"],
+    "platformModuleRoots": [
+      "apps/server/src/modules/jobs",
+      "apps/server/src/modules/assets",
+      "apps/server/src/modules/audit"
+    ],
+    "declaredOverlaps": [
+      {
+        "parent": "apps/server/src/modules",
+        "children": [
+          "apps/server/src/modules/jobs",
+          "apps/server/src/modules/assets",
+          "apps/server/src/modules/audit"
+        ],
+        "ownership": "platform"
+      }
+    ],
+    "coreRoots": [
+      "packages",
+      "apps/server/src/auth",
+      "apps/server/src/credits",
+      "apps/server/src/payments",
+      "apps/server/src/storage",
+      "apps/server/src/db",
+      "apps/server/src/lib"
+    ],
+    "boundaryRules": [
+      {
+        "id": "shared-no-platform-provider",
+        "description": "Shared packages stay platform and provider neutral.",
+        "directories": ["packages/shared"],
+        "forbiddenImportPatterns": [
+          "(?:from\\s+|import\\s*\\()[\\\"'](?:react-native|expo(?:/[^\\\"']*)?|react-native-purchases|stripe|resend|cloudflare:workers)[\\\"']"
+        ]
+      },
+      {
+        "id": "shared-no-application-layer",
+        "description": "Shared packages do not depend on an application or optional capability.",
+        "directories": ["packages"],
+        "forbiddenImportPatterns": [
+          "(?:from\\s+|import\\s*\\()[\\\"'](?:apps|optional)/",
+          "(?:from\\s+|import\\s*\\()[\\\"'](?:\\.\\./)+(?:apps|optional)/"
+        ]
+      },
+      {
+        "id": "web-no-database-internals",
+        "description": "Web code reaches business data only through the API Worker.",
+        "directories": ["apps/web/src"],
+        "forbiddenImportPatterns": [
+          "(?:from\\s+|import\\s*\\()[\\\"'](?:@server/db|@/db|.*apps/server/src/db|drizzle-orm(?:/[^\\\"']*)?)[\\\"']"
+        ]
+      },
+      {
+        "id": "web-admin-module-routes-use-helper",
+        "description": "Product admin module routes use the guarded route helper.",
+        "directories": ["apps/web/src/routes/_authed/(dashboard)/admin/(modules)"],
+        "forbiddenImportPatterns": [
+          "(?:from\\s+|import\\s*\\()[\\\"']@tanstack/react-router[\\\"']"
+        ]
+      },
+      {
+        "id": "server-product-no-provider-sdk",
+        "description": "Product server modules use core adapters and standard guards rather than provider SDKs.",
+        "directories": ["apps/server/src/modules"],
+        "excludeDirectories": [
+          "apps/server/src/modules/jobs",
+          "apps/server/src/modules/assets",
+          "apps/server/src/modules/audit"
+        ],
+        "forbiddenImportPatterns": [
+          "(?:from\\s+|import\\s*\\()[\\\"'](?:better-auth(?:/[^\\\"']*)?|stripe|resend|cloudflare:workers|react-native-purchases|@aws-sdk/[^\\\"']*)[\\\"']"
+        ]
+      },
+      {
+        "id": "mobile-no-web-ui",
+        "description": "The optional mobile capability does not import web application UI.",
+        "directories": ["optional/mobile"],
+        "forbiddenImportPatterns": [
+          "(?:from\\s+|import\\s*\\()[\\\"'](?:apps/web/src|(?:\\.\\./)+(?:apps/web/src))[\\\"']"
+        ]
+      },
+      {
+        "id": "core-no-product-import",
+        "description": "Core infrastructure never imports downstream product code.",
+        "directories": [
+          "packages",
+          "apps/server/src/auth",
+          "apps/server/src/credits",
+          "apps/server/src/payments",
+          "apps/server/src/storage",
+          "apps/server/src/db",
+          "apps/server/src/lib"
+        ],
+        "forbiddenImportPatterns": [
+          "(?:from\\s+|import\\s*\\()[\\\"'](?:products|(?:\\.\\./)+products)/",
+          "(?:from\\s+|import\\s*\\()[\\\"']@/modules/(?!jobs(?:/|[\\\"'])|assets(?:/|[\\\"'])|audit(?:/|[\\\"']))"
+        ]
+      }
+    ]
+  }
+}

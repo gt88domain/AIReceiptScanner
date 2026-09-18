@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EasyStarter downstream adoption manifest",
+  "type": "object",
+  "required": ["template", "upstream", "adoptedAt"],
+  "properties": {
+    "template": { "const": "easystarter-template" },
+    "upstream": {
+      "type": "object",
+      "required": ["repository", "release", "commit"],
+      "properties": {
+        "repository": { "type": "string", "format": "uri" },
+        "release": { "type": "string", "pattern": "^v\\d+\\.\\d+\\.\\d+$" },
+        "commit": { "type": "string", "minLength": 7 }
+      }
+    },
+    "adoptedAt": { "type": "string", "format": "date" }
+  }
+}

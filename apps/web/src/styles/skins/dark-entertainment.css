@@ -1,0 +1,25 @@
+@layer base {
+  .skin-dark-entertainment {
+    --skin-page:
+      radial-gradient(circle at 72% 8%, rgb(0 181 255 / 24%) 0, transparent 28rem),
+      linear-gradient(180deg, #07111f 0%, #081a2b 100%);
+    --skin-surface: #0a1d2f;
+    --skin-surface-raised: #102c45;
+    --skin-surface-hover: #143e61;
+    --skin-surface-active: #164b72;
+    --skin-ink: #edf8ff;
+    --skin-ink-muted: #a6c1d5;
+    --skin-accent: #31c8f4;
+    --skin-accent-ink: #7cddf7;
+    --skin-on-accent: #062033;
+    --skin-line: rgb(126 210 255 / 18%);
+    --skin-line-strong: rgb(89 201 249 / 58%);
+    --skin-hero: linear-gradient(145deg, #0d3452 0%, #071b2e 62%, #0c2c48 100%);
+    --skin-radius-card: 1.25rem;
+    --skin-radius-control: 0.75rem;
+    --skin-shadow-raised: 0 12px 28px rgb(0 0 0 / 34%), inset 0 1px 0 rgb(182 236 255 / 8%);
+    --skin-shadow-raised-hover:
+      0 20px 40px rgb(0 0 0 / 52%), 0 0 44px -6px rgb(49 200 244 / 32%),
+      inset 0 1px 0 rgb(182 236 255 / 14%);
+  }
+}

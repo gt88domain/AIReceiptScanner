@@ -1,0 +1,160 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1769960992511,
+      "tag": "0000_little_inhumans",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1774789011686,
+      "tag": "0001_fast_exodus",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1775235900000,
+      "tag": "0002_odd_event_order_guard",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1776441600000,
+      "tag": "0003_billing_event_processing_status",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1776671939023,
+      "tag": "0004_workable_logan",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1779958813396,
+      "tag": "0005_abnormal_cerebro",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1780132129774,
+      "tag": "0006_colossal_gabe_jones",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1780134111262,
+      "tag": "0007_lying_swarm",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1780282528002,
+      "tag": "0008_rare_leper_queen",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1784274623339,
+      "tag": "0009_milky_bullseye",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1784670000000,
+      "tag": "0010_billable_operation_security",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1784770000000,
+      "tag": "0011_webhook_processing_claim",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1784780000000,
+      "tag": "0012_billing_provider_event_tiebreak",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1784790000000,
+      "tag": "0013_revenuecat_identity",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1784800000000,
+      "tag": "0014_credit_payment_dispute",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1784810000000,
+      "tag": "0015_auth_rate_limit",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "6",
+      "when": 1784775247471,
+      "tag": "0016_even_santa_claus",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1784775911518,
+      "tag": "0017_credit_ledger_invariants",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1785562684976,
+      "tag": "0018_orange_nomad",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1785978523392,
+      "tag": "0019_fast_shard",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1785982439590,
+      "tag": "0020_cultured_tattoo",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "6",
+      "when": 1786762654051,
+      "tag": "0021_open_ikaris",
+      "breakpoints": true
+    }
+  ]
+}

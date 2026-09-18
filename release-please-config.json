@@ -1,0 +1,11 @@
+{
+  "packages": {
+    ".": {
+      "release-type": "simple",
+      "package-name": "easystarter-template",
+      "include-component-in-tag": false,
+      "bump-minor-pre-major": true,
+      "extra-files": ["template-version.json"]
+    }
+  }
+}

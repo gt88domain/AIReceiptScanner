@@ -1,0 +1,74 @@
+name: Main provenance audit
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: "Optional main commit SHA to audit"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const sha = context.payload.inputs?.sha || context.sha;
+            const { data: pulls } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              ...context.repo,
+              commit_sha: sha,
+            });
+            const shortSha = sha.slice(0, 7);
+            const title = `warning: unprovenanced main push ${shortSha}`;
+            const { data: issues } = await github.rest.issues.listForRepo({
+              ...context.repo,
+              state: "open",
+              labels: "main-provenance-warning",
+              per_page: 100,
+            });
+            const warning = issues.find((issue) => issue.title === title);
+            const mergedPulls = pulls.filter((pull) => pull.merged_at);
+            if (mergedPulls.length > 0) {
+              if (!warning) return;
+              const pullLinks = mergedPulls.map((pull) => `#${pull.number}`).join(", ");
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: warning.number,
+                body: `Reconciled: GitHub now associates this commit with merged PR ${pullLinks}. Closing the stale provenance warning.`,
+              });
+              await github.rest.issues.update({
+                ...context.repo,
+                issue_number: warning.number,
+                state: "closed",
+                state_reason: "completed",
+              });
+              return;
+            }
+
+            if (warning) return;
+
+            const { data: commit } = await github.rest.repos.getCommit({
+              ...context.repo,
+              ref: sha,
+            });
+            await github.rest.issues.create({
+              ...context.repo,
+              title,
+              labels: ["main-provenance-warning"],
+              body: [
+                `Main received \`${sha}\` without an associated merged pull request.`,
+                "",
+                `Commit message: ${commit.commit.message}`,
+                "",
+                "This is an alert only. Inspect the push, then resolve the issue or document the accepted exception. It does not roll back history.",
+              ].join("\n"),
+            });

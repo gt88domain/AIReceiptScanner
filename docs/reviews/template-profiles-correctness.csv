@@ -1,0 +1,2 @@
+module,area,slug_or_route,issue_type,severity,evidence,problem,suggested_fix,effort_hours,block_release
+template-profiles,cron-contract,account-app|directory|full-saas,broken,P1,template-kit/profiles/account-app/wrangler.server.example.jsonc:16|apps/server/src/worker/create-worker-handlers.ts:31,模板 cron 为每十分钟但 worker 只处理每分钟和每日表达式,模板改为每分钟并加入配置校验,1,no

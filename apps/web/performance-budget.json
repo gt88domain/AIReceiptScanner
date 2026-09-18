@@ -1,0 +1,18 @@
+{
+  "initialJavaScriptGzipBytes": 380000,
+  "globalCssGzipBytes": 25600,
+  "forbiddenInitialRequestTokens": [
+    "search-default",
+    "orama-static",
+    "fumadocs",
+    "admin-",
+    "billing-",
+    "purchase-",
+    "transactions-",
+    "landing-composer",
+    "theme-presets",
+    "theme-fonts",
+    "turnstile",
+    ".lazy-"
+  ]
+}

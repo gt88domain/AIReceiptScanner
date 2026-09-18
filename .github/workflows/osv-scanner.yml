@@ -1,0 +1,23 @@
+name: Dependency vulnerability scan
+
+on:
+  pull_request:
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  osv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Direct scanner execution keeps the failure gate on private GitHub Free
+      # repositories, where the reusable workflow cannot start or upload SARIF.
+      - uses: google/osv-scanner-action/osv-scanner-action@8dc09193bb540e09b23da07ad7e30bd33bf87018 # v2.3.8
+        with:
+          scan-args: |-
+            --lockfile=pnpm-lock.yaml
+            --lockfile=optional/pnpm-lock.yaml

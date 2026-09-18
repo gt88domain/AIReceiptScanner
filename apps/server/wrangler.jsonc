@@ -1,0 +1,82 @@
+{
+  "name": "replace-api-worker",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "routes": [
+    {
+      "pattern": "api.replace-domain.example",
+      "custom_domain": true,
+    },
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "replace-d1-database",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "src/db/migrations",
+    },
+  ],
+  "vars": {
+    "NODE_ENV": "production",
+    "PAYMENTS_PRICE_ENV": "prod",
+    "WEBSITE_URL": "https://replace-domain.example",
+    "SERVER_URL": "https://api.replace-domain.example",
+    "JOB_QUEUE_DLQ_NAME": "replace-job-queue-dlq",
+    // Add OAuth client IDs only after enabling the matching provider in app-config.
+    "GITHUB_CLIENT_ID": "",
+    "GOOGLE_CLIENT_ID": "",
+    "APPLE_APP_BUNDLE_IDENTIFIER": "",
+    "CONTROL_READ_HTTP_HOST": "",
+    "CONTROL_ACCESS_TEAM_DOMAIN": "",
+    "CONTROL_ACCESS_AUD": "",
+  },
+  // Base required secrets, unioned with the product-derived list by the
+  // production preflight's live presence check (`wrangler secret list`).
+  "secrets": {
+    "required": ["ADMIN_EMAILS", "BETTER_AUTH_SECRET"],
+  },
+  "r2_buckets": [
+    {
+      "binding": "STORAGE",
+      "bucket_name": "replace-r2-bucket",
+    },
+  ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "JOB_QUEUE",
+        "queue": "replace-job-queue",
+      },
+    ],
+    "consumers": [
+      {
+        "queue": "replace-job-queue",
+        "max_batch_size": 1,
+        "max_batch_timeout": 5,
+        "max_retries": 3,
+        "dead_letter_queue": "replace-job-queue-dlq",
+      },
+      {
+        "queue": "replace-job-queue-dlq",
+        "max_batch_size": 10,
+        "max_batch_timeout": 5,
+        "max_retries": 10,
+      },
+    ],
+  },
+  "triggers": {
+    // "* * * * *" pumps billing webhook/outbox recovery and the job outbox.
+    // "10 16 * * *" runs daily credit maintenance.
+    "crons": ["* * * * *", "10 16 * * *"],
+  },
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true,
+    },
+    "traces": {
+      "enabled": false,
+    },
+  },
+}

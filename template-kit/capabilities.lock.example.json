@@ -1,0 +1,14 @@
+{
+  "$schema": "./capabilities.lock.schema.json",
+  "capabilities": {
+    "tickets": {
+      "source": {
+        "release": "vX.Y.Z",
+        "commit": "replace-with-the-reviewed-release-commit"
+      },
+      "installedMigration": "0007_install_tickets.sql",
+      "sqlHash": "sha256:replace-with-reviewed-sql-hash",
+      "requires": ["core-auth"]
+    }
+  }
+}

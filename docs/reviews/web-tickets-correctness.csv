@@ -1,0 +1,2 @@
+module,area,slug_or_route,issue_type,severity,evidence,problem,suggested_fix,effort_hours,block_release
+web-tickets,reply-composer,/tickets/$ticketId|/admin/support/$ticketId,broken,P1,apps/web/src/components/dashboard/tickets/ticket-pages.tsx:24|apps/web/src/components/dashboard/tickets/ticket-pages.tsx:197,回复成功后编辑框本地 body 未清空，已发送内容仍可再次提交,让 onSubmit 返回 Promise 并只在成功后清空 body,1,no

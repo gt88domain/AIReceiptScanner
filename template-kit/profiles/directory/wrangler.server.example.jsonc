@@ -1,0 +1,23 @@
+{
+  "name": "replace-directory-api-worker",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "routes": [{ "pattern": "api.replace-domain.example", "custom_domain": true }],
+  "d1_databases": [{ "binding": "DB", "database_name": "replace-directory-d1", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "src/db/migrations" }],
+  "queues": {
+    "producers": [{ "binding": "JOB_QUEUE", "queue": "replace-directory-jobs" }],
+    "consumers": [
+      { "queue": "replace-directory-jobs", "max_batch_size": 1, "max_batch_timeout": 5, "max_retries": 3, "dead_letter_queue": "replace-directory-jobs-dlq" },
+      { "queue": "replace-directory-jobs-dlq", "max_batch_size": 10, "max_batch_timeout": 5, "max_retries": 10 }
+    ]
+  },
+  "triggers": { "crons": ["* * * * *"] },
+  "vars": {
+    "NODE_ENV": "production",
+    "WEBSITE_URL": "https://replace-domain.example",
+    "SERVER_URL": "https://api.replace-domain.example",
+    "JOB_QUEUE_DLQ_NAME": "replace-directory-jobs-dlq"
+  },
+  "observability": { "logs": { "enabled": true, "invocation_logs": true }, "traces": { "enabled": false } }
+}

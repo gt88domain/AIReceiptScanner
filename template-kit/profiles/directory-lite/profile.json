@@ -1,0 +1,13 @@
+{
+  "id": "directory-lite",
+  "features": {
+    "admin": true,
+    "jobs": false,
+    "storage": false,
+    "tickets": false,
+    "mobile": false,
+    "web": { "billing": false, "credits": false, "creditPurchases": false },
+    "native": { "billing": false, "credits": false, "creditPurchases": false }
+  },
+  "expectedResources": ["D1"]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "replace-directory-lite-api-worker",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "routes": [{ "pattern": "api.replace-directory-lite.example", "custom_domain": true }],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "replace-directory-lite-d1-database",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "src/db/migrations"
+    }
+  ],
+  "vars": {
+    "NODE_ENV": "production",
+    "WEBSITE_URL": "https://replace-directory-lite.example",
+    "SERVER_URL": "https://api.replace-directory-lite.example"
+  },
+  "secrets": { "required": ["ADMIN_EMAILS", "BETTER_AUTH_SECRET"] },
+  "observability": { "logs": { "enabled": true, "invocation_logs": true } }
+}

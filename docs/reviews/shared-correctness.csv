@@ -1,0 +1,2 @@
+module,area,slug_or_route,issue_type,severity,evidence,problem,suggested_fix,effort_hours,block_release
+shared,date-formatting,,broken,P2,packages/shared/src/date.ts:35|packages/shared/src/date.ts:39|packages/shared/src/date.ts:41,函数类型声明接受 number 但 0 被当作空值返回空字符串而不是 Unix epoch 日期,仅将 null 或 undefined 判为空值并让 0 进入 Date 格式化,0.5,no
