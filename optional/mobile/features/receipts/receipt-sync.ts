@@ -4,6 +4,29 @@ import type { ReceiptDraft } from "./types";
 import { client } from "@/lib/orpc";
 import { deleteDraftImage } from "@/modules/receipt-vision";
 
+const SUPPORTED_MOBILE_CURRENCIES = new Set([
+  "USD",
+  "SGD",
+  "EUR",
+  "GBP",
+  "JPY",
+  "AUD",
+  "CAD",
+  "CNY",
+  "HKD",
+  "NZD",
+  "CHF",
+  "INR",
+  "KRW",
+]);
+
+export class UnsupportedReceiptCurrencyError extends Error {
+  constructor(currency: string) {
+    super(`Receipt currency ${currency} is not supported for account sync yet`);
+    this.name = "UnsupportedReceiptCurrencyError";
+  }
+}
+
 function amountToSafeNumber(value: string, currency: string, required: boolean) {
   if (!value) {
     if (required) throw new Error("A required receipt amount is missing");
@@ -26,6 +49,10 @@ export async function syncVerifiedReceiptDraft(draft: ReceiptDraft) {
   }
 
   const currency = draft.fields.currency.toUpperCase();
+  if (!SUPPORTED_MOBILE_CURRENCIES.has(currency)) {
+    throw new UnsupportedReceiptCurrencyError(currency);
+  }
+
   const record = await client.receipts.create({
     captureId: draft.captureId,
     merchantName: draft.fields.merchant,

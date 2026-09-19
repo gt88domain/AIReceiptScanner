@@ -17,7 +17,10 @@ import type {
   ReceiptFields,
 } from "@/features/receipts/types";
 import { deleteDraftImage } from "@/modules/receipt-vision";
-import { syncVerifiedReceiptDraft } from "@/features/receipts/receipt-sync";
+import {
+  syncVerifiedReceiptDraft,
+  UnsupportedReceiptCurrencyError,
+} from "@/features/receipts/receipt-sync";
 import { useAuth } from "@/providers/auth-provider";
 
 const FIELD_ORDER: Array<{
@@ -163,8 +166,12 @@ export default function ReceiptVerifyScreen() {
       try {
         await syncVerifiedReceiptDraft(verified);
         router.replace("/(tabs)/(home)");
-      } catch {
-        setError(t("receiptVerify.syncError"));
+      } catch (cause) {
+        setError(
+          cause instanceof UnsupportedReceiptCurrencyError
+            ? t("receiptVerify.unsupportedCurrency")
+            : t("receiptVerify.syncError"),
+        );
       }
     } catch {
       setError(t("receiptVerify.draftSaveError"));
