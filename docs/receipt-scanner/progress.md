@@ -9,7 +9,7 @@ This file tracks implementation status against the approved product documents. A
 | Documentation baseline | #2 | DRAFT | n/a | n/a | Plan, TODO, acceptance, privacy, benchmark, release gates |
 | iOS local receipt vision | #3 | CODED / REVIEWING | NOT RUN | NOT RUN | VisionKit + Apple Vision local module, functional scan screen |
 | Local receipt parser + verify | #4 | CODED / REVIEWING | AUTHORED / NOT RUN | NOT RUN | deterministic parser, recoverable local draft, functional Verify UI |
-| Receipt server/domain persistence | #5 | NOT STARTED | NOT RUN | n/a | D1 schema, owner-scoped CRUD, idempotency |
+| Receipt server/domain persistence | #5 | CODED / REVIEWING | AUTHORED / NOT RUN | n/a | D1 migration, owner-scoped CRUD, create idempotency, optimistic update versions |
 | History/search/export | #6 | NOT STARTED | NOT RUN | NOT RUN | native/web history, CSV/PDF, duplicate warnings |
 | Cloud Assist | #7 | NOT STARTED | NOT RUN | NOT RUN | benchmark harness + one provider adapter after selection |
 | Billing/privacy hardening | #8 | NOT STARTED | NOT RUN | NOT RUN | RevenueCat lifecycle, export/delete, redaction |
@@ -17,22 +17,22 @@ This file tracks implementation status against the approved product documents. A
 
 ## Current engineering boundary
 
-PR #4 builds on PR #3 and intentionally stops before server persistence.
+PR #5 builds on PR #4 and intentionally stops before history/search/export UI.
 
 Its observable target is:
 
-1. local OCR becomes merchant/date/currency/amount candidates;
-2. ambiguous dates/currencies are review states rather than guesses;
-3. money normalization avoids binary floating-point arithmetic;
-4. the user can edit and explicitly verify critical receipt fields;
-5. draft image + fields survive normal app interruption using app-private storage;
-6. suspected full card-number/CVV text is redacted from persisted OCR draft text;
-7. delayed server/cloud persistence is still out of scope until PR #5.
+1. a verified mobile draft can be persisted through the typed receipt RPC;
+2. the API Worker is the sole D1 business-data owner;
+3. every get/update/delete/list query is owner-scoped;
+4. identical create retries reuse one receipt by (userId, captureId);
+5. changed payload under the same captureId fails with CONFLICT;
+6. stale updates fail through optimistic version checks;
+7. successful server save clears the local draft only after protected-image cleanup succeeds.
 
 ## Current evidence
 
 Implementation review: IN PROGRESS  
-Automated test authoring: AUTHORED FOR PURE PARSER CONTRACT  
+Automated test authoring: AUTHORED FOR PARSER + SERVER TRUST/IDEMPOTENCY  
 Automated test execution: NOT RUN  
 Native build: NOT RUN  
 Physical iPhone scan: NOT RUN  
