@@ -41,6 +41,29 @@ public class ReceiptVisionModule: Module {
       viewController.present(scanner, animated: true)
     }.runOnQueue(.main)
 
+    AsyncFunction("persistDraftImage") { (uri: String, promise: Promise) in
+      do {
+        promise.resolve(try ReceiptDraftImageStore.persist(uri: uri))
+      } catch {
+        promise.reject(
+          "ERR_RECEIPT_DRAFT_IMAGE",
+          "The receipt image could not be prepared for draft recovery."
+        )
+      }
+    }
+
+    AsyncFunction("deleteDraftImage") { (uri: String, promise: Promise) in
+      do {
+        try ReceiptDraftImageStore.delete(uri: uri)
+        promise.resolve(nil)
+      } catch {
+        promise.reject(
+          "ERR_RECEIPT_DRAFT_IMAGE_DELETE",
+          "The local draft image could not be deleted."
+        )
+      }
+    }
+
     AsyncFunction("recognizeReceipt") { (uri: String, promise: Promise) in
       do {
         let result = try ReceiptTextRecognizer.recognize(uri: uri)

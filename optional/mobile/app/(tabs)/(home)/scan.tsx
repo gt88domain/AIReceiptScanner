@@ -1,19 +1,23 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { Button, Spinner, useThemeColor } from "heroui-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
 import { Text } from "@/components/ui/text";
+import { createReceiptDraft, loadReceiptDraft, saveReceiptDraft } from "@/features/receipts/draft-storage";
+import { parseLocalReceipt } from "@/features/receipts/parser/receipt-parser";
 import { NativeImagePicker } from "@/lib/image-picker/image-picker";
 import {
+  deleteDraftImage,
   isDocumentScannerSupported,
   isReceiptVisionAvailable,
+  persistDraftImage,
   recognizeReceipt,
   scanDocument,
-  type LocalReceiptOcrResult,
 } from "@/modules/receipt-vision";
 
-type ScanState = "idle" | "scanning" | "importing" | "recognizing" | "complete" | "error";
+type ScanState = "idle" | "scanning" | "importing" | "recognizing" | "error";
 
 function errorCode(error: unknown) {
   if (error && typeof error === "object" && "code" in error) {
@@ -23,48 +27,72 @@ function errorCode(error: unknown) {
 }
 
 function errorMessage(error: unknown) {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
+  if (error instanceof Error && error.message) return error.message;
   return String(error);
 }
 
 export default function ReceiptScanScreen() {
+  const router = useRouter();
   const { t } = useTranslation();
   const [accentColor, mutedColor] = useThemeColor(["accent", "muted"]);
   const [state, setState] = useState<ScanState>("idle");
-  const [sourceLabel, setSourceLabel] = useState<string | null>(null);
-  const [result, setResult] = useState<LocalReceiptOcrResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const visionAvailable = isReceiptVisionAvailable();
   const scannerSupported = visionAvailable && isDocumentScannerSupported();
   const busy = state === "scanning" || state === "importing" || state === "recognizing";
 
-  async function recognize(uri: string, source: string) {
+  async function redirectExistingDraft() {
+    const existing = await loadReceiptDraft();
+    if (!existing) return false;
+    router.replace("/(tabs)/(home)/verify");
+    return true;
+  }
+
+  async function recognizeAndCreateDraft(uri: string, source: "camera" | "library") {
     setState("recognizing");
-    setSourceLabel(source);
-    const nextResult = await recognizeReceipt(uri);
-    setResult(nextResult);
-    setState("complete");
+    let persistedUri: string | null = null;
+
+    try {
+      const persisted = await persistDraftImage(uri);
+      persistedUri = persisted.uri;
+      const ocr = await recognizeReceipt(persisted.uri);
+      const parse = parseLocalReceipt(ocr);
+      await saveReceiptDraft(
+        createReceiptDraft({
+          source,
+          imageUri: persisted.uri,
+          ocr,
+          parse,
+        }),
+      );
+      router.replace("/(tabs)/(home)/verify");
+    } catch (cause) {
+      if (persistedUri) {
+        try {
+          await deleteDraftImage(persistedUri);
+        } catch {
+          // The user-facing error remains the failed scan/OCR operation.
+          // Cleanup is retried through the draft lifecycle when a draft exists.
+        }
+      }
+      throw cause;
+    }
   }
 
   async function handleScan() {
     setError(null);
-    setResult(null);
-    setSourceLabel(null);
+    if (await redirectExistingDraft()) return;
     setState("scanning");
 
     try {
       const capture = await scanDocument();
-      await recognize(capture.uri, t("receiptScan.sourceCamera"));
+      await recognizeAndCreateDraft(capture.uri, "camera");
     } catch (cause) {
       if (errorCode(cause) === "ERR_RECEIPT_SCAN_CANCELLED") {
         setState("idle");
-        setError(null);
         return;
       }
-
       setState("error");
       setError(errorMessage(cause));
     }
@@ -72,8 +100,7 @@ export default function ReceiptScanScreen() {
 
   async function handleImport() {
     setError(null);
-    setResult(null);
-    setSourceLabel(null);
+    if (await redirectExistingDraft()) return;
     setState("importing");
 
     try {
@@ -94,7 +121,7 @@ export default function ReceiptScanScreen() {
         return;
       }
 
-      await recognize(picked.assets[0].uri, t("receiptScan.sourceLibrary"));
+      await recognizeAndCreateDraft(picked.assets[0].uri, "library");
     } catch (cause) {
       setState("error");
       setError(errorMessage(cause));
@@ -149,48 +176,25 @@ export default function ReceiptScanScreen() {
 
       <View className="mt-6 rounded-2xl border border-border bg-surface p-5">
         <View className="flex-row items-center gap-3">
-          {busy ? <Spinner size="sm" /> : <MaterialIcons name="offline-bolt" size={22} color={accentColor} />}
-          <View className="flex-1">
-            <Text className="font-semibold">
-              {state === "scanning"
-                ? t("receiptScan.scanning")
-                : state === "importing"
-                  ? t("receiptScan.importing")
-                  : state === "recognizing"
-                    ? t("receiptScan.recognizing")
-                    : state === "complete"
-                      ? t("receiptScan.complete")
-                      : error
-                        ? t("common.error")
-                        : t("receiptScan.idle")}
-            </Text>
-            {sourceLabel ? <Text className="mt-1 text-sm text-muted">{sourceLabel}</Text> : null}
-          </View>
+          {busy ? (
+            <Spinner size="sm" />
+          ) : (
+            <MaterialIcons name="offline-bolt" size={22} color={accentColor} />
+          )}
+          <Text className="flex-1 font-semibold">
+            {state === "scanning"
+              ? t("receiptScan.scanning")
+              : state === "importing"
+                ? t("receiptScan.importing")
+                : state === "recognizing"
+                  ? t("receiptScan.recognizing")
+                  : error
+                    ? t("common.error")
+                    : t("receiptScan.idle")}
+          </Text>
         </View>
         {error ? <Text className="mt-3 text-sm text-danger">{error}</Text> : null}
       </View>
-
-      {result ? (
-        <>
-          <View className="mt-6 rounded-2xl border border-border bg-surface p-5">
-            <Text className="text-base font-bold">{t("receiptScan.diagnostics")}</Text>
-            <Text className="mt-3 text-sm text-muted">Engine: {result.engineVersion}</Text>
-            <Text className="mt-1 text-sm text-muted">iOS: {result.osVersion}</Text>
-            <Text className="mt-1 text-sm text-muted">Duration: {result.durationMs} ms</Text>
-            <Text className="mt-1 text-sm text-muted">Lines: {result.lines.length}</Text>
-            <Text className="mt-1 text-sm text-muted">
-              Image: {result.width} × {result.height}
-            </Text>
-          </View>
-
-          <View className="mt-4 rounded-2xl border border-border bg-surface p-5">
-            <Text className="text-base font-bold">{t("receiptScan.rawText")}</Text>
-            <Text className="mt-3 text-sm leading-6 text-foreground">
-              {result.fullText || t("receiptScan.emptyText")}
-            </Text>
-          </View>
-        </>
-      ) : null}
     </ScrollView>
   );
 }
