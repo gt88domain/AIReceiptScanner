@@ -1,6 +1,7 @@
 import { NativeModule, requireOptionalNativeModule } from "expo";
 import type {
   LocalReceiptOcrResult,
+  ReceiptDraftImageResult,
   ReceiptScanResult,
   ReceiptVisionModuleEvents,
 } from "./ReceiptVision.types";
@@ -8,6 +9,8 @@ import type {
 declare class ReceiptVisionNativeModule extends NativeModule<ReceiptVisionModuleEvents> {
   isDocumentScannerSupported(): boolean;
   scanDocument(): Promise<ReceiptScanResult>;
+  persistDraftImage(uri: string): Promise<ReceiptDraftImageResult>;
+  deleteDraftImage(uri: string): Promise<void>;
   recognizeReceipt(uri: string): Promise<LocalReceiptOcrResult>;
 }
 
@@ -36,6 +39,14 @@ export function isDocumentScannerSupported() {
 
 export function scanDocument() {
   return requireReceiptVision().scanDocument();
+}
+
+export function persistDraftImage(uri: string) {
+  return requireReceiptVision().persistDraftImage(uri);
+}
+
+export function deleteDraftImage(uri: string) {
+  return requireReceiptVision().deleteDraftImage(uri);
 }
 
 export function recognizeReceipt(uri: string) {

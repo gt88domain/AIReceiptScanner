@@ -1,17 +1,37 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { Button, useThemeColor } from "heroui-native";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
 import { Text } from "@/components/ui/text";
 import { appConfig } from "@/configs/app-config";
 import { useAuth } from "@/providers/auth-provider";
+import { loadReceiptDraft } from "@/features/receipts/draft-storage";
+import type { ReceiptDraft } from "@/features/receipts/types";
 
 export default function HomeScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { isAuthenticated, user } = useAuth();
   const [accentColor, mutedColor] = useThemeColor(["accent", "muted"]);
+  const [receiptDraft, setReceiptDraft] = useState<ReceiptDraft | null>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      loadReceiptDraft()
+        .then((draft) => {
+          if (active) setReceiptDraft(draft);
+        })
+        .catch(() => {
+          if (active) setReceiptDraft(null);
+        });
+      return () => {
+        active = false;
+      };
+    }, []),
+  );
 
   return (
     <ScrollView
@@ -32,6 +52,25 @@ export default function HomeScreen() {
       </View>
 
       <View className="mt-8 gap-4">
+        {receiptDraft ? (
+          <View className="rounded-3xl border border-border bg-surface p-5">
+            <View className="size-11 items-center justify-center rounded-2xl bg-accent/10">
+              <MaterialIcons name="edit-note" size={24} color={accentColor} />
+            </View>
+            <Text className="mt-4 text-xl font-bold">{t("home.resumeReceiptTitle")}</Text>
+            <Text className="mt-1 text-sm leading-5 text-muted">
+              {receiptDraft.fields.merchant || t("home.unknownMerchant")}
+              {receiptDraft.fields.total ? ` · ${receiptDraft.fields.total}` : ""}
+            </Text>
+            <Button
+              variant="secondary"
+              className="mt-5 h-11 items-center justify-center"
+              onPress={() => router.push("/(tabs)/(home)/verify")}
+            >
+              <Button.Label className="font-bold">{t("home.resumeReceiptAction")}</Button.Label>
+            </Button>
+          </View>
+        ) : null}
         <View className="rounded-3xl border border-border bg-surface p-5">
           <View className="size-11 items-center justify-center rounded-2xl bg-accent/10">
             <MaterialIcons name="document-scanner" size={24} color={accentColor} />

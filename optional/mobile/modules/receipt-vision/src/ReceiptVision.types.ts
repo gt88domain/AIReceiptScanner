@@ -19,6 +19,12 @@ export type ReceiptOcrLine = {
   bounds: ReceiptOcrBounds;
 };
 
+export type ReceiptDraftImageResult = {
+  uri: string;
+  width: number;
+  height: number;
+};
+
 export type LocalReceiptOcrResult = {
   engine: "apple-vision";
   engineVersion: string;

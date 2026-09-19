@@ -8,7 +8,7 @@ This file tracks implementation status against the approved product documents. A
 | --- | --- | --- | --- | --- | --- |
 | Documentation baseline | #2 | DRAFT | n/a | n/a | Plan, TODO, acceptance, privacy, benchmark, release gates |
 | iOS local receipt vision | #3 | CODED / REVIEWING | NOT RUN | NOT RUN | VisionKit + Apple Vision local module, functional scan screen |
-| Local receipt parser + verify | #4 | NOT STARTED | NOT RUN | NOT RUN | merchant/date/currency/amount evidence + verification |
+| Local receipt parser + verify | #4 | CODED / REVIEWING | AUTHORED / NOT RUN | NOT RUN | deterministic parser, recoverable local draft, functional Verify UI |
 | Receipt server/domain persistence | #5 | NOT STARTED | NOT RUN | n/a | D1 schema, owner-scoped CRUD, idempotency |
 | History/search/export | #6 | NOT STARTED | NOT RUN | NOT RUN | native/web history, CSV/PDF, duplicate warnings |
 | Cloud Assist | #7 | NOT STARTED | NOT RUN | NOT RUN | benchmark harness + one provider adapter after selection |
@@ -17,22 +17,22 @@ This file tracks implementation status against the approved product documents. A
 
 ## Current engineering boundary
 
-PR #3 intentionally stops before receipt semantic parsing and server persistence.
+PR #4 builds on PR #3 and intentionally stops before server persistence.
 
 Its observable target is:
 
-1. product-native identity no longer inherits template display name/scheme;
-2. mobile composition is enabled;
-3. an iOS local Expo module is autolinkable;
-4. VisionKit can produce a temporary one-page receipt image;
-5. Apple Vision can return recognized text, confidence, normalized geometry and diagnostics;
-6. the mobile app has a functional scan/import screen;
-7. Android/Web can load the JavaScript bundle without requiring the iOS-only native module.
+1. local OCR becomes merchant/date/currency/amount candidates;
+2. ambiguous dates/currencies are review states rather than guesses;
+3. money normalization avoids binary floating-point arithmetic;
+4. the user can edit and explicitly verify critical receipt fields;
+5. draft image + fields survive normal app interruption using app-private storage;
+6. suspected full card-number/CVV text is redacted from persisted OCR draft text;
+7. delayed server/cloud persistence is still out of scope until PR #5.
 
 ## Current evidence
 
 Implementation review: IN PROGRESS  
-Automated test authoring: DEFERRED — no parser/domain trust logic in this slice  
+Automated test authoring: AUTHORED FOR PURE PARSER CONTRACT  
 Automated test execution: NOT RUN  
 Native build: NOT RUN  
 Physical iPhone scan: NOT RUN  
