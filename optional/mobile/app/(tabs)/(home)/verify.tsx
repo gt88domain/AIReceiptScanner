@@ -17,6 +17,8 @@ import type {
   ReceiptFields,
 } from "@/features/receipts/types";
 import { deleteDraftImage } from "@/modules/receipt-vision";
+import { syncVerifiedReceiptDraft } from "@/features/receipts/receipt-sync";
+import { useAuth } from "@/providers/auth-provider";
 
 const FIELD_ORDER: Array<{
   field: ReceiptFieldName;
@@ -38,6 +40,7 @@ const FIELD_ORDER: Array<{
 export default function ReceiptVerifyScreen() {
   const router = useRouter();
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [draft, setDraft] = useState<ReceiptDraft | null>(null);
   const [fields, setFields] = useState<ReceiptFields | null>(null);
   const [editedFields, setEditedFields] = useState<ReceiptFieldName[]>([]);
@@ -151,7 +154,18 @@ export default function ReceiptVerifyScreen() {
       draftRef.current = verified;
       setDraft(verified);
       setFields(normalizedFields);
-      router.replace("/(tabs)/(home)");
+
+      if (!user) {
+        router.replace("/(auth)/sign-in");
+        return;
+      }
+
+      try {
+        await syncVerifiedReceiptDraft(verified);
+        router.replace("/(tabs)/(home)");
+      } catch {
+        setError(t("receiptVerify.syncError"));
+      }
     } catch {
       setError(t("receiptVerify.draftSaveError"));
     } finally {

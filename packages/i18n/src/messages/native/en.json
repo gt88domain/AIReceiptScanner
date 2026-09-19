@@ -446,6 +446,7 @@
     "paymentLast4": "Card last 4",
     "confirmDraft": "Confirm draft",
     "draftSaveError": "Your latest edits could not be saved locally. Try again before leaving this screen.",
+    "syncError": "The verified receipt is still safe on this iPhone, but it could not be saved to your account. Try again when the connection is available.",
     "draftLoadError": "The local receipt draft could not be loaded safely.",
     "discardTitle": "Discard this receipt draft?",
     "discardDescription": "The local draft image and entered fields will be deleted from this device.",
