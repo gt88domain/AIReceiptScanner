@@ -19,7 +19,7 @@ enum ReceiptDraftImageStore {
       throw ReceiptDraftImageStoreError.imageEncodingFailed
     }
 
-    try jpeg.write(to: destination, options: .atomic)
+    try jpeg.write(to: destination, options: [.atomic, .completeFileProtection])
 
     return [
       "uri": destination.absoluteString,
@@ -54,7 +54,13 @@ enum ReceiptDraftImageStore {
       at: directory,
       withIntermediateDirectories: true
     )
-    return directory
+
+    var protectedDirectory = directory
+    var resourceValues = URLResourceValues()
+    resourceValues.isExcludedFromBackup = true
+    try protectedDirectory.setResourceValues(resourceValues)
+
+    return protectedDirectory
   }
 
   private static func fileURL(from uri: String) -> URL {
