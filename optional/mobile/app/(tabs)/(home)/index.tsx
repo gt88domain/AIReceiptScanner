@@ -34,6 +34,20 @@ export default function HomeScreen() {
       <View className="mt-8 gap-4">
         <View className="rounded-3xl border border-border bg-surface p-5">
           <View className="size-11 items-center justify-center rounded-2xl bg-accent/10">
+            <MaterialIcons name="document-scanner" size={24} color={accentColor} />
+          </View>
+          <Text className="mt-4 text-xl font-bold">{t("home.scanTitle")}</Text>
+          <Text className="mt-1 text-sm leading-5 text-muted">{t("home.scanDescription")}</Text>
+          <Button
+            className="mt-5 h-11 items-center justify-center"
+            onPress={() => router.push("/(tabs)/(home)/scan")}
+          >
+            <Button.Label className="font-bold">{t("home.scanAction")}</Button.Label>
+          </Button>
+        </View>
+
+        <View className="rounded-3xl border border-border bg-surface p-5">
+          <View className="size-11 items-center justify-center rounded-2xl bg-accent/10">
             <MaterialIcons name="stars" size={24} color={accentColor} />
           </View>
           <Text className="mt-4 text-xl font-bold">{t("home.membershipTitle")}</Text>

@@ -133,13 +133,6 @@ const appConfig: AppConfig = {
       // Credit packages available through native in-app purchases.
       packages: nativeCreditPackages,
     },
-    // Native app metadata overrides.
-    app: {
-      // Native app display name.
-      name: "TanStack Template",
-      // Deep-link scheme used by the native app.
-      nativeScheme: "com.aiarticles.template",
-    },
     // Native deep-link and legal document routes.
     routes: {
       // Auth callback path used by native redirect flows.

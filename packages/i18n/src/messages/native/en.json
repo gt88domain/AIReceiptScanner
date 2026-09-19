@@ -73,13 +73,16 @@
   "home": {
     "welcome": "Welcome",
     "welcomeNamed": "Welcome, {{name}}",
-    "description": "Manage your account and get the most from your membership.",
+    "description": "Scan receipts on-device, verify the important fields, and keep clean records.",
     "membershipTitle": "Membership",
     "membershipDescription": "View available plans, restore purchases, and check your current access.",
     "membershipAction": "View membership",
     "profileTitle": "Your profile",
     "profileDescription": "Update your details, security settings, and preferences.",
-    "profileAction": "Open profile"
+    "profileAction": "Open profile",
+    "scanTitle": "Scan a receipt",
+    "scanDescription": "Use the iPhone document scanner and Apple Vision. Normal OCR runs on your device.",
+    "scanAction": "Scan receipt"
   },
   "auth": {
     "signIn": "Sign In",
@@ -321,15 +324,27 @@
     "plans": {
       "free": {
         "name": "Free",
-        "features": ["Basic access", "Community support", "Single workspace"]
+        "features": [
+          "Basic access",
+          "Community support",
+          "Single workspace"
+        ]
       },
       "pro": {
         "name": "Pro",
-        "features": ["Everything in Free", "Priority support", "Team collaboration"]
+        "features": [
+          "Everything in Free",
+          "Priority support",
+          "Team collaboration"
+        ]
       },
       "lifetime": {
         "name": "Lifetime",
-        "features": ["All Pro features", "One-time payment", "Lifetime updates"]
+        "features": [
+          "All Pro features",
+          "One-time payment",
+          "Lifetime updates"
+        ]
       }
     }
   },
@@ -420,5 +435,26 @@
     "backToSecurity": "Back to security",
     "backToSignIn": "Back to sign in",
     "passwordsNotMatch": "Passwords do not match"
+  },
+  "receiptScan": {
+    "title": "Scan receipt",
+    "description": "This functional screen proves the local native loop. Final visual design can replace it without changing the OCR contract.",
+    "scanAction": "Scan with camera",
+    "importAction": "Import photo",
+    "unavailable": "Receipt Vision is unavailable in this build. Use an iOS development build with the local native module linked.",
+    "scannerUnsupported": "The document scanner is not supported on this device. You can still import a receipt photo.",
+    "idle": "Choose a receipt to begin.",
+    "scanning": "Opening document scanner…",
+    "importing": "Opening photo library…",
+    "recognizing": "Recognizing text on this device…",
+    "complete": "Local OCR complete",
+    "cancelled": "Scanning cancelled",
+    "permissionDenied": "Photo access was not granted.",
+    "rawText": "Recognized text",
+    "emptyText": "Apple Vision returned no text. This receipt will need review or another capture.",
+    "diagnostics": "Local OCR diagnostics",
+    "sourceCamera": "Camera scan",
+    "sourceLibrary": "Imported photo",
+    "tryAgain": "Try another receipt"
   }
 }

@@ -1,16 +1,16 @@
 {
   "expo": {
-    "name": "Your App Name",
-    "slug": "your-app-slug",
+    "name": "AI Receipt Scanner",
+    "slug": "ai-receipt-scanner",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "your-app-scheme",
+    "scheme": "aireceiptscanner",
     "userInterfaceStyle": "automatic",
     "ios": {
       "appleTeamId": "YOUR_APPLE_TEAM_ID",
       "buildNumber": "1.0.0",
-      "bundleIdentifier": "com.example.yourapp",
+      "bundleIdentifier": "com.aireceiptscanner.app",
       "deploymentTarget": "16.4",
       "usesAppleSignIn": true,
       "icon": {
@@ -18,7 +18,9 @@
         "light": "./assets/images/icon.png"
       },
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "Scan paper receipts on your device.",
+        "NSPhotoLibraryUsageDescription": "Import receipt photos for on-device scanning."
       }
     },
     "android": {
@@ -29,7 +31,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.example.yourapp"
+      "package": "com.aireceiptscanner.app"
     },
     "plugins": [
       "expo-router",
@@ -47,7 +49,7 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos so you can update your profile picture."
+          "photosPermission": "Allow $(PRODUCT_NAME) to import receipt photos for on-device scanning."
         }
       ],
       "expo-web-browser",

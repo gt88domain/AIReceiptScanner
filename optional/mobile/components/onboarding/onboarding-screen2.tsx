@@ -8,32 +8,32 @@ import {
   Animated,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Headphones, BookOpen, Flame, Check } from "lucide-react-native";
+import { Camera, ShieldCheck, FileCheck2, FileDown } from "lucide-react-native";
 
 const steps = [
   {
     id: "1",
-    title: "Listen or read on the go & grow",
-    description: "Transform your commute into learning time with bite-sized book summaries.",
-    icon: Headphones,
+    title: "Scan receipts in seconds",
+    description: "Use the iPhone document scanner to capture a clean receipt image.",
+    icon: Camera,
   },
   {
     id: "2",
-    title: "Discover new perspectives",
-    description: "Explore thousands of books and articles across various categories.",
-    icon: BookOpen,
+    title: "Process on your iPhone first",
+    description: "Apple Vision handles normal OCR on-device before any optional cloud assist.",
+    icon: ShieldCheck,
   },
   {
     id: "3",
-    title: "Track your learning streak",
-    description: "Build a daily reading habit and watch your knowledge grow day by day.",
-    icon: Flame,
+    title: "Verify what matters",
+    description: "Check merchant, date, currency, and total before saving the receipt.",
+    icon: FileCheck2,
   },
   {
     id: "4",
-    title: "Apply what you learn",
-    description: "Turn knowledge into action with practical insights and actionable takeaways.",
-    icon: Check,
+    title: "Export clean records",
+    description: "Keep searchable receipt history and prepare CSV or PDF reports when needed.",
+    icon: FileDown,
   },
 ];
 
