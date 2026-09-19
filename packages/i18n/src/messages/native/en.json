@@ -73,7 +73,10 @@
   "home": {
     "welcome": "Welcome",
     "welcomeNamed": "Welcome, {{name}}",
-    "description": "Manage your account and get the most from your membership.",
+    "description": "Scan receipts on-device, verify the important fields, and keep clean records.",
+    "scanTitle": "Scan a receipt",
+    "scanDescription": "Use the iPhone document scanner and Apple Vision. Normal OCR runs on your device.",
+    "scanAction": "Scan receipt",
     "membershipTitle": "Membership",
     "membershipDescription": "View available plans, restore purchases, and check your current access.",
     "membershipAction": "View membership",
@@ -404,6 +407,25 @@
       "title": "Ready to Go",
       "description": "Sign up in seconds and start building something great today."
     }
+  },
+  "receiptScan": {
+    "title": "Scan receipt",
+    "description": "This functional screen proves the local native loop. Final visual design can replace it without changing the OCR contract.",
+    "scanAction": "Scan with camera",
+    "importAction": "Import photo",
+    "unavailable": "Receipt Vision is unavailable in this build. Use an iOS development build with the local native module linked.",
+    "scannerUnsupported": "The document scanner is not supported on this device. You can still import a receipt photo.",
+    "idle": "Choose a receipt to begin.",
+    "scanning": "Opening document scanner…",
+    "importing": "Opening photo library…",
+    "recognizing": "Recognizing text on this device…",
+    "complete": "Local OCR complete",
+    "permissionDenied": "Photo access was not granted.",
+    "rawText": "Recognized text",
+    "emptyText": "Apple Vision returned no text. This receipt will need review or another capture.",
+    "diagnostics": "Local OCR diagnostics",
+    "sourceCamera": "Camera scan",
+    "sourceLibrary": "Imported photo"
   },
   "resetPassword": {
     "title": "Reset password",

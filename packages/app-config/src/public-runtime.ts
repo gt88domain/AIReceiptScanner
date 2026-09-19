@@ -13,8 +13,8 @@ export type PublicNavigationItem = Readonly<{
  * Keep catalogs, provider price IDs, and native-only settings out of this entry.
  */
 export const publicRuntimeConfig = {
-  appName: "Your App",
-  supportEmail: "support@example.com",
+  appName: "AI Receipt Scanner",
+  supportEmail: "support@aireceiptscanner.com",
   defaultThemePresetKey: "clean-slate",
   publicNavigation: [] as readonly PublicNavigationItem[],
   features: {

@@ -19,6 +19,7 @@ export default function HomeStack() {
       }}
     >
       <Stack.Screen name="index" options={{ title: t("tabs.home"), headerLargeTitle: true }} />
+      <Stack.Screen name="scan" options={{ title: t("receiptScan.title"), headerLargeTitle: false }} />
     </Stack>
   );
 }
