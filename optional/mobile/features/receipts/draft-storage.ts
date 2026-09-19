@@ -15,6 +15,20 @@ function redactSensitiveOcrText(text: string) {
     .replace(/\b(CVV|CVC|CID)\s*[:#-]?\s*\d{3,4}\b/gi, "$1 [redacted]");
 }
 
+function sanitizeParseForDraft(parse: ReceiptParseResult): ReceiptParseResult {
+  return {
+    ...parse,
+    evidence: Object.fromEntries(
+      Object.entries(parse.evidence).map(([field, evidence]) => [
+        field,
+        evidence
+          ? { ...evidence, sourceText: redactSensitiveOcrText(evidence.sourceText) }
+          : evidence,
+      ]),
+    ) as ReceiptParseResult["evidence"],
+  };
+}
+
 function sanitizeOcrForDraft(ocr: LocalReceiptOcrResult): LocalReceiptOcrResult {
   return {
     ...ocr,
@@ -45,7 +59,7 @@ export function createReceiptDraft(input: {
     source: input.source,
     imageUri: input.imageUri,
     ocr: sanitizeOcrForDraft(input.ocr),
-    parse: input.parse,
+    parse: sanitizeParseForDraft(input.parse),
     fields: { ...input.parse.fields },
     editedFields: [],
     verificationStatus: "pending",

@@ -20,9 +20,13 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       let active = true;
-      loadReceiptDraft().then((draft) => {
-        if (active) setReceiptDraft(draft);
-      });
+      loadReceiptDraft()
+        .then((draft) => {
+          if (active) setReceiptDraft(draft);
+        })
+        .catch(() => {
+          if (active) setReceiptDraft(null);
+        });
       return () => {
         active = false;
       };

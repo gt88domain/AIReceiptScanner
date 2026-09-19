@@ -43,10 +43,16 @@ export default function ReceiptScanScreen() {
   const busy = state === "scanning" || state === "importing" || state === "recognizing";
 
   async function redirectExistingDraft() {
-    const existing = await loadReceiptDraft();
-    if (!existing) return false;
-    router.replace("/(tabs)/(home)/verify");
-    return true;
+    try {
+      const existing = await loadReceiptDraft();
+      if (!existing) return false;
+      router.replace("/(tabs)/(home)/verify");
+      return true;
+    } catch {
+      setState("error");
+      setError(t("receiptScan.draftLoadError"));
+      return true;
+    }
   }
 
   async function recognizeAndCreateDraft(uri: string, source: "camera" | "library") {

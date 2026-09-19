@@ -57,6 +57,9 @@ export default function ReceiptVerifyScreen() {
         setFields(stored?.fields ?? null);
         setEditedFields(stored?.editedFields ?? []);
       })
+      .catch(() => {
+        if (active) setError(t("receiptVerify.draftLoadError"));
+      })
       .finally(() => {
         if (active) setLoading(false);
       });
@@ -198,6 +201,7 @@ export default function ReceiptVerifyScreen() {
         <Text className="mt-2 text-sm leading-5 text-muted">
           {t("receiptVerify.noDraftDescription")}
         </Text>
+        {error ? <Text className="mt-4 text-sm text-danger">{error}</Text> : null}
         <Button className="mt-6" onPress={() => router.replace("/(tabs)/(home)/scan")}>
           <Button.Label>{t("receiptVerify.scanAction")}</Button.Label>
         </Button>
