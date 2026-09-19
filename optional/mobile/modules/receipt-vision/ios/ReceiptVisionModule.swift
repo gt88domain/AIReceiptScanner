@@ -13,19 +13,17 @@ public class ReceiptVisionModule: Module {
 
     AsyncFunction("scanDocument") { (promise: Promise) in
       guard VNDocumentCameraViewController.isSupported else {
-        promise.legacyRejecter(
+        promise.reject(
           "ERR_RECEIPT_SCANNER_UNAVAILABLE",
-          "The document scanner is unavailable on this device.",
-          nil
+          "The document scanner is unavailable on this device."
         )
         return
       }
 
       guard let viewController = self.appContext?.utilities?.currentViewController() else {
-        promise.legacyRejecter(
+        promise.reject(
           "ERR_RECEIPT_SCANNER_PRESENTATION",
-          "Unable to find a view controller for the document scanner.",
-          nil
+          "Unable to find a view controller for the document scanner."
         )
         return
       }
@@ -48,10 +46,9 @@ public class ReceiptVisionModule: Module {
         let result = try ReceiptTextRecognizer.recognize(uri: uri)
         promise.resolve(result)
       } catch {
-        promise.legacyRejecter(
+        promise.reject(
           "ERR_RECEIPT_OCR",
-          "Apple Vision could not recognize this receipt image.",
-          error
+          "Apple Vision could not recognize this receipt image."
         )
       }
     }

@@ -52,6 +52,7 @@ export default function ReceiptScanScreen() {
   async function handleScan() {
     setError(null);
     setResult(null);
+    setSourceLabel(null);
     setState("scanning");
 
     try {
@@ -72,6 +73,7 @@ export default function ReceiptScanScreen() {
   async function handleImport() {
     setError(null);
     setResult(null);
+    setSourceLabel(null);
     setState("importing");
 
     try {
@@ -138,7 +140,7 @@ export default function ReceiptScanScreen() {
         <Button
           variant="secondary"
           className="h-12 items-center justify-center"
-          isDisabled={busy}
+          isDisabled={!visionAvailable || busy}
           onPress={handleImport}
         >
           <Button.Label className="font-bold">{t("receiptScan.importAction")}</Button.Label>

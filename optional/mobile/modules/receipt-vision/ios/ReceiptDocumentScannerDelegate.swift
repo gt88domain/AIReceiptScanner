@@ -13,10 +13,9 @@ final class ReceiptDocumentScannerDelegate: NSObject, VNDocumentCameraViewContro
 
   func documentCameraViewControllerDidCancel(_ controller: VNDocumentCameraViewController) {
     controller.dismiss(animated: true)
-    promise.legacyRejecter(
+    promise.reject(
       "ERR_RECEIPT_SCAN_CANCELLED",
-      "Receipt scanning was cancelled.",
-      nil
+      "Receipt scanning was cancelled."
     )
     onComplete()
   }
@@ -26,10 +25,9 @@ final class ReceiptDocumentScannerDelegate: NSObject, VNDocumentCameraViewContro
     didFailWithError error: Error
   ) {
     controller.dismiss(animated: true)
-    promise.legacyRejecter(
+    promise.reject(
       "ERR_RECEIPT_SCAN_FAILED",
-      "The document scanner failed.",
-      error
+      "The document scanner failed."
     )
     onComplete()
   }
@@ -40,10 +38,9 @@ final class ReceiptDocumentScannerDelegate: NSObject, VNDocumentCameraViewContro
   ) {
     guard scan.pageCount == 1 else {
       controller.dismiss(animated: true)
-      promise.legacyRejecter(
+      promise.reject(
         "ERR_RECEIPT_MULTI_PAGE_UNSUPPORTED",
-        "Scan one receipt page at a time in this MVP.",
-        nil
+        "Scan one receipt page at a time in this MVP."
       )
       onComplete()
       return
@@ -80,10 +77,9 @@ final class ReceiptDocumentScannerDelegate: NSObject, VNDocumentCameraViewContro
       onComplete()
     } catch {
       controller.dismiss(animated: true)
-      promise.legacyRejecter(
+      promise.reject(
         "ERR_RECEIPT_SCAN_WRITE",
-        "The scanned receipt could not be saved temporarily.",
-        error
+        "The scanned receipt could not be saved temporarily."
       )
       onComplete()
     }
